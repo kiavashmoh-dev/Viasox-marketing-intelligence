@@ -1,4 +1,4 @@
-const EXPECTED_HASH = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'; // "password" - change this
+const EXPECTED_HASH = '0e26117e73101e733d6d7e65033838b1ef6899fc627b0121be2bb018c54d5ae3';
 
 export async function sha256(text: string): Promise<string> {
   const encoder = new TextEncoder();
