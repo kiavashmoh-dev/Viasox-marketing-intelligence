@@ -2,10 +2,21 @@
  * PersonaResultsView — Interactive, channel-aware persona output.
  *
  * HYBRID ARCHITECTURE (same as SegmentResultsView):
- * - Visual elements (KPI strip, Venn, bars) come from DETERMINISTIC engine data.
- *   These never fail — they're pure math.
+ * - Visual elements (snapshot strip, Venn, radar, sales intelligence)
+ *   come from DETERMINISTIC engine data. These never fail.
  * - Persona content comes from Claude and is PARSED into structured cards.
  *   Parsing always has a markdown fallback.
+ *
+ * Layout:
+ * 1. Header Bar (nav + export + regenerate)
+ * 2. PersonaSnapshotStrip (per-persona cards with sales metrics)
+ * 3. VennDiagram (identity x motivation overlap)
+ * 4. SegmentRadarChart (product affinity)
+ * 5. MarketGeoComparison (if market analysis enabled)
+ * 6. Sales Intelligence section (revenue comparison, cross-purchase, journeys, geography)
+ * 7. PersonaAccordion (all personas, expand/collapse)
+ * 8. Raw Output Toggle
+ * 9. PersonaChat (fixed side panel)
  */
 
 import { useState, useMemo } from 'react';
@@ -14,21 +25,18 @@ import remarkGfm from 'remark-gfm';
 import type { FullAnalysis, ProductCategory, PersonaChannel, MarketRegion } from '../engine/types';
 import { downloadAsDoc, downloadAsPdf } from '../utils/downloadUtils';
 import { parsePersonaOutput, type ChannelType } from './persona/personaParser';
-import PersonaNavTabs from './persona/PersonaNavTabs';
-import PersonaCard from './persona/PersonaCard';
+import PersonaSnapshotStrip from './persona/PersonaSnapshotStrip';
+import PersonaAccordion from './persona/PersonaAccordion';
 import VennDiagram from './persona/VennDiagram';
 import SegmentRadarChart from './persona/SegmentRadarChart';
 import MarketGeoComparison from './persona/MarketGeoComparison';
+import SegmentRevenueComparison from './persona/SegmentRevenueComparison';
+import CrossPurchasePanel from './persona/CrossPurchasePanel';
+import ProductJourneyMap from './persona/ProductJourneyMap';
+import GeographyBreakdown from './persona/GeographyBreakdown';
 import PersonaChat from './persona/PersonaChat';
+import { hasSalesEnrichment, salesEnrichment } from '../data/salesEnrichmentLoader';
 import { DISPLAY_NAME_MAP } from '../utils/segmentNames';
-
-/* ── Channel Config ─────────────────────────────────────────────────────── */
-
-const CHANNEL_LABELS: Record<PersonaChannel, { label: string; color: string; bgColor: string }> = {
-  DTC: { label: 'Direct-to-Consumer', color: 'text-blue-700', bgColor: 'bg-blue-50' },
-  Retail: { label: 'Retail', color: 'text-emerald-700', bgColor: 'bg-emerald-50' },
-  Wholesale: { label: 'Wholesale / B2B', color: 'text-violet-700', bgColor: 'bg-violet-50' },
-};
 
 /* ── Props ──────────────────────────────────────────────────────────────── */
 
@@ -67,8 +75,6 @@ export default function PersonaResultsView({
   loading,
   error,
 }: Props) {
-  const [activePersonaIndex, setActivePersonaIndex] = useState(0);
-
   // ── Parse Claude's output into structured personas ──
   const parsedPersonas = useMemo(
     () => content ? parsePersonaOutput(content, channel as ChannelType) : [],
@@ -76,13 +82,6 @@ export default function PersonaResultsView({
   );
 
   // ── Deterministic data lookups ──
-  const pa = analysis.products[product];
-  const totalReviews = pa?.totalReviews ?? 0;
-  const avgRating = pa?.averageRating ?? 0;
-
-  const channelConfig = CHANNEL_LABELS[channel];
-
-  // Segment totals for the Venn diagram
   const segmentTotals = useMemo(() => {
     const totals = new Map<string, number>();
     const sb = analysis.segmentBreakdown;
@@ -92,7 +91,6 @@ export default function PersonaResultsView({
       const count = productData?.count ?? 0;
       if (count > 0) {
         totals.set(seg.segmentName.toLowerCase(), count);
-        // Also set by display name
         const displayName = DISPLAY_NAME_MAP.get(seg.segmentName.toLowerCase());
         if (displayName) totals.set(displayName.toLowerCase(), count);
       }
@@ -158,7 +156,8 @@ export default function PersonaResultsView({
     );
   }
 
-  const activePersona = parsedPersonas[activePersonaIndex] ?? parsedPersonas[0];
+  const showSalesIntelligence = hasSalesEnrichment();
+  const meta = showSalesIntelligence ? salesEnrichment.meta : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
@@ -194,46 +193,17 @@ export default function PersonaResultsView({
           </div>
         </div>
 
-        {/* ── KPI Summary Strip ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-          <div className="flex items-start gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg shrink-0">
-              {'\uD83C\uDFAD'}
-            </div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">{title}</h1>
-              <p className="text-slate-500 text-sm mt-1">
-                {parsedPersonas.length} persona{parsedPersonas.length !== 1 ? 's' : ''} generated for {product}
-                {includeMarket ? ' with market analysis' : ''}
-              </p>
-            </div>
-          </div>
+        {/* ── 1. Persona Snapshot Strip (replaces old KPI Summary) ── */}
+        <PersonaSnapshotStrip
+          personas={parsedPersonas}
+          selectedPersonas={selectedPersonas}
+          product={product}
+          channel={channel}
+          analysis={analysis}
+          includeMarket={includeMarket}
+        />
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div className={`${channelConfig.bgColor} rounded-xl p-4 text-center`}>
-              <div className={`text-2xl font-bold ${channelConfig.color}`}>{parsedPersonas.length}</div>
-              <div className={`text-[10px] uppercase tracking-wider mt-1 ${channelConfig.color}`}>Personas</div>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-slate-700">{product}</div>
-              <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-1">Product</div>
-            </div>
-            <div className={`${channelConfig.bgColor} rounded-xl p-4 text-center`}>
-              <div className={`text-lg font-bold ${channelConfig.color}`}>{channelConfig.label}</div>
-              <div className={`text-[10px] uppercase tracking-wider mt-1 ${channelConfig.color}`}>Channel</div>
-            </div>
-            <div className="bg-blue-50 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-blue-700">{totalReviews.toLocaleString()}</div>
-              <div className="text-[10px] text-blue-600 uppercase tracking-wider mt-1">Reviews</div>
-            </div>
-            <div className="bg-amber-50 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-amber-700">{avgRating > 0 ? avgRating : '--'}</div>
-              <div className="text-[10px] text-amber-600 uppercase tracking-wider mt-1">Avg Rating</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Venn Diagram (deterministic data) ── */}
+        {/* ── 2. Venn Diagram (identity x motivation overlap) ── */}
         <VennDiagram
           overlaps={analysis.segmentBreakdown?.crossSegmentOverlap ?? []}
           selectedPersonas={selectedPersonas}
@@ -242,31 +212,67 @@ export default function PersonaResultsView({
           displayNameMap={DISPLAY_NAME_MAP}
         />
 
-        {/* ── Segment Radar Chart (deterministic data) ── */}
+        {/* ── 3. Segment Radar Chart (product affinity) ── */}
         <SegmentRadarChart
           analysis={analysis}
           selectedPersonas={selectedPersonas}
           product={product}
         />
 
-        {/* ── Market Geo Comparison (deterministic data — only when market analysis enabled) ── */}
+        {/* ── 4. Market Geo Comparison (when market analysis enabled) ── */}
         {includeMarket && markets.length > 0 && (
           <MarketGeoComparison markets={markets} />
         )}
 
-        {/* ── Persona Navigation Tabs ── */}
-        <PersonaNavTabs
-          personas={parsedPersonas}
-          activeIndex={activePersonaIndex}
-          onSelect={setActivePersonaIndex}
-          channel={channel}
-        />
+        {/* ── 5. Sales Intelligence Section ── */}
+        {showSalesIntelligence && (
+          <>
+            {/* Main Sales Intelligence card */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+              <h3 className="text-sm font-semibold text-slate-800 mb-1">
+                Sales Intelligence
+              </h3>
+              <p className="text-xs text-slate-400 mb-5">
+                Real purchase data from{' '}
+                {meta ? (
+                  <>
+                    <span className="font-medium text-slate-600">
+                      {meta.reviewersLinkedToOrders.toLocaleString()}
+                    </span>{' '}
+                    linked customers across{' '}
+                    <span className="font-medium text-slate-600">
+                      {meta.totalOrderLines.toLocaleString()}
+                    </span>{' '}
+                    orders ({(meta.linkRate * 100).toFixed(0)}% link rate).
+                  </>
+                ) : (
+                  'linked customer-order data.'
+                )}
+              </p>
 
-        {/* ── Active Persona Card ── */}
-        {activePersona ? (
-          <PersonaCard
-            persona={activePersona}
-            index={activePersonaIndex}
+              {/* Revenue Comparison Bars */}
+              <SegmentRevenueComparison selectedSegments={selectedPersonas} />
+
+              {/* Customer Journey Map */}
+              <div className="mt-6">
+                <ProductJourneyMap selectedSegments={selectedPersonas} />
+              </div>
+
+              {/* Geographic Breakdown */}
+              <div className="mt-6">
+                <GeographyBreakdown selectedSegments={selectedPersonas} />
+              </div>
+            </div>
+
+            {/* Cross-Purchase Behavior (has its own card wrapper) */}
+            <CrossPurchasePanel selectedSegments={selectedPersonas} product={product} />
+          </>
+        )}
+
+        {/* ── 6. Persona Accordion (all personas, expand/collapse) ── */}
+        {parsedPersonas.length > 0 ? (
+          <PersonaAccordion
+            personas={parsedPersonas}
             channel={channel}
             product={product}
             analysis={analysis}

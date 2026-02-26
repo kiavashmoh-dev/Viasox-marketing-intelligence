@@ -109,9 +109,11 @@ interface Props {
   product: ProductCategory;
   analysis: FullAnalysis;
   includeMarket: boolean;
+  /** When true, skip rendering the gradient header (used inside PersonaAccordion which provides its own header) */
+  hideHeader?: boolean;
 }
 
-export default function PersonaCard({ persona, index, channel, product: _product, analysis: _analysis, includeMarket: _includeMarket }: Props) {
+export default function PersonaCard({ persona, index, channel, product: _product, analysis: _analysis, includeMarket: _includeMarket, hideHeader }: Props) {
   // Start with the first section (snapshot) expanded
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
     const initial = new Set<string>();
@@ -150,15 +152,17 @@ export default function PersonaCard({ persona, index, channel, product: _product
   // If parsing failed, render raw markdown
   if (persona.sections.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className={`bg-gradient-to-r ${headerColors.gradient} px-6 py-5`}>
-          <div className="flex items-center gap-3">
-            <span className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
-              {index + 1}
-            </span>
-            <h2 className="text-lg font-bold text-white">{persona.personaName}</h2>
+      <div className={hideHeader ? '' : 'bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden'}>
+        {!hideHeader && (
+          <div className={`bg-gradient-to-r ${headerColors.gradient} px-6 py-5`}>
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
+                {index + 1}
+              </span>
+              <h2 className="text-lg font-bold text-white">{persona.personaName}</h2>
+            </div>
           </div>
-        </div>
+        )}
         <div className="p-6">
           <div className="prose prose-sm prose-slate max-w-none">
             <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
@@ -171,35 +175,49 @@ export default function PersonaCard({ persona, index, channel, product: _product
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      {/* ── Card Header ── */}
-      <div className={`bg-gradient-to-r ${headerColors.gradient} px-6 py-5`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
-              {index + 1}
-            </span>
-            <div>
-              <h2 className="text-lg font-bold text-white">{persona.personaName}</h2>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${headerColors.badge} text-white/90`}>
-                  {channel}
-                </span>
-                <span className="text-xs text-white/70">
-                  {persona.sections.length} sections
-                </span>
+    <div className={hideHeader ? '' : 'bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden'}>
+      {/* ── Card Header (hidden when inside PersonaAccordion) ── */}
+      {!hideHeader && (
+        <div className={`bg-gradient-to-r ${headerColors.gradient} px-6 py-5`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
+                {index + 1}
+              </span>
+              <div>
+                <h2 className="text-lg font-bold text-white">{persona.personaName}</h2>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${headerColors.badge} text-white/90`}>
+                    {channel}
+                  </span>
+                  <span className="text-xs text-white/70">
+                    {persona.sections.length} sections
+                  </span>
+                </div>
               </div>
             </div>
+            {/* Expand/Collapse toggle */}
+            <button
+              onClick={allExpanded ? collapseAll : expandAll}
+              className="text-xs text-white/80 hover:text-white bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              {allExpanded ? 'Collapse All' : 'Expand All'}
+            </button>
           </div>
-          {/* Expand/Collapse toggle */}
+        </div>
+      )}
+
+      {/* Expand/Collapse when header is hidden (inside accordion) */}
+      {hideHeader && (
+        <div className="flex justify-end px-6 pt-3">
           <button
             onClick={allExpanded ? collapseAll : expandAll}
-            className="text-xs text-white/80 hover:text-white bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+            className="text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
           >
             {allExpanded ? 'Collapse All' : 'Expand All'}
           </button>
         </div>
-      </div>
+      )}
 
       {/* ── Sections ── */}
       <div className="divide-y divide-slate-100">
