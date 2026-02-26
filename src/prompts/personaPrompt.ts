@@ -1,6 +1,7 @@
 import type { PersonaParams, PersonaChannel, FullAnalysis } from '../engine/types';
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildMarketContext } from '../data/marketIntelligence';
+import { salesEnrichment, hasSalesEnrichment } from '../data/salesEnrichmentLoader';
 
 /* ------------------------------------------------------------------ */
 /*  Cross-segment analytics formatter (for prompt injection)           */
@@ -363,6 +364,124 @@ IMPORTANT: Clearly distinguish between data from reviews (labeled "From Review D
 }
 
 /* ------------------------------------------------------------------ */
+/*  Sales enrichment data formatter (for prompt injection)             */
+/* ------------------------------------------------------------------ */
+
+function formatSalesEnrichment(_product: string): string {
+  if (!hasSalesEnrichment()) return '';
+
+  const se = salesEnrichment;
+  const sections: string[] = [];
+
+  sections.push('## SALES & TRANSACTION DATA (Pre-Processed from Orders + Customer Records)');
+  sections.push('');
+  sections.push('The following data links REVIEWERS to their actual PURCHASE HISTORY via email matching.');
+  sections.push(`Data coverage: ${se.meta.totalOrderLines.toLocaleString()} order lines, $${se.meta.totalRevenue.toLocaleString()} total revenue, ${se.meta.totalCustomersInOrders.toLocaleString()} customers.`);
+  sections.push(`Review-to-order link rate: ${se.meta.linkRate}% of reviewers found in order data.\n`);
+
+  // ── Per-segment sales metrics ──
+  sections.push('### SEGMENT REVENUE & PURCHASE BEHAVIOR');
+  sections.push('');
+  sections.push('| Segment | Layer | Revenue | Avg LTV | Repeat Rate | Cross-Purchase % | Linked Customers |');
+  sections.push('|---------|-------|---------|---------|-------------|------------------|------------------|');
+
+  const sortedSegments = Object.entries(se.segments)
+    .sort((a, b) => b[1].sales.totalRevenue - a[1].sales.totalRevenue);
+
+  for (const [name, seg] of sortedSegments) {
+    const s = seg.sales;
+    sections.push(`| ${name} | ${seg.layer} | $${s.totalRevenue.toLocaleString()} | $${s.avgLifetimeValue} | ${s.repeatPurchaseRate}% | ${s.crossPurchase.pctBoughtMultiple}% | ${s.linkedReviewers.toLocaleString()} |`);
+  }
+  sections.push('');
+
+  // ── Per-segment product revenue breakdown ──
+  sections.push('### REVENUE BY PRODUCT LINE PER SEGMENT');
+  sections.push('Which product lines each segment spends their money on:\n');
+  for (const [name, seg] of sortedSegments.slice(0, 10)) {
+    const productParts = Object.entries(seg.byProduct)
+      .filter(([, d]) => d.revenue && d.revenue > 0)
+      .sort((a, b) => (b[1].revenue || 0) - (a[1].revenue || 0))
+      .map(([p, d]) => `${p}: $${(d.revenue || 0).toLocaleString()}`);
+    if (productParts.length > 0) {
+      sections.push(`**${name}:** ${productParts.join(' | ')}`);
+    }
+  }
+  sections.push('');
+
+  // ── Cross-purchase matrix ──
+  sections.push('### CROSS-PURCHASE BEHAVIOR (All Customers)');
+  sections.push(`Total customers: ${se.crossPurchaseMatrix.totalCustomers.toLocaleString()}\n`);
+
+  sections.push('Product ownership:');
+  for (const [cat, data] of Object.entries(se.crossPurchaseMatrix.productOwnership)) {
+    sections.push(`- ${cat}: ${data.customers.toLocaleString()} customers (${data.pct}%)`);
+  }
+  sections.push('');
+
+  sections.push('Cross-purchase combos:');
+  for (const combo of se.crossPurchaseMatrix.combos) {
+    sections.push(`- ${combo.combo.replace(/\+/g, ' + ')}: ${combo.customers.toLocaleString()} customers (${combo.pctOfTotal}%), avg combined spend $${combo.avgCombinedSpend}`);
+  }
+  sections.push('');
+
+  // ── Top segment cross-purchase details ──
+  sections.push('### SEGMENT-SPECIFIC CROSS-PURCHASE');
+  sections.push('For each segment, what % of its reviewer-customers bought from multiple product lines:\n');
+  for (const [name, seg] of sortedSegments.slice(0, 10)) {
+    const cp = seg.sales.crossPurchase;
+    if (cp.combos.length > 0) {
+      const comboParts = cp.combos.slice(0, 3).map(c => `${c.combo.replace(/\+/g, '+')}: ${c.customers} (${c.pct}%)`);
+      sections.push(`**${name}** — ${cp.pctBoughtMultiple}% cross-purchased | ${comboParts.join(', ')}`);
+    }
+  }
+  sections.push('');
+
+  // ── Geography for selected product's segments ──
+  sections.push('### GEOGRAPHIC DISTRIBUTION (Top Segments)');
+  sections.push('Where each segment\'s customers are located (US vs CA split + top regions):\n');
+  for (const [name, seg] of sortedSegments.slice(0, 8)) {
+    const geo = seg.sales.geography.slice(0, 3);
+    const geoParts = geo.map(g => `${g.country}: ${g.customers.toLocaleString()} (${g.pct}%, $${g.revenue.toLocaleString()})`);
+    if (geoParts.length > 0) {
+      sections.push(`**${name}:** ${geoParts.join(' | ')}`);
+    }
+  }
+  sections.push('');
+
+  // ── Enriched cross-segment overlaps (top 10 with revenue) ──
+  sections.push('### IDENTITY × MOTIVATION OVERLAP WITH REVENUE');
+  sections.push('Top persona intersections ranked by review count, with linked revenue data:\n');
+  sections.push('| Identity | Motivation | Reviews | Revenue | Avg LTV | Repeat % | Cross-Purchase % |');
+  sections.push('|----------|-----------|---------|---------|---------|----------|-----------------|');
+  for (const ov of se.crossSegmentOverlaps.slice(0, 15)) {
+    const s = ov.sales;
+    sections.push(`| ${ov.identity} | ${ov.motivation} | ${ov.reviewCount.toLocaleString()} | $${s.totalRevenue.toLocaleString()} | $${s.avgLifetimeValue} | ${s.repeatPurchaseRate}% | ${s.crossPurchaseRate}% |`);
+  }
+  sections.push('');
+
+  // ── Customer journey examples (top spenders per segment) ──
+  sections.push('### HIGH-VALUE CUSTOMER EXAMPLES');
+  sections.push('Real customer journeys — top spenders in each segment (anonymized):\n');
+
+  // Only include segments that have the current product in their journeys
+  const relevantSegments = sortedSegments.slice(0, 8);
+  for (const [name] of relevantSegments) {
+    const journeys = se.customerJourneys[name];
+    if (!journeys || journeys.length === 0) continue;
+    const top = journeys[0];
+    sections.push(`**${name} — Top Customer:**`);
+    sections.push(`  Spend: $${top.totalSpend.toLocaleString()} | Orders: ${top.orderLines} | Products: ${top.productsOwned.join(', ')} | Since: ${top.firstOrder}`);
+    if (top.sampleQuote) {
+      const trimmed = top.sampleQuote.length > 200 ? top.sampleQuote.slice(0, 200) + '...' : top.sampleQuote;
+      sections.push(`  Quote: "${trimmed}"`);
+    }
+    sections.push('');
+  }
+
+  return sections.join('\n');
+}
+
+/* ------------------------------------------------------------------ */
 /*  Core persona system prompt                                         */
 /* ------------------------------------------------------------------ */
 
@@ -383,9 +502,10 @@ ${buildChannelFramework(params.channel)}
 Each persona is built at the INTERSECTION of a motivation segment (WHY they buy) and an identity segment (WHO they are). The user has selected specific personas from the actual data. Build EACH selected persona using this method:
 
 1. **Start with the data.** Look at the segment frequencies, pain points, benefits, transformation patterns, and quotes for this intersection.
-2. **Find the human.** Behind every data point is a person. What specific daily moment captures this persona's experience?
-3. **Apply the frameworks.** Use Schwartz (desires, identifications, beliefs), Hopkins (specificity, service), Neumeier (gut feeling, trust), and Bly (benefits over features, internal dialogue) to add psychological depth.
-4. **Ground every claim.** No invented statistics. Every frequency, quote, and pattern must come from the actual data.
+2. **Layer in the sales intelligence.** Use the SALES & TRANSACTION DATA to quantify each persona's business value: revenue contribution, lifetime value, repeat purchase rate, cross-purchase behavior, and geographic concentration. This is REAL purchase data linked to actual reviewers.
+3. **Find the human.** Behind every data point is a person. What specific daily moment captures this persona's experience?
+4. **Apply the frameworks.** Use Schwartz (desires, identifications, beliefs), Hopkins (specificity, service), Neumeier (gut feeling, trust), and Bly (benefits over features, internal dialogue) to add psychological depth.
+5. **Ground every claim.** No invented statistics. Every frequency, quote, and pattern must come from the actual data. Sales figures come from the pre-processed transaction data.
 
 ## EXPERTISE PRINCIPLES (Apply Throughout)
 
@@ -417,6 +537,8 @@ Comfort Seeker, Pain & Symptom Relief, Style Conscious, Quality & Value, Daily W
 Healthcare Worker, Caregiver/Gift Buyer, Diabetic/Neuropathy, Standing Worker, Accessibility/Mobility, Traveler, Senior, Pregnant/Postpartum, Medical/Therapeutic
 
 ${formatCrossSegmentData(analysis, params.product)}
+
+${formatSalesEnrichment(params.product)}
 
 ${params.includeMarketAnalysis ? buildMarketContext(params.channel === 'Retail', params.markets) : ''}
 

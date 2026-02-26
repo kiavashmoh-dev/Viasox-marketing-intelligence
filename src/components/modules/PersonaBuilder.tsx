@@ -5,6 +5,17 @@ import { buildPersonaPrompt } from '../../prompts/personaPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import PersonaResultsView from '../PersonaResultsView';
 import { IDENTITY_SEGMENTS, MOTIVATION_SEGMENTS, DISPLAY_NAME_MAP } from '../../utils/segmentNames';
+import { getEnrichedSegment, hasSalesEnrichment, salesEnrichment } from '../../data/salesEnrichmentLoader';
+import CrossPurchasePanel from '../persona/CrossPurchasePanel';
+
+type SortOption = 'reviews' | 'revenue' | 'ltv' | 'repeat';
+
+const SORT_OPTIONS: { key: SortOption; label: string }[] = [
+  { key: 'reviews', label: 'Reviews' },
+  { key: 'revenue', label: 'Revenue' },
+  { key: 'ltv', label: 'LTV' },
+  { key: 'repeat', label: 'Repeat Rate' },
+];
 
 interface Props {
   analysis: FullAnalysis;
@@ -47,7 +58,28 @@ const CHANNELS: { value: PersonaChannel; label: string; description: string }[] 
  * For the PersonaBuilder, we want per-product counts when a product is selected,
  * so we extract the product-specific slice from segmentBreakdown.byProduct.
  */
-function derivePersonas(analysis: FullAnalysis, product: ProductCategory) {
+function sortPersonas(
+  personas: { name: string; count: number; percentage: number }[],
+  sortBy: SortOption,
+): void {
+  if (sortBy === 'reviews') {
+    personas.sort((a, b) => b.count - a.count);
+    return;
+  }
+  personas.sort((a, b) => {
+    const aSales = getEnrichedSegment(a.name)?.sales;
+    const bSales = getEnrichedSegment(b.name)?.sales;
+    const aVal = sortBy === 'revenue' ? (aSales?.totalRevenue ?? 0)
+      : sortBy === 'ltv' ? (aSales?.avgLifetimeValue ?? 0)
+      : (aSales?.repeatPurchaseRate ?? 0);
+    const bVal = sortBy === 'revenue' ? (bSales?.totalRevenue ?? 0)
+      : sortBy === 'ltv' ? (bSales?.avgLifetimeValue ?? 0)
+      : (bSales?.repeatPurchaseRate ?? 0);
+    return bVal - aVal || b.count - a.count;
+  });
+}
+
+function derivePersonas(analysis: FullAnalysis, product: ProductCategory, sortBy: SortOption) {
   const identityPersonas: { name: string; count: number; percentage: number }[] = [];
   const motivationPersonas: { name: string; count: number; percentage: number }[] = [];
 
@@ -81,8 +113,8 @@ function derivePersonas(analysis: FullAnalysis, product: ProductCategory) {
       }
     }
 
-    identityPersonas.sort((a, b) => b.count - a.count);
-    motivationPersonas.sort((a, b) => b.count - a.count);
+    sortPersonas(identityPersonas, sortBy);
+    sortPersonas(motivationPersonas, sortBy);
     return { identityPersonas, motivationPersonas };
   }
 
@@ -111,8 +143,8 @@ function derivePersonas(analysis: FullAnalysis, product: ProductCategory) {
     }
   }
 
-  identityPersonas.sort((a, b) => b.count - a.count);
-  motivationPersonas.sort((a, b) => b.count - a.count);
+  sortPersonas(identityPersonas, sortBy);
+  sortPersonas(motivationPersonas, sortBy);
   return { identityPersonas, motivationPersonas };
 }
 
@@ -143,7 +175,7 @@ function getConcentrationIndex(
   );
 }
 
-/** Concentration index badge */
+/** Concentration index badge (fallback when no sales affinity data) */
 function ciLabel(ci: number): { text: string; color: string } {
   if (ci >= 1.3) return { text: `${ci}x \u2191`, color: 'text-emerald-600' };
   if (ci >= 1.1) return { text: `${ci}x`, color: 'text-emerald-500' };
@@ -152,17 +184,34 @@ function ciLabel(ci: number): { text: string; color: string } {
   return { text: `${ci}x`, color: 'text-slate-400' };
 }
 
+/** Get sales-enriched product affinity for a segment (has revenue + revenueShare) */
+function getSalesAffinity(product: ProductCategory, segmentName: string) {
+  if (!hasSalesEnrichment()) return undefined;
+  const entries = salesEnrichment.productAffinity[product];
+  if (!entries) return undefined;
+  return entries.find((e) =>
+    e.segmentName.toLowerCase() === segmentName.toLowerCase()
+    || DISPLAY_NAME_MAP.get(e.segmentName.toLowerCase()) === segmentName
+  );
+}
+
+/** Format revenue as $1.6M or $352K */
+function fmtRev(v: number): string {
+  return v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${(v / 1_000).toFixed(0)}K`;
+}
+
 export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBack }: Props) {
   const [product, setProduct] = useState<ProductCategory>('EasyStretch');
   const [channel, setChannel] = useState<PersonaChannel>('DTC');
   const [selectedPersonas, setSelectedPersonas] = useState<Set<string>>(new Set());
   const [includeMarket, setIncludeMarket] = useState(false);
   const [markets, setMarkets] = useState<Set<MarketRegion>>(new Set(['US', 'CA']));
+  const [sortBy, setSortBy] = useState<SortOption>('reviews');
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
   const { identityPersonas, motivationPersonas } = useMemo(
-    () => derivePersonas(analysis, product),
-    [analysis, product],
+    () => derivePersonas(analysis, product, sortBy),
+    [analysis, product, sortBy],
   );
 
   const allPersonas = useMemo(
@@ -269,6 +318,27 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
           <p className="text-slate-500 text-sm">
             Build data-driven personas from your review segments. Select the personas to generate and the channel context.
           </p>
+
+          {/* Sales data enrichment banner */}
+          {hasSalesEnrichment() && (
+            <div className="mt-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg p-4 border border-emerald-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-semibold text-emerald-800">Sales Intelligence Active</span>
+                <span className="text-[10px] font-medium bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+                  {salesEnrichment.meta.linkRate}% linked
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-600">
+                <span><strong className="text-emerald-700">${(salesEnrichment.meta.totalRevenue / 1000000).toFixed(1)}M</strong> total revenue</span>
+                <span><strong className="text-blue-700">{salesEnrichment.meta.totalCustomersInOrders.toLocaleString()}</strong> customers</span>
+                <span><strong className="text-violet-700">{salesEnrichment.meta.totalOrderLines.toLocaleString()}</strong> order lines</span>
+                <span><strong className="text-slate-700">{salesEnrichment.meta.reviewersLinkedToOrders.toLocaleString()}</strong> reviewers matched</span>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1.5">
+                Revenue, LTV, repeat rates, and cross-purchase data are linked to each segment below and fed into persona generation.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ── Product & Channel Selection ── */}
@@ -278,7 +348,7 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
             <label className="block text-sm font-semibold text-slate-700 mb-3">Product Line</label>
             <select
               value={product}
-              onChange={(e) => { setProduct(e.target.value as ProductCategory); setSelectedPersonas(new Set()); }}
+              onChange={(e) => { setProduct(e.target.value as ProductCategory); setSelectedPersonas(new Set()); setSortBy('reviews'); }}
               className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             >
               {PRODUCTS.map((p) => (
@@ -324,6 +394,26 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
             </button>
           </div>
 
+          {/* Sort Toggle */}
+          {hasSalesEnrichment() && allPersonas.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-4">
+              <span className="text-[10px] text-slate-400 mr-1">Sort by:</span>
+              {SORT_OPTIONS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setSortBy(key)}
+                  className={`text-[10px] font-medium px-2.5 py-1 rounded-full border transition-colors ${
+                    sortBy === key
+                      ? 'bg-blue-100 text-blue-700 border-blue-200'
+                      : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Identity Segments */}
           {identityPersonas.length > 0 && (
             <div className="mb-5">
@@ -336,33 +426,58 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
                   const isSelected = selectedPersonas.has(p.name);
                   const affinityData = getConcentrationIndex(analysis, product, p.name);
                   const ci = affinityData?.concentrationIndex;
+                  const salesAff = getSalesAffinity(product, p.name);
+                  const enriched = getEnrichedSegment(p.name);
+                  const sales = enriched?.sales;
                   return (
                     <button
                       key={p.name}
                       onClick={() => togglePersona(p.name)}
-                      className={`flex items-center justify-between p-3.5 rounded-lg border-2 transition-all text-left ${
+                      className={`flex flex-col p-3.5 rounded-lg border-2 transition-all text-left ${
                         isSelected
                           ? 'border-blue-500 bg-blue-50/60 shadow-sm'
                           : 'border-slate-100 hover:border-slate-300 bg-white'
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected ? 'border-blue-500 bg-blue-500' : 'border-slate-300'
-                        }`}>
-                          {isSelected && <span className="text-white text-xs font-bold">{'\u2713'}</span>}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-medium text-sm text-slate-800 truncate">{p.name}</div>
-                          <div className="text-xs text-slate-400">
-                            {p.count.toLocaleString()} reviews
-                            {ci != null && <span className={`ml-1.5 font-medium ${ciLabel(ci).color}`} title="Concentration Index: how much this segment over/under-indexes in this product vs. overall">{ciLabel(ci).text}</span>}
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected ? 'border-blue-500 bg-blue-500' : 'border-slate-300'
+                          }`}>
+                            {isSelected && <span className="text-white text-xs font-bold">{'\u2713'}</span>}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm text-slate-800 truncate">{p.name}</div>
+                            <div className="text-xs text-slate-400">
+                              {p.count.toLocaleString()} reviews
+                              {salesAff ? (
+                                <span className="ml-1.5" title={`CI: ${ci?.toFixed(2) ?? '\u2014'}x | ${salesAff.revenueShare}% of ${product} revenue`}>
+                                  <span className="font-medium text-emerald-600">{fmtRev(salesAff.revenue)}</span>
+                                  <span className="text-slate-400 font-normal"> · {salesAff.revenueShare}%</span>
+                                </span>
+                              ) : ci != null ? (
+                                <span className={`ml-1.5 font-medium ${ciLabel(ci).color}`} title="Concentration Index">{ciLabel(ci).text}</span>
+                              ) : null}
+                            </div>
                           </div>
                         </div>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${frequencyColor(p.percentage)}`}>
+                          {p.percentage}% · {frequencyLabel(p.percentage)}
+                        </span>
                       </div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${frequencyColor(p.percentage)}`}>
-                        {p.percentage}% · {frequencyLabel(p.percentage)}
-                      </span>
+                      {sales && (
+                        <div className="flex items-center gap-2 mt-2 ml-8 flex-wrap">
+                          <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded" title="Total revenue from linked reviewer-customers">
+                            ${sales.totalRevenue >= 1000000 ? `${(sales.totalRevenue / 1000000).toFixed(1)}M` : `${(sales.totalRevenue / 1000).toFixed(0)}K`}
+                          </span>
+                          <span className="text-[10px] font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded" title="Average lifetime value per customer">
+                            ${sales.avgLifetimeValue} LTV
+                          </span>
+                          <span className="text-[10px] font-medium text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded" title="Percentage of customers who ordered more than once">
+                            {sales.repeatPurchaseRate}% repeat
+                          </span>
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -382,33 +497,58 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
                   const isSelected = selectedPersonas.has(p.name);
                   const affinityData = getConcentrationIndex(analysis, product, p.name);
                   const ci = affinityData?.concentrationIndex;
+                  const salesAff = getSalesAffinity(product, p.name);
+                  const enriched = getEnrichedSegment(p.name);
+                  const sales = enriched?.sales;
                   return (
                     <button
                       key={p.name}
                       onClick={() => togglePersona(p.name)}
-                      className={`flex items-center justify-between p-3.5 rounded-lg border-2 transition-all text-left ${
+                      className={`flex flex-col p-3.5 rounded-lg border-2 transition-all text-left ${
                         isSelected
                           ? 'border-indigo-500 bg-indigo-50/60 shadow-sm'
                           : 'border-slate-100 hover:border-slate-300 bg-white'
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-slate-300'
-                        }`}>
-                          {isSelected && <span className="text-white text-xs font-bold">{'\u2713'}</span>}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-medium text-sm text-slate-800 truncate">{p.name}</div>
-                          <div className="text-xs text-slate-400">
-                            {p.count.toLocaleString()} reviews
-                            {ci != null && <span className={`ml-1.5 font-medium ${ciLabel(ci).color}`} title="Concentration Index: how much this segment over/under-indexes in this product vs. overall">{ciLabel(ci).text}</span>}
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-slate-300'
+                          }`}>
+                            {isSelected && <span className="text-white text-xs font-bold">{'\u2713'}</span>}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm text-slate-800 truncate">{p.name}</div>
+                            <div className="text-xs text-slate-400">
+                              {p.count.toLocaleString()} reviews
+                              {salesAff ? (
+                                <span className="ml-1.5" title={`CI: ${ci?.toFixed(2) ?? '\u2014'}x | ${salesAff.revenueShare}% of ${product} revenue`}>
+                                  <span className="font-medium text-emerald-600">{fmtRev(salesAff.revenue)}</span>
+                                  <span className="text-slate-400 font-normal"> · {salesAff.revenueShare}%</span>
+                                </span>
+                              ) : ci != null ? (
+                                <span className={`ml-1.5 font-medium ${ciLabel(ci).color}`} title="Concentration Index">{ciLabel(ci).text}</span>
+                              ) : null}
+                            </div>
                           </div>
                         </div>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${frequencyColor(p.percentage)}`}>
+                          {p.percentage}% · {frequencyLabel(p.percentage)}
+                        </span>
                       </div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${frequencyColor(p.percentage)}`}>
-                        {p.percentage}% · {frequencyLabel(p.percentage)}
-                      </span>
+                      {sales && (
+                        <div className="flex items-center gap-2 mt-2 ml-8 flex-wrap">
+                          <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded" title="Total revenue from linked reviewer-customers">
+                            ${sales.totalRevenue >= 1000000 ? `${(sales.totalRevenue / 1000000).toFixed(1)}M` : `${(sales.totalRevenue / 1000).toFixed(0)}K`}
+                          </span>
+                          <span className="text-[10px] font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded" title="Average lifetime value per customer">
+                            ${sales.avgLifetimeValue} LTV
+                          </span>
+                          <span className="text-[10px] font-medium text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded" title="Percentage of customers who ordered more than once">
+                            {sales.repeatPurchaseRate}% repeat
+                          </span>
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -423,17 +563,35 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
             </div>
           )}
 
-          {/* Concentration Index Legend */}
+          {/* Affinity Legend */}
           {allPersonas.length > 0 && (
             <div className="mt-4 pt-3 border-t border-slate-100">
               <p className="text-[10px] text-slate-400 leading-relaxed">
-                <span className="font-semibold text-emerald-600">{'\u2191'} Over-indexed</span> = this segment is more concentrated in {product} than across all products.{' '}
-                <span className="font-semibold text-amber-500">{'\u2193'} Under-indexed</span> = less concentrated.{' '}
-                <span className="font-semibold">1.0x</span> = balanced.
+                {hasSalesEnrichment() ? (
+                  <>
+                    <span className="font-semibold text-emerald-600">$Revenue</span> = total revenue from linked reviewer-customers in this segment for {product}.{' '}
+                    <span className="font-semibold text-slate-500">%</span> = share of {product} revenue this segment represents.{' '}
+                    Hover for concentration index.
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold text-emerald-600">{'\u2191'} Over-indexed</span> = this segment is more concentrated in {product} than across all products.{' '}
+                    <span className="font-semibold text-amber-500">{'\u2193'} Under-indexed</span> = less concentrated.{' '}
+                    <span className="font-semibold">1.0x</span> = balanced.
+                  </>
+                )}
               </p>
             </div>
           )}
         </div>
+
+        {/* ── Cross-Purchase Breakdown ── */}
+        {hasSalesEnrichment() && selectedPersonas.size > 0 && (
+          <CrossPurchasePanel
+            selectedSegments={[...selectedPersonas]}
+            product={product}
+          />
+        )}
 
         {/* ── Segment Cross-Over Insights ── */}
         {topOverlaps.length > 0 && (
@@ -449,24 +607,52 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
                 const identityDisplay = DISPLAY_NAME_MAP.get(ov.identity.toLowerCase()) ?? ov.identity;
                 const motivationDisplay = DISPLAY_NAME_MAP.get(ov.motivation.toLowerCase()) ?? ov.motivation;
                 const productCount = ov.byProduct[product]?.count ?? 0;
+                // Look up enriched overlap sales data
+                const enrichedOv = hasSalesEnrichment()
+                  ? salesEnrichment.crossSegmentOverlaps.find(
+                      e => e.identity === ov.identity && e.motivation === ov.motivation
+                    )
+                  : undefined;
                 return (
-                  <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full shrink-0">{identityDisplay}</span>
-                      <span className="text-slate-300 text-xs">{'\u00D7'}</span>
-                      <span className="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full shrink-0">{motivationDisplay}</span>
+                  <div key={i} className="py-2 px-3 rounded-lg bg-slate-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full shrink-0">{identityDisplay}</span>
+                        <span className="text-slate-300 text-xs">{'\u00D7'}</span>
+                        <span className="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full shrink-0">{motivationDisplay}</span>
+                      </div>
+                      <div className="text-right shrink-0 ml-3">
+                        <span className="text-xs font-semibold text-slate-700">{productCount.toLocaleString()}</span>
+                        <span className="text-[10px] text-slate-400 ml-1">reviews</span>
+                        <span className="text-[10px] text-slate-400 ml-2">{ov.percentOfIdentity}% of {identityDisplay}</span>
+                        <span className="text-[10px] text-slate-400 ml-2">{ov.avgRating}/5 {'\u2605'}</span>
+                      </div>
                     </div>
-                    <div className="text-right shrink-0 ml-3">
-                      <span className="text-xs font-semibold text-slate-700">{productCount.toLocaleString()}</span>
-                      <span className="text-[10px] text-slate-400 ml-1">reviews</span>
-                      <span className="text-[10px] text-slate-400 ml-2">{ov.avgRating}/5 {'\u2605'}</span>
-                    </div>
+                    {enrichedOv?.sales && enrichedOv.sales.totalRevenue > 0 && (
+                      <div className="flex items-center gap-3 mt-1.5 ml-0">
+                        <span className="text-[10px] font-medium text-emerald-600">
+                          ${enrichedOv.sales.totalRevenue >= 1000000 ? `${(enrichedOv.sales.totalRevenue / 1000000).toFixed(1)}M` : `${(enrichedOv.sales.totalRevenue / 1000).toFixed(0)}K`} revenue
+                        </span>
+                        <span className="text-[10px] text-slate-400">|</span>
+                        <span className="text-[10px] font-medium text-blue-600">
+                          ${enrichedOv.sales.avgLifetimeValue} LTV
+                        </span>
+                        <span className="text-[10px] text-slate-400">|</span>
+                        <span className="text-[10px] font-medium text-violet-600">
+                          {enrichedOv.sales.repeatPurchaseRate}% repeat
+                        </span>
+                        <span className="text-[10px] text-slate-400">|</span>
+                        <span className="text-[10px] font-medium text-amber-600">
+                          {enrichedOv.sales.crossPurchaseRate}% cross-purchase
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
             <p className="text-[10px] text-slate-400 mt-3">
-              These overlaps show cross-purchase behavior and are fed into persona generation for richer targeting.
+              Review counts, percentages, and sales data (revenue, LTV, repeat & cross-purchase rates) are fed into persona generation.
             </p>
           </div>
         )}

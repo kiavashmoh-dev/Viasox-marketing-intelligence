@@ -7,6 +7,7 @@
  */
 
 import type { CrossSegmentOverlap, ProductCategory } from '../../engine/types';
+import { hasSalesEnrichment, salesEnrichment } from '../../data/salesEnrichmentLoader';
 
 interface VennPair {
   identity: string;
@@ -15,6 +16,9 @@ interface VennPair {
   identityTotal: number;
   motivationTotal: number;
   avgRating: number;
+  pctOfIdentity: number;
+  pctOfMotivation: number;
+  revenue?: number;
 }
 
 interface Props {
@@ -61,13 +65,40 @@ export default function VennDiagram({ overlaps, selectedPersonas, product, segme
     .map(ov => {
       const idDisplay = resolveDisplayName(ov.identity, displayNameMap);
       const motDisplay = resolveDisplayName(ov.motivation, displayNameMap);
+      const overlapCount = ov.byProduct[product]?.count ?? ov.reviewCount;
+      const identityTotal = segmentTotals.get(idDisplay.toLowerCase()) ?? segmentTotals.get(ov.identity.toLowerCase()) ?? 0;
+      const motivationTotal = segmentTotals.get(motDisplay.toLowerCase()) ?? segmentTotals.get(ov.motivation.toLowerCase()) ?? 0;
+
+      // Use engine-level percentages, or compute from totals
+      const pctOfIdentity = ov.percentOfIdentity > 0
+        ? ov.percentOfIdentity
+        : identityTotal > 0 ? Math.round((overlapCount / identityTotal) * 1000) / 10 : 0;
+      const pctOfMotivation = ov.percentOfMotivation > 0
+        ? ov.percentOfMotivation
+        : motivationTotal > 0 ? Math.round((overlapCount / motivationTotal) * 1000) / 10 : 0;
+
+      // Pull revenue from sales enrichment if available
+      let revenue: number | undefined;
+      if (hasSalesEnrichment()) {
+        const enrichedOverlap = salesEnrichment.crossSegmentOverlaps.find(
+          eo => eo.identity.toLowerCase() === ov.identity.toLowerCase()
+            && eo.motivation.toLowerCase() === ov.motivation.toLowerCase()
+        );
+        if (enrichedOverlap?.sales?.totalRevenue) {
+          revenue = enrichedOverlap.sales.totalRevenue;
+        }
+      }
+
       return {
         identity: idDisplay,
         motivation: motDisplay,
-        overlapCount: ov.byProduct[product]?.count ?? ov.reviewCount,
-        identityTotal: segmentTotals.get(idDisplay.toLowerCase()) ?? segmentTotals.get(ov.identity.toLowerCase()) ?? 0,
-        motivationTotal: segmentTotals.get(motDisplay.toLowerCase()) ?? segmentTotals.get(ov.motivation.toLowerCase()) ?? 0,
+        overlapCount,
+        identityTotal,
+        motivationTotal,
         avgRating: ov.avgRating,
+        pctOfIdentity,
+        pctOfMotivation,
+        revenue,
       };
     });
 
@@ -95,42 +126,64 @@ function SingleVenn({ pair }: { pair: VennPair }) {
   const idName = pair.identity.length > 18 ? pair.identity.slice(0, 16) + '...' : pair.identity;
   const motName = pair.motivation.length > 18 ? pair.motivation.slice(0, 16) + '...' : pair.motivation;
 
+  const fmtRevenue = (v: number) =>
+    v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${(v / 1_000).toFixed(0)}K`;
+
   return (
     <div className="text-center">
-      <svg viewBox="0 0 360 200" className="w-full max-w-xs mx-auto" aria-label={`Venn diagram: ${pair.identity} overlaps with ${pair.motivation}`}>
+      <svg viewBox="0 0 360 220" className="w-full max-w-xs mx-auto" aria-label={`Venn diagram: ${pair.identity} overlaps with ${pair.motivation}`}>
         {/* Left circle — Identity (violet) */}
         <circle cx="135" cy="100" r="80" fill="rgba(139, 92, 246, 0.12)" stroke="#8b5cf6" strokeWidth="2" />
         {/* Right circle — Motivation (blue) */}
         <circle cx="225" cy="100" r="80" fill="rgba(59, 130, 246, 0.12)" stroke="#3b82f6" strokeWidth="2" />
 
         {/* Overlap count in center */}
-        <text x="180" y="92" textAnchor="middle" dominantBaseline="central" fontSize="22" fontWeight="bold" fill="#1e293b">
+        <text x="180" y="85" textAnchor="middle" dominantBaseline="central" fontSize="22" fontWeight="bold" fill="#1e293b">
           {pair.overlapCount.toLocaleString()}
         </text>
-        <text x="180" y="112" textAnchor="middle" fontSize="9" fill="#64748b">
+        <text x="180" y="103" textAnchor="middle" fontSize="9" fill="#64748b">
           overlap
         </text>
 
+        {/* Percentage annotations in overlap zone */}
+        {pair.pctOfIdentity > 0 && (
+          <text x="160" y="120" textAnchor="middle" fontSize="8" fill="#7c3aed">
+            {pair.pctOfIdentity.toFixed(1)}% of {idName.length > 12 ? idName.slice(0, 10) + '..' : idName}
+          </text>
+        )}
+        {pair.pctOfMotivation > 0 && (
+          <text x="200" y="133" textAnchor="middle" fontSize="8" fill="#2563eb">
+            {pair.pctOfMotivation.toFixed(1)}% of {motName.length > 12 ? motName.slice(0, 10) + '..' : motName}
+          </text>
+        )}
+
         {/* Left label */}
-        <text x="90" y="90" textAnchor="middle" fontSize="10" fontWeight="600" fill="#7c3aed">
+        <text x="90" y="85" textAnchor="middle" fontSize="10" fontWeight="600" fill="#7c3aed">
           {idName}
         </text>
-        <text x="90" y="105" textAnchor="middle" fontSize="9" fill="#94a3b8">
+        <text x="90" y="100" textAnchor="middle" fontSize="9" fill="#94a3b8">
           {pair.identityTotal.toLocaleString()} reviews
         </text>
 
         {/* Right label */}
-        <text x="270" y="90" textAnchor="middle" fontSize="10" fontWeight="600" fill="#2563eb">
+        <text x="270" y="85" textAnchor="middle" fontSize="10" fontWeight="600" fill="#2563eb">
           {motName}
         </text>
-        <text x="270" y="105" textAnchor="middle" fontSize="9" fill="#94a3b8">
+        <text x="270" y="100" textAnchor="middle" fontSize="9" fill="#94a3b8">
           {pair.motivationTotal.toLocaleString()} reviews
         </text>
 
         {/* Rating in overlap region */}
-        <text x="180" y="130" textAnchor="middle" fontSize="9" fill="#64748b">
+        <text x="180" y="148" textAnchor="middle" fontSize="9" fill="#64748b">
           {pair.avgRating > 0 ? `${pair.avgRating}/5 \u2605` : ''}
         </text>
+
+        {/* Revenue below if available */}
+        {pair.revenue != null && pair.revenue > 0 && (
+          <text x="180" y="163" textAnchor="middle" fontSize="9" fontWeight="600" fill="#059669">
+            {fmtRevenue(pair.revenue)} revenue
+          </text>
+        )}
       </svg>
       {/* Legend below */}
       <div className="flex items-center justify-center gap-4 mt-1">
