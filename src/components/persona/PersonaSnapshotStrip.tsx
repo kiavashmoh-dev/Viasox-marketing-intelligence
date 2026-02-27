@@ -70,6 +70,19 @@ export default function PersonaSnapshotStrip({ personas, selectedPersonas, produ
         </div>
       </div>
 
+      {/* Selected Segments */}
+      <div className="mb-5 flex items-start gap-2 flex-wrap">
+        <span className="text-xs text-slate-500 font-medium pt-0.5 shrink-0">Selected segments:</span>
+        {selectedPersonas.map(name => (
+          <span
+            key={name}
+            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${colors.badge}`}
+          >
+            {name}
+          </span>
+        ))}
+      </div>
+
       {/* Persona Cards Grid */}
       <div className={`grid gap-3 ${
         personas.length <= 2 ? 'grid-cols-1 sm:grid-cols-2'
