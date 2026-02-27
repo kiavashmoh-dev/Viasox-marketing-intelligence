@@ -54,7 +54,7 @@ export default function PersonaAccordion({ personas, channel, product, analysis,
       {/* Expand/Collapse All */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-700">
-          {personas.length} Persona{personas.length !== 1 ? 's' : ''}
+          {personas.length} Analysis Section{personas.length !== 1 ? 's' : ''}
         </h3>
         <button
           onClick={allExpanded ? collapseAll : expandAll}

@@ -59,9 +59,9 @@ export default function PersonaSnapshotStrip({ personas, selectedPersonas, produ
           {'\uD83C\uDFAD'}
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">Customer Personas</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">Persona Analysis</h1>
           <p className="text-slate-500 text-sm mt-1">
-            {personas.length} persona{personas.length !== 1 ? 's' : ''} generated for{' '}
+            {personas.length} analysis section{personas.length !== 1 ? 's' : ''} generated for{' '}
             <span className="font-medium text-slate-700">{product}</span>
             {' via '}
             <span className={`font-medium ${colors.text}`}>{channel}</span>
