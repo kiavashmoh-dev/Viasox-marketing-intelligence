@@ -44,6 +44,12 @@ const modules: { id: ModuleId; title: string; description: string; icon: string 
     description: 'See what the data reveals about your customers',
     icon: '\uD83D\uDCCA',
   },
+  {
+    id: 'comments',
+    title: 'Ad Comment Intelligence',
+    description: 'Analyze ad comments \u2014 categorize, extract insights, find angles',
+    icon: '\uD83D\uDCAC',
+  },
 ];
 
 export default function OutputSelector({ analysis, onSelect, onReset }: Props) {

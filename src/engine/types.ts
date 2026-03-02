@@ -133,7 +133,8 @@ export type ModuleId =
   | 'angles'
   | 'hooks'
   | 'script'
-  | 'report';
+  | 'report'
+  | 'comments';
 
 export interface AppState {
   view: AppView;

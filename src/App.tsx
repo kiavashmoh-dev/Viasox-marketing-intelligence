@@ -11,6 +11,7 @@ import AnglesGenerator from './components/modules/AnglesGenerator';
 import HookGenerator from './components/modules/HookGenerator';
 import ScriptWriter from './components/modules/ScriptWriter';
 import IntelligenceReport from './components/modules/IntelligenceReport';
+import CommentIntelligence from './components/modules/CommentIntelligence';
 import { useAnalysis } from './hooks/useAnalysis';
 
 export default function App() {
@@ -120,6 +121,8 @@ export default function App() {
           );
         case 'report':
           return <IntelligenceReport {...moduleProps} />;
+        case 'comments':
+          return <CommentIntelligence {...moduleProps} />;
         default:
           return null;
       }
