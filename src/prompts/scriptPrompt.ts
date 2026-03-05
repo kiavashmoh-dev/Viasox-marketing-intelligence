@@ -2,6 +2,12 @@ import type { ScriptParams, FullAnalysis, FunnelStage, MarketingBookReference, P
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideCompact } from './adTypeGuides';
 import { getAwarenessScriptGuide } from './awarenessGuide';
+import {
+  buildBuildingBlocksReference,
+  buildShotTypesReference,
+  buildHookFormulaReference,
+  buildAgcRules,
+} from './agcReference';
 
 function buildFunnelGuide(stage: FunnelStage): string {
   const guides: Record<FunnelStage, string> = {
@@ -347,7 +353,82 @@ If any element of the framework, funnel guide, or awareness rules contradicts th
 ${params.conceptAngleContext}
 </concept_strategy>` : ''}
 
-## SCRIPT OUTPUT FORMAT
+${params.adType === 'AGC (Actor Generated Content)' ? `
+## AGC REFERENCE MATERIAL
+
+${buildBuildingBlocksReference()}
+
+${buildShotTypesReference()}
+
+${buildHookFormulaReference()}
+
+${buildAgcRules()}
+` : ''}
+
+${params.adType === 'AGC (Actor Generated Content)' ? `## AGC PRODUCTION BRIEF OUTPUT FORMAT
+
+This is an AGC (Actor-Generated Content) production brief. The output format is COMPLETELY DIFFERENT from other ad types. Follow this structure exactly:
+
+### 1. STRATEGY SECTION
+Start with a complete strategy block:
+- **Concept:** [The creative concept — what is this ad about, what story does it tell?]
+- **Angle:** [The strategic angle — the emotional/logical frame]
+- **Avatar:** [Who is the person on screen — age range, look, energy, wardrobe, personality]
+- **Location:** [Where the shoot takes place — be specific about the environment]
+- **Product:** [Product line being featured]
+- **Collection:** [Specific collection/patterns if relevant, or "Various"]
+- **Promotion:** [Promo period if any, or "Evergreen"]
+- **Offer:** [B1G1, B2G3, or None]
+- **Pacing:** [${params.agcPacing === 'fast' ? 'Fast (15-30s) — punchy cuts, high energy' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s) — documentary rhythm, let moments breathe' : 'Standard (30-45s) — balanced pacing'}]
+- **Music:** [Music direction — mood, genre, instruments, energy level]
+- **Assets:** [Specific props, products, materials needed for the shoot]
+- **Additional Notes:** [Production notes, special requirements, creative direction]
+
+### 2. HOOKS — 9-Hook Matrix (3 Visuals × 3 Verbals)
+Create EXACTLY 9 hooks by combining 3 Visual approaches with 3 Verbal hooks.
+
+First, describe each Visual and Verbal approach:
+**Visual A:** [Description of first camera setup/location/opening visual]
+**Visual B:** [Description of second — must be genuinely DIFFERENT from A]
+**Visual C:** [Description of third — must be genuinely DIFFERENT from A and B]
+**Verbal 1:** [First hook line strategy]
+**Verbal 2:** [Second hook line strategy — different emotional trigger]
+**Verbal 3:** [Third hook line strategy — different emotional trigger]
+
+Then output all 9 hooks as a markdown table:
+| Hook | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
+|------|----------------|-----------|------------|--------------|------------|-------------|-------|---------------|---------|
+| A1 | [label] | [type] | [angle] | [direction] | [technical] | [what viewer sees] | [spoken words] | [post notes] | [on-screen text] |
+| A2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| A3 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| B1 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| B2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| B3 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| C1 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| C2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| C3 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+
+### 3. BODY SECTION
+The main script body. Each row = ONE thought, ONE breath. 20-40 rows depending on pacing.
+
+| # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
+|---|----------------|-----------|------------|--------------|------------|-------------|-------|---------------|---------|
+| 1 | [label] | [type] | [angle] | [direction] | [technical] | [what viewer sees] | [spoken words] | [post notes] | [on-screen text] |
+| 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+
+${params.agcBodyFormat === 'face-to-camera' ? 'Body Format: **Face-to-Camera.** ALL speaking rows use Shot Type = ON CAMERA. Talent speaks directly to camera, face visible.' : "Body Format: **POV (Voiceover Narration).** ALL speaking rows use Shot Type = SCRIPT. Talent's voice is heard as VO but they are NOT on camera speaking. Camera shows hands, product, environment."}
+BROLL rows (visual-only cutaways) may appear in either format as brief interruptions between speaking rows.
+
+### 4. EXTRA B-ROLL LIST
+8-12 additional shots for editing flexibility (NOT in the main body):
+
+| # | Shot Type | Shot Angle | Shot Notes | Shot Visual | Editing Notes |
+|---|-----------|------------|------------|-------------|---------------|
+| 1 | BROLL | [angle] | [technical] | [what viewer sees] | [how editors might use this] |
+
+### 5. FRAMEWORK BREAKDOWN
+## How ${params.framework} Was Applied
+Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.` : `## SCRIPT OUTPUT FORMAT
 
 ### 1. STRATEGY SUMMARY (at the top, before the script)
 Start with a clear summary block:
@@ -392,7 +473,7 @@ With rows for: Headline, Subhead, Body Copy, CTA Button, Visual Description.
 ### 3. FRAMEWORK BREAKDOWN (below the table)
 After the script table, include a section:
 ## How ${params.framework} Was Applied
-Explain specifically how the selected framework was translated into this script. Walk through each phase of the framework (e.g., for PAS: "The PROBLEM phase appears in rows 0:03–0:08 where we..."). Reference the specific rows/timestamps. This helps the creative team understand the strategic reasoning behind each section of the script.
+Explain specifically how the selected framework was translated into this script. Walk through each phase of the framework (e.g., for PAS: "The PROBLEM phase appears in rows 0:03–0:08 where we..."). Reference the specific rows/timestamps. This helps the creative team understand the strategic reasoning behind each section of the script.`}
 
 ## ADVERTISING MASTERY PRINCIPLES
 Apply these principles from the four foundational marketing texts throughout every script:
@@ -582,7 +663,13 @@ ${params.awarenessLevel === 'Unaware' ? `Follow the Unaware script architecture 
 
 **CRITICAL — AD TYPE IS ${params.adType.toUpperCase()}:**
 The ad type dictates the ENTIRE production style of this script. ${params.adType === 'Static' ? 'This is a STATIC ad — write for a single image with headline, subhead, body copy, and CTA. There is no dialogue, no video, no scenes.' : `This is a VIDEO ad. The script must describe scenes, talent, dialogue/voiceover, camera work, and pacing specific to ${params.adType}.`}
-${params.adType.includes('AGC') ? 'AGC (Actor-Generated Content): Polished, cinematic production. Professional talent, multiple angles, produced lighting. The script should read like a production brief — specify camera angles, talent direction, set design, and post-production elements. Every frame is intentional.' : ''}${params.adType.includes('UGC') ? 'UGC (User-Generated Content): Raw, authentic, phone-shot. A real person speaking to camera from their home, car, or break room. The script must sound SPOKEN, not written — natural pauses, conversational language, imperfect delivery. Visuals are handheld, natural light. If it reads like a polished ad script, rewrite it to sound like a real person talking.' : ''}${params.adType === 'Ecom Style' ? 'Ecom Style: Product-hero visual storytelling. Close-ups of fabric, unboxing sequences, product-in-use beauty shots with fast cuts and text overlays. The script is primarily VISUAL with supporting text/VO — not dialogue-driven.' : ''}${params.adType === 'Founder Style' ? 'Founder Style: The founder speaks directly to camera with passion and authority. Personal story, behind-the-brand narrative. The script is a MONOLOGUE — one person, authentic setting, personal conviction. "Let me tell you why I created this..."' : ''}${params.adType === 'Fake Podcast Ads' ? 'Fake Podcast Ads: Two people in podcast setup having a natural CONVERSATION about the product. Must sound like organic discovery, not scripted. Write it as DIALOGUE with natural interruptions, reactions, and genuine surprise.' : ''}${params.adType === 'Street Interview Style' ? 'Street Interview Style: Interviewer approaches people with questions or product challenges. Real reactions, surprise, real-world setting. The script defines the SETUP QUESTION and expected interaction flow — the reactions should feel genuine and unscripted.' : ''}${params.adType === 'Spokesperson' ? 'Spokesperson: Expert or authority figure (doctor, nurse, professional) presenting the product. Credibility-driven. The script should establish AUTHORITY first, then deliver the message with professional gravitas.' : ''}${params.adType === 'Packaging/Employee' ? 'Packaging/Employee: Behind-the-scenes warehouse content. Real team packing orders, showing care and attention. The script describes the SETTING, employee actions, and the "we care about every pair" narrative.' : ''}
+${params.adType.includes('AGC') ? `AGC (Actor-Generated Content): This is a PRODUCTION BRIEF for a professional shoot with hired actors.
+Body Format: ${params.agcBodyFormat === 'face-to-camera' ? 'Face-to-Camera (ON CAMERA — talent speaks directly to camera)' : 'POV / Voiceover Narration (SCRIPT — VO over visuals, talent not on camera speaking)'}
+${params.agcLocation ? `Location: ${params.agcLocation}` : ''}
+${params.agcTalentDescription ? `Talent: ${params.agcTalentDescription}` : ''}
+${params.agcPacing ? `Pacing: ${params.agcPacing === 'fast' ? 'Fast (15-30s, punchy cuts)' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s, documentary rhythm)' : 'Standard (30-45s, balanced)'}` : ''}
+${params.agcMusicDirection ? `Music: ${params.agcMusicDirection}` : ''}
+Follow the AGC Production Brief output format from the system instructions. Use the 9-hook matrix (3 Visuals x 3 Verbals), Building Block labels on every row, and include 8-12 extra B-roll shots.` : ''}${params.adType.includes('UGC') ? 'UGC (User-Generated Content): Raw, authentic, phone-shot. A real person speaking to camera from their home, car, or break room. The script must sound SPOKEN, not written — natural pauses, conversational language, imperfect delivery. Visuals are handheld, natural light. If it reads like a polished ad script, rewrite it to sound like a real person talking.' : ''}${params.adType === 'Ecom Style' ? 'Ecom Style: Product-hero visual storytelling. Close-ups of fabric, unboxing sequences, product-in-use beauty shots with fast cuts and text overlays. The script is primarily VISUAL with supporting text/VO — not dialogue-driven.' : ''}${params.adType === 'Founder Style' ? 'Founder Style: The founder speaks directly to camera with passion and authority. Personal story, behind-the-brand narrative. The script is a MONOLOGUE — one person, authentic setting, personal conviction. "Let me tell you why I created this..."' : ''}${params.adType === 'Fake Podcast Ads' ? 'Fake Podcast Ads: Two people in podcast setup having a natural CONVERSATION about the product. Must sound like organic discovery, not scripted. Write it as DIALOGUE with natural interruptions, reactions, and genuine surprise.' : ''}${params.adType === 'Street Interview Style' ? 'Street Interview Style: Interviewer approaches people with questions or product challenges. Real reactions, surprise, real-world setting. The script defines the SETUP QUESTION and expected interaction flow — the reactions should feel genuine and unscripted.' : ''}${params.adType === 'Spokesperson' ? 'Spokesperson: Expert or authority figure (doctor, nurse, professional) presenting the product. Credibility-driven. The script should establish AUTHORITY first, then deliver the message with professional gravitas.' : ''}${params.adType === 'Packaging/Employee' ? 'Packaging/Employee: Behind-the-scenes warehouse content. Real team packing orders, showing care and attention. The script describes the SETTING, employee actions, and the "we care about every pair" narrative.' : ''}
 A ${params.adType} script and a different ad type script for the same awareness level should be completely different productions — different talent, different visuals, different delivery style.
 
 **CRITICAL — PRODUCT LINE IS ${params.product.toUpperCase()}:**
@@ -598,7 +685,36 @@ All selectors (awareness, ad type, product, funnel, framework, duration, book) i
 - Most Aware + AGC + Compression + BOF + 15s = Polished 15-second spot: "Viasox Compression — 20% off this week" with nurse removing shoes after shift, immediate CTA
 These should be COMPLETELY DIFFERENT scripts because every selector changes the output.
 
-OUTPUT STRUCTURE (follow this exact order):
+${params.adType === 'AGC (Actor Generated Content)' ? `OUTPUT STRUCTURE — AGC PRODUCTION BRIEF (follow this exact order):
+
+**1. STRATEGY SECTION** — Complete strategy block with: Concept, Angle, Avatar, Location, Product, Collection, Promotion, Offer, Pacing, Music, Assets, Additional Notes
+
+**2. 9-HOOK MATRIX** — First describe the 3 Visual approaches and 3 Verbal hooks, then output all 9 combinations as a markdown table:
+| Hook | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
+
+**3. BODY SECTION** — 20-40 rows, each row = one thought, one breath. Every row has a Building Block label.
+| # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
+Body format: ${params.agcBodyFormat === 'face-to-camera' ? 'Face-to-Camera (all speaking rows = ON CAMERA)' : 'POV (all speaking rows = SCRIPT/VO)'}
+
+**4. EXTRA B-ROLL LIST** — 8-12 additional shots for editing flexibility:
+| # | Shot Type | Shot Angle | Shot Notes | Shot Visual | Editing Notes |
+
+**5. KEY DATA POINTS** — Every statistic and customer quote referenced, with source frequencies.
+
+**6. HOW ${params.framework.toUpperCase()} WAS APPLIED** — Walk through how the framework maps to the Building Block sequence. Reference row numbers.
+
+The brief should:
+1. Apply the ${params.framework} framework through the Building Block sequence — the framework shapes the persuasion arc
+2. Follow the AGC production brief format with ALL 9 columns on every row
+3. Match the ${params.funnelStage} funnel stage and ${params.awarenessLevel} awareness level
+4. Include a Building Block label on EVERY row (hooks and body)
+5. Follow the Short Lines Rule — one thought, one breath per row
+6. Follow the Format Consistency Rule — ${params.agcBodyFormat === 'face-to-camera' ? 'all speaking rows ON CAMERA' : 'all speaking rows SCRIPT (VO)'}
+7. Use real customer language pulled directly from the review data
+8. End with 8-12 extra B-roll shots
+9. Heavily apply the principles from ${params.bookReference} throughout
+
+CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : `OUTPUT STRUCTURE (follow this exact order):
 
 **1. STRATEGY SUMMARY** (at the very top)
 - Hypothesis
@@ -628,7 +744,7 @@ The script should:
 6. Be within the word count for ${params.duration}
 7. Heavily apply the principles from ${params.bookReference} throughout
 
-CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.`;
+CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.`}`;
 
   return { system, user };
 }

@@ -255,6 +255,9 @@ export type MarketingBookReference =
 export type OfferType = 'B2G3' | 'B1G1' | 'None';
 export type HookVariationCount = 3 | 5 | 7 | 10;
 
+export type AgcBodyFormat = 'pov' | 'face-to-camera';
+export type AgcPacing = 'fast' | 'standard' | 'deliberate';
+
 export interface ScriptParams {
   product: ProductCategory;
   persona: string;
@@ -268,6 +271,13 @@ export interface ScriptParams {
   hookVariations: HookVariationCount;
   bookReference: MarketingBookReference;
   conceptAngleContext?: string; // Pre-generated concept/angle to script from
+
+  // AGC-specific (only relevant when adType is 'AGC (Actor Generated Content)')
+  agcBodyFormat?: AgcBodyFormat;
+  agcLocation?: string;
+  agcPacing?: AgcPacing;
+  agcMusicDirection?: string;
+  agcTalentDescription?: string;
 }
 
 /** Bundled context passed from Concepts & Angles → Script Writer */

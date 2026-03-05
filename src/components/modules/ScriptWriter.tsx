@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type {
   FullAnalysis, ProductCategory, ScriptFramework, FunnelStage,
   AwarenessLevel, AdType, OfferType, HookVariationCount, MarketingBookReference,
-  ConceptContext,
+  ConceptContext, AgcBodyFormat, AgcPacing,
 } from '../../engine/types';
 import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildScriptPrompt } from '../../prompts/scriptPrompt';
@@ -78,6 +78,15 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
   const [offer, setOffer] = useState<OfferType>('None');
   const [hookVariations, setHookVariations] = useState<HookVariationCount>(3);
   const [bookReference, setBookReference] = useState<MarketingBookReference>('All Four Books');
+
+  // AGC-specific state
+  const [agcBodyFormat, setAgcBodyFormat] = useState<AgcBodyFormat>('pov');
+  const [agcLocation, setAgcLocation] = useState('');
+  const [agcPacing, setAgcPacing] = useState<AgcPacing>('standard');
+  const [agcMusicDirection, setAgcMusicDirection] = useState('');
+  const [agcTalentDescription, setAgcTalentDescription] = useState('');
+
+  const isAgc = adType === 'AGC (Actor Generated Content)';
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
   const handleGenerate = (feedback?: string) => {
@@ -92,18 +101,32 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         adType,
         promoPeriod: promoPeriod || 'None',
         offer,
-        hookVariations,
+        hookVariations: isAgc ? 3 : hookVariations, // AGC always uses 3 (3×3 matrix = 9 hooks)
         bookReference,
         conceptAngleContext: conceptAngleContext?.content ?? undefined,
+        // AGC-specific params
+        ...(isAgc && {
+          agcBodyFormat,
+          agcLocation: agcLocation || undefined,
+          agcPacing,
+          agcMusicDirection: agcMusicDirection || undefined,
+          agcTalentDescription: agcTalentDescription || undefined,
+        }),
       },
       analysis,
     );
-    // Scale tokens: base script (~4K for 60s, ~2.5K for 30s, ~1.5K for 15s) + hook variations (~300 each) + concept context
-    const durationTokens = duration === '60s' ? 4000 : duration === '30s' ? 2500 : 1500;
-    const hookTokens = hookVariations * 300;
+    // AGC briefs are much larger (9 hooks × 10 cols + 20-40 body rows + b-roll list)
+    // Standard scripts scale with duration + hook count
     const contextBonus = conceptAngleContext ? 1500 : 0;
     const feedbackBonus = feedback ? 1000 : 0;
-    const maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 6000), 16000);
+    let maxTokens: number;
+    if (isAgc) {
+      maxTokens = Math.min(10000 + contextBonus + feedbackBonus, 16000);
+    } else {
+      const durationTokens = duration === '60s' ? 4000 : duration === '30s' ? 2500 : 1500;
+      const hookTokens = hookVariations * 300;
+      maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 6000), 16000);
+    }
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)
       : user;
@@ -233,6 +256,84 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
               </select>
             </div>
 
+            {/* AGC-Specific Fields */}
+            {isAgc && (
+              <div className="border border-amber-200 bg-amber-50/50 rounded-lg p-5 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold text-amber-800 bg-amber-200 px-2 py-0.5 rounded">AGC</span>
+                  <span className="text-sm font-medium text-amber-800">Production Brief Settings</span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Body Format</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {([
+                      { value: 'pov' as const, label: 'POV (VO Narration)', desc: 'Voice heard, not on camera' },
+                      { value: 'face-to-camera' as const, label: 'Face-to-Camera', desc: 'Talent speaks directly' },
+                    ]).map((f) => (
+                      <button
+                        key={f.value}
+                        onClick={() => setAgcBodyFormat(f.value)}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          agcBodyFormat === f.value
+                            ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500'
+                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        <div className="font-medium text-sm text-slate-800">{f.label}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">{f.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Location</label>
+                  <input type="text" value={agcLocation} onChange={(e) => setAgcLocation(e.target.value)}
+                    placeholder="e.g., Subject's home, warm natural light"
+                    className={`${selectClass} bg-white`} />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Pacing</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {([
+                      { value: 'fast' as const, label: 'Fast', desc: '15-30s' },
+                      { value: 'standard' as const, label: 'Standard', desc: '30-45s' },
+                      { value: 'deliberate' as const, label: 'Deliberate', desc: '60-90s' },
+                    ]).map((p) => (
+                      <button
+                        key={p.value}
+                        onClick={() => setAgcPacing(p.value)}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          agcPacing === p.value
+                            ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500'
+                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        <div className="font-medium text-sm text-slate-800">{p.label}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">{p.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Music Direction</label>
+                  <input type="text" value={agcMusicDirection} onChange={(e) => setAgcMusicDirection(e.target.value)}
+                    placeholder="e.g., Minimal ambient piano, documentary feel"
+                    className={`${selectClass} bg-white`} />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Talent Description</label>
+                  <input type="text" value={agcTalentDescription} onChange={(e) => setAgcTalentDescription(e.target.value)}
+                    placeholder="e.g., Woman 55-65, warm, articulate, not a model"
+                    className={`${selectClass} bg-white`} />
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Framework</label>
               <select value={framework} onChange={(e) => setFramework(e.target.value as ScriptFramework)} className={selectClass}>
@@ -280,24 +381,37 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Number of Hook Variations</label>
-              <div className="grid grid-cols-4 gap-3">
-                {HOOK_COUNTS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setHookVariations(c)}
-                    className={`p-3 rounded-lg border text-center transition-all ${
-                      hookVariations === c
-                        ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="font-medium text-sm text-slate-800">{c}</div>
-                  </button>
-                ))}
+            {isAgc ? (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Hook Variations</label>
+                <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <span className="text-2xl font-bold text-amber-700">9</span>
+                  <div>
+                    <div className="text-sm font-medium text-amber-800">3 Visuals {'\u00D7'} 3 Verbals</div>
+                    <div className="text-xs text-amber-600">AGC uses a 3{'\u00D7'}3 hook matrix for maximum testing flexibility</div>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Number of Hook Variations</label>
+                <div className="grid grid-cols-4 gap-3">
+                  {HOOK_COUNTS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setHookVariations(c)}
+                      className={`p-3 rounded-lg border text-center transition-all ${
+                        hookVariations === c
+                          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="font-medium text-sm text-slate-800">{c}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Marketing Book Reference</label>
@@ -309,7 +423,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
 
           <button onClick={() => handleGenerate()}
             className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            {conceptAngleContext ? 'Write Script from Concept' : 'Write Script'}
+            {conceptAngleContext ? (isAgc ? 'Generate AGC Brief from Concept' : 'Write Script from Concept') : (isAgc ? 'Generate AGC Production Brief' : 'Write Script')}
           </button>
         </div>
       </div>
