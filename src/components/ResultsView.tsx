@@ -21,6 +21,8 @@ interface Props {
   onBackToBuilder?: () => void;
   /** Module-specific placeholder for the feedback textarea */
   feedbackPlaceholder?: string;
+  /** Wide mode for content with large tables (e.g., AGC production briefs) */
+  wideMode?: boolean;
 }
 
 export default function ResultsView({
@@ -33,6 +35,7 @@ export default function ResultsView({
   extraActions,
   onBackToBuilder,
   feedbackPlaceholder,
+  wideMode,
 }: Props) {
   const [showFeedback, setShowFeedback] = useState(false);
   const handleCopy = () => {
@@ -101,7 +104,7 @@ export default function ResultsView({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className={`${wideMode ? 'max-w-[90rem]' : 'max-w-4xl'} mx-auto`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -187,9 +190,24 @@ export default function ResultsView({
         )}
 
         {/* Content */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mt-4">
-          <div className="prose prose-slate max-w-none">
-            <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+        <div className={`bg-white rounded-xl shadow-sm border border-slate-200 ${wideMode ? 'p-6' : 'p-8'} mt-4`}>
+          <div className={`prose prose-slate max-w-none ${wideMode ? 'prose-table:overflow-x-auto' : ''}`}>
+            <Markdown
+              remarkPlugins={[remarkGfm]}
+              components={wideMode ? {
+                table: ({ children, ...props }) => (
+                  <div className="overflow-x-auto -mx-2 px-2">
+                    <table {...props} className="min-w-[1200px] text-sm">{children}</table>
+                  </div>
+                ),
+                th: ({ children, ...props }) => (
+                  <th {...props} className="!px-3 !py-2 !text-xs font-semibold whitespace-nowrap bg-slate-50">{children}</th>
+                ),
+                td: ({ children, ...props }) => (
+                  <td {...props} className="!px-3 !py-2 !text-sm">{children}</td>
+                ),
+              } : undefined}
+            >{content}</Markdown>
           </div>
         </div>
       </div>

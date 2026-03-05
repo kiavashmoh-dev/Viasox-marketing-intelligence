@@ -8,6 +8,7 @@ import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildScriptPrompt } from '../../prompts/scriptPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
+import { downloadAgcCsv } from '../../utils/downloadUtils';
 import ResultsView from '../ResultsView';
 
 interface Props {
@@ -81,9 +82,11 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
 
   // AGC-specific state
   const [agcBodyFormat, setAgcBodyFormat] = useState<AgcBodyFormat>('pov');
+  const [agcLocationAuto, setAgcLocationAuto] = useState(true);
   const [agcLocation, setAgcLocation] = useState('');
   const [agcPacing, setAgcPacing] = useState<AgcPacing>('standard');
   const [agcMusicDirection, setAgcMusicDirection] = useState('');
+  const [agcTalentAuto, setAgcTalentAuto] = useState(true);
   const [agcTalentDescription, setAgcTalentDescription] = useState('');
 
   const isAgc = adType === 'AGC (Actor Generated Content)';
@@ -107,10 +110,10 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         // AGC-specific params
         ...(isAgc && {
           agcBodyFormat,
-          agcLocation: agcLocation || undefined,
+          agcLocation: agcLocationAuto ? 'Auto — decide the best location based on the pre-loaded concept, target persona, and DTC marketing best practices' : (agcLocation || undefined),
           agcPacing,
           agcMusicDirection: agcMusicDirection || undefined,
-          agcTalentDescription: agcTalentDescription || undefined,
+          agcTalentDescription: agcTalentAuto ? 'Auto — decide the best talent profile based on the pre-loaded concept, target persona, and DTC marketing best practices' : (agcTalentDescription || undefined),
         }),
       },
       analysis,
@@ -137,13 +140,18 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
     return (
       <ResultsView
         content={result ?? ''}
-        title="Ad Script"
+        title={isAgc ? 'AGC Production Brief' : 'Ad Script'}
         onBack={() => { reset(); onBack(); }}
         onBackToBuilder={reset}
         onRegenerate={handleGenerate}
         loading={loading}
         error={error}
         feedbackPlaceholder="e.g., Make the hook more attention-grabbing, shorten the middle section, add more urgency to the CTA, change the tone to conversational..."
+        wideMode={isAgc}
+        extraActions={isAgc && result ? [{
+          label: 'Export CSV',
+          onClick: () => downloadAgcCsv(result, product),
+        }] : undefined}
       />
     );
   }
@@ -288,10 +296,28 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Location</label>
-                  <input type="text" value={agcLocation} onChange={(e) => setAgcLocation(e.target.value)}
-                    placeholder="e.g., Subject's home, warm natural light"
-                    className={`${selectClass} bg-white`} />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-slate-700">Location</label>
+                    <button
+                      onClick={() => setAgcLocationAuto(!agcLocationAuto)}
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                        agcLocationAuto
+                          ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                          : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
+                      }`}
+                    >
+                      {agcLocationAuto ? '\u2728 Auto (from concept)' : 'Manual'}
+                    </button>
+                  </div>
+                  {agcLocationAuto ? (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700">
+                      The tool will decide the best location based on the pre-loaded concept and DTC marketing knowledge.
+                    </div>
+                  ) : (
+                    <input type="text" value={agcLocation} onChange={(e) => setAgcLocation(e.target.value)}
+                      placeholder="e.g., Subject's home, warm natural light"
+                      className={`${selectClass} bg-white`} />
+                  )}
                 </div>
 
                 <div>
@@ -326,10 +352,28 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Talent Description</label>
-                  <input type="text" value={agcTalentDescription} onChange={(e) => setAgcTalentDescription(e.target.value)}
-                    placeholder="e.g., Woman 55-65, warm, articulate, not a model"
-                    className={`${selectClass} bg-white`} />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-slate-700">Talent Description</label>
+                    <button
+                      onClick={() => setAgcTalentAuto(!agcTalentAuto)}
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                        agcTalentAuto
+                          ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                          : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
+                      }`}
+                    >
+                      {agcTalentAuto ? '\u2728 Auto (from concept)' : 'Manual'}
+                    </button>
+                  </div>
+                  {agcTalentAuto ? (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700">
+                      The tool will decide the best talent profile based on the pre-loaded concept and DTC marketing knowledge.
+                    </div>
+                  ) : (
+                    <input type="text" value={agcTalentDescription} onChange={(e) => setAgcTalentDescription(e.target.value)}
+                      placeholder="e.g., Woman 55-65, warm, articulate, not a model"
+                      className={`${selectClass} bg-white`} />
+                  )}
                 </div>
               </div>
             )}

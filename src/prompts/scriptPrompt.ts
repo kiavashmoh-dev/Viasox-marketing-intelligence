@@ -612,6 +612,7 @@ ${getProductAnalysis(analysis, params.product)}`;
   const promoLine = params.promoPeriod !== 'None'
     ? `\nPromo Period: ${params.promoPeriod}`
     : '';
+  const isAgc = params.adType === 'AGC (Actor Generated Content)';
   const conceptLine = params.conceptAngleContext
     ? `
 
@@ -623,7 +624,15 @@ The user hand-selected this concept from a Concepts & Angles report and clicked 
 - The PERSONA from the concept is your target audience. Cast, set, and write for them.
 - The INSIGHT from the concept is your "big idea." The hook, body, and CTA all orbit it.
 - If any framework rule or awareness guide contradicts the concept, THE CONCEPT WINS.
-Do not dilute, reinterpret, or drift from the concept. Execute it faithfully.`
+Do not dilute, reinterpret, or drift from the concept. Execute it faithfully.
+${isAgc ? `
+**AGC-SPECIFIC CONCEPT EXECUTION:**
+The pre-loaded concept must deeply shape EVERY section of the AGC production brief:
+- **Strategy Section:** The Concept, Angle, and Avatar fields must be derived DIRECTLY from the pre-loaded concept. Do not invent new ones.
+- **9-Hook Matrix:** All 9 hooks must explore different facets of the SAME concept angle. The 3 Verbal hooks should each approach the concept's core insight from a different emotional trigger, but they must all serve the concept's angle — not random angles.
+- **Body Section:** The Building Block sequence must follow the persuasion arc that the concept demands. If the concept is about independence, the body should build toward an independence revelation. If it's about hidden health dangers, the body should build suspense toward that danger. Every Building Block choice must serve the concept's narrative.
+- **Location & Talent:** If location or talent were set to "Auto (decide based on concept)," choose the location and talent that would most authentically bring THIS specific concept to life. A concept about morning routines needs a bedroom/bathroom. A concept about nursing shifts needs a break room or hospital hallway.
+- **Shot Visuals:** The visual descriptions must paint the world of the concept. Every shot should feel like it belongs in the same story the concept is telling.` : ''}`
     : '';
 
   const user = `Write a ${params.duration} ${params.adType} ad script for ${params.product} using the ${params.framework} framework.

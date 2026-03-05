@@ -112,6 +112,179 @@ export function downloadAsDoc(content: string, title: string): void {
 }
 
 /**
+ * Parse an AGC production brief (markdown) and export it as a CSV
+ * matching the AGC template format:
+ * STRATEGY section → HOOKS section → BODY section → EXTRA B-ROLL section
+ */
+export function downloadAgcCsv(markdownContent: string, product: string): void {
+  const lines = markdownContent.split('\n');
+  const csv: string[][] = [];
+
+  // Helper: escape CSV cell
+  const esc = (v: string) => {
+    const s = v.trim();
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+    return s;
+  };
+
+  // Helper: parse markdown table rows (skip header separator row)
+  const parseTable = (startIdx: number): { rows: string[][]; endIdx: number } => {
+    const rows: string[][] = [];
+    let i = startIdx;
+    while (i < lines.length) {
+      const line = lines[i].trim();
+      if (!line.startsWith('|')) break;
+      // Skip separator rows (|---|---|...)
+      if (/^\|[\s\-:|]+\|$/.test(line)) { i++; continue; }
+      const cells = line.split('|').slice(1, -1).map(c => c.replace(/\*\*/g, '').trim());
+      rows.push(cells);
+      i++;
+    }
+    return { rows, endIdx: i };
+  };
+
+  // Extract strategy fields from the text between STRATEGY heading and HOOKS heading
+  const extractField = (label: string): string => {
+    const regex = new RegExp(`\\*\\*${label}:?\\*\\*\\s*(.+?)(?:\\n|$)`, 'i');
+    const match = markdownContent.match(regex);
+    return match ? match[1].replace(/\*\*/g, '').trim() : '';
+  };
+
+  // --- STRATEGY SECTION ---
+  csv.push(['STRATEGY', '', '', '', '', '', '', '', '', '']);
+  csv.push(['CONCEPT', 'ANGLE', 'AVATAR', 'LOCATION', 'PRODUCT', 'COLLECTION', 'PROMOTION', 'OFFER', '', '']);
+  csv.push([
+    extractField('Concept') || extractField('Hypothesis'),
+    extractField('Angle'),
+    extractField('Avatar') || extractField('Talent'),
+    extractField('Location'),
+    product,
+    extractField('Collection') || extractField('Patterns'),
+    extractField('Promotion') || extractField('Promo'),
+    extractField('Offer'),
+    '', ''
+  ]);
+  csv.push(['', '', '', '', '', '', '', '', '', '']);
+  csv.push(['', '', '', '', '', '', '', '', '', '']);
+  csv.push(['', '', '', '', '', '', '', '', '', '']);
+  csv.push(['PACING', 'MUSIC', 'ASSETS', 'ADDITIONAL NOTES', '', '', 'LANDING PAGE', '', '', '']);
+  csv.push([
+    extractField('Pacing'),
+    extractField('Music'),
+    extractField('Assets'),
+    extractField('Notes') || extractField('Additional Notes'),
+    '', '', '', '', '', ''
+  ]);
+  csv.push(['', '', '', '', '', '', '', '', '', '']);
+  csv.push(['', '', '', '', '', '', '', '', '', '']);
+
+  // --- HOOKS SECTION ---
+  csv.push(['HOOKS', '', '', '', '', '', '', '', '', '']);
+  csv.push(['BUILDING BLOCK', 'SHOT TYPE', 'SHOT ANGLE', 'TALENT NOTES', 'SHOT NOTES', 'SHOT VISUAL', 'LINES', 'EDITING NOTES', 'CAPTION', '']);
+
+  // Find the hooks table in the markdown
+  let hooksFound = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim().toLowerCase();
+    if ((line.includes('hook') && line.includes('matrix')) || line === '### 2. 9-hook matrix' || (line.startsWith('#') && line.includes('hook'))) {
+      // Skip to next table
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[j].trim().startsWith('|')) {
+          const { rows, endIdx } = parseTable(j);
+          // Skip header row, add data rows
+          for (let r = 1; r < rows.length; r++) {
+            // Pad to 10 columns
+            while (rows[r].length < 10) rows[r].push('');
+            csv.push(rows[r].slice(0, 10));
+          }
+          hooksFound = true;
+          i = endIdx;
+          break;
+        }
+      }
+      if (hooksFound) break;
+    }
+  }
+  // If no hooks table found, add 9 empty rows
+  if (!hooksFound) {
+    for (let h = 1; h <= 9; h++) {
+      csv.push([`Hook ${h}`, '', '', '', '', '', '', '', '', '']);
+    }
+  }
+
+  csv.push(['', '', '', '', '', '', '', '', '', '']);
+
+  // --- BODY SECTION ---
+  csv.push(['BODY', '', '', '', '', '', '', '', '', '']);
+  csv.push(['BUILDING BLOCK', 'SHOT TYPE', 'SHOT ANGLE', 'TALENT NOTES', 'SHOT NOTES', 'SHOT VISUAL', 'LINES', 'EDITING NOTES', 'CAPTION', '']);
+
+  let bodyFound = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim().toLowerCase();
+    if ((line.startsWith('#') && line.includes('body')) && !line.includes('b-roll') && !line.includes('extra')) {
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[j].trim().startsWith('|')) {
+          const { rows, endIdx } = parseTable(j);
+          for (let r = 1; r < rows.length; r++) {
+            // Body table may have # column first — skip it if first cell is just a number
+            let row = rows[r];
+            if (/^\d+$/.test(row[0].trim())) {
+              row = row.slice(1);
+            }
+            while (row.length < 10) row.push('');
+            csv.push(row.slice(0, 10));
+          }
+          bodyFound = true;
+          i = endIdx;
+          break;
+        }
+      }
+      if (bodyFound) break;
+    }
+  }
+
+  csv.push(['', '', '', '', '', '', '', '', '', '']);
+
+  // --- EXTRA B-ROLL SECTION ---
+  csv.push(['EXTRA / MUST HAVE B-ROLL LIST', '', '', '', '', '', '', '', '', '']);
+  csv.push(['BUILDING BLOCK', 'SHOT TYPE', 'SHOT ANGLE', 'TALENT NOTES', 'SHOT NOTES', 'SHOT VISUAL', 'LINES', 'EDITING NOTES', 'CAPTION', '']);
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim().toLowerCase();
+    if ((line.startsWith('#') && line.includes('b-roll')) || (line.startsWith('#') && line.includes('extra'))) {
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[j].trim().startsWith('|')) {
+          const { rows, endIdx } = parseTable(j);
+          for (let r = 1; r < rows.length; r++) {
+            let row = rows[r];
+            if (/^\d+$/.test(row[0].trim())) {
+              row = row.slice(1);
+            }
+            while (row.length < 10) row.push('');
+            csv.push(row.slice(0, 10));
+          }
+          i = endIdx;
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+  // Build CSV string
+  const csvString = csv.map(row => row.map(esc).join(',')).join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `agc-brief-${product.toLowerCase()}-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
  * Download content as PDF using a print-to-PDF approach
  */
 export function downloadAsPdf(content: string, title: string): void {

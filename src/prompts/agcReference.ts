@@ -129,7 +129,10 @@ Examples of Verbal differentiation:
 export function buildAgcRules(): string {
   return `## AGC STRUCTURAL RULES (Non-Negotiable)
 
-### 1. SHORT LINES RULE
+### 1. EVERY ROW MUST HAVE A LINE (No Silent Rows)
+Every single row in the body section MUST have spoken words in the Lines column. There are NO silent/visual-only rows. Even during product demonstrations, B-roll cutaways, or visual moments — there must ALWAYS be continuous voiceover or on-camera dialogue playing. In a successful DTC ad, every second of screen time has a spoken line driving the sale forward. If you feel tempted to write a row with empty Lines, add narration that describes what the viewer is seeing or advances the argument.
+
+### 2. SHORT LINES RULE
 Each row in the brief = ONE thought, ONE breath. If you would pause mid-sentence when speaking, SPLIT it into two rows.
 
 BAD (too much per row):
@@ -140,7 +143,7 @@ GOOD (one breath per row):
 | "Let me tell you — they changed everything." |
 | "I used to struggle just to get dressed." |
 
-### 2. FORMAT CONSISTENCY RULE
+### 3. FORMAT CONSISTENCY RULE
 Choose ONE body format and NEVER mix within the body section:
 
 **Option A — Full POV (Voiceover Narration):**
@@ -155,9 +158,9 @@ Choose ONE body format and NEVER mix within the body section:
 - Feels like a testimonial or personal recommendation
 - Best for: Testimonial, confession, expert/authority, direct address
 
-**Exception:** BROLL rows (visual-only cutaways) can appear in EITHER format as brief interruptions. But the speaking rows must be consistently SCRIPT or ON CAMERA — never alternating.
+**Exception on shot type:** BROLL rows can appear in EITHER format as brief interruptions for visual variety. But the speaking format must be consistently SCRIPT or ON CAMERA — never alternating. NOTE: Even BROLL rows MUST still have a spoken line (voiceover continues over cutaway visuals). There are NO silent rows in a DTC ad.
 
-### 3. AWARENESS-LEVEL BODY STRUCTURE
+### 4. AWARENESS-LEVEL BODY STRUCTURE
 
 **Unaware (TOF):**
 - Product does NOT appear in the first 50% of the body
@@ -181,7 +184,7 @@ Choose ONE body format and NEVER mix within the body section:
 - Product + offer in first row. Keep it short. Deal IS the script
 - Body arc: Product + offer → Quick proof → Urgency → Details → CTA
 
-### 4. EXTRA B-ROLL REQUIREMENT
+### 5. EXTRA B-ROLL REQUIREMENT
 Every AGC brief must end with 8-12 extra B-roll shots. These are additional visual shots NOT in the main body — they give editors flexibility for cutaways, transitions, and visual variety.
 
 Include a mix of:
@@ -190,7 +193,7 @@ Include a mix of:
 - Talent moments (candid reactions, hands interacting with product, walking away)
 - Detail shots (packaging, labels, size tags, logo)
 
-### 5. MAXIMIZE AGC ADVANTAGES
+### 6. MAXIMIZE AGC ADVANTAGES
 AGC has full creative control. Use it. Include shots that UGC creators CANNOT do:
 - Precise tabletop demonstrations with specific props (measuring tape stretch to 30 inches)
 - Controlled studio lighting for product beauty shots
