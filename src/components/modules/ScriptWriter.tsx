@@ -90,6 +90,8 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
   const [agcTalentDescription, setAgcTalentDescription] = useState('');
 
   const isAgc = adType === 'AGC (Actor Generated Content)';
+  const isVideoProductionBrief = !isAgc && adType !== 'Ecom Style' && adType !== 'Static';
+  const usesWideTables = isAgc || isVideoProductionBrief;
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
   const handleGenerate = (feedback?: string) => {
@@ -125,6 +127,11 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
     let maxTokens: number;
     if (isAgc) {
       maxTokens = Math.min(10000 + contextBonus + feedbackBonus, 16000);
+    } else if (isVideoProductionBrief) {
+      // Video production briefs use 10-column tables — more output than old 5-column format
+      const durationTokens = duration === '60s' ? 6000 : duration === '30s' ? 4500 : 3000;
+      const hookTokens = hookVariations * 400;
+      maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 7000), 16000);
     } else {
       const durationTokens = duration === '60s' ? 4000 : duration === '30s' ? 2500 : 1500;
       const hookTokens = hookVariations * 300;
@@ -140,14 +147,14 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
     return (
       <ResultsView
         content={result ?? ''}
-        title={isAgc ? 'AGC Production Brief' : 'Ad Script'}
+        title={isAgc ? 'AGC Production Brief' : isVideoProductionBrief ? 'Production Brief' : 'Ad Script'}
         onBack={() => { reset(); onBack(); }}
         onBackToBuilder={reset}
         onRegenerate={handleGenerate}
         loading={loading}
         error={error}
         feedbackPlaceholder="e.g., Make the hook more attention-grabbing, shorten the middle section, add more urgency to the CTA, change the tone to conversational..."
-        wideMode={isAgc}
+        wideMode={usesWideTables}
         extraActions={isAgc && result ? [{
           label: 'Export CSV',
           onClick: () => downloadAgcCsv(result, product),

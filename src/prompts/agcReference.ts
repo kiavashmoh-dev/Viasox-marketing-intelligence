@@ -202,3 +202,90 @@ AGC has full creative control. Use it. Include shots that UGC creators CANNOT do
 - Ground-level or overhead perspectives that require a crew
 - Synchronized visual demonstrations matching exact script beats`;
 }
+
+/**
+ * Combined building blocks + shot types + rules reference for non-AGC video production briefs.
+ * Used by: UGC, Founder Style, Fake Podcast, Street Interview, Spokesperson, Packaging/Employee.
+ */
+export function buildVideoProductionBriefReference(): string {
+  return `## PRODUCTION BRIEF BUILDING BLOCKS
+
+Every row in the production brief MUST have a Building Block label. This label explains the STRATEGIC PURPOSE of that row in the persuasion arc. When you read the Building Block column top-to-bottom, it should reveal the full persuasion journey.
+
+### HOOK BUILDING BLOCKS
+- **Benefits** — Lead with a specific benefit or outcome
+- **Problem** — Lead with a relatable pain point or frustration
+- **Solution** — Lead with the promise of a fix or answer
+- **Curiosity** — Create an open loop, tease a reveal
+- **Reactions** — Show genuine surprise, delight, or emotion
+- **Deposition** — Make a bold claim or statement that demands attention
+- **Bizarre** — Pattern-interrupt with something unexpected or strange
+- **Satisfying** — Show something visually or emotionally satisfying
+
+### BODY BUILDING BLOCKS (mix and sequence strategically)
+
+**Product blocks:**
+- **Product intro** — First reveal of the product (name, what it is)
+- **Feature** — Specific product feature (non-binding tops, graduated compression, wide-mouth opening)
+- **Showcase design** — Show patterns, colors, style — the visual appeal
+- **Product demo** — Hands-on demonstration (stretching, putting on, measuring)
+
+**Problem blocks:**
+- **Problem** — Name or show the pain point
+- **Pain showcase** — Visualize the pain vividly (sock marks, swelling, struggle)
+- **Twist the knife** — Intensify the problem — make it feel urgent and unbearable
+- **Bad alternative** — Show what the current/old solution looks like
+
+**Solution blocks:**
+- **Solution** — Position Viasox as the answer to the established problem
+- **Benefit** — Specific benefit statement with proof (comfort, no marks, easy on)
+- **Results** — Show measurable outcomes (clean legs, all-day comfort, survived a 12-hour shift)
+- **Before & after** — Visual or narrative comparison of life before vs. after
+
+**Credibility blocks:**
+- **Testimonial** — Direct quote or paraphrased customer experience
+- **Reviews** — Reference review data, star ratings, customer count
+- **Social proof** — Show popularity signals (107K+ customers, sold-out runs, waitlists)
+- **Authority figure** — Expert or professional endorsement (nurse, doctor, podiatrist)
+
+**Story blocks:**
+- **Story telling** — Narrative moment that builds emotional connection
+- **Relatable** — "I've been there too" moment — shared experience
+- **Gift for loved ones** — Position as a thoughtful gift (for mom, dad, grandparent)
+
+**Commercial blocks:**
+- **Buying experience** — What happens when you order (unboxing, packaging, delivery)
+- **Special details** — Unique differentiators (bamboo blend, seamless toe, extra cushion)
+- **Guarantees** — Risk reversal (free shipping, easy returns, satisfaction guarantee)
+- **CTA** — Call to action with specific next step
+
+## SHOT TYPES (one per row)
+- **BROLL** — Visual-only cutaway footage. Camera shows something while voiceover continues over it. There are NO silent rows — voiceover always plays.
+- **SCRIPT** — Voiceover narration over a visual. Talent's voice is heard but they are NOT on camera speaking. Camera shows hands, product, environment.
+- **ON CAMERA** — Talent speaks directly to camera. Face visible, mouth moving, direct address.
+- **Editing** — Post-production addition. Text overlays, graphics, split screens, before/after composites.
+
+## SHOT ANGLES (one per row)
+- **Static (Selfie)** — Camera fixed, framing talent from the front. Classic selfie-cam or tripod talking-head setup.
+- **Walking** — Camera follows talent walking. Dynamic, movement-based.
+- **Sitting** — Talent is seated. Conversational, relaxed energy.
+- **Standing** — Talent stands in frame. More authoritative than sitting.
+- **Ground-Level** — Camera at floor/ground level shooting upward. Intimate, dramatic.
+- **Dynamic (Third-Person)** — Camera operated by a third person moving around the talent. Documentary-feel.
+
+## PRODUCTION BRIEF RULES (Non-Negotiable)
+
+### 1. EVERY ROW MUST HAVE A LINE (No Silent Rows)
+Every single row in the brief MUST have spoken words in the Lines column. There are NO silent/visual-only rows. Even during product demonstrations, B-roll cutaways, or visual moments — there must ALWAYS be continuous voiceover or on-camera dialogue playing. In a successful DTC ad, every second of screen time has a spoken line driving the sale forward. If you feel tempted to write a row with empty Lines, add narration that describes what the viewer is seeing or advances the argument.
+
+### 2. SHORT LINES RULE
+Each row in the brief = ONE thought, ONE breath. If you would pause mid-sentence when speaking, SPLIT it into two rows.
+
+BAD (too much per row):
+| "I've been wearing these socks for three months and let me tell you, they changed everything about my morning routine because I used to struggle just to get dressed." |
+
+GOOD (one breath per row):
+| "I've been wearing these socks for three months." |
+| "Let me tell you — they changed everything." |
+| "I used to struggle just to get dressed." |`;
+}

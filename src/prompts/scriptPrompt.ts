@@ -7,6 +7,7 @@ import {
   buildShotTypesReference,
   buildHookFormulaReference,
   buildAgcRules,
+  buildVideoProductionBriefReference,
 } from './agcReference';
 
 function buildFunnelGuide(stage: FunnelStage): string {
@@ -294,6 +295,65 @@ Structure:
 Best for: Education, thought leadership, PR content`,
 };
 
+/**
+ * Ad-type-specific production style guidance for non-AGC video production briefs.
+ */
+function getVideoProductionNotes(adType: string): string {
+  switch (adType) {
+    case 'UGC (User Generated Content)':
+      return `**AD TYPE PRODUCTION STYLE — UGC:**
+All footage should look phone-shot, raw, and authentic. No professional lighting or crew feel.
+- Primary Shot Type: **ON CAMERA** (selfie/front-facing camera)
+- BROLL: Quick, handheld product shots — phone-quality, natural light
+- Shot Angles: Primarily **Static (Selfie)**, **Sitting**, or **Standing** — wherever a real person would film themselves
+- The script must sound SPOKEN, not written — natural pauses, conversational language, imperfect delivery
+- If it reads like a polished production, rewrite it to sound like a real person talking to their phone`;
+    case 'Founder Style':
+      return `**AD TYPE PRODUCTION STYLE — FOUNDER:**
+The founder speaks directly to camera with passion and personal conviction.
+- Primary Shot Type: **ON CAMERA** — direct address, face visible
+- BROLL: Behind-the-brand footage (warehouse, product design, team), intercut with talking head
+- Shot Angles: **Static (Selfie)** or **Sitting** for personal feel, **Standing** for authority
+- This is a MONOLOGUE — one person, authentic setting, personal story
+- Tone: passionate, knowledgeable, genuine — "Let me tell you why I created this..."`;
+    case 'Fake Podcast Ads':
+      return `**AD TYPE PRODUCTION STYLE — FAKE PODCAST:**
+Two people in a podcast/conversation setup having natural DIALOGUE about the product.
+- Primary Shot Type: **ON CAMERA** for both speakers
+- BROLL: Product close-ups intercut during conversation highlights
+- Shot Angles: **Sitting** (podcast desk/table setup), occasional **Dynamic** for reaction shots
+- Write as DIALOGUE — alternate speakers across rows, include natural interruptions and reactions
+- Must sound like organic discovery, not scripted endorsement
+- Use Talent Notes to specify which speaker (Host/Guest) is talking in each row`;
+    case 'Street Interview Style':
+      return `**AD TYPE PRODUCTION STYLE — STREET INTERVIEW:**
+Interviewer approaches people with questions or product challenges. Real reactions, real-world setting.
+- Primary Shot Type: **ON CAMERA** for interviewer and interviewees
+- BROLL: Crowd/environment shots, product reveal moments
+- Shot Angles: **Standing** and **Walking** — outdoor, dynamic, handheld camera feel
+- Script defines the SETUP QUESTION, expected interaction flow, and product reveal timing
+- Reactions should feel genuine and unscripted — write reaction DIRECTIONS, not exact words for interviewees
+- Use Talent Notes to specify "Interviewer" vs "Interviewee" in each row`;
+    case 'Spokesperson':
+      return `**AD TYPE PRODUCTION STYLE — SPOKESPERSON:**
+Expert or authority figure (doctor, nurse, professional) presenting the product with credibility.
+- Primary Shot Type: **ON CAMERA** — direct address with professional gravitas
+- BROLL: Medical/professional setting B-roll, product demonstrations
+- Shot Angles: **Standing** or **Sitting** — professional environment
+- Establish AUTHORITY first (credentials, experience) before delivering the product message
+- Tone: Professional, trustworthy, measured — not salesy`;
+    case 'Packaging/Employee':
+      return `**AD TYPE PRODUCTION STYLE — PACKAGING/EMPLOYEE:**
+Behind-the-scenes warehouse/packing room content. Real team showing care and attention.
+- Primary Shot Type: Mix of **ON CAMERA** (employees speaking) and **BROLL** (hands packing, product details)
+- Shot Angles: **Dynamic (Third-Person)** for warehouse tours, **Standing** for employee speaking, **Ground-Level** for product close-ups
+- Show the human side: real team, real care, pride in work
+- "We care about every pair" narrative — quality, attention to detail, personal touch`;
+    default:
+      return '';
+  }
+}
+
 export function buildScriptPrompt(
   params: ScriptParams,
   analysis: FullAnalysis,
@@ -363,6 +423,10 @@ ${buildShotTypesReference()}
 ${buildHookFormulaReference()}
 
 ${buildAgcRules()}
+` : (params.adType !== 'Ecom Style' && params.adType !== 'Static') ? `
+## VIDEO PRODUCTION BRIEF REFERENCE MATERIAL
+
+${buildVideoProductionBriefReference()}
 ` : ''}
 
 ${params.adType === 'AGC (Actor Generated Content)' ? `## AGC PRODUCTION BRIEF OUTPUT FORMAT
@@ -428,7 +492,7 @@ BROLL rows (visual-only cutaways) may appear in either format as brief interrupt
 
 ### 5. FRAMEWORK BREAKDOWN
 ## How ${params.framework} Was Applied
-Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.` : `## SCRIPT OUTPUT FORMAT
+Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.` : (params.adType === 'Ecom Style' || params.adType === 'Static') ? `## SCRIPT OUTPUT FORMAT
 
 ### 1. STRATEGY SUMMARY (at the top, before the script)
 Start with a clear summary block:
@@ -473,7 +537,47 @@ With rows for: Headline, Subhead, Body Copy, CTA Button, Visual Description.
 ### 3. FRAMEWORK BREAKDOWN (below the table)
 After the script table, include a section:
 ## How ${params.framework} Was Applied
-Explain specifically how the selected framework was translated into this script. Walk through each phase of the framework (e.g., for PAS: "The PROBLEM phase appears in rows 0:03–0:08 where we..."). Reference the specific rows/timestamps. This helps the creative team understand the strategic reasoning behind each section of the script.`}
+Explain specifically how the selected framework was translated into this script. Walk through each phase of the framework (e.g., for PAS: "The PROBLEM phase appears in rows 0:03–0:08 where we..."). Reference the specific rows/timestamps. This helps the creative team understand the strategic reasoning behind each section of the script.` : `## VIDEO PRODUCTION BRIEF OUTPUT FORMAT
+
+This is a video production brief. The output uses a detailed table format with building block labels, shot types, and production notes for each line.
+
+${getVideoProductionNotes(params.adType)}
+
+### 1. STRATEGY SUMMARY
+Start with a clear summary block:
+
+**Hypothesis:** [What we believe about the audience and why this approach will work]
+**Ad Type:** ${params.adType}
+**Primary Persona:** [The specific customer segment this targets]
+**Awareness Level:** [The awareness level]
+**Angle:** [The strategic angle — the emotional/logical frame being used]
+
+### 2. HOOKS (${params.hookVariations} variations)
+Write all ${params.hookVariations} hook variations as a markdown table with these columns:
+
+| Hook # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
+|--------|----------------|-----------|------------|--------------|------------|-------------|-------|---------------|---------|
+| 1 | [label] | [type] | [angle] | [direction] | [technical] | [what viewer sees] | [spoken words] | [post notes] | [on-screen text] |
+| 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+
+Each hook should use a DIFFERENT Building Block type and approach. Every hook MUST have spoken words in the Lines column.
+
+### 3. BODY SECTION
+The main script body. Each row = ONE thought, ONE breath. The number of rows depends on duration — more rows for longer scripts, fewer for shorter.
+
+| # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
+|---|----------------|-----------|------------|--------------|------------|-------------|-------|---------------|---------|
+| 1 | [label] | [type] | [angle] | [direction] | [technical] | [what viewer sees] | [spoken words] | [post notes] | [on-screen text] |
+| 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+
+**CRITICAL BODY RULES:**
+- EVERY row MUST have spoken words in the Lines column — NO silent rows. Even BROLL cutaway rows must have voiceover continuing.
+- Each row = ONE thought, ONE breath. If you would pause mid-sentence, SPLIT into two rows.
+- Every row MUST have a Building Block label that explains its strategic purpose in the persuasion arc.
+
+### 4. FRAMEWORK BREAKDOWN
+## How ${params.framework} Was Applied
+Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.`}
 
 ## ADVERTISING MASTERY PRINCIPLES
 Apply these principles from the four foundational marketing texts throughout every script:
@@ -723,7 +827,7 @@ The brief should:
 8. End with 8-12 extra B-roll shots
 9. Heavily apply the principles from ${params.bookReference} throughout
 
-CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : `OUTPUT STRUCTURE (follow this exact order):
+CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : (params.adType === 'Ecom Style' || params.adType === 'Static') ? `OUTPUT STRUCTURE (follow this exact order):
 
 **1. STRATEGY SUMMARY** (at the very top)
 - Hypothesis
@@ -752,6 +856,38 @@ The script should:
 5. End with a clear, specific CTA appropriate for ${params.funnelStage}
 6. Be within the word count for ${params.duration}
 7. Heavily apply the principles from ${params.bookReference} throughout
+
+CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : `OUTPUT STRUCTURE — VIDEO PRODUCTION BRIEF (follow this exact order):
+
+**1. STRATEGY SUMMARY** (at the very top)
+- Hypothesis
+- Ad Type (${params.adType})
+- Primary Persona
+- Awareness Level (${params.awarenessLevel})
+- Angle (the strategic messaging angle)
+
+**2. HOOKS** — ${params.hookVariations} hook variations as a production brief table:
+| Hook # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
+
+Each hook should use a DIFFERENT Building Block type and approach. Every hook MUST have spoken words in Lines.
+
+**3. BODY SECTION** — Main script body. Each row = one thought, one breath. Every row has a Building Block label.
+| # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
+
+**4. KEY DATA POINTS** — Every statistic and customer quote referenced, with source frequencies.
+
+**5. HOW ${params.framework.toUpperCase()} WAS APPLIED** — Walk through how the framework maps to the Building Block sequence. Reference row numbers.
+
+The brief should:
+1. Apply the ${params.framework} framework through the Building Block sequence — the framework shapes the persuasion arc
+2. Follow the production brief format with ALL columns on every row
+3. Match the ${params.funnelStage} funnel stage and ${params.awarenessLevel} awareness level
+4. Include a Building Block label on EVERY row (hooks and body)
+5. Follow the Short Lines Rule — one thought, one breath per row
+6. EVERY row must have spoken words in the Lines column — NO silent rows
+7. Use real customer language pulled directly from the review data
+8. End with a clear, specific CTA appropriate for ${params.funnelStage}
+9. Heavily apply the principles from ${params.bookReference} throughout
 
 CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.`}`;
 
