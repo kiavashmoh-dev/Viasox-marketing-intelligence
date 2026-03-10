@@ -551,6 +551,11 @@ Start with a clear summary block:
 **Primary Persona:** [The specific customer segment this targets]
 **Awareness Level:** [The awareness level]
 **Angle:** [The strategic angle — the emotional/logical frame being used]
+${params.agcLocation ? `**Location:** ${params.agcLocation === 'Auto — decide the best location based on the pre-loaded concept, target persona, and DTC marketing best practices' ? '[Choose the best location based on the concept, persona, and ad type — be specific about the environment]' : params.agcLocation}` : '**Location:** [Choose the best location for this ad type — be specific about the environment]'}
+${params.agcTalentDescription ? `**Talent:** ${params.agcTalentDescription === 'Auto — decide the best talent profile based on the pre-loaded concept, target persona, and DTC marketing best practices' ? '[Choose the best talent profile based on the concept and persona — describe age range, look, energy, wardrobe]' : params.agcTalentDescription}` : '**Talent:** [Choose the best talent profile for this ad type — describe age range, look, energy, wardrobe]'}
+${params.agcPacing ? `**Pacing:** ${params.agcPacing === 'fast' ? 'Fast (15-30s) — punchy cuts, high energy' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s) — documentary rhythm, let moments breathe' : 'Standard (30-45s) — balanced pacing'}` : ''}
+${params.agcMusicDirection ? `**Music:** ${params.agcMusicDirection}` : '**Music:** [Music direction — mood, genre, instruments, energy level]'}
+**Offer:** ${params.offer !== 'None' ? params.offer : 'None'}
 
 ### 2. HOOKS (${params.hookVariations} variations)
 Write all ${params.hookVariations} hook variations as a markdown table with these columns:
@@ -783,6 +788,12 @@ ${params.agcTalentDescription ? `Talent: ${params.agcTalentDescription}` : ''}
 ${params.agcPacing ? `Pacing: ${params.agcPacing === 'fast' ? 'Fast (15-30s, punchy cuts)' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s, documentary rhythm)' : 'Standard (30-45s, balanced)'}` : ''}
 ${params.agcMusicDirection ? `Music: ${params.agcMusicDirection}` : ''}
 Follow the AGC Production Brief output format from the system instructions. Use the 9-hook matrix (3 Visuals x 3 Verbals), Building Block labels on every row, and include 8-12 extra B-roll shots.` : ''}${params.adType.includes('UGC') ? 'UGC (User-Generated Content): Raw, authentic, phone-shot. A real person speaking to camera from their home, car, or break room. The script must sound SPOKEN, not written — natural pauses, conversational language, imperfect delivery. Visuals are handheld, natural light. If it reads like a polished ad script, rewrite it to sound like a real person talking.' : ''}${params.adType === 'Ecom Style' ? 'Ecom Style: Product-hero visual storytelling. Close-ups of fabric, unboxing sequences, product-in-use beauty shots with fast cuts and text overlays. The script is primarily VISUAL with supporting text/VO — not dialogue-driven.' : ''}${params.adType === 'Founder Style' ? 'Founder Style: The founder speaks directly to camera with passion and authority. Personal story, behind-the-brand narrative. The script is a MONOLOGUE — one person, authentic setting, personal conviction. "Let me tell you why I created this..."' : ''}${params.adType === 'Fake Podcast Ads' ? 'Fake Podcast Ads: Two people in podcast setup having a natural CONVERSATION about the product. Must sound like organic discovery, not scripted. Write it as DIALOGUE with natural interruptions, reactions, and genuine surprise.' : ''}${params.adType === 'Street Interview Style' ? 'Street Interview Style: Interviewer approaches people with questions or product challenges. Real reactions, surprise, real-world setting. The script defines the SETUP QUESTION and expected interaction flow — the reactions should feel genuine and unscripted.' : ''}${params.adType === 'Spokesperson' ? 'Spokesperson: Expert or authority figure (doctor, nurse, professional) presenting the product. Credibility-driven. The script should establish AUTHORITY first, then deliver the message with professional gravitas.' : ''}${params.adType === 'Packaging/Employee' ? 'Packaging/Employee: Behind-the-scenes warehouse content. Real team packing orders, showing care and attention. The script describes the SETTING, employee actions, and the "we care about every pair" narrative.' : ''}
+${!params.adType.includes('AGC') && params.adType !== 'Ecom Style' && params.adType !== 'Static' ? `
+Follow the Video Production Brief output format from the system instructions. Use Building Block labels on every row.
+${params.agcLocation ? `Location: ${params.agcLocation}` : ''}
+${params.agcTalentDescription ? `Talent: ${params.agcTalentDescription}` : ''}
+${params.agcPacing ? `Pacing: ${params.agcPacing === 'fast' ? 'Fast (15-30s, punchy cuts)' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s, documentary rhythm)' : 'Standard (30-45s, balanced)'}` : ''}
+${params.agcMusicDirection ? `Music: ${params.agcMusicDirection}` : ''}` : ''}
 A ${params.adType} script and a different ad type script for the same awareness level should be completely different productions — different talent, different visuals, different delivery style.
 
 **CRITICAL — PRODUCT LINE IS ${params.product.toUpperCase()}:**
@@ -865,6 +876,11 @@ CRITICAL: Write completely original copy. Every line must be built from the actu
 - Primary Persona
 - Awareness Level (${params.awarenessLevel})
 - Angle (the strategic messaging angle)
+- Location (specific environment for the shoot)
+- Talent (who appears on screen — age range, look, energy, wardrobe)
+- Pacing${params.agcPacing ? ` (${params.agcPacing})` : ''}
+- Music direction
+- Offer (${params.offer !== 'None' ? params.offer : 'None'})
 
 **2. HOOKS** — ${params.hookVariations} hook variations as a production brief table:
 | Hook # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |

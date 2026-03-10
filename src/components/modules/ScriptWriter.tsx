@@ -8,7 +8,7 @@ import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildScriptPrompt } from '../../prompts/scriptPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
-import { downloadAgcCsv } from '../../utils/downloadUtils';
+import { downloadProductionBriefCsv } from '../../utils/downloadUtils';
 import ResultsView from '../ResultsView';
 
 interface Props {
@@ -109,9 +109,9 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         hookVariations: isAgc ? 3 : hookVariations, // AGC always uses 3 (3×3 matrix = 9 hooks)
         bookReference,
         conceptAngleContext: conceptAngleContext?.content ?? undefined,
-        // AGC-specific params
-        ...(isAgc && {
-          agcBodyFormat,
+        // Production brief params (AGC + all other video types except Ecom/Static)
+        ...((isAgc || isVideoProductionBrief) && {
+          ...(isAgc && { agcBodyFormat }),
           agcLocation: agcLocationAuto ? 'Auto — decide the best location based on the pre-loaded concept, target persona, and DTC marketing best practices' : (agcLocation || undefined),
           agcPacing,
           agcMusicDirection: agcMusicDirection || undefined,
@@ -155,9 +155,9 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         error={error}
         feedbackPlaceholder="e.g., Make the hook more attention-grabbing, shorten the middle section, add more urgency to the CTA, change the tone to conversational..."
         wideMode={usesWideTables}
-        extraActions={isAgc && result ? [{
+        extraActions={(isAgc || isVideoProductionBrief) && result ? [{
           label: 'Export CSV',
-          onClick: () => downloadAgcCsv(result, product),
+          onClick: () => downloadProductionBriefCsv(result, product, adType),
         }] : undefined}
       />
     );
@@ -271,14 +271,15 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
               </select>
             </div>
 
-            {/* AGC-Specific Fields */}
-            {isAgc && (
-              <div className="border border-amber-200 bg-amber-50/50 rounded-lg p-5 space-y-4">
+            {/* Production Brief Settings (AGC + all video types except Ecom/Static) */}
+            {(isAgc || isVideoProductionBrief) && (
+              <div className={`border rounded-lg p-5 space-y-4 ${isAgc ? 'border-amber-200 bg-amber-50/50' : 'border-blue-200 bg-blue-50/50'}`}>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold text-amber-800 bg-amber-200 px-2 py-0.5 rounded">AGC</span>
-                  <span className="text-sm font-medium text-amber-800">Production Brief Settings</span>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${isAgc ? 'text-amber-800 bg-amber-200' : 'text-blue-800 bg-blue-200'}`}>{isAgc ? 'AGC' : 'VIDEO'}</span>
+                  <span className={`text-sm font-medium ${isAgc ? 'text-amber-800' : 'text-blue-800'}`}>Production Brief Settings</span>
                 </div>
 
+                {isAgc && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Body Format</label>
                   <div className="grid grid-cols-2 gap-3">
@@ -301,6 +302,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
                     ))}
                   </div>
                 </div>
+                )}
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -340,7 +342,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
                         onClick={() => setAgcPacing(p.value)}
                         className={`p-3 rounded-lg border text-center transition-all ${
                           agcPacing === p.value
-                            ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500'
+                            ? isAgc ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-500' : 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
                             : 'border-slate-200 hover:border-slate-300 bg-white'
                         }`}
                       >
@@ -474,7 +476,9 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
 
           <button onClick={() => handleGenerate()}
             className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            {conceptAngleContext ? (isAgc ? 'Generate AGC Brief from Concept' : 'Write Script from Concept') : (isAgc ? 'Generate AGC Production Brief' : 'Write Script')}
+            {conceptAngleContext
+              ? (isAgc ? 'Generate AGC Brief from Concept' : isVideoProductionBrief ? 'Generate Production Brief from Concept' : 'Write Script from Concept')
+              : (isAgc ? 'Generate AGC Production Brief' : isVideoProductionBrief ? 'Generate Production Brief' : 'Write Script')}
           </button>
         </div>
       </div>

@@ -112,11 +112,14 @@ export function downloadAsDoc(content: string, title: string): void {
 }
 
 /**
- * Parse an AGC production brief (markdown) and export it as a CSV
- * matching the AGC template format:
- * STRATEGY section → HOOKS section → BODY section → EXTRA B-ROLL section
+ * Parse a production brief (markdown) and export it as a CSV
+ * matching the production brief template format:
+ * STRATEGY section → HOOKS section → BODY section → EXTRA B-ROLL section (AGC only)
+ *
+ * Works for AGC and all other video production brief types (UGC, Founder, Podcast, etc.)
  */
-export function downloadAgcCsv(markdownContent: string, product: string): void {
+export function downloadProductionBriefCsv(markdownContent: string, product: string, adType: string): void {
+  const isAgc = adType === 'AGC (Actor Generated Content)';
   const lines = markdownContent.split('\n');
   const csv: string[][] = [];
 
@@ -154,29 +157,55 @@ export function downloadAgcCsv(markdownContent: string, product: string): void {
 
   // --- STRATEGY SECTION ---
   csv.push(['STRATEGY', '', '', '', '', '', '', '', '', '']);
-  csv.push(['CONCEPT', 'ANGLE', 'AVATAR', 'LOCATION', 'PRODUCT', 'COLLECTION', 'PROMOTION', 'OFFER', '', '']);
-  csv.push([
-    extractField('Concept') || extractField('Hypothesis'),
-    extractField('Angle'),
-    extractField('Avatar') || extractField('Talent'),
-    extractField('Location'),
-    product,
-    extractField('Collection') || extractField('Patterns'),
-    extractField('Promotion') || extractField('Promo'),
-    extractField('Offer'),
-    '', ''
-  ]);
-  csv.push(['', '', '', '', '', '', '', '', '', '']);
-  csv.push(['', '', '', '', '', '', '', '', '', '']);
-  csv.push(['', '', '', '', '', '', '', '', '', '']);
-  csv.push(['PACING', 'MUSIC', 'ASSETS', 'ADDITIONAL NOTES', '', '', 'LANDING PAGE', '', '', '']);
-  csv.push([
-    extractField('Pacing'),
-    extractField('Music'),
-    extractField('Assets'),
-    extractField('Notes') || extractField('Additional Notes'),
-    '', '', '', '', '', ''
-  ]);
+  if (isAgc) {
+    csv.push(['CONCEPT', 'ANGLE', 'AVATAR', 'LOCATION', 'PRODUCT', 'COLLECTION', 'PROMOTION', 'OFFER', '', '']);
+    csv.push([
+      extractField('Concept') || extractField('Hypothesis'),
+      extractField('Angle'),
+      extractField('Avatar') || extractField('Talent'),
+      extractField('Location'),
+      product,
+      extractField('Collection') || extractField('Patterns'),
+      extractField('Promotion') || extractField('Promo'),
+      extractField('Offer'),
+      '', ''
+    ]);
+    csv.push(['', '', '', '', '', '', '', '', '', '']);
+    csv.push(['', '', '', '', '', '', '', '', '', '']);
+    csv.push(['', '', '', '', '', '', '', '', '', '']);
+    csv.push(['PACING', 'MUSIC', 'ASSETS', 'ADDITIONAL NOTES', '', '', 'LANDING PAGE', '', '', '']);
+    csv.push([
+      extractField('Pacing'),
+      extractField('Music'),
+      extractField('Assets'),
+      extractField('Notes') || extractField('Additional Notes'),
+      '', '', '', '', '', ''
+    ]);
+  } else {
+    csv.push(['HYPOTHESIS', 'AD TYPE', 'PERSONA', 'AWARENESS', 'ANGLE', 'PRODUCT', 'LOCATION', 'OFFER', '', '']);
+    csv.push([
+      extractField('Hypothesis'),
+      adType,
+      extractField('Primary Persona') || extractField('Persona'),
+      extractField('Awareness Level') || extractField('Awareness'),
+      extractField('Angle'),
+      product,
+      extractField('Location'),
+      extractField('Offer'),
+      '', ''
+    ]);
+    csv.push(['', '', '', '', '', '', '', '', '', '']);
+    csv.push(['', '', '', '', '', '', '', '', '', '']);
+    csv.push(['', '', '', '', '', '', '', '', '', '']);
+    csv.push(['PACING', 'MUSIC', 'TALENT', 'ADDITIONAL NOTES', '', '', '', '', '', '']);
+    csv.push([
+      extractField('Pacing'),
+      extractField('Music'),
+      extractField('Talent') || extractField('Talent Description'),
+      extractField('Notes') || extractField('Additional Notes'),
+      '', '', '', '', '', ''
+    ]);
+  }
   csv.push(['', '', '', '', '', '', '', '', '', '']);
   csv.push(['', '', '', '', '', '', '', '', '', '']);
 
@@ -279,7 +308,8 @@ export function downloadAgcCsv(markdownContent: string, product: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `agc-brief-${product.toLowerCase()}-${Date.now()}.csv`;
+  const typeSlug = adType.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+  a.download = `${typeSlug}-brief-${product.toLowerCase()}-${Date.now()}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
