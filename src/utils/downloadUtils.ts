@@ -315,6 +315,170 @@ export function downloadProductionBriefCsv(markdownContent: string, product: str
 }
 
 /**
+ * Parse a markdown key-value table (| Field | Value | format) into an object
+ */
+function parseKvTable(markdown: string, sectionHeader: string): Record<string, string> {
+  const result: Record<string, string> = {};
+  const headerPattern = new RegExp(`###?\\s*\\d*\\.?\\s*${sectionHeader}`, 'i');
+  const headerIdx = markdown.split('\n').findIndex(l => headerPattern.test(l));
+  if (headerIdx < 0) return result;
+  const lines = markdown.split('\n').slice(headerIdx + 1);
+  for (const line of lines) {
+    if (!line.trim().startsWith('|')) {
+      if (line.trim().startsWith('#') && line.trim() !== '') break;
+      continue;
+    }
+    if (/^\|[\s\-:|]+\|$/.test(line.trim())) continue;
+    const cells = line.split('|').filter(c => c.trim()).map(c => c.replace(/\*\*/g, '').trim());
+    if (cells.length >= 2 && cells[0] !== 'Field') {
+      result[cells[0]] = cells[1];
+    }
+  }
+  return result;
+}
+
+/**
+ * Parse a markdown script table (| # | Shot Type | Visual | Line |) into rows
+ */
+function parseScriptTable(markdown: string, sectionHeader: string): string[][] {
+  const rows: string[][] = [];
+  const headerPattern = new RegExp(`###?\\s*\\d*\\.?\\s*${sectionHeader}`, 'i');
+  const headerIdx = markdown.split('\n').findIndex(l => headerPattern.test(l));
+  if (headerIdx < 0) return rows;
+  const lines = markdown.split('\n').slice(headerIdx + 1);
+  let inTable = false;
+  for (const line of lines) {
+    if (!line.trim().startsWith('|')) {
+      if (inTable) break;
+      if (line.trim().startsWith('#') && line.trim() !== '') break;
+      continue;
+    }
+    if (/^\|[\s\-:|]+\|$/.test(line.trim())) { inTable = true; continue; }
+    const cells = line.split('|').filter(c => c.trim()).map(c => c.replace(/\*\*/g, '').trim());
+    // Skip header row
+    if (cells[0] === '#' || cells[0] === 'Hook' || cells[0] === 'Line #') { inTable = true; continue; }
+    if (cells.length >= 3) {
+      inTable = true;
+      rows.push(cells);
+    }
+  }
+  return rows;
+}
+
+/**
+ * Download an Ecom brief as a styled .doc matching the Ecom Ad Template format
+ */
+export function downloadEcomBriefDoc(markdownContent: string): void {
+  const esc = escapeHtml;
+
+  // Parse all sections
+  const briefInfo = parseKvTable(markdownContent, 'BRIEF INFO');
+  const strategy = parseKvTable(markdownContent, 'STRATEGY');
+  const offer = parseKvTable(markdownContent, 'OFFER');
+  const editing = parseKvTable(markdownContent, 'EDITING INSTRUCTIONS');
+  const hooks = parseScriptTable(markdownContent, 'SCRIPT \\(HOOKS\\)');
+  const body = parseScriptTable(markdownContent, 'SCRIPT \\(BODY\\)');
+
+  const briefId = briefInfo['Brief ID'] || 'ECOM_BRIEF';
+
+  // Style constants matching the template
+  const sectionHeaderStyle = 'background:#D9E2F3;padding:8px 12px;font-weight:bold;font-size:14px;color:#1e293b;border:1px solid #B4C6E7;';
+  const labelCellStyle = 'background:#F2F2F2;padding:6px 10px;font-weight:bold;font-size:12px;color:#1e293b;border:1px solid #ddd;width:160px;vertical-align:top;';
+  const valueCellStyle = 'padding:6px 10px;font-size:12px;color:#334155;border:1px solid #ddd;vertical-align:top;';
+  const scriptHeaderStyle = 'background:#D9E2F3;padding:6px 10px;font-weight:bold;font-size:11px;color:#1e293b;border:1px solid #B4C6E7;text-align:left;';
+  const scriptCellStyle = 'padding:6px 10px;font-size:11px;color:#334155;border:1px solid #ddd;vertical-align:top;';
+
+  const kvRow = (label: string, value: string) =>
+    `<tr><td style="${labelCellStyle}">${esc(label)}</td><td style="${valueCellStyle}">${esc(value || '—')}</td></tr>`;
+
+  // Build HTML
+  let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(briefId)}</title>
+<style>
+@page { margin: 0.75in; }
+body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; max-width: 850px; margin: 0 auto; padding: 30px; color: #1e293b; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 20px; page-break-inside: avoid; }
+</style></head><body>`;
+
+  // Title
+  html += `<h1 style="font-size:22px;color:#1e293b;margin:0 0 20px 0;">Ecom Ad Template</h1>`;
+
+  // 1. BRIEF INFO
+  html += `<table><tr><td colspan="2" style="${sectionHeaderStyle}">BRIEF INFO</td></tr>`;
+  html += kvRow('Brief ID', briefInfo['Brief ID'] || '');
+  html += kvRow('Date', briefInfo['Date'] || '');
+  html += kvRow('Product', briefInfo['Product'] || '');
+  html += kvRow('Collection', briefInfo['Collection'] || '');
+  html += kvRow('Collection Asset', briefInfo['Collection Asset'] || '');
+  html += kvRow('Format', briefInfo['Format'] || '');
+  html += `</table>`;
+
+  // 2. STRATEGY
+  html += `<table><tr><td colspan="2" style="${sectionHeaderStyle}">STRATEGY</td></tr>`;
+  html += kvRow('Awareness Level', strategy['Awareness Level'] || '');
+  html += kvRow('Primary Emotion', strategy['Primary Emotion'] || '');
+  html += kvRow('Avatar', strategy['Avatar'] || '');
+  html += kvRow('Landing Page', strategy['Landing Page'] || '');
+  html += `</table>`;
+
+  // 3. OFFER
+  html += `<table><tr><td colspan="2" style="${sectionHeaderStyle}">OFFER</td></tr>`;
+  html += kvRow('Promo', offer['Promo'] || '');
+  html += kvRow('Promo Asset', offer['Promo Asset'] || '');
+  html += kvRow('Value Callout', offer['Value Callout'] || '');
+  html += kvRow('Urgency Element', offer['Urgency Element'] || '');
+  html += `</table>`;
+
+  // 4. EDITING INSTRUCTIONS
+  html += `<table><tr><td colspan="2" style="${sectionHeaderStyle}">EDITING INSTRUCTIONS</td></tr>`;
+  html += kvRow('Pacing', editing['Pacing'] || '');
+  html += kvRow('Resolution', editing['Resolution'] || '');
+  html += kvRow('Caption & Graphics', editing['Caption & Graphics'] || editing['Captions'] || '');
+  html += kvRow('Transitions', editing['Transitions'] || '');
+  html += kvRow('Music', editing['Music'] || '');
+  html += kvRow('Voiceover', editing['Voiceover'] || '');
+  html += kvRow('Asset', editing['Asset'] || '');
+  html += kvRow('Notes', editing['Notes'] || '');
+  html += `</table>`;
+
+  // 5. SCRIPT (HOOKS)
+  html += `<table>`;
+  html += `<tr><td colspan="4" style="${sectionHeaderStyle}">SCRIPT (HOOKS)</td></tr>`;
+  html += `<tr><th style="${scriptHeaderStyle}width:40px;">#</th><th style="${scriptHeaderStyle}width:120px;">Shot Type</th><th style="${scriptHeaderStyle}width:260px;">Suggested Visual</th><th style="${scriptHeaderStyle}">Hook Line</th></tr>`;
+  hooks.forEach((row) => {
+    const [num, shotType, visual, line] = [row[0] || '', row[1] || '', row[2] || '', row[3] || ''];
+    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td><td style="${scriptCellStyle}width:120px;">${esc(shotType)}</td><td style="${scriptCellStyle}width:260px;">${esc(visual)}</td><td style="${scriptCellStyle}">${esc(line)}</td></tr>`;
+  });
+  if (hooks.length === 0) {
+    html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#94a3b8;">No hooks parsed</td></tr>`;
+  }
+  html += `</table>`;
+
+  // 6. SCRIPT (BODY)
+  html += `<table>`;
+  html += `<tr><td colspan="4" style="${sectionHeaderStyle}">SCRIPT (BODY)</td></tr>`;
+  html += `<tr><th style="${scriptHeaderStyle}width:40px;">#</th><th style="${scriptHeaderStyle}width:120px;">Shot Type</th><th style="${scriptHeaderStyle}width:260px;">Suggested Visual</th><th style="${scriptHeaderStyle}">Script Line</th></tr>`;
+  body.forEach((row) => {
+    const [num, shotType, visual, line] = [row[0] || '', row[1] || '', row[2] || '', row[3] || ''];
+    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td><td style="${scriptCellStyle}width:120px;">${esc(shotType)}</td><td style="${scriptCellStyle}width:260px;">${esc(visual)}</td><td style="${scriptCellStyle}">${esc(line)}</td></tr>`;
+  });
+  if (body.length === 0) {
+    html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#94a3b8;">No body rows parsed</td></tr>`;
+  }
+  html += `</table>`;
+
+  html += `<p style="margin-top:30px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px;">Generated by Viasox Marketing Intelligence</p>`;
+  html += `</body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${briefId.toLowerCase().replace(/\s+/g, '-')}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
  * Download content as PDF using a print-to-PDF approach
  */
 export function downloadAsPdf(content: string, title: string): void {

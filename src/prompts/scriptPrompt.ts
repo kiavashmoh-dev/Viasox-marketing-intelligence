@@ -483,12 +483,14 @@ BROLL rows (visual-only cutaways) may appear in either format as brief interrupt
 
 ### 5. FRAMEWORK BREAKDOWN
 ## How ${params.framework} Was Applied
-Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.` : (params.adType === 'Ecom Style' || params.adType === 'Static') ? `## SCRIPT OUTPUT FORMAT
-${params.adType === 'Ecom Style' ? `
-### ECOM STYLE — VISUAL GROUNDING RULES (CRITICAL)
+Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.` : params.adType === 'Ecom Style' ? `## ECOM AD BRIEF OUTPUT FORMAT
+
+This is an EDITING BRIEF — a complete production document for an editor who will assemble the ad from existing footage with AI voiceover. The output must follow the dedicated Ecom brief template structure.
+
+### VISUAL GROUNDING RULES (CRITICAL)
 This ad is built entirely from EXISTING footage. Every visual must be grounded in footage that actually exists.
 
-**Available Shot Types (use as Shot column tags):**
+**Available Shot Types (use as Shot Type tags):**
 - Core: Talking Head, Putting On Socks, Feet Up Lifestyle, Bare Legs – Condition, Walking, Standing Feet, Before/After Reveal, Studio Product Shot, Animation / Motion Graphics, Text/Title Card
 - Supplementary: Socks With Shoes, Documentary / Interview, Product Flat Lay (Branded), Branded Shipping Box, EGC / Warehouse, Lifestyle Flat Lay, Material Close-up, PNG Cutout, Home Environment, Outdoor Setting
 - Limited: Yoga / Wellness B-Roll (Ankle Compression only), Car Interior, Mall / Public Indoor, Cafe / Seated Public
@@ -496,82 +498,120 @@ This ad is built entirely from EXISTING footage. Every visual must be grounded i
 **Footage we do NOT have — NEVER write visuals implying these:** Indoor gym/fitness, medical offices/clinical settings, sports activities (running, cycling, hiking), travel/airports, restaurants/dining, children/family scenes, pet scenes.
 
 **Visual Description Rules:**
-The Visuals column must be a SHORT, CONVERSATIONAL description of what the viewer sees — one natural sentence, 8-20 words. Think "telling the editor what you're picturing for this moment."
+The Suggested Visual column must be a SHORT, CONVERSATIONAL description of what the viewer sees — one natural sentence, 8-20 words.
 - GOOD: "Close-up of her pulling the compression socks up over her calves on the couch"
 - GOOD: "Her bare legs with visible sock marks and redness around the ankles"
-- GOOD: "Product flat lay — five colorful pairs fanned out on a white surface"
 - BAD: "Talking Head" (that's a shot type label, not a visual description)
 - BAD: "B-roll of feet" (too vague, the editor can't pull this)
-- BAD: Technical multi-sentence descriptions (too long, the editor won't read it)
 
-**Visual Pacing:** Vary visuals across the script. If you've written 2+ talking-head-style visuals in a row, switch to a product moment, a feet shot, or a lifestyle scene. The editor needs visual variety.
+**Visual Pacing:** Vary visuals across the script. If you've written 2+ of the same shot type in a row, switch to something different. The editor needs visual variety.
 
-### ECOM STYLE — SCRIPT WRITING STYLE (NON-NEGOTIABLE)
+### SCRIPT WRITING STYLE (NON-NEGOTIABLE)
 Every line must sound like a real person talking to a friend. Full, natural sentences with everyday words. NOT fragments, NOT polished copywriting prose, NOT aggressive direct response.
 - Use natural filler words ("honestly," "actually," "just," "pretty much")
-- NO single-word or two-word lines. NO telegram fragments ("Noon." / "That stiffness.")
+- NO single-word or two-word lines. NO telegram fragments.
 - NO polished metaphors ("heaviness whispers," "legs carry the weight")
-- NO aggressive commands ("STOP buying bigger socks")
 - Most lines 10-25 words. Read every line out loud — if it sounds like an ad, rewrite it.
 
-### ECOM STYLE — SCRIPT FRAMEWORK ADAPTIVITY
-The script structure must emerge from the concept, not default to "problem → solution → CTA" every time:
+### SCRIPT FRAMEWORK ADAPTIVITY
+The script structure must emerge from the concept:
 - **Confession Arc** (first-person): Admission → what they used to believe → discovery → new reality
-- **The Observation** (third-person narrator): Camera notices something → describes what we see → reveal → product connection
-- **The Reframe** (second-person education): Challenge a belief → explain why it's wrong → what actually works → proof
-- **The Permission Narrative** (second-person gentle): Validate struggle → acknowledge acceptance → give permission to expect better → here's how
-- **The Skeptic's Journey** (first-person): Express doubt → why skeptical → what changed mind → converted
-- **The Contrast/Split** (mixed): Two people, two outcomes → same situation → reveal the difference
-- **Day-in-the-Life** (first or third-person): Specific moment → walk through day → show same day with product → different ending
-The concept dictates which framework fits. Invent new structures if the concept demands it.
+- **The Observation** (third-person narrator): Camera notices → describes what we see → reveal → product
+- **The Reframe** (second-person education): Challenge belief → explain why wrong → what works → proof
+- **The Permission Narrative** (second-person gentle): Validate struggle → acknowledge → give permission → how
+- **The Skeptic's Journey** (first-person): Doubt → why skeptical → what changed mind → converted
+- **The Contrast/Split** (mixed): Two outcomes → same situation → reveal difference
+- **Day-in-the-Life** (first or third-person): Moment → walk through day → same day with product → different ending
 
-### ECOM STYLE — AVOID THESE OVERUSED PATTERNS
-Never use: "3pm fatigue" or time-based decline references, "sock drawer" metaphors, "Here's the thing..." transitions, "What if you could..." rhetorical questions, "The result?" as a transition.
-` : ''}
+### AVOID THESE OVERUSED PATTERNS
+Never use: "3pm fatigue", "sock drawer" metaphors, "Here's the thing...", "What if you could...", "The result?" as a transition.
+
+---
+
+## OUTPUT STRUCTURE — ECOM AD BRIEF
+
+### 1. BRIEF INFO
+Output as a markdown table with these exact fields:
+| Field | Value |
+|-------|-------|
+| Brief ID | [Generate: PRODUCT_FUNNEL_ConceptSlug_v1, e.g., ES_TOF_DentTest_v1, COMP_MOF_GravityExplainer_v1, ACS_BOF_AnkleSecret_v1] |
+| Date | ${new Date().toISOString().split('T')[0]} |
+| Product | ${params.product === 'EasyStretch' ? 'EasyStretch Socks (Non-Binding Diabetic Socks)' : params.product === 'Compression' ? 'Compression Socks (Knee-High)' : 'Ankle Compression Socks'} |
+| Collection | [Choose based on concept: "Solid Colors + Patterns", "Solid Colors (Black, Navy)", etc.] |
+| Collection Asset | [Specific patterns/colors needed, e.g., "Solid black for demo, patterns at reveal"] |
+| Format | 9:16 vertical (Reels/Stories), 1:1 secondary |
+
+### 2. STRATEGY
+| Field | Value |
+|-------|-------|
+| Awareness Level | ${params.awarenessLevel} (${params.funnelStage}) |
+| Primary Emotion | [Derived from concept — e.g., Relief, Hope, Confidence, Independence, Trust] |
+| Avatar | [Specific person, NOT a label — e.g., "Nurse, 52, who's accepted leg pain as part of the job" or "The Defeated Shopper – Adults 45-75 who have bought countless socks that claim to fit but don't"] |
+| Landing Page | [${params.product} Collection] |
+
+### 3. OFFER
+| Field | Value |
+|-------|-------|
+| Promo | ${params.offer === 'B2G3' ? 'Buy 2 Get 3 Free (5 for $60)' : params.offer === 'B1G1' ? 'Buy 1 Get 1 Free' : 'None'} |
+| Promo Asset | ${params.offer !== 'None' ? 'Standard end card' : 'None'} |
+| Value Callout | ${params.offer === 'B2G3' ? '5 Pairs for $60' : params.offer === 'B1G1' ? '2 Pairs for $30' : 'None'} |
+| Urgency Element | [If applicable based on promo period, otherwise "None"] |
+
+### 4. EDITING INSTRUCTIONS
+| Field | Value |
+|-------|-------|
+| Pacing | [Derived from concept — e.g., "Demonstration-focused. Opens on visual evidence, builds through the test, delivers solution. 40-50 seconds."] |
+| Resolution | 9:16 primary, 1:1 secondary |
+| Caption & Graphics | [Text overlay strategy — what key moments get captions, style notes] |
+| Transitions | [Cut style — e.g., "Clean cuts. Zoom on evidence shots. Smooth reveal on solution."] |
+| Music | [Mood, genre, energy — e.g., "Curious opening, building through test, warm resolution. Discovery energy."] |
+| Voiceover | AI Voiceover – [Tone description derived from concept — e.g., "Warm, observational female voice. Noticing something, then explaining it."] |
+| Asset | [List the specific footage categories from the shot type library needed for this brief] |
+| Notes | [Production notes — what's most important about this brief's visual approach] |
+
+### 5. SCRIPT (HOOKS) — 3 Variations
+Output as a markdown table with EXACTLY these 4 columns:
+| # | Shot Type | Suggested Visual | Hook Line |
+|---|-----------|-----------------|-----------|
+| 1 | [footage tag] | [conversational description, 8-20 words] | "[the hook line — full natural sentence]" |
+| 2 | [footage tag] | [conversational description] | "[different hook approach]" |
+| 3 | [footage tag] | [conversational description] | "[different hook approach]" |
+
+Each hook must use a DIFFERENT approach. Note which principle it applies (e.g., "Hook 1 — Hopkins Selector").
+
+### 6. SCRIPT (BODY)
+Output as a markdown table with EXACTLY these 4 columns:
+| # | Shot Type | Suggested Visual | Script Line |
+|---|-----------|-----------------|-------------|
+| 1 | [footage tag] | [conversational description, 8-20 words] | "[line — must sound like a real person talking]" |
+| 2 | ... | ... | ... |
+
+Row count adapts to the concept and duration — more rows for longer scripts, fewer for shorter. Each row = one thought, one breath.
+
+### 7. KEY DATA POINTS
+List every statistic and customer quote referenced in the script, with source frequencies.
+
+### 8. HOW ${params.framework} WAS APPLIED
+Walk through each phase of the framework and explain how it maps to specific rows in the body. Reference row numbers.` : params.adType === 'Static' ? `## SCRIPT OUTPUT FORMAT
+
 ### 1. STRATEGY SUMMARY (at the top, before the script)
 Start with a clear summary block:
 
 **Hypothesis:** [What we believe about the audience and why this approach will work]
-**Ad Type:** [The ad type selected] (Video or Static Image)
+**Ad Type:** Static (Static Image)
 **Primary Persona:** [The specific customer segment this targets]
 **Awareness Level:** [The awareness level]
 **Angle:** [The strategic angle — the emotional/logical frame being used]
 
 ### 2. SCRIPT TABLE (markdown table format)
 Write the ENTIRE script as a markdown table with these columns:
-| Timestamp | Shot Type | Visuals | Line | Delivery |
-Where:
-- **Timestamp** = Timecode (e.g., 0:00–0:03)
-- **Shot Type** = Footage category tag from the available shot types list (e.g., "Talking Head", "Studio Product Shot", "Putting On Socks", "Walking")${params.adType === 'Ecom Style' ? ' — tells the editor which footage folder to pull from' : ''}
-- **Visuals** = ${params.adType === 'Ecom Style' ? 'A short, conversational sentence describing what the viewer sees on screen (8-20 words). NOT a label, NOT technical direction — just paint the picture for the editor' : 'What the viewer sees on screen (setting, talent action, product shots, text overlays)'}
-- **Line** = The exact spoken/written copy${params.adType === 'Ecom Style' ? ' — must sound like a real person talking to a friend' : ''}
-- **Delivery** = Either "VO" (Voiceover)${params.adType === 'Ecom Style' ? '' : ', "DTC" (Direct to Camera)'} or "Text" (on-screen text only)${params.adType === 'Ecom Style' ? '' : ' or "Dialogue" (conversation between people)'}
-
-**IMPORTANT — HOOKS GO FIRST:**
-All hook variations MUST be in the FIRST rows of the table, ABOVE the body script. Label them clearly:
-- Row label in Timestamp column: "HOOK 1", "HOOK 2", "HOOK 3", etc.
-- After all hooks, add a row: "--- BODY SCRIPT STARTS BELOW ---" spanning all columns
-- Then continue with the body script using normal timestamps (starting from where the hook ends)
-
-Example table structure:
-| Timestamp | Shot Type | Visuals | Line | Delivery |
-|-----------|-----------|---------|------|----------|
-| HOOK 1 (0:00–0:03) | ${params.adType === 'Ecom Style' ? 'Bare Legs – Condition' : 'Talking Head'} | ${params.adType === 'Ecom Style' ? '"Her bare legs on the couch, you can see the indentation marks from her old socks"' : '[visuals]'} | "[line]" | VO |
-| HOOK 2 (0:00–0:03) | ${params.adType === 'Ecom Style' ? 'Putting On Socks' : 'Studio Product Shot'} | ${params.adType === 'Ecom Style' ? '"Close-up of her sliding the compression socks on, they glide up without a fight"' : '[visuals]'} | "[line]" | VO |
-| HOOK 3 (0:00–0:03) | ${params.adType === 'Ecom Style' ? 'Studio Product Shot' : 'Talking Head'} | ${params.adType === 'Ecom Style' ? '"Product flat lay — colorful pairs fanned out on a white surface"' : '[visuals]'} | "[line]" | ${params.adType === 'Ecom Style' ? 'Text' : 'VO'} |
-| **BODY** | **---** | **Script continues below** | **---** | **---** |
-| 0:03–0:08 | ${params.adType === 'Ecom Style' ? 'Talking Head' : '[type]'} | ${params.adType === 'Ecom Style' ? '"She\'s sitting on the couch, looking relaxed and talking naturally"' : '[visuals]'} | "[line]" | VO |
-| 0:08–0:15 | ${params.adType === 'Ecom Style' ? 'Material Close-up' : '[type]'} | ${params.adType === 'Ecom Style' ? '"Slow push-in on the bamboo fabric texture, soft lighting"' : '[visuals]'} | "[line]" | VO |
-| ... | ... | ... | ... | ... |
-
-For Static ad type, replace the table with:
 | Element | Content | Visual Direction |
 With rows for: Headline, Subhead, Body Copy, CTA Button, Visual Description.
 
 ### 3. FRAMEWORK BREAKDOWN (below the table)
 After the script table, include a section:
 ## How ${params.framework} Was Applied
-Explain specifically how the selected framework was translated into this script. Walk through each phase of the framework (e.g., for PAS: "The PROBLEM phase appears in rows 0:03–0:08 where we..."). Reference the specific rows/timestamps. This helps the creative team understand the strategic reasoning behind each section of the script.` : `## VIDEO PRODUCTION BRIEF OUTPUT FORMAT
+Explain specifically how the selected framework was translated into this script. Walk through each phase of the framework. Reference the specific elements. This helps the creative team understand the strategic reasoning behind each section of the script.` : `## VIDEO PRODUCTION BRIEF OUTPUT FORMAT
 
 This is a video production brief. The output uses a detailed table format with building block labels, shot types, and production notes for each line.
 
@@ -872,11 +912,43 @@ The brief should:
 8. End with 8-12 extra B-roll shots
 9. Heavily apply the principles from ${params.bookReference} throughout
 
-CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : (params.adType === 'Ecom Style' || params.adType === 'Static') ? `OUTPUT STRUCTURE (follow this exact order):
+CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : params.adType === 'Ecom Style' ? `OUTPUT STRUCTURE — ECOM AD BRIEF (follow the dedicated Ecom template from system instructions):
+
+Follow the ECOM AD BRIEF OUTPUT FORMAT exactly. Output all 8 sections in order:
+1. **BRIEF INFO** — table with Brief ID, Date, Product, Collection, Collection Asset, Format
+2. **STRATEGY** — table with Awareness Level, Primary Emotion, Avatar, Landing Page
+3. **OFFER** — table with Promo, Promo Asset, Value Callout, Urgency Element
+4. **EDITING INSTRUCTIONS** — table with Pacing, Resolution, Caption & Graphics, Transitions, Music, Voiceover, Asset, Notes
+5. **SCRIPT (HOOKS)** — 3 hooks in a 4-column table: # | Shot Type | Suggested Visual | Hook Line
+6. **SCRIPT (BODY)** — body rows in a 4-column table: # | Shot Type | Suggested Visual | Script Line
+7. **KEY DATA POINTS** — every statistic and customer quote referenced, with source frequencies
+8. **HOW ${params.framework.toUpperCase()} WAS APPLIED** — walk through how the framework maps to specific rows in the body. Reference row numbers.
+
+ECOM CRITICAL RULES:
+- Shot Type column = footage category tag (Talking Head, Putting On Socks, Studio Product Shot, etc.)
+- Suggested Visual column = one conversational sentence describing what the viewer sees (8-20 words), NOT a label
+- Every visual must be grounded in footage that EXISTS — never reference gym, medical, sports, travel, hiking, children
+- Every script line must sound like a real person talking to a friend — full natural sentences, no fragments, no ad copy
+- Vary visuals: don't stack 2+ of the same shot type in a row
+- Always output exactly 3 hooks with different approaches. Note which principle each applies.
+- Script body row count adapts to concept and duration — each row = one thought, one breath
+- Choose a script framework that fits the concept, don't default to the same arc every time
+- Avoid overused patterns: "3pm fatigue", "sock drawer", "Here's the thing...", "What if you could...", "The result?"
+
+The brief should:
+1. Follow the exact ${params.framework} framework structure through the script body
+2. Auto-fill all Brief Info, Strategy, Offer, and Editing Instructions from context
+3. Match the ${params.funnelStage} funnel stage — appropriate hook intensity, CTA directness
+4. Use real customer language pulled directly from the review data
+5. Ground every visual in available footage — if you can't picture existing footage for a visual, redirect
+6. Write every line as a conversational sentence — read it out loud, if it sounds like an ad, rewrite it
+7. Heavily apply the principles from ${params.bookReference} throughout
+
+CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : params.adType === 'Static' ? `OUTPUT STRUCTURE (follow this exact order):
 
 **1. STRATEGY SUMMARY** (at the very top)
 - Hypothesis
-- Ad Type (${params.adType} — ${params.adType === 'Static' ? 'Static Image' : 'Video'})
+- Ad Type (${params.adType} — Static Image)
 - Primary Persona
 - Awareness Level (${params.awarenessLevel})
 - Angle (the strategic messaging angle)
@@ -888,15 +960,6 @@ Use the exact table format from the instructions:
 Put ALL ${params.hookVariations} hook variations FIRST in the table (labeled HOOK 1, HOOK 2, etc.), THEN a separator row, THEN the body script with timestamps.
 
 Each hook should use a different approach. After each hook label, note which principle it applies (e.g., "HOOK 1 — Hopkins Selector").
-${params.adType === 'Ecom Style' ? `
-ECOM CRITICAL RULES:
-- Shot Type column = footage category tag (Talking Head, Putting On Socks, Studio Product Shot, etc.)
-- Visuals column = one conversational sentence describing what the viewer sees (8-20 words), NOT a label
-- Every visual must be grounded in footage that EXISTS — never reference gym, medical, sports, travel, hiking, children
-- Every Line must sound like a real person talking to a friend — full natural sentences, no fragments, no ad copy
-- Vary visuals: don't stack 2+ of the same shot type in a row
-- Script structure should match the concept (confession, observation, reframe, permission, skeptic journey, contrast, day-in-the-life)
-- Avoid overused patterns: "3pm fatigue", "sock drawer", "Here's the thing...", "What if you could...", "The result?"` : ''}
 
 **3. KEY DATA POINTS** — Every statistic and customer quote referenced, with source frequencies.
 
@@ -909,10 +972,7 @@ The script should:
 4. Use real customer language pulled directly from the review data
 5. End with a clear, specific CTA appropriate for ${params.funnelStage}
 6. Be within the word count for ${params.duration}
-7. Heavily apply the principles from ${params.bookReference} throughout${params.adType === 'Ecom Style' ? `
-8. Ground every visual in available footage — if you can't picture existing footage for a visual, redirect
-9. Write every line as a conversational sentence — read it out loud, if it sounds like an ad, rewrite it
-10. Choose a script framework that fits the concept, don't default to the same arc every time` : ''}
+7. Heavily apply the principles from ${params.bookReference} throughout
 
 CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : `OUTPUT STRUCTURE — VIDEO PRODUCTION BRIEF (follow this exact order):
 

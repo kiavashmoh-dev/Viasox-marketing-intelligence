@@ -8,7 +8,7 @@ import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildScriptPrompt } from '../../prompts/scriptPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
-import { downloadProductionBriefCsv } from '../../utils/downloadUtils';
+import { downloadProductionBriefCsv, downloadEcomBriefDoc } from '../../utils/downloadUtils';
 import ResultsView from '../ResultsView';
 
 interface Props {
@@ -89,7 +89,8 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
   const [agcTalentDescription, setAgcTalentDescription] = useState('');
 
   const isAgc = adType === 'AGC (Actor Generated Content)';
-  const isVideoProductionBrief = !isAgc && adType !== 'Ecom Style' && adType !== 'Static';
+  const isEcom = adType === 'Ecom Style';
+  const isVideoProductionBrief = !isAgc && !isEcom && adType !== 'Static';
   const usesWideTables = isAgc || isVideoProductionBrief;
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
@@ -105,7 +106,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         adType,
         promoPeriod: promoPeriod || 'None',
         offer,
-        hookVariations: isAgc ? 3 : hookVariations, // AGC always uses 3 (3×3 matrix = 9 hooks)
+        hookVariations: (isAgc || isEcom) ? 3 : hookVariations, // AGC: 3 (3×3 matrix = 9 hooks), Ecom: always 3 hooks
         bookReference,
         conceptAngleContext: conceptAngleContext?.content ?? undefined,
         // Production brief params (AGC + all other video types except Ecom/Static)
@@ -131,6 +132,10 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
       const durationTokens = duration === '60s' ? 6000 : duration === '30s' ? 4500 : 3000;
       const hookTokens = hookVariations * 400;
       maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 7000), 16000);
+    } else if (isEcom) {
+      // Ecom briefs: full template with 8 sections (Brief Info, Strategy, Offer, Editing Instructions, 3 hooks, body, data points, framework)
+      const durationTokens = duration === '60s' ? 5000 : duration === '30s' ? 3500 : 2500;
+      maxTokens = Math.min(Math.max(durationTokens + contextBonus + feedbackBonus, 7000), 16000);
     } else {
       const durationTokens = duration === '60s' ? 4000 : duration === '30s' ? 2500 : 1500;
       const hookTokens = hookVariations * 300;
@@ -146,7 +151,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
     return (
       <ResultsView
         content={result ?? ''}
-        title={isAgc ? 'AGC Production Brief' : isVideoProductionBrief ? 'Production Brief' : 'Ad Script'}
+        title={isAgc ? 'AGC Production Brief' : isVideoProductionBrief ? 'Production Brief' : isEcom ? 'Ecom Ad Brief' : 'Ad Script'}
         onBack={() => { reset(); onBack(); }}
         onBackToBuilder={reset}
         onRegenerate={handleGenerate}
@@ -154,10 +159,15 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         error={error}
         feedbackPlaceholder="e.g., Make the hook more attention-grabbing, shorten the middle section, add more urgency to the CTA, change the tone to conversational..."
         wideMode={usesWideTables}
-        extraActions={(isAgc || isVideoProductionBrief) && result ? [{
-          label: 'Export CSV',
-          onClick: () => downloadProductionBriefCsv(result, product, adType),
-        }] : undefined}
+        extraActions={result ? (
+          (isAgc || isVideoProductionBrief) ? [{
+            label: 'Export CSV',
+            onClick: () => downloadProductionBriefCsv(result, product, adType),
+          }] : isEcom ? [{
+            label: 'Export Brief (.doc)',
+            onClick: () => downloadEcomBriefDoc(result),
+          }] : undefined
+        ) : undefined}
       />
     );
   }
@@ -444,6 +454,17 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
                   </div>
                 </div>
               </div>
+            ) : isEcom ? (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Hook Variations</label>
+                <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <span className="text-2xl font-bold text-blue-700">3</span>
+                  <div>
+                    <div className="text-sm font-medium text-blue-800">3 Hook Variations</div>
+                    <div className="text-xs text-blue-600">Ecom briefs use 3 hooks with different approaches for A/B testing</div>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Number of Hook Variations</label>
@@ -476,8 +497,8 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
           <button onClick={() => handleGenerate()}
             className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
             {conceptAngleContext
-              ? (isAgc ? 'Generate AGC Brief from Concept' : isVideoProductionBrief ? 'Generate Production Brief from Concept' : 'Write Script from Concept')
-              : (isAgc ? 'Generate AGC Production Brief' : isVideoProductionBrief ? 'Generate Production Brief' : 'Write Script')}
+              ? (isAgc ? 'Generate AGC Brief from Concept' : isVideoProductionBrief ? 'Generate Production Brief from Concept' : isEcom ? 'Generate Ecom Brief from Concept' : 'Write Script from Concept')
+              : (isAgc ? 'Generate AGC Production Brief' : isVideoProductionBrief ? 'Generate Production Brief' : isEcom ? 'Generate Ecom Ad Brief' : 'Write Script')}
           </button>
         </div>
       </div>
