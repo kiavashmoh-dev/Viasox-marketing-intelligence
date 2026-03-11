@@ -57,19 +57,38 @@ const AD_TYPE_GUIDES_FULL: Record<AdType, string> = {
 
   'Ecom Style': `**Ecom Style (Editing Briefs) — VIDEO**
 
-**What it is:** Video ads built entirely from existing footage — past B-roll, product shots, lifestyle clips — stitched together by an editor with AI voiceover narrating the script. No new filming required.
+**What it is:** Video ads built entirely from existing footage — past B-roll, product shots, lifestyle clips, talking head takes — stitched together by an editor with AI voiceover narrating the script. No new filming required.
 
-**What makes it unique:** Constructed entirely in post-production, not on set. The creative strategist writes the script and visual direction, then the editor matches existing footage to each line. This means high volumes of creative without booking shoots, actors, or locations.
+**What makes it unique:** Constructed entirely in post-production, not on set. The creative strategist writes the script and visual direction, then the editor matches existing footage to each line. Every visual direction MUST be grounded in footage that actually exists in the library.
 
-**Biggest advantage:** Speed and volume. Drawing from a large bank of existing clips, many concepts can be produced quickly. This is the workhorse format for testing angles, hooks, and messaging at scale. Highly flexible — seasonal versions, different awareness levels, fast iteration based on performance data.
+**Biggest advantage:** Speed and volume. Drawing from a large bank of existing clips (13,000+ video assets), many concepts can be produced quickly. This is the workhorse format for testing angles, hooks, and messaging at scale. Highly flexible — seasonal versions, different awareness levels, fast iteration based on performance data.
 
-**How it's typically made:** A brief with concept details (angle, avatar, awareness level, persona), editing instructions (pacing, resolution, transitions, music, captions), 3 hook variations (each with shot type, visual description, and script line), and a full body script with visual direction for every line. The editor pulls from existing footage, adding text overlays, graphics, and AI voiceover.
+**How it's typically made:** A brief with strategy (awareness, emotion, avatar), editing instructions (pacing, resolution, transitions, music, captions), 3 hook variations (each with shot type, visual description, and script line), and a full body script with visual direction for every line. The editor pulls from existing footage, adding text overlays, graphics, and AI voiceover.
+
+**Available footage types (use these as Shot Type tags):**
+- Core: Talking Head, Putting On Socks, Feet Up Lifestyle, Bare Legs – Condition, Walking, Standing Feet, Before/After Reveal, Studio Product Shot, Animation / Motion Graphics, Text/Title Card
+- Supplementary: Socks With Shoes, Documentary / Interview, Product Flat Lay (Branded), Branded Shipping Box, EGC / Warehouse, Lifestyle Flat Lay, Material Close-up, PNG Cutout, Home Environment, Outdoor Setting
+- Limited availability: Yoga / Wellness B-Roll (Ankle Compression only), Event / In-Person, Trade Show / Booth, Edutainment / Pattern Grid, Car Interior, Mall / Public Indoor, Cafe / Seated Public
+
+**Footage we do NOT have (never write visuals implying these):** Indoor gym/fitness, medical offices/clinical settings, sports activities, travel/airports, restaurants/dining, outdoor activities (hiking, running, cycling), children/family scenes, pet scenes.
+
+**Visual description rules:** The Visual column must be a SHORT, CONVERSATIONAL description of what the viewer sees — not a shot type label, not technical direction. Think "telling the editor what you're picturing."
+- GOOD: "Close-up of her pulling the compression socks up over her calves on the couch"
+- GOOD: "Her bare legs with visible sock marks and redness around the ankles"
+- GOOD: "Product flat lay — five colorful pairs fanned out on a white surface"
+- BAD: "Talking Head" (label, not a description)
+- BAD: "Bare Legs – Condition" (taxonomy label, tells the editor nothing)
+- BAD: "B-roll of feet" (too vague)
 
 **What the output looks like:** A polished video ad with voiceover narration playing over relevant B-roll footage. Text overlays emphasize key points. Pacing is tight and intentional. Looks like a well-produced brand video — product showcases, lifestyle montages, or educational explainers. The viewer experiences a cohesive story without realizing it was assembled from pre-existing clips.
 
-**Script requirements:** Voiceover narration script (not dialogue). Strong visual direction for every line — describe exactly what footage should appear. Text overlay callouts for key benefits/claims. Music/pacing notes. The editor needs to know what to pull from the footage library.
+**Script style (critical):** Every line must sound like a real person talking to a friend — full, natural sentences with everyday words. NOT fragments, NOT polished copywriting prose, NOT aggressive direct response. Use natural filler words ("honestly," "actually," "just"). Read every line out loud — if it sounds like an ad, rewrite it.
 
-**Concept considerations:** When generating concepts for Ecom Style, think about what story can be told purely through EXISTING footage with a compelling voiceover. The concept should describe the narrative arc, the visual sequences, and the text overlays — all things an editor can build without a shoot.`,
+**Script framework adaptivity:** The script structure must emerge from the concept. Don't default to "problem → solution → CTA" every time. Available frameworks: Confession Arc (first-person admission → discovery), The Observation (third-person narrator), The Reframe (second-person education), The Permission Narrative (validating struggle), The Skeptic's Journey (doubt → conversion), The Contrast/Split (two outcomes), Day-in-the-Life (chronological). The concept dictates which fits.
+
+**Script requirements:** Voiceover narration script (AI female voice). Strong visual direction for every line grounded in available footage. Text overlay callouts for key benefits/claims. Music/pacing notes. The editor needs to know what to pull from the footage library.
+
+**Concept considerations:** When generating concepts for Ecom Style, think about what story can be told purely through EXISTING footage with a compelling voiceover. The concept should describe the narrative arc, the visual sequences, and the text overlays — all things an editor can build without a shoot. Every visual must be grounded in footage that exists. Vary visuals across the script — don't write three talking-head visuals in a row.`,
 
   'Static': `**Static Ads — SINGLE IMAGE (NOT VIDEO)**
 
@@ -102,22 +121,6 @@ const AD_TYPE_GUIDES_FULL: Record<AdType, string> = {
 **Script requirements:** Voiceover narration (not direct-to-camera dialogue). Detailed visual direction for what hands are doing in each beat — pulling product, showing features, folding, packing. Props to include. The physical actions should REINFORCE the claims in the voiceover (e.g., stretching the sock while talking about comfort).
 
 **Concept considerations:** When generating concepts for Packaging/Employee, think about what ACTIONS during packing can demonstrate the product's benefits. The concept should describe what the hands do, what the voiceover says, and how the two work together to prove the claims.`,
-
-  'Street Interview Style': `**Street Interview Style — VIDEO**
-
-**What it is:** Video ads formatted to look like spontaneous person-on-the-street interviews, where someone (usually with a mic) approaches "random" people and asks questions related to the product's problem or benefit space. Typically staged with actors but designed to feel candid and unscripted.
-
-**What makes it unique:** Borrows credibility from a style viewers already trust and enjoy — the viral street interview format from YouTube and TikTok. Feels editorial and entertaining rather than commercial. The "interviewer + stranger" dynamic creates built-in tension and curiosity.
-
-**Biggest advantage:** Pattern interrupt and entertainment value. People are conditioned to watch street interviews because they're inherently unpredictable and fun. This hijacks that behavior — the viewer starts watching because they're curious about the interaction, and before they realize it, they're learning about the product. Naturally introduces social proof when multiple people react positively.
-
-**How it's typically made:** Filmed outdoors in a public-feeling location (AGC format). An interviewer with a mic approaches "strangers" (actors) and asks questions like "Do your feet swell by the end of the day?" or "Have you ever heard of ankle compression?" Responses are scripted but delivered to feel natural. B-roll of product cut in. Multiple "interviews" spliced together for a montage effect.
-
-**What the output looks like:** Looks like a viral street interview clip — handheld camera, outdoor setting, mic in frame, quick cuts between different "interviewees" reacting with surprise, curiosity, or excitement. Captions are prominent. Energy is light and entertaining. Product education happens through dialogue, not voiceover. Blends into the Meta feed as content, not advertising.
-
-**Script requirements:** Interviewer questions scripted. Multiple interviewee responses scripted (but written to sound spontaneous). Key reaction moments marked. Product demonstration or reveal beat. Quick-cut structure between multiple "interviews." Captions/text overlay notes.
-
-**Concept considerations:** When generating concepts for Street Interview, think about what QUESTIONS would create the most entertaining and educational interactions. The concept should describe the interview scenario, the location, the types of "strangers" being approached, and the key surprise/discovery moments.`,
 
   'Fake Podcast Ads': `**Fake Podcast Ads — VIDEO**
 
@@ -168,15 +171,13 @@ export function buildAdTypeGuideCompact(adType: AdType): string {
 
     'UGC (User Generated Content)': `**UGC (User Generated Content) — VIDEO.** Created by independent creators filming on their phones at home. Write conversational talking points, NOT rigid word-for-word scripts. First person voice ("I have to tell you..."). The brief gives story arc, key phrases to hit, and emotional tone — but leave room for the creator's personality. Output looks native to social media — someone on their couch sharing a genuine recommendation. Raw and authentic is the goal.`,
 
-    'Ecom Style': `**Ecom Style (Editing Brief) — VIDEO.** Built entirely from existing footage with AI voiceover — no new filming. Write a voiceover narration script with detailed visual direction for every line so an editor can match existing B-roll. Include text overlay callouts for key benefits, pacing/music notes. Output is a polished brand video — product showcases, lifestyle montages, educational explainers — assembled from pre-existing clips.`,
+    'Ecom Style': `**Ecom Style (Editing Brief) — VIDEO.** Built entirely from existing footage (13,000+ clips) with AI voiceover — no new filming. Write a voiceover narration script with CONVERSATIONAL visual descriptions for every line so an editor can match existing B-roll. Visuals must be grounded in available footage — use shot type tags (Talking Head, Putting On Socks, Studio Product Shot, Walking, Before/After Reveal, etc.) and write the Visual column as a short sentence describing what the viewer sees, NOT a label. We do NOT have gym, medical, sports, travel, hiking, or children footage. Script lines must sound like a real person talking to a friend — full natural sentences, not fragments or ad copy. Include text overlays for key benefits. Script structure should emerge from the concept (confession, observation, reframe, permission, skeptic's journey, contrast, day-in-the-life) — don't default to the same arc every time. Vary visual pacing — don't stack 3 talking head shots in a row.`,
 
     'Static': `**Static — SINGLE IMAGE (NOT VIDEO).** One frame to stop the scroll. This is NOT a video script. Output: Headline (max 12 words), Subhead, Body copy (max 2 lines), CTA button text, Visual description/art direction, and 3-5 headline variations. Clean DTC aesthetic, warm and approachable — not clinical or medical. One message, one visual, one action. Must work without sound or motion.`,
 
     'Founder Style': `**Founder Style / EGC — VIDEO.** The actual brand founder (Dimos) speaking to camera from the real warehouse, surrounded by inventory. The environment IS the proof — blue bins, packing stations, real product visible. Talking points with personal story arc, NOT rigid scripts. Language must sound authentic and personal. Establish the setting first (dramatic establishing shot showing scale), then settle into medium shot of founder talking. Hook → mechanism → offer → CTA.`,
 
     'Fake Podcast Ads': `**Fake Podcast Ads — VIDEO.** Two people in a podcast setup having a scripted conversation designed to feel organic. One = "host/skeptic" (asks questions the viewer thinks), other = "guest/believer" (provides answers). Write as TWO-PERSON DIALOGUE with natural interruptions and reactions. The product mention must feel earned, not forced. The skeptic-to-believer arc is the story structure. Podcast mics visible, warm lighting, conversational energy.`,
-
-    'Street Interview Style': `**Street Interview Style — VIDEO.** Interviewer with mic approaches "strangers" (actors) outdoors. Write interviewer questions + multiple interviewee responses (scripted to sound spontaneous). Quick-cut structure between multiple interviews. Mark key reaction/surprise moments. Product education through dialogue, not voiceover. Handheld camera, outdoor setting, mic in frame. Entertainment-first, education-second.`,
 
     'Spokesperson': `**Spokesperson — VIDEO.** Authority figure (nurse, doctor, athlete, expert) speaking to camera. Credentials established in first 3 seconds (scrubs, lab coat, degrees visible). Write specific claims they're QUALIFIED to make from professional experience. Authoritative but warm — educating and recommending, not selling. Personal experience with the product validates the claims. Data points delivered through their expert lens.`,
 

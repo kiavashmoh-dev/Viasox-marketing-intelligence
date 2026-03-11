@@ -205,7 +205,7 @@ AGC has full creative control. Use it. Include shots that UGC creators CANNOT do
 
 /**
  * Combined building blocks + shot types + rules reference for non-AGC video production briefs.
- * Used by: UGC, Founder Style, Fake Podcast, Street Interview, Spokesperson, Packaging/Employee.
+ * Used by: UGC, Founder Style, Fake Podcast, Spokesperson, Packaging/Employee.
  */
 export function buildVideoProductionBriefReference(): string {
   return `## PRODUCTION BRIEF BUILDING BLOCKS

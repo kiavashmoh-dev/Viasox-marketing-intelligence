@@ -28,7 +28,6 @@ const AD_TYPES: AdType[] = [
   'Static',
   'Founder Style',
   'Fake Podcast Ads',
-  'Street Interview Style',
   'Spokesperson',
   'Packaging/Employee',
 ];

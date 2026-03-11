@@ -325,15 +325,6 @@ Two people in a podcast/conversation setup having natural DIALOGUE about the pro
 - Write as DIALOGUE — alternate speakers across rows, include natural interruptions and reactions
 - Must sound like organic discovery, not scripted endorsement
 - Use Talent Notes to specify which speaker (Host/Guest) is talking in each row`;
-    case 'Street Interview Style':
-      return `**AD TYPE PRODUCTION STYLE — STREET INTERVIEW:**
-Interviewer approaches people with questions or product challenges. Real reactions, real-world setting.
-- Primary Shot Type: **ON CAMERA** for interviewer and interviewees
-- BROLL: Crowd/environment shots, product reveal moments
-- Shot Angles: **Standing** and **Walking** — outdoor, dynamic, handheld camera feel
-- Script defines the SETUP QUESTION, expected interaction flow, and product reveal timing
-- Reactions should feel genuine and unscripted — write reaction DIRECTIONS, not exact words for interviewees
-- Use Talent Notes to specify "Interviewer" vs "Interviewee" in each row`;
     case 'Spokesperson':
       return `**AD TYPE PRODUCTION STYLE — SPOKESPERSON:**
 Expert or authority figure (doctor, nurse, professional) presenting the product with credibility.
@@ -493,7 +484,50 @@ BROLL rows (visual-only cutaways) may appear in either format as brief interrupt
 ### 5. FRAMEWORK BREAKDOWN
 ## How ${params.framework} Was Applied
 Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.` : (params.adType === 'Ecom Style' || params.adType === 'Static') ? `## SCRIPT OUTPUT FORMAT
+${params.adType === 'Ecom Style' ? `
+### ECOM STYLE — VISUAL GROUNDING RULES (CRITICAL)
+This ad is built entirely from EXISTING footage. Every visual must be grounded in footage that actually exists.
 
+**Available Shot Types (use as Shot column tags):**
+- Core: Talking Head, Putting On Socks, Feet Up Lifestyle, Bare Legs – Condition, Walking, Standing Feet, Before/After Reveal, Studio Product Shot, Animation / Motion Graphics, Text/Title Card
+- Supplementary: Socks With Shoes, Documentary / Interview, Product Flat Lay (Branded), Branded Shipping Box, EGC / Warehouse, Lifestyle Flat Lay, Material Close-up, PNG Cutout, Home Environment, Outdoor Setting
+- Limited: Yoga / Wellness B-Roll (Ankle Compression only), Car Interior, Mall / Public Indoor, Cafe / Seated Public
+
+**Footage we do NOT have — NEVER write visuals implying these:** Indoor gym/fitness, medical offices/clinical settings, sports activities (running, cycling, hiking), travel/airports, restaurants/dining, children/family scenes, pet scenes.
+
+**Visual Description Rules:**
+The Visuals column must be a SHORT, CONVERSATIONAL description of what the viewer sees — one natural sentence, 8-20 words. Think "telling the editor what you're picturing for this moment."
+- GOOD: "Close-up of her pulling the compression socks up over her calves on the couch"
+- GOOD: "Her bare legs with visible sock marks and redness around the ankles"
+- GOOD: "Product flat lay — five colorful pairs fanned out on a white surface"
+- BAD: "Talking Head" (that's a shot type label, not a visual description)
+- BAD: "B-roll of feet" (too vague, the editor can't pull this)
+- BAD: Technical multi-sentence descriptions (too long, the editor won't read it)
+
+**Visual Pacing:** Vary visuals across the script. If you've written 2+ talking-head-style visuals in a row, switch to a product moment, a feet shot, or a lifestyle scene. The editor needs visual variety.
+
+### ECOM STYLE — SCRIPT WRITING STYLE (NON-NEGOTIABLE)
+Every line must sound like a real person talking to a friend. Full, natural sentences with everyday words. NOT fragments, NOT polished copywriting prose, NOT aggressive direct response.
+- Use natural filler words ("honestly," "actually," "just," "pretty much")
+- NO single-word or two-word lines. NO telegram fragments ("Noon." / "That stiffness.")
+- NO polished metaphors ("heaviness whispers," "legs carry the weight")
+- NO aggressive commands ("STOP buying bigger socks")
+- Most lines 10-25 words. Read every line out loud — if it sounds like an ad, rewrite it.
+
+### ECOM STYLE — SCRIPT FRAMEWORK ADAPTIVITY
+The script structure must emerge from the concept, not default to "problem → solution → CTA" every time:
+- **Confession Arc** (first-person): Admission → what they used to believe → discovery → new reality
+- **The Observation** (third-person narrator): Camera notices something → describes what we see → reveal → product connection
+- **The Reframe** (second-person education): Challenge a belief → explain why it's wrong → what actually works → proof
+- **The Permission Narrative** (second-person gentle): Validate struggle → acknowledge acceptance → give permission to expect better → here's how
+- **The Skeptic's Journey** (first-person): Express doubt → why skeptical → what changed mind → converted
+- **The Contrast/Split** (mixed): Two people, two outcomes → same situation → reveal the difference
+- **Day-in-the-Life** (first or third-person): Specific moment → walk through day → show same day with product → different ending
+The concept dictates which framework fits. Invent new structures if the concept demands it.
+
+### ECOM STYLE — AVOID THESE OVERUSED PATTERNS
+Never use: "3pm fatigue" or time-based decline references, "sock drawer" metaphors, "Here's the thing..." transitions, "What if you could..." rhetorical questions, "The result?" as a transition.
+` : ''}
 ### 1. STRATEGY SUMMARY (at the top, before the script)
 Start with a clear summary block:
 
@@ -505,13 +539,13 @@ Start with a clear summary block:
 
 ### 2. SCRIPT TABLE (markdown table format)
 Write the ENTIRE script as a markdown table with these columns:
-| Timestamp | Visuals | Line | Delivery | Shot |
+| Timestamp | Shot Type | Visuals | Line | Delivery |
 Where:
 - **Timestamp** = Timecode (e.g., 0:00–0:03)
-- **Visuals** = What the viewer sees on screen (setting, talent action, product shots, text overlays)
-- **Line** = The exact spoken/written copy
-- **Delivery** = Either "DTC" (Direct to Camera) or "VO" (Voiceover) or "Text" (on-screen text only) or "Dialogue" (conversation between people)
-- **Shot** = Brief camera/shot description (e.g., "CU face", "Wide establishing", "Product insert", "OTS", "Handheld POV")
+- **Shot Type** = Footage category tag from the available shot types list (e.g., "Talking Head", "Studio Product Shot", "Putting On Socks", "Walking")${params.adType === 'Ecom Style' ? ' — tells the editor which footage folder to pull from' : ''}
+- **Visuals** = ${params.adType === 'Ecom Style' ? 'A short, conversational sentence describing what the viewer sees on screen (8-20 words). NOT a label, NOT technical direction — just paint the picture for the editor' : 'What the viewer sees on screen (setting, talent action, product shots, text overlays)'}
+- **Line** = The exact spoken/written copy${params.adType === 'Ecom Style' ? ' — must sound like a real person talking to a friend' : ''}
+- **Delivery** = Either "VO" (Voiceover)${params.adType === 'Ecom Style' ? '' : ', "DTC" (Direct to Camera)'} or "Text" (on-screen text only)${params.adType === 'Ecom Style' ? '' : ' or "Dialogue" (conversation between people)'}
 
 **IMPORTANT — HOOKS GO FIRST:**
 All hook variations MUST be in the FIRST rows of the table, ABOVE the body script. Label them clearly:
@@ -520,14 +554,14 @@ All hook variations MUST be in the FIRST rows of the table, ABOVE the body scrip
 - Then continue with the body script using normal timestamps (starting from where the hook ends)
 
 Example table structure:
-| Timestamp | Visuals | Line | Delivery | Shot |
-|-----------|---------|------|----------|------|
-| HOOK 1 (0:00–0:03) | [visuals] | "[line]" | DTC | CU face |
-| HOOK 2 (0:00–0:03) | [visuals] | "[line]" | VO | Wide shot |
-| HOOK 3 (0:00–0:03) | [visuals] | "[line]" | DTC | Medium |
+| Timestamp | Shot Type | Visuals | Line | Delivery |
+|-----------|-----------|---------|------|----------|
+| HOOK 1 (0:00–0:03) | ${params.adType === 'Ecom Style' ? 'Bare Legs – Condition' : 'Talking Head'} | ${params.adType === 'Ecom Style' ? '"Her bare legs on the couch, you can see the indentation marks from her old socks"' : '[visuals]'} | "[line]" | VO |
+| HOOK 2 (0:00–0:03) | ${params.adType === 'Ecom Style' ? 'Putting On Socks' : 'Studio Product Shot'} | ${params.adType === 'Ecom Style' ? '"Close-up of her sliding the compression socks on, they glide up without a fight"' : '[visuals]'} | "[line]" | VO |
+| HOOK 3 (0:00–0:03) | ${params.adType === 'Ecom Style' ? 'Studio Product Shot' : 'Talking Head'} | ${params.adType === 'Ecom Style' ? '"Product flat lay — colorful pairs fanned out on a white surface"' : '[visuals]'} | "[line]" | ${params.adType === 'Ecom Style' ? 'Text' : 'VO'} |
 | **BODY** | **---** | **Script continues below** | **---** | **---** |
-| 0:03–0:08 | [visuals] | "[line]" | DTC | Medium |
-| 0:08–0:15 | [visuals] | "[line]" | VO | Product CU |
+| 0:03–0:08 | ${params.adType === 'Ecom Style' ? 'Talking Head' : '[type]'} | ${params.adType === 'Ecom Style' ? '"She\'s sitting on the couch, looking relaxed and talking naturally"' : '[visuals]'} | "[line]" | VO |
+| 0:08–0:15 | ${params.adType === 'Ecom Style' ? 'Material Close-up' : '[type]'} | ${params.adType === 'Ecom Style' ? '"Slow push-in on the bamboo fabric texture, soft lighting"' : '[visuals]'} | "[line]" | VO |
 | ... | ... | ... | ... | ... |
 
 For Static ad type, replace the table with:
@@ -787,7 +821,7 @@ ${params.agcLocation ? `Location: ${params.agcLocation}` : ''}
 ${params.agcTalentDescription ? `Talent: ${params.agcTalentDescription}` : ''}
 ${params.agcPacing ? `Pacing: ${params.agcPacing === 'fast' ? 'Fast (15-30s, punchy cuts)' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s, documentary rhythm)' : 'Standard (30-45s, balanced)'}` : ''}
 ${params.agcMusicDirection ? `Music: ${params.agcMusicDirection}` : ''}
-Follow the AGC Production Brief output format from the system instructions. Use the 9-hook matrix (3 Visuals x 3 Verbals), Building Block labels on every row, and include 8-12 extra B-roll shots.` : ''}${params.adType.includes('UGC') ? 'UGC (User-Generated Content): Raw, authentic, phone-shot. A real person speaking to camera from their home, car, or break room. The script must sound SPOKEN, not written — natural pauses, conversational language, imperfect delivery. Visuals are handheld, natural light. If it reads like a polished ad script, rewrite it to sound like a real person talking.' : ''}${params.adType === 'Ecom Style' ? 'Ecom Style: Product-hero visual storytelling. Close-ups of fabric, unboxing sequences, product-in-use beauty shots with fast cuts and text overlays. The script is primarily VISUAL with supporting text/VO — not dialogue-driven.' : ''}${params.adType === 'Founder Style' ? 'Founder Style: The founder speaks directly to camera with passion and authority. Personal story, behind-the-brand narrative. The script is a MONOLOGUE — one person, authentic setting, personal conviction. "Let me tell you why I created this..."' : ''}${params.adType === 'Fake Podcast Ads' ? 'Fake Podcast Ads: Two people in podcast setup having a natural CONVERSATION about the product. Must sound like organic discovery, not scripted. Write it as DIALOGUE with natural interruptions, reactions, and genuine surprise.' : ''}${params.adType === 'Street Interview Style' ? 'Street Interview Style: Interviewer approaches people with questions or product challenges. Real reactions, surprise, real-world setting. The script defines the SETUP QUESTION and expected interaction flow — the reactions should feel genuine and unscripted.' : ''}${params.adType === 'Spokesperson' ? 'Spokesperson: Expert or authority figure (doctor, nurse, professional) presenting the product. Credibility-driven. The script should establish AUTHORITY first, then deliver the message with professional gravitas.' : ''}${params.adType === 'Packaging/Employee' ? 'Packaging/Employee: Behind-the-scenes warehouse content. Real team packing orders, showing care and attention. The script describes the SETTING, employee actions, and the "we care about every pair" narrative.' : ''}
+Follow the AGC Production Brief output format from the system instructions. Use the 9-hook matrix (3 Visuals x 3 Verbals), Building Block labels on every row, and include 8-12 extra B-roll shots.` : ''}${params.adType.includes('UGC') ? 'UGC (User-Generated Content): Raw, authentic, phone-shot. A real person speaking to camera from their home, car, or break room. The script must sound SPOKEN, not written — natural pauses, conversational language, imperfect delivery. Visuals are handheld, natural light. If it reads like a polished ad script, rewrite it to sound like a real person talking.' : ''}${params.adType === 'Ecom Style' ? 'Ecom Style (Editing Brief): Built entirely from existing footage with AI voiceover. Every visual MUST be grounded in footage that exists — use the Shot Type tags and available footage list from the system instructions. Write conversational visual descriptions (one sentence, 8-20 words) telling the editor what you picture, NOT labels. Script lines must sound like a real person talking to a friend — full natural sentences, everyday words. NO fragments, NO copywriting prose, NO aggressive DR commands. Use the script framework that fits the concept (confession, observation, reframe, permission, skeptic journey, contrast, day-in-the-life). Vary visual pacing — don\'t stack same shot types in a row. We do NOT have gym, medical, sports, travel, hiking, or children footage.' : ''}${params.adType === 'Founder Style' ? 'Founder Style: The founder speaks directly to camera with passion and authority. Personal story, behind-the-brand narrative. The script is a MONOLOGUE — one person, authentic setting, personal conviction. "Let me tell you why I created this..."' : ''}${params.adType === 'Fake Podcast Ads' ? 'Fake Podcast Ads: Two people in podcast setup having a natural CONVERSATION about the product. Must sound like organic discovery, not scripted. Write it as DIALOGUE with natural interruptions, reactions, and genuine surprise.' : ''}${params.adType === 'Spokesperson' ? 'Spokesperson: Expert or authority figure (doctor, nurse, professional) presenting the product. Credibility-driven. The script should establish AUTHORITY first, then deliver the message with professional gravitas.' : ''}${params.adType === 'Packaging/Employee' ? 'Packaging/Employee: Behind-the-scenes warehouse content. Real team packing orders, showing care and attention. The script describes the SETTING, employee actions, and the "we care about every pair" narrative.' : ''}
 ${!params.adType.includes('AGC') && params.adType !== 'Ecom Style' && params.adType !== 'Static' ? `
 Follow the Video Production Brief output format from the system instructions. Use Building Block labels on every row.
 ${params.agcLocation ? `Location: ${params.agcLocation}` : ''}
@@ -849,11 +883,20 @@ CRITICAL: Write completely original copy. Every line must be built from the actu
 
 **2. SCRIPT TABLE** (markdown table)
 Use the exact table format from the instructions:
-| Timestamp | Visuals | Line | Delivery | Shot |
+| Timestamp | Shot Type | Visuals | Line | Delivery |
 
 Put ALL ${params.hookVariations} hook variations FIRST in the table (labeled HOOK 1, HOOK 2, etc.), THEN a separator row, THEN the body script with timestamps.
 
 Each hook should use a different approach. After each hook label, note which principle it applies (e.g., "HOOK 1 — Hopkins Selector").
+${params.adType === 'Ecom Style' ? `
+ECOM CRITICAL RULES:
+- Shot Type column = footage category tag (Talking Head, Putting On Socks, Studio Product Shot, etc.)
+- Visuals column = one conversational sentence describing what the viewer sees (8-20 words), NOT a label
+- Every visual must be grounded in footage that EXISTS — never reference gym, medical, sports, travel, hiking, children
+- Every Line must sound like a real person talking to a friend — full natural sentences, no fragments, no ad copy
+- Vary visuals: don't stack 2+ of the same shot type in a row
+- Script structure should match the concept (confession, observation, reframe, permission, skeptic journey, contrast, day-in-the-life)
+- Avoid overused patterns: "3pm fatigue", "sock drawer", "Here's the thing...", "What if you could...", "The result?"` : ''}
 
 **3. KEY DATA POINTS** — Every statistic and customer quote referenced, with source frequencies.
 
@@ -866,7 +909,10 @@ The script should:
 4. Use real customer language pulled directly from the review data
 5. End with a clear, specific CTA appropriate for ${params.funnelStage}
 6. Be within the word count for ${params.duration}
-7. Heavily apply the principles from ${params.bookReference} throughout
+7. Heavily apply the principles from ${params.bookReference} throughout${params.adType === 'Ecom Style' ? `
+8. Ground every visual in available footage — if you can't picture existing footage for a visual, redirect
+9. Write every line as a conversational sentence — read it out loud, if it sounds like an ad, rewrite it
+10. Choose a script framework that fits the concept, don't default to the same arc every time` : ''}
 
 CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : `OUTPUT STRUCTURE — VIDEO PRODUCTION BRIEF (follow this exact order):
 
