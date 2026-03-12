@@ -25,7 +25,12 @@ export default function App() {
 
   const handleApiKey = (key: string) => {
     setApiKey(key);
-    setView('upload');
+    // If embedded review data is already loaded, skip straight to dashboard
+    if (analysis) {
+      setView('dashboard');
+    } else {
+      setView('upload');
+    }
   };
 
   const handleFiles = (csvFiles: File[], resourceFiles: File[]) => {
@@ -76,7 +81,13 @@ export default function App() {
       return <ApiKeyInput onSubmit={handleApiKey} />;
 
     case 'upload':
-      return <CsvUploader onFiles={handleFiles} error={analysisError} />;
+      return (
+        <CsvUploader
+          onFiles={handleFiles}
+          error={analysisError}
+          onBack={analysis ? handleBackToDashboard : undefined}
+        />
+      );
 
     case 'processing':
       return progress ? (

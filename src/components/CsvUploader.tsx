@@ -10,6 +10,8 @@ interface UploadedFile {
 interface Props {
   onFiles: (csvFiles: File[], resourceFiles: File[]) => void;
   error: string | null;
+  /** When provided, shows a "Back" link to return to dashboard (for embedded data mode) */
+  onBack?: () => void;
 }
 
 function formatSize(bytes: number): string {
@@ -18,7 +20,7 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function CsvUploader({ onFiles, error }: Props) {
+export default function CsvUploader({ onFiles, error, onBack }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -157,6 +159,15 @@ export default function CsvUploader({ onFiles, error }: Props) {
           <p>handle, review (or body), rating, date</p>
           <p className="mt-2">Other files (txt, md, docs) will be included as context for AI generation.</p>
         </div>
+
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="w-full mt-3 text-sm text-slate-500 hover:text-blue-600 transition-colors"
+          >
+            {'\u2190'} Back to dashboard (use embedded review data)
+          </button>
+        )}
       </div>
     </div>
   );

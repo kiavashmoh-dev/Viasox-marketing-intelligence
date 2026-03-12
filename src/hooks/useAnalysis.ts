@@ -3,13 +3,21 @@ import type { FullAnalysis, ProcessingProgress, RawReview } from '../engine/type
 import { parseCsv } from '../utils/csv';
 import { organizeReviews } from '../engine/organizeReviews';
 import { runFullAnalysis } from '../engine/analyzeReviews';
+import { embeddedReviewAnalysis, hasEmbeddedReviews } from '../data/reviewAnalysisLoader';
 
 export function useAnalysis() {
-  const [analysis, setAnalysis] = useState<FullAnalysis | null>(null);
+  // Initialize with embedded data when available — no CSV upload needed
+  const [analysis, setAnalysis] = useState<FullAnalysis | null>(
+    hasEmbeddedReviews() ? embeddedReviewAnalysis : null,
+  );
   const [resourceContext, setResourceContext] = useState<string>('');
   const [progress, setProgress] = useState<ProcessingProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Process uploaded CSV files (for custom/updated review data).
+   * This overrides the embedded analysis with fresh results.
+   */
   const processFiles = useCallback(async (csvFiles: File[], resourceFiles: File[]) => {
     setError(null);
     setProgress({ stage: 'organizing', currentProduct: '', percent: 0 });
