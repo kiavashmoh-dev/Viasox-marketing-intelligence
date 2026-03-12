@@ -51,6 +51,7 @@ const BOOK_REFERENCES: { value: MarketingBookReference; label: string }[] = [
   { value: "The Copywriter's Handbook (Bly)", label: "The Copywriter's Handbook (Bly)" },
 ];
 const FRAMEWORKS: ScriptFramework[] = [
+  // --- Core 12 ---
   'PAS (Problem-Agitate-Solution)',
   'AIDA-R (Attention-Interest-Desire-Action-Retention)',
   'Before-After-Bridge',
@@ -63,6 +64,15 @@ const FRAMEWORKS: ScriptFramework[] = [
   'The Skeptic Converter',
   'The Day-in-Life',
   'The Myth Buster',
+  // --- Manifesto 4.3 + Marketing Books ---
+  'The Enemy Framework',
+  'The Discovery Narrative',
+  'The Professional Authority',
+  'The Demonstration Proof',
+  'The Objection Crusher',
+  'The Identity Alignment',
+  'The Reason-Why (Hopkins)',
+  'The Gradualization (Schwartz)',
 ];
 
 export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack, conceptAngleContext }: Props) {

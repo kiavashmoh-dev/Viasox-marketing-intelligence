@@ -231,6 +231,7 @@ export interface HooksParams {
 }
 
 export type ScriptFramework =
+  // --- Original 12 ---
   | 'PAS (Problem-Agitate-Solution)'
   | 'AIDA-R (Attention-Interest-Desire-Action-Retention)'
   | 'Before-After-Bridge'
@@ -242,7 +243,16 @@ export type ScriptFramework =
   | 'The Contrast Framework'
   | 'The Skeptic Converter'
   | 'The Day-in-Life'
-  | 'The Myth Buster';
+  | 'The Myth Buster'
+  // --- Added from Manifesto 4.3 + Marketing Books ---
+  | 'The Enemy Framework'
+  | 'The Discovery Narrative'
+  | 'The Professional Authority'
+  | 'The Demonstration Proof'
+  | 'The Objection Crusher'
+  | 'The Identity Alignment'
+  | 'The Reason-Why (Hopkins)'
+  | 'The Gradualization (Schwartz)';
 
 export type MarketingBookReference =
   | 'Scientific Advertising (Hopkins)'

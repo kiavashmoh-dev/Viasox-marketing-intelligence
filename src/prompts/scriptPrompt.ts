@@ -200,105 +200,199 @@ Write this script as Bly would. Direct response craft at its finest:
 
 
 const FRAMEWORK_DETAILS: Record<string, string> = {
-  'PAS (Problem-Agitate-Solution)': `**PAS (Problem-Agitate-Solution)**
-Structure:
-1. PROBLEM (0:00-0:05) - Name the specific pain point
-2. AGITATE (0:05-0:15) - Make the problem feel urgent/unbearable
-3. SOLUTION (0:15-0:25) - Introduce Viasox as the answer
-4. PROOF (0:25-0:30) - Customer quote or data point
+  'PAS (Problem-Agitate-Solution)': `**PAS (Problem-Agitate-Solution)** — Hopkins (specificity) + Schwartz (intensification)
+Structure: Problem (0-20%) → Agitate (20-50%) → Solve (50-85%) → CTA (85-100%)
+Execution:
+- PROBLEM: One SPECIFIC pain from reviews — Hopkins demands precision, not "foot pain" but "deep red marks still there at dinner"
+- AGITATE: Schwartz's intensification — make the status quo INTOLERABLE. Stack consequences using temporal language. The agitation must escalate.
+- SOLVE: Schwartz's mechanization — explain WHY it works (non-binding tops, graduated compression), don't just claim
+- CTA: Hopkins' service principle — frame as help, not a demand
+Best for: Problem-Aware & Solution-Aware. TOF and MOF.`,
 
-Best for: Cold audiences, problem-aware prospects`,
+  'AIDA-R (Attention-Interest-Desire-Action-Retention)': `**AIDA-R** — Bly (motivating sequence) + Schwartz (three dimensions)
+Structure: Attention (0-10%) → Interest (10-35%) → Desire (35-70%) → Action (70-90%) → Retention (90-100%)
+Execution:
+- ATTENTION: Bly's 4 U's — Urgent, Unique, Ultra-specific, Useful. Pattern interrupt with surprising data or visual.
+- INTEREST: Schwartz's Identification — make viewer see themselves. Unexpected angle from review data that makes them lean in.
+- DESIRE: Schwartz's Desire intensification — paint the after-state vividly. Bly's "one level deeper": Feature → Benefit → REAL Benefit.
+- ACTION: Bly — make the action easy, specific. Include the offer.
+- RETENTION: Risk reversal + repeat strongest benefit. Schwartz's Belief dimension — leave them trusting.
+Best for: Product-Aware, retargeting. MOF and BOF.`,
 
-  'AIDA-R (Attention-Interest-Desire-Action-Retention)': `**AIDA-R (Attention-Interest-Desire-Action-Retention)**
-Structure:
-1. ATTENTION (0:00-0:05) - Pattern interrupt hook
-2. INTEREST (0:05-0:12) - Unexpected fact or insight
-3. DESIRE (0:12-0:22) - Paint the after state
-4. ACTION (0:22-0:27) - Clear CTA
-5. RETENTION (0:27-0:30) - Repeat key benefit
+  'Before-After-Bridge': `**Before-After-Bridge** — Schwartz (visualization) + Neumeier (gut feeling)
+Structure: Before (0-25%) → After (25-60%) → Bridge (60-90%) → CTA (90-100%)
+Execution:
+- BEFORE: Schwartz's identification — recreate their painful reality using their exact review language. Neumeier: create a FEELING of frustration.
+- AFTER: Schwartz's visualization — paint the transformed state so clearly they experience it. Use real metrics ("90% less pain," "swelling down by half").
+- BRIDGE: Viasox is the bridge. Schwartz's mechanization — one key mechanism, one key proof point.
+- CTA: Neumeier's trust equation (reliability + delight). Invite them to start their own before/after.
+Best for: All awareness levels. Transformation stories.`,
 
-Best for: Product-aware audiences, retargeting`,
+  'Star-Story-Solution': `**Star-Story-Solution** — Hopkins (service) + Schwartz (identification)
+Structure: Star/character (0-15%) → Story/journey (15-65%) → Solution (65-90%) → CTA (90-100%)
+Execution:
+- STAR: Hopkins' headline-as-selector — make the star THEM. Not "a woman" but "a retired nurse whose legs haven't stopped aching." Viewer must IDENTIFY instantly.
+- STORY: Follow the Cycle of False Hope — the Star has tried and failed. Include specific brands tried, pharmacy visits, the moment they gave up. Hopkins insists on truth — use actual customer journeys.
+- SOLUTION: Discovery of Viasox enters organically. Hopkins' service — the solution feels like help, not selling.
+- CTA: Story language — "Start your story" or "Join [X]K people who found theirs."
+Best for: Storytelling, longer formats (30s-60s), emotional connection. TOF and MOF.`,
 
-  'Before-After-Bridge': `**Before-After-Bridge**
-Structure:
-1. BEFORE (0:00-0:10) - Show/describe the painful before state
-2. AFTER (0:10-0:20) - Show/describe the transformed after state
-3. BRIDGE (0:20-0:30) - Viasox is the bridge between the two
+  'Feel-Felt-Found': `**Feel-Felt-Found** — Bly (objection handling) + Schwartz (Two Voices Framework)
+Structure: Feel (0-25%) → Felt (25-60%) → Found (60-90%) → CTA (90-100%)
+Execution:
+- FEEL: Address the Protector Voice directly. "I know you're thinking 'just another pair of socks.'" Bly's BFD: identify their core Belief, Feeling, and Desire.
+- FELT: Schwartz's identification — create shared experience. Reference the Closet Graveyard (3.1%), the Cycle of False Hope. Show you understand their JOURNEY.
+- FOUND: Bly's proof cascade — specific numbers, specific quotes. "After 1 week, 90% less pain." Every claim backed by review data.
+- CTA: Risk-free language for the Protector Voice: "Try them. If I'm wrong, you've lost nothing."
+Best for: Overcoming skepticism, price objection. Solution-Aware and Product-Aware.`,
 
-Best for: Transformation stories, testimonial-style ads`,
+  'Problem-Promise-Proof-Push': `**Problem-Promise-Proof-Push** — Bly (PPPP formula) + Hopkins (specificity)
+Structure: Problem (0-20%) → Promise (20-40%) → Proof (40-75%) → Push (75-100%)
+Execution:
+- PROBLEM: One specific pain point. Hopkins: not "discomfort" but "deep red rings around your calves that take hours to fade."
+- PROMISE: Bold, testable claim. Bly's "so what?" test — not "comfortable socks" but "the first socks that won't leave a single mark."
+- PROOF: Bly's proof cascade — stack 3+ types: (1) Data from reviews, (2) Customer testimony, (3) Mechanism explanation (Hopkins' reason why).
+- PUSH: CTA with urgency. Include risk reversal and offer.
+Best for: Direct response, conversion-focused. MOF and BOF.`,
 
-  'Star-Story-Solution': `**Star-Story-Solution**
-Structure:
-1. STAR (0:00-0:05) - Introduce a relatable character
-2. STORY (0:05-0:20) - Their journey with the problem
-3. SOLUTION (0:20-0:30) - How Viasox solved it
+  'Hook-Story-Offer': `**Hook-Story-Offer** — Bly (direct response) + Hopkins (headline-as-selector)
+Structure: Hook (0-15%) → Story (15-70%) → Offer (70-100%)
+Execution:
+- HOOK: Hopkins' selector — grab the RIGHT person. Bly's 4 U's. "I'm a nurse and I just survived my first 12-hour shift without aching."
+- STORY: The customer's real story with sensory details. Hopkins: write to ONE person. Include the turning point where Viasox changed the experience. Use review language verbatim.
+- OFFER: Bly's direct response CTA — specific about what they get, what it costs, why act now. Include the offer and risk reversal.
+Best for: Social media, UGC-style. TOF and MOF.`,
 
-Best for: Storytelling, longer formats, emotional connection`,
+  'Empathy-Education-Evidence': `**Empathy-Education-Evidence** — Neumeier (trust) + Hopkins (service)
+Structure: Empathy (0-30%) → Education (30-65%) → Evidence (65-90%) → CTA (90-100%)
+Execution:
+- EMPATHY: Neumeier — create a GUT FEELING first. Reference the Hidden Suffering pattern. "Nobody talks about the daily fight just to put on socks." Hopkins' service: position as someone who UNDERSTANDS.
+- EDUCATION: Hopkins — the best ads feel like useful information. Teach them something: why elastic causes marks, why pharmacy compression is so hard, why diabetic socks don't have to look medical.
+- EVIDENCE: Neumeier's reliability (prove it works with data) + delight (show the unexpected bonus — patterns, colors). Evidence proves BOTH function AND joy.
+- CTA: Service-oriented: "See what we made for you."
+Best for: Building trust, premium positioning. Problem-Aware. TOF and MOF.`,
 
-  'Feel-Felt-Found': `**Feel-Felt-Found**
-Structure:
-1. FEEL (0:00-0:08) - "I know how you feel about..."
-2. FELT (0:08-0:18) - "I felt the same way / Others felt..."
-3. FOUND (0:18-0:30) - "But here's what I found..."
+  'The Contrast Framework': `**The Contrast Framework** — Neumeier (differentiation) + Schwartz (enemy naming)
+Structure: Old Way (0-20%) → Problems (20-40%) → New Way (40-65%) → Why better (65-90%) → CTA (90-100%)
+Execution:
+- OLD WAY: Schwartz's enemy naming — pharmacy compression, tight elastic, ugly beige medical socks. Bash the CATEGORY experience, not specific brands.
+- PROBLEMS: Intensify using customer language: "feels like a tourniquet," "those ugly beige things." Reference 12.3% style stigma data.
+- NEW WAY: Neumeier's differentiation — what makes Viasox fundamentally DIFFERENT. The contrast must be VISCERAL — side by side visual is most powerful.
+- WHY BETTER: Schwartz's mechanization — explain the mechanism (non-binding tops, graduated compression, beautiful patterns).
+- CTA: "Switch" language — "Join [X]K who switched" or "See the difference yourself."
+Best for: Competitive positioning, Solution-Aware. MOF.`,
 
-Best for: Overcoming skepticism, premium price objection`,
+  'The Skeptic Converter': `**The Skeptic Converter** — Schwartz (awareness progression) + Bly (objection handling)
+Structure: Objection (0-15%) → Acknowledgment (15-30%) → Twist/evidence (30-65%) → Conversion (65-90%) → CTA (90-100%)
+Execution:
+- OBJECTION: Voice their EXACT skepticism. Schwartz: match their awareness precisely. "Great, another pair of 'miracle' socks." Bly's BFD: address their core Belief.
+- ACKNOWLEDGMENT: Schwartz's identification — "I get it. I said the same thing." Don't dismiss. Reference the Cycle of False Hope.
+- TWIST: The evidence that cracks skepticism — a specific data point they didn't know, a customer quote that sounds like THEM, a demonstration. Bly: Ultra-specific.
+- CONVERSION: The belief shift. "I can't believe I waited so long." Schwartz: the conversion must feel earned.
+- CTA: Challenge language: "Prove us wrong" or "Try them risk-free — we'll wait."
+Best for: Solution-Aware and Product-Aware skeptics. MOF.`,
 
-  'Problem-Promise-Proof-Push': `**Problem-Promise-Proof-Push**
-Structure:
-1. PROBLEM (0:00-0:07) - Specific pain point
-2. PROMISE (0:07-0:14) - What Viasox delivers
-3. PROOF (0:14-0:24) - Data, quotes, social proof
-4. PUSH (0:24-0:30) - CTA with urgency
+  'The Day-in-Life': `**The Day-in-Life** — Schwartz (identification) + Hopkins (specificity)
+Structure: Morning (0-20%) → Throughout the day (20-55%) → Evening reveal (55-85%) → CTA (85-100%)
+Execution:
+- MORNING: Schwartz's identification — show THEIR morning. The specific struggle with socks. Hopkins: make it SPECIFIC to the persona (nurse vs. senior vs. teacher).
+- THROUGHOUT: Track using the temporal suffering technique. Morning fight → midday discomfort building → afternoon countdown. Then show the SAME day with Viasox — the contrast of comfort.
+- EVENING: The reveal — no marks, no swelling, socks still comfortable. Real metrics: "no swelling at end of shift."
+- CTA: Daily routine language: "Change your mornings" or "Start tomorrow different."
+Best for: Relatability, specific-use scenarios (nurses, teachers, seniors). Problem-Aware. TOF and MOF.`,
 
-Best for: Direct response, conversion-focused ads`,
+  'The Myth Buster': `**The Myth Buster** — Bly (news-style lead) + Hopkins (reason-why)
+Structure: Myth stated (0-15%) → Why people believe it (15-35%) → The truth with evidence (35-70%) → Viasox embodies truth (70-90%) → CTA (90-100%)
+Execution:
+- MYTH: State a misconception boldly. Bly's "news" lead — present as surprising information. "You've been told compression socks have to be tight to work."
+- WHY THEY BELIEVE IT: Hopkins' specificity — explain where the myth came from. Pharmacy compression DOES feel like a tourniquet. Validate WHY they hold this belief.
+- THE TRUTH: Hopkins' reason-why — counter-evidence with specific data. "107,993 reviews prove otherwise."
+- VIASOX: Schwartz's mechanization — explain the mechanism that makes the myth irrelevant.
+- CTA: Education language: "See the truth" or "Discover what 107K people already know."
+Best for: Education, thought leadership. Problem-Aware and Solution-Aware. TOF and MOF.`,
 
-  'Hook-Story-Offer': `**Hook-Story-Offer**
-Structure:
-1. HOOK (0:00-0:05) - Irresistible opening line
-2. STORY (0:05-0:22) - Customer story with specific details
-3. OFFER (0:22-0:30) - What they get + CTA
+  // --- NEW FRAMEWORKS (from Manifesto 4.3 + Marketing Books) ---
 
-Best for: Social media ads, UGC-style content`,
+  'The Enemy Framework': `**The Enemy Framework** — Schwartz (enemy naming + in-group dynamics)
+Structure: Identify enemy (0-15%) → Validate hatred (15-40%) → Reveal alternative (40-65%) → Prove superiority (65-90%) → Rebellion CTA (90-100%)
+Execution:
+- IDENTIFY: Name the "bad guy" — NOT a brand, but a category experience. Enemies: pharmacy compression (tourniquet), tight elastic (mark-makers), ugly beige medical socks (dignity killers).
+- VALIDATE: Schwartz's intensification — use their exact review language: "I threw every pair away." The more specific the complaint, the more they nod.
+- REVEAL: Position Viasox as the ANTI-enemy. If enemy is tight elastic → non-binding tops. If enemy is beige medical → 50+ patterns.
+- PROVE: Schwartz's three dimensions — intensify desire (show the beautiful alternative), strengthen identification (people like them switched), build belief (data + testimony).
+- CTA: Rebellion language: "Join 107K people who said 'never again' to [enemy]."
+Best for: Solution-Aware. MOF. Creates powerful in-group dynamics.`,
 
-  'Empathy-Education-Evidence': `**Empathy-Education-Evidence**
-Structure:
-1. EMPATHY (0:00-0:10) - Show you understand their struggle
-2. EDUCATION (0:10-0:20) - Teach them something (why regular socks hurt)
-3. EVIDENCE (0:20-0:30) - Prove Viasox is the answer
+  'The Discovery Narrative': `**The Discovery Narrative** — Hopkins (sample principle as narrative) + Schwartz (gradualization)
+Structure: Search phase (0-20%) → Discovery moment (20-45%) → First experience (45-70%) → Realization (70-90%) → Sharing CTA (90-100%)
+Execution:
+- SEARCH: Hopkins' selector — open with someone ACTIVELY searching. Mirror the Search Desperation pattern. Show the journey: pharmacies, Amazon, medical supply stores.
+- DISCOVERY: Hopkins' sample principle — the discovery must feel like FINDING, not being sold to. "A friend mentioned them" or "I saw a review that sounded exactly like me."
+- FIRST EXPERIENCE: Show the first use in sensory detail. Hopkins demands specifics: the feeling of pulling them on, the surprise at ease, the first hours of comfort.
+- REALIZATION: The "this is it" moment — the shift from skepticism to belief. Not just "good socks" but "I finally found what I've been looking for."
+- CTA: Sharing language: "I had to tell someone" or "Discover what [X]K people found."
+Best for: Problem-Aware. TOF and MOF. The "found treasure" narrative.`,
 
-Best for: Building trust, premium positioning`,
+  'The Professional Authority': `**The Professional Authority** — Hopkins (credibility through specifics) + Bly (testimonial lead)
+Structure: Credential (0-10%) → Professional problem (10-35%) → Failed solutions (35-55%) → Discovery (55-75%) → Professional proof (75-90%) → Peer CTA (90-100%)
+Execution:
+- CREDENTIAL: Bly's testimonial lead — establish credibility instantly. "I've been a nurse for 22 years." Hopkins: the credential must be SPECIFIC.
+- PROBLEM: The occupation-specific manifestation. Nurses: "My legs were so swollen I couldn't get my shoes on." Teachers: "By 2pm I was teaching from my chair."
+- FAILED: What they tried that didn't work — pharmacy compression, cheap socks. Bly: failures establish stakes.
+- DISCOVERY: Peer recommendation is strongest: "Another nurse on my unit recommended them."
+- PROOF: Results in professional context — "survived a double shift," "no swelling after 14 hours." Hopkins: specific professional metrics sell.
+- CTA: Peer frame: "If you're in healthcare, you need these."
+Best for: All awareness levels. Healthcare workers (3.5%), standing workers. MOF.`,
 
-  'The Contrast Framework': `**The Contrast Framework**
-Structure:
-1. THE OLD WAY (0:00-0:10) - How things used to be
-2. THE NEW WAY (0:10-0:20) - How Viasox changes everything
-3. THE PROOF (0:20-0:30) - Why it works
+  'The Demonstration Proof': `**The Demonstration Proof** — Hopkins (the sample principle — let the product sell itself)
+Structure: Challenge setup (0-15%) → Live demo (15-50%) → Feature callouts (50-70%) → Comparison (70-90%) → CTA (90-100%)
+Execution:
+- CHALLENGE: Hopkins' sample principle translated to video: "Watch what happens..." Set up a visual test the viewer cares about — ease test, mark test, style test.
+- DEMO: Let the product speak. Show IN ACTION — wide-mouth opening sliding on, sock sitting comfortably, beautiful pattern being revealed. Let the product demonstrate. Minimal narration.
+- FEATURES: Brief, specific explanations. Schwartz's mechanization: "See how the non-binding top sits? That's why no marks." One feature, one mechanism per callout.
+- COMPARISON: Side-by-side with the alternative. Hopkins: comparison is one of the most powerful persuasion tools.
+- CTA: Confidence language: "See for yourself" or "Try the test with your own pair."
+Best for: Product-Aware. MOF and BOF. Visual media.`,
 
-Best for: Competitive positioning, innovation messaging`,
+  'The Objection Crusher': `**The Objection Crusher** — Bly (objection handling) + Schwartz (Two Voices Framework)
+Structure: State objection (0-12%) → Acknowledge (12-25%) → Counter evidence (25-60%) → Testimonial support (60-80%) → Risk-free CTA (80-100%)
+Execution:
+- STATE: Bly — voice the objection FOR them. "$30 for socks?" "You've heard it all before." Schwartz's Protector Voice: speak AS the skeptic.
+- ACKNOWLEDGE: Never dismiss. "I get it. That's exactly what I thought." Reference the Cycle of False Hope — they've been burned before.
+- COUNTER: Bly's proof cascade — (1) Specific data ("last 3x longer — cheaper per wear"), (2) Customer quote addressing the SAME objection, (3) Risk reversal.
+- TESTIMONIAL: Find the review that PERFECTLY mirrors this objection and its resolution.
+- CTA: Risk-free, no-pressure: "Try one pair. If we're wrong, return them." Schwartz: speak to the Hope Voice.
+Best for: Product-Aware skeptics. BOF retargeting. Price and "just socks" objections.`,
 
-  'The Skeptic Converter': `**The Skeptic Converter**
-Structure:
-1. THE OBJECTION (0:00-0:08) - Voice the skepticism directly
-2. THE TWIST (0:08-0:18) - Unexpected revelation
-3. THE CONVERT (0:18-0:30) - From skeptic to believer
+  'The Identity Alignment': `**The Identity Alignment** — Schwartz (identification dimension) + Neumeier (brand as identity signal)
+Structure: Identity statement (0-12%) → Values connection (12-35%) → Current conflict (35-55%) → Viasox alignment (55-85%) → Belong CTA (85-100%)
+Execution:
+- IDENTITY: Schwartz — open with WHO the viewer IS. "You're someone who refuses to slow down." Neumeier: people buy what aligns with who they BELIEVE they are.
+- VALUES: Connect identity to shared values. "You believe comfort shouldn't mean compromise." Schwartz: identity-based decisions are 5x stronger than feature-based.
+- CONFLICT: Show how current situation VIOLATES their identity. "But every morning, those ugly medical socks remind you..." Neumeier: this cognitive dissonance demands resolution.
+- ALIGNMENT: Viasox resolves the conflict — medical support AND beautiful style AND easy comfort. Neumeier's charismatic brand: nothing else comes close.
+- CTA: Belonging: "Made for people who refuse to compromise."
+Best for: All awareness levels. Most powerful for Unaware and Problem-Aware. TOF.`,
 
-Best for: Addressing price objection, overcoming "just socks" mindset`,
+  'The Reason-Why (Hopkins)': `**The Reason-Why** — Hopkins (the core of Scientific Advertising)
+Structure: Bold claim (0-15%) → Reason #1/mechanism (15-35%) → Reason #2/evidence (35-55%) → Reason #3/social proof (55-80%) → Therefore-CTA (80-100%)
+Execution:
+- BOLD CLAIM: Hopkins — vague claims are ignored, specific claims demand attention. "107,993 customers agree: most comfortable socks they've ever worn."
+- REASON #1 (MECHANISM): Explain WHY the claim is true. Non-binding bamboo fiber, graduated compression that adapts, wide-mouth opening. The mechanism makes the claim believable.
+- REASON #2 (EVIDENCE): Stack data. Review frequencies, transformation metrics. Hopkins: each specific fact doubles persuasion.
+- REASON #3 (SOCIAL PROOF): Other people's reasons. Customer quotes explaining WHY in their own words. Hopkins: a customer's reason is more powerful than a brand's reason.
+- CTA: Logical conclusion: "That's why 107K people switched" or "Now you know why. Try them."
+Best for: Solution-Aware and Product-Aware. MOF and BOF. Data-rich content.`,
 
-  'The Day-in-Life': `**The Day-in-Life**
-Structure:
-1. MORNING (0:00-0:10) - Start of the day, putting on socks
-2. THROUGHOUT (0:10-0:20) - How they feel during the day
-3. EVENING (0:20-0:30) - End of day, the difference
-
-Best for: Relatability, specific-use scenarios (nurses, teachers)`,
-
-  'The Myth Buster': `**The Myth Buster**
-Structure:
-1. THE MYTH (0:00-0:08) - Common misconception
-2. THE TRUTH (0:08-0:20) - What the data actually shows
-3. THE SOLUTION (0:20-0:30) - How Viasox embodies the truth
-
-Best for: Education, thought leadership, PR content`,
+  'The Gradualization (Schwartz)': `**The Gradualization** — Schwartz (awareness progression for Unaware audiences)
+Structure: Relatable scenario (0-30%) → Gradual awareness shift (30-50%) → Connection to problem (50-70%) → Gentle solution intro (70-85%) → Soft CTA (85-100%)
+Execution:
+- SCENARIO: NO mention of socks, compression, marks, swelling, or ANY product language. Start with a situation they recognize but haven't connected to your category. "You know that feeling when you can't quite get comfortable?"
+- SHIFT: The critical moment — "wait, this IS a problem I have." Must feel like THEIR realization, not your pitch. Use the Hidden Suffering pattern — acknowledge what they've never put into words.
+- CONNECTION: Bridge dawning awareness to the solution category WITHOUT naming the product. "What if the problem isn't you — it's what you're wearing?"
+- INTRODUCTION: Gently introduce Viasox as INFORMATION, not a pitch. "107,000 people discovered the same thing."
+- CTA: Maximum softness: "Learn more," "See what they found." Schwartz: NEVER push a sale on Unaware. Goal is moving them to Problem-Aware.
+Best for: SPECIFICALLY Unaware audiences. TOF only. The hardest audience needs the most patient framework.`,
 };
 
 /**
