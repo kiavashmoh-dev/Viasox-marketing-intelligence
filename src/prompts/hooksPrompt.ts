@@ -1,6 +1,7 @@
 import type { HooksParams, HookStyle, FullAnalysis } from '../engine/types';
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { getAwarenessHookGuide } from './awarenessGuide';
+import { getHookDonts, getAwarenessMessagingTechniques } from './manifestoReference';
 
 /* ------------------------------------------------------------------ */
 /*  Hook-style micro-guides (marketing-book grounded)                 */
@@ -224,15 +225,16 @@ ${getAwarenessHookGuide(params.awarenessLevel)}
 6. **Data grounding:** Despite being script-tailored, each hook must still connect to specific review data — real frequencies, real quotes, real segment insights. The variety comes from WHICH data point you enter through, not from departing from the script's world.
 7. **Variety through entry points:** The variety across hooks comes from entering the script's world through DIFFERENT DOORS — a different emotion, a different data point, a different identity segment, a different moment — while always arriving at the same script body.
 
-## HOOK DON'TS
-- Never lead with "compression" for cold/unaware audiences
-- Never use clinical/medical language
-- Never make unsubstantiated health claims
-- Never mention specific medical conditions (compliance risk)
-- Never be generic — every hook must connect to specific review data AND the specific script
+${getHookDonts()}
+
+**Script-Mode Additions:**
 - Never write a hook that could work in front of a DIFFERENT script — that means it's too generic
 - Never break the persona, tone, or angle established by the script
 - Never create a hook that requires the script body to be modified to make sense
+- Never make unsubstantiated health claims
+- Never mention specific medical conditions (compliance risk)
+
+${getAwarenessMessagingTechniques()}
 
 ## FORMAT: ${params.format.toUpperCase()}
 ${params.format === 'Video' ? '- First 3 seconds. Hook must be visual + verbal. Include brief visual direction that matches the script\'s visual style.' : ''}${params.format === 'Static' ? '- Headline that works standalone. Maximum 12 words. Must still connect to the script\'s angle and persona.' : ''}${params.format === 'Text' ? '- First line must stop the scroll. Can be longer but must pull into the script\'s body.' : ''}
@@ -324,13 +326,14 @@ ${getAwarenessHookGuide(params.awarenessLevel)}
 
 Distribute hooks across DIFFERENT segments — don't target the same one repeatedly.
 
-## HOOK DON'TS
-- Never lead with "compression" for cold/unaware audiences
-- Never use clinical/medical language
+${getHookDonts()}
+
+**Standalone-Mode Additions:**
 - Never make unsubstantiated health claims
 - Never mention specific medical conditions (compliance risk)
-- Never be generic — every hook must reference specific review data
 - Never write cookie-cutter hooks that could apply to any brand
+
+${getAwarenessMessagingTechniques()}
 
 ## FORMAT: ${params.format.toUpperCase()}
 ${params.format === 'Video' ? '- First 3 seconds. Hook must be visual + verbal. Include brief visual direction.' : ''}${params.format === 'Static' ? '- Headline that works standalone. Maximum 12 words.' : ''}${params.format === 'Text' ? '- First line must stop the scroll.' : ''}

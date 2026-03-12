@@ -9,6 +9,12 @@ import {
   buildAgcRules,
   buildVideoProductionBriefReference,
 } from './agcReference';
+import {
+  getScriptFrameworks,
+  getProductPurchaseTriggers,
+  getProductStrategicInsights,
+  getTransformationJourney,
+} from './manifestoReference';
 
 function buildFunnelGuide(stage: FunnelStage): string {
   const guides: Record<FunnelStage, string> = {
@@ -376,6 +382,14 @@ ${buildFunnelGuide(params.funnelStage)}
 ${getAwarenessScriptGuide(params.awarenessLevel)}
 
 ${buildScriptProductGuide(params.product)}
+
+${getProductPurchaseTriggers(params.product)}
+
+${getProductStrategicInsights(params.product)}
+
+${getScriptFrameworks()}
+
+${getTransformationJourney()}
 
 ## MARKETING BOOK FOCUS
 ${buildBookFocus(params.bookReference)}

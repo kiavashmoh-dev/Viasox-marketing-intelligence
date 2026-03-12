@@ -2,6 +2,12 @@ import type { AnglesParams, AngleType, FullAnalysis, FunnelStage, ProductCategor
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideFull } from './adTypeGuides';
 import { getAwarenessConceptGuide } from './awarenessGuide';
+import {
+  getProductPurchaseTriggers,
+  getProductStrategicInsights,
+  getEmotionalPainPatterns,
+  getEmergingSegments,
+} from './manifestoReference';
 
 function buildAngleTypeMandate(angleType: AngleType): string {
   const mandates: Record<AngleType, string> = {
@@ -522,6 +528,14 @@ ${buildAngleTypeMandate(params.angleType)}
 
 ## PRODUCT LINE STRATEGY: ${params.product}
 ${buildProductLineGuide(params.product)}
+
+${getProductPurchaseTriggers(params.product)}
+
+${getProductStrategicInsights(params.product)}
+
+${getEmotionalPainPatterns()}
+
+${getEmergingSegments()}
 
 ## SEGMENT-AWARE CONCEPT TARGETING
 When creating concepts, leverage the two-layer segmentation model from the product data:
