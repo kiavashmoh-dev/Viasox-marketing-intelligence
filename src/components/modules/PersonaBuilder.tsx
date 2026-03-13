@@ -372,6 +372,16 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
               ))}
             </select>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">{channelInfo.description}</p>
+            {channel !== 'DTC' && (
+              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                <p className="text-[10px] text-amber-700 leading-relaxed">
+                  <span className="font-semibold">{'\u26A0'} Data source note:</span> All segment data is derived from DTC online reviews and order records.
+                  {channel === 'Retail'
+                    ? ' No retail POS or sell-through data feeds into this analysis — retail personas are inferred from DTC customer behavior patterns.'
+                    : ' No wholesale distributor or institutional data feeds into this analysis — wholesale personas are inferred from DTC customer behavior patterns.'}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

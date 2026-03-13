@@ -53,6 +53,8 @@ export interface FullAnalysis {
   breakdown: Record<ProductCategory, number>;
   products: Partial<Record<ProductCategory, ProductAnalysis>>;
   segmentBreakdown?: SegmentBreakdown;
+  /** Year-over-year trends per product and overall (consultant feedback item 4) */
+  yearlyTrends?: YearlyTrends;
 }
 
 // ─── Deterministic Segment Discovery ──────────────────────────────────────
@@ -116,6 +118,26 @@ export interface ProductAffinityEntry {
 
 /** Map of product → ranked segment affinity data */
 export type ProductAffinityMap = Partial<Record<ProductCategory, ProductAffinityEntry[]>>;
+
+// ─── Yearly Trends (Consultant Feedback: YOY Changes) ────────────────────
+
+export interface YearlyProductData {
+  year: string;
+  totalReviews: number;
+  avgRating: number;
+  fiveStarPct: number;
+  /** Segment counts for this year — key is segment name */
+  segments: Record<string, number>;
+}
+
+export interface YearlyTrends {
+  /** Sorted list of years present in the data */
+  years: string[];
+  /** Per-product yearly data */
+  byProduct: Partial<Record<ProductCategory, YearlyProductData[]>>;
+  /** All products combined */
+  overall: YearlyProductData[];
+}
 
 // ─── App State ─────────────────────────────────────────────────────────────
 

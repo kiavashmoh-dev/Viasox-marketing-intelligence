@@ -393,6 +393,88 @@ function buildSegmentBreakdown(organized) {
   };
 }
 
+// ─── Yearly Trends ──────────────────────────────────────────────────────────
+
+function buildYearlyTrends(organized) {
+  const productNames = ['EasyStretch', 'Compression', 'Ankle Compression'];
+  const allYears = new Set();
+  const byProduct = {};
+  const overallBuckets = {};
+
+  for (const product of productNames) {
+    const reviews = organized[product];
+    if (!reviews || reviews.length === 0) continue;
+
+    const yearBuckets = {};
+    for (const r of reviews) {
+      const year = (r.date || '').substring(0, 4);
+      if (!/^20\d{2}$/.test(year)) continue;
+      allYears.add(year);
+      if (!yearBuckets[year]) yearBuckets[year] = [];
+      yearBuckets[year].push(r);
+      if (!overallBuckets[year]) overallBuckets[year] = [];
+      overallBuckets[year].push(r);
+    }
+
+    const yearlyData = [];
+    for (const [year, revs] of Object.entries(yearBuckets)) {
+      const ratings = revs.map((r) => r.rating).filter((r) => r > 0);
+      const avgRating = ratings.length > 0
+        ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 100) / 100
+        : 0;
+      const fiveStar = ratings.filter((r) => r === 5).length;
+      const fiveStarPct = ratings.length > 0
+        ? Math.round((fiveStar / ratings.length) * 1000) / 10
+        : 0;
+
+      // Count segment matches for this year's reviews
+      const segments = {};
+      for (const rev of revs) {
+        for (const [segName, pattern] of Object.entries(ALL_SEGMENT_PATTERNS)) {
+          const displayName = segName.replace(/_/g, ' ');
+          if (pattern.test(rev.review)) {
+            segments[displayName] = (segments[displayName] || 0) + 1;
+          }
+        }
+      }
+
+      yearlyData.push({ year, totalReviews: revs.length, avgRating, fiveStarPct, segments });
+    }
+
+    yearlyData.sort((a, b) => a.year.localeCompare(b.year));
+    byProduct[product] = yearlyData;
+  }
+
+  // Build overall (all products combined)
+  const overall = [];
+  for (const [year, revs] of Object.entries(overallBuckets)) {
+    const ratings = revs.map((r) => r.rating).filter((r) => r > 0);
+    const avgRating = ratings.length > 0
+      ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 100) / 100
+      : 0;
+    const fiveStar = ratings.filter((r) => r === 5).length;
+    const fiveStarPct = ratings.length > 0
+      ? Math.round((fiveStar / ratings.length) * 1000) / 10
+      : 0;
+
+    const segments = {};
+    for (const rev of revs) {
+      for (const [segName, pattern] of Object.entries(ALL_SEGMENT_PATTERNS)) {
+        const displayName = segName.replace(/_/g, ' ');
+        if (pattern.test(rev.review)) {
+          segments[displayName] = (segments[displayName] || 0) + 1;
+        }
+      }
+    }
+
+    overall.push({ year, totalReviews: revs.length, avgRating, fiveStarPct, segments });
+  }
+  overall.sort((a, b) => a.year.localeCompare(b.year));
+
+  const years = [...allYears].sort();
+  return { years, byProduct, overall };
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 function main() {
@@ -452,7 +534,16 @@ function main() {
   console.log(`  ${segmentBreakdown.segments.length} segments discovered`);
   console.log(`  ${segmentBreakdown.crossSegmentOverlap?.length ?? 0} cross-segment overlaps`);
 
-  // 4. Build the FullAnalysis object
+  // 4. Build yearly trends
+  console.log('\nBuilding yearly trends...');
+  const yearlyTrends = buildYearlyTrends(organized);
+  console.log(`  ${yearlyTrends.years.length} years of data: ${yearlyTrends.years.join(', ')}`);
+  for (const [product, data] of Object.entries(yearlyTrends.byProduct)) {
+    const yearSummary = data.map((d) => `${d.year}(${d.totalReviews})`).join(', ');
+    console.log(`  ${product}: ${yearSummary}`);
+  }
+
+  // 5. Build the FullAnalysis object
   const breakdown = {
     EasyStretch: organized.EasyStretch.length,
     Compression: organized.Compression.length,
@@ -465,6 +556,7 @@ function main() {
     breakdown,
     products,
     segmentBreakdown,
+    yearlyTrends,
     _meta: {
       generatedAt: new Date().toISOString(),
       reviewFiles: CSV_FILES.map((f) => f.file),
@@ -472,7 +564,7 @@ function main() {
     },
   };
 
-  // 5. Write JSON
+  // 6. Write JSON
   console.log(`\nWriting ${OUTPUT_PATH}...`);
   const json = JSON.stringify(fullAnalysis);
   fs.writeFileSync(OUTPUT_PATH, json, 'utf-8');
