@@ -379,6 +379,218 @@ function YoyTrends({
   );
 }
 
+// ─── Product Growth Attribution (Consultant Feedback #5) ──────────────────
+
+interface GrowthDriver {
+  segment: string;
+  layer: 'identity' | 'motivation';
+  prevCount: number;
+  currCount: number;
+  absoluteGrowth: number;
+  pctGrowth: number;
+  /** This segment's absolute growth as a % of total product growth */
+  attributionPct: number;
+}
+
+interface ProductAttribution {
+  product: string;
+  prevYear: string;
+  currYear: string;
+  prevTotal: number;
+  currTotal: number;
+  totalGrowth: number;
+  totalGrowthPct: number;
+  avgRatingPrev: number;
+  avgRatingCurr: number;
+  drivers: GrowthDriver[];
+}
+
+function computeProductAttributions(
+  yearlyTrends: FullAnalysis['yearlyTrends'],
+  breakdown: SegmentBreakdown | undefined,
+): ProductAttribution[] {
+  if (!yearlyTrends?.byProduct || !breakdown) return [];
+
+  const products: ProductCategory[] = ['EasyStretch', 'Compression', 'Ankle Compression'];
+  const segmentLayers = new Map<string, 'identity' | 'motivation'>();
+  for (const seg of breakdown.segments) {
+    segmentLayers.set(seg.segmentName, seg.layer);
+  }
+
+  const attributions: ProductAttribution[] = [];
+
+  for (const product of products) {
+    const data = yearlyTrends.byProduct[product];
+    if (!data || data.length < 2) continue;
+
+    // Use the two most recent full years (exclude 2026 partial)
+    const fullYears = data.filter((d) => d.year !== '2026');
+    if (fullYears.length < 2) continue;
+
+    const prev = fullYears[fullYears.length - 2];
+    const curr = fullYears[fullYears.length - 1];
+    const totalGrowth = curr.totalReviews - prev.totalReviews;
+    if (totalGrowth <= 0) continue;
+
+    const totalGrowthPct = Math.round((totalGrowth / prev.totalReviews) * 100);
+
+    // Compute per-segment growth attribution
+    const allSegNames = new Set([...Object.keys(prev.segments), ...Object.keys(curr.segments)]);
+    const drivers: GrowthDriver[] = [];
+
+    for (const seg of allSegNames) {
+      const prevCount = prev.segments[seg] ?? 0;
+      const currCount = curr.segments[seg] ?? 0;
+      const absoluteGrowth = currCount - prevCount;
+      if (absoluteGrowth <= 0) continue;
+
+      const pctGrowth = prevCount > 0 ? Math.round((absoluteGrowth / prevCount) * 100) : 999;
+      const attributionPct = Math.round((absoluteGrowth / totalGrowth) * 1000) / 10;
+      const layer = segmentLayers.get(seg) ?? 'motivation';
+
+      drivers.push({ segment: seg, layer, prevCount, currCount, absoluteGrowth, pctGrowth, attributionPct });
+    }
+
+    // Sort by attribution (biggest contributors first)
+    drivers.sort((a, b) => b.attributionPct - a.attributionPct);
+
+    attributions.push({
+      product,
+      prevYear: prev.year,
+      currYear: curr.year,
+      prevTotal: prev.totalReviews,
+      currTotal: curr.totalReviews,
+      totalGrowth,
+      totalGrowthPct,
+      avgRatingPrev: prev.avgRating,
+      avgRatingCurr: curr.avgRating,
+      drivers: drivers.slice(0, 8), // Top 8 drivers
+    });
+  }
+
+  return attributions;
+}
+
+function ProductGrowthAttribution({
+  yearlyTrends,
+  breakdown,
+}: {
+  yearlyTrends: FullAnalysis['yearlyTrends'];
+  breakdown: SegmentBreakdown | undefined;
+}) {
+  const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
+
+  const attributions = useMemo(
+    () => computeProductAttributions(yearlyTrends, breakdown),
+    [yearlyTrends, breakdown],
+  );
+
+  if (attributions.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-5 mb-5">
+      <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-1">
+        Product Growth Attribution
+      </h3>
+      <p className="text-xs text-slate-400 mb-4">
+        Which segments drove each product's growth? Click a product to see the breakdown.
+      </p>
+
+      <div className="space-y-3">
+        {attributions.map((attr) => {
+          const isOpen = expandedProduct === attr.product;
+          const ratingDelta = Math.round((attr.avgRatingCurr - attr.avgRatingPrev) * 100) / 100;
+
+          return (
+            <div key={attr.product} className="border border-slate-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setExpandedProduct(isOpen ? null : attr.product)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-slate-800">{attr.product}</span>
+                  <span className="text-xs font-bold text-green-600">+{attr.totalGrowthPct}%</span>
+                  <span className="text-xs text-slate-400">
+                    {attr.prevTotal.toLocaleString()} {'\u2192'} {attr.currTotal.toLocaleString()} reviews ({attr.prevYear} {'\u2192'} {attr.currYear})
+                  </span>
+                </div>
+                <span className="text-slate-400 text-sm">{isOpen ? '\u25B2' : '\u25BC'}</span>
+              </button>
+
+              {isOpen && (
+                <div className="p-4">
+                  {/* Summary stats */}
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="bg-green-50 rounded-lg p-2.5 text-center">
+                      <div className="text-lg font-bold text-green-700">+{attr.totalGrowth.toLocaleString()}</div>
+                      <div className="text-[10px] text-green-600">New reviews</div>
+                    </div>
+                    <div className="bg-blue-50 rounded-lg p-2.5 text-center">
+                      <div className="text-lg font-bold text-blue-700">{attr.avgRatingCurr}/5</div>
+                      <div className="text-[10px] text-blue-600">
+                        {attr.currYear} rating ({ratingDelta >= 0 ? '+' : ''}{ratingDelta} vs {attr.prevYear})
+                      </div>
+                    </div>
+                    <div className="bg-violet-50 rounded-lg p-2.5 text-center">
+                      <div className="text-lg font-bold text-violet-700">{attr.drivers.length}</div>
+                      <div className="text-[10px] text-violet-600">Growing segments</div>
+                    </div>
+                  </div>
+
+                  {/* Segment drivers */}
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                    Top Growth Drivers
+                  </div>
+                  <div className="space-y-1.5">
+                    {attr.drivers.map((d) => (
+                      <div key={d.segment} className="flex items-center gap-2">
+                        <div className="w-40 text-sm text-slate-700 capitalize truncate shrink-0 flex items-center gap-1.5">
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              d.layer === 'motivation' ? 'bg-blue-400' : 'bg-violet-400'
+                            }`}
+                          />
+                          {d.segment}
+                        </div>
+                        <div className="flex-1 bg-slate-100 rounded-full h-5 relative overflow-hidden">
+                          <div
+                            className="bg-green-400 h-full rounded-full"
+                            style={{ width: `${Math.max(d.attributionPct, 3)}%` }}
+                          />
+                          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-slate-700">
+                            {d.attributionPct}% of growth
+                          </span>
+                        </div>
+                        <div className="w-20 text-right text-[10px] text-slate-500 shrink-0">
+                          +{d.absoluteGrowth.toLocaleString()}
+                        </div>
+                        <div
+                          className={`w-12 text-right text-[10px] font-semibold shrink-0 ${
+                            d.pctGrowth > 100 ? 'text-green-600' : 'text-green-500'
+                          }`}
+                        >
+                          {d.pctGrowth >= 999 ? 'new' : `+${d.pctGrowth}%`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 mt-3">
+                    Attribution % = this segment's absolute review increase as a share of the product's total review growth.
+                    {' '}<span className="inline-block w-2 h-2 rounded-full bg-blue-400 align-middle" /> = motivation
+                    {' '}<span className="inline-block w-2 h-2 rounded-full bg-violet-400 align-middle" /> = identity.
+                    Segments can overlap, so attribution may exceed 100%.
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Geography Panel ───────────────────────────────────────────────────────
 
 function GeographyPanel() {
@@ -545,6 +757,14 @@ export default function SegmentDiscovery({ analysis, apiKey, resourceContext, on
 
         {/* Year-over-Year Trends (consultant feedback #4) */}
         {analysis.yearlyTrends && <YoyTrends yearlyTrends={analysis.yearlyTrends} />}
+
+        {/* Product Growth Attribution (consultant feedback #5) */}
+        {analysis.yearlyTrends && (
+          <ProductGrowthAttribution
+            yearlyTrends={analysis.yearlyTrends}
+            breakdown={breakdown}
+          />
+        )}
 
         {/* Geography from sales enrichment (consultant feedback #5) */}
         <GeographyPanel />
