@@ -67,12 +67,12 @@ export default function BatchResultsView({ state, onReset }: Props) {
           </div>
         </div>
 
-        {completed.length > 1 && (
+        {completed.length > 0 && (
           <button
             onClick={handleExportAll}
             className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors"
           >
-            Export All Briefs (.doc)
+            Download All Briefs (.doc) — {completed.length} file{completed.length !== 1 ? 's' : ''}
           </button>
         )}
       </div>
@@ -133,6 +133,19 @@ export default function BatchResultsView({ state, onReset }: Props) {
           <TaskBriefCard key={i} taskState={ts} index={i} />
         ))}
       </div>
+
+      {/* Download All (bottom) */}
+      {completed.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <button
+            onClick={handleExportAll}
+            className="w-full py-3 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
+          >
+            <span>{'\uD83D\uDCE5'}</span>
+            Download All Briefs (.doc) — {completed.length} file{completed.length !== 1 ? 's' : ''}
+          </button>
+        </div>
+      )}
 
       {/* Post-Batch Feedback */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
