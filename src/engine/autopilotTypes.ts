@@ -53,6 +53,22 @@ export interface TaskPipelineState {
   error?: string;
 }
 
+// ─── Creative Direction ──────────────────────────────────────────────────
+
+export interface ReferenceMedia {
+  /** base64-encoded image/video thumbnail */
+  base64: string;
+  mediaType: string;
+  fileName: string;
+}
+
+export interface CreativeDirection {
+  /** Free-text instructions: "Focus on X", "Avoid Y", "This week lean into Z" */
+  instructions: string;
+  /** Uploaded reference images/videos — style guides for the batch */
+  referenceMedia: ReferenceMedia[];
+}
+
 // ─── Batch State ─────────────────────────────────────────────────────────────
 
 export type BatchPhase =

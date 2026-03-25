@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import type { FullAnalysis } from '../../engine/types';
-import type { AutopilotTask, AutopilotState, BatchPhase } from '../../engine/autopilotTypes';
+import type { AutopilotTask, AutopilotState, BatchPhase, CreativeDirection } from '../../engine/autopilotTypes';
 import { parseAsanaScreenshot, fileToBase64 } from '../../autopilot/screenshotParser';
 import { mapAsanaTask } from '../../autopilot/asanaMapper';
 import { runAutopilotPipeline } from '../../autopilot/pipelineEngine';
@@ -68,7 +68,7 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
 
   // ── Pipeline Execution ─────────────────────────────────────────────────
 
-  const handleRunBatch = useCallback(async (selectedTasks: AutopilotTask[]) => {
+  const handleRunBatch = useCallback(async (selectedTasks: AutopilotTask[], direction: CreativeDirection) => {
     setPhase('running');
     setError(null);
 
@@ -81,6 +81,7 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
         analysis,
         apiKey,
         resourceContext,
+        direction,
         (state) => setPipelineState({ ...state }),
         controller.signal,
       );

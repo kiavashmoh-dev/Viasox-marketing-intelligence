@@ -14,7 +14,7 @@ import { buildConceptSelectorPrompt, parseSelectorResponse } from '../prompts/co
 import { buildBatchReviewerPrompt } from '../prompts/batchReviewerPrompt';
 import { parseConceptBlocks } from '../utils/conceptParser';
 import type { FullAnalysis, ScriptParams, ScriptFramework } from '../engine/types';
-import type { AutopilotTask, AutopilotState } from '../engine/autopilotTypes';
+import type { AutopilotTask, AutopilotState, CreativeDirection } from '../engine/autopilotTypes';
 
 const INTER_CALL_DELAY = 2000; // 2s between API calls for rate limiting
 const CONCEPT_MODEL = 'claude-opus-4-6';
@@ -69,6 +69,37 @@ function getMaxTokensForDuration(duration: string): number {
 }
 
 /**
+ * Build the creative direction injection block for prompts.
+ */
+function buildDirectionBlock(direction: CreativeDirection): string {
+  const parts: string[] = [];
+
+  if (direction.instructions.trim()) {
+    parts.push(`## CREATIVE DIRECTOR'S INSTRUCTIONS — HIGHEST PRIORITY
+
+The following instructions come directly from the creative director for this batch. These override default behavior and must be followed precisely. Treat these as non-negotiable directives that shape every creative decision — concept selection, angle framing, script writing, hook style, tone, and visual approach.
+
+<creative_direction>
+${direction.instructions}
+</creative_direction>`);
+  }
+
+  if (direction.referenceMedia.length > 0) {
+    parts.push(`## STYLE REFERENCE MEDIA
+
+${direction.referenceMedia.length} reference ad(s) have been provided as style guides. Analyze each reference for:
+- **Visual style:** Pacing, color grading, framing, text overlay style, transitions
+- **Narrative approach:** How the story unfolds, hook style, emotional arc
+- **Script framework:** What framework the reference appears to use
+- **Tone:** Energy level, formality, emotional register
+
+Your concepts and scripts should match the style, energy, and approach of these references while remaining original and tailored to the Viasox brand and the specific task parameters.`);
+  }
+
+  return parts.length > 0 ? '\n\n' + parts.join('\n\n') : '';
+}
+
+/**
  * Run the full autopilot pipeline.
  */
 export async function runAutopilotPipeline(
@@ -76,10 +107,12 @@ export async function runAutopilotPipeline(
   analysis: FullAnalysis,
   apiKey: string,
   resourceContext: string,
+  direction: CreativeDirection,
   onProgress: (state: AutopilotState) => void,
   signal: AbortSignal,
 ): Promise<AutopilotState> {
   const resourceCtx = buildResourceContext(resourceContext);
+  const directionBlock = buildDirectionBlock(direction);
 
   const state: AutopilotState = {
     phase: 'running',
@@ -109,7 +142,7 @@ export async function runAutopilotPipeline(
 
       const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis);
       const conceptsRaw = await sendMessage(
-        anglesPrompt.system + resourceCtx,
+        anglesPrompt.system + resourceCtx + directionBlock,
         anglesPrompt.user,
         apiKey,
         12000,
@@ -137,7 +170,7 @@ export async function runAutopilotPipeline(
       );
 
       const selectorResponse = await sendMessage(
-        selectorPrompt.system,
+        selectorPrompt.system + directionBlock,
         selectorPrompt.user,
         apiKey,
         2000,
@@ -174,7 +207,7 @@ export async function runAutopilotPipeline(
 
       const scriptPrompt = buildScriptPrompt(scriptParams, analysis);
       const scriptResult = await sendMessage(
-        scriptPrompt.system + resourceCtx,
+        scriptPrompt.system + resourceCtx + directionBlock,
         scriptPrompt.user,
         apiKey,
         getMaxTokensForDuration(task.duration),
