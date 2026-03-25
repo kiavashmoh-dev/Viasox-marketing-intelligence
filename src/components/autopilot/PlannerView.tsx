@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import type { AutopilotTask, CreativeDirection, ReferenceMedia } from '../../engine/autopilotTypes';
 import { fileToBase64 } from '../../autopilot/screenshotParser';
+import { getMemoryStats } from '../../autopilot/memoryStore';
+import MemoryPanel from './MemoryPanel';
 
 interface Props {
   tasks: AutopilotTask[];
@@ -13,7 +15,9 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
   const [instructions, setInstructions] = useState('');
   const [referenceMedia, setReferenceMedia] = useState<ReferenceMedia[]>([]);
   const [useReferences, setUseReferences] = useState(false);
+  const [showMemory, setShowMemory] = useState(false);
   const mediaInputRef = useRef<HTMLInputElement>(null);
+  const memStats = getMemoryStats();
 
   const toggle = (i: number) => {
     setIncluded((prev) => {
@@ -205,6 +209,26 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
           )}
         </div>
       </div>
+
+      {/* Memory Status */}
+      <div className="flex items-center justify-between bg-slate-50 rounded-lg px-4 py-2.5 mb-3">
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <span className={`w-2 h-2 rounded-full ${memStats.totalBatches > 0 ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+          <span>
+            Creative Memory: {memStats.totalBatches > 0
+              ? `${memStats.totalBatches} batch${memStats.totalBatches !== 1 ? 'es' : ''} / ${memStats.totalBriefs} briefs stored`
+              : 'No history yet — first batch will start the memory bank'}
+          </span>
+        </div>
+        <button
+          onClick={() => setShowMemory(true)}
+          className="text-xs text-blue-600 hover:text-blue-800 underline"
+        >
+          Manage Memory
+        </button>
+      </div>
+
+      {showMemory && <MemoryPanel onClose={() => setShowMemory(false)} />}
 
       {/* Action bar */}
       <div className="flex items-center justify-between">

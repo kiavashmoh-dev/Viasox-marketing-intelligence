@@ -404,6 +404,7 @@ These people have visited the site, added to cart, engaged with multiple ads, or
 export function buildAnglesPrompt(
   params: AnglesParams,
   analysis: FullAnalysis,
+  memoryBriefing?: string,
 ): { system: string; user: string } {
   const system = `${buildSystemBase()}
 
@@ -630,5 +631,10 @@ CRITICAL: Do NOT recycle the example angle frames listed in the instructions (e.
 
 Generate EXACTLY 5 concepts. Ground every one in real review data. These should feel fresh, strategically deep, and immediately executable.`;
 
-  return { system, user };
+  // Inject memory briefing if available
+  const memorySection = memoryBriefing
+    ? `\n\n## CREATIVE INTELLIGENCE — INSTITUTIONAL MEMORY\n\nThe following briefing comes from analysis of all previous batches this system has produced. Use it to generate concepts that are FRESH and DIFFERENT from what has been done before, while building on proven strengths.\n\n${memoryBriefing}`
+    : '';
+
+  return { system: system + memorySection, user };
 }

@@ -29,6 +29,8 @@ export function buildConceptSelectorPrompt(
   analysis: FullAnalysis,
   usedFrameworks: string[],
   referenceAnalysis: string,
+  memoryBriefing?: string,
+  angleHistory?: string,
 ): { system: string; user: string } {
 
   const system = `${buildSystemBase()}
@@ -128,7 +130,16 @@ Take your time. Read each concept carefully — twice. Think about:
 
 Then select the SINGLE best concept.`;
 
-  return { system, user };
+  // Inject memory briefing if available
+  let memorySection = '';
+  if (memoryBriefing) {
+    memorySection += `\n\n## CREATIVE INTELLIGENCE — INSTITUTIONAL MEMORY\n\n${memoryBriefing}`;
+  }
+  if (angleHistory) {
+    memorySection += `\n\n## PAST CREATIVE DECISIONS FOR "${angle}" ANGLE\n\nThe following table shows every brief previously produced for the "${angle}" angle. Use this to consciously select concepts that bring FRESH creative approaches.\n\n${angleHistory}`;
+  }
+
+  return { system: system + memorySection, user };
 }
 
 function getAngleContext(angle: string): string {

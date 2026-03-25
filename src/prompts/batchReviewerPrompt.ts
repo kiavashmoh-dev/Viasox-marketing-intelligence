@@ -28,6 +28,8 @@ export function buildBatchReviewerPrompt(
   analysis: FullAnalysis,
   creativeDirectionInstructions: string,
   referenceAnalysis: string,
+  memoryBriefing?: string,
+  pastFailures?: Array<{ check: string; count: number }>,
 ): { system: string; user: string } {
 
   const system = `${buildSystemBase()}
@@ -180,5 +182,25 @@ Then at the end:
 **Strongest Brief:** [which and why]
 **Weakest Brief:** [which and why]`;
 
-  return { system, user };
+  // Inject memory intelligence
+  let memorySection = '';
+  if (pastFailures && pastFailures.length > 0) {
+    memorySection += `\n\n## HISTORICAL QUALITY INTELLIGENCE — RECURRING FAILURES
+
+The following checks have failed (FLAG or FAIL) in past batches. Pay EXTRA scrutiny to these areas:
+
+${pastFailures.map((f) => `- **${f.check}**: Failed ${f.count} time(s) in past batches`).join('\n')}
+
+If any of these checks fail again in THIS batch, flag it explicitly and note that it is a RECURRING issue.`;
+  }
+
+  if (memoryBriefing) {
+    memorySection += `\n\n## CREATIVE INTELLIGENCE — CROSS-BATCH DIVERSITY
+
+${memoryBriefing}
+
+Use this context to evaluate batch-level diversity not just within THIS batch, but across the historical creative library. If the curator notes that question hooks are overused across all batches, flag any brief in this batch that also defaults to question hooks.`;
+  }
+
+  return { system: system + memorySection, user };
 }

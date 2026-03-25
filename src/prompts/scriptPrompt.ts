@@ -448,6 +448,7 @@ Behind-the-scenes warehouse/packing room content. Real team showing care and att
 export function buildScriptPrompt(
   params: ScriptParams,
   analysis: FullAnalysis,
+  memoryBriefing?: string,
 ): { system: string; user: string } {
   const frameworkDetail =
     FRAMEWORK_DETAILS[params.framework] ??
@@ -1121,5 +1122,10 @@ The brief should:
 
 CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.`}`;
 
-  return { system, user };
+  // Inject memory briefing if available — focused on style/voice patterns
+  const memorySection = memoryBriefing
+    ? `\n\n## CREATIVE INTELLIGENCE — STYLE & VOICE AWARENESS\n\nThe following briefing summarizes the creative history of this system. Use the sections on "Overused Patterns" and "Proven Strengths" to write scripts that feel fresh while building on what works.\n\n${memoryBriefing}`
+    : '';
+
+  return { system: system + memorySection, user };
 }

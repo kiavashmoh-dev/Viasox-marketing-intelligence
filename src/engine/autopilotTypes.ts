@@ -88,4 +88,6 @@ export interface AutopilotState {
   reviewResult?: string;
   /** Error during screenshot parsing or batch review */
   error?: string;
+  /** Memory curator's briefing (if memory exists) */
+  memoryBriefing?: string;
 }

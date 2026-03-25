@@ -26,6 +26,9 @@ import { buildBatchReviewerPrompt } from '../prompts/batchReviewerPrompt';
 import { parseConceptBlocks } from '../utils/conceptParser';
 import type { FullAnalysis, ScriptParams, ScriptFramework } from '../engine/types';
 import type { AutopilotTask, AutopilotState, CreativeDirection } from '../engine/autopilotTypes';
+import { loadMemory, getHistoryForAngle, getReviewerFailurePatterns } from './memoryStore';
+import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator';
+import { saveCompletedBatchToMemory } from './memoryExtractor';
 
 // ─── All creative agents use Opus ────────────────────────────────────────────
 
@@ -232,6 +235,24 @@ export async function runAutopilotPipeline(
 
   const directionBlock = buildDirectionBlock(direction, referenceAnalysis);
 
+  // ── Step 0.5: Memory Curator (if memory exists) ─────────────────────────
+
+  let memoryBriefing = '';
+  const memory = loadMemory();
+  if (memory.batches.length > 0) {
+    try {
+      const briefing = await runMemoryCurator(apiKey, signal);
+      if (briefing) {
+        memoryBriefing = briefing.briefingText;
+        state.memoryBriefing = memoryBriefing;
+        onProgress({ ...state });
+      }
+    } catch {
+      // Non-fatal — continue without memory context
+    }
+    await delay(INTER_CALL_DELAY);
+  }
+
   // Track used frameworks for diversity enforcement
   const usedFrameworks: string[] = [];
 
@@ -250,7 +271,7 @@ export async function runAutopilotPipeline(
       ts.step = 'generating-concepts';
       onProgress({ ...state });
 
-      const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis);
+      const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined);
       const conceptsRaw = await sendMessage(
         anglesPrompt.system + resourceCtx + directionBlock,
         anglesPrompt.user,
@@ -270,6 +291,21 @@ export async function runAutopilotPipeline(
       ts.step = 'selecting-concept';
       onProgress({ ...state });
 
+      // Build angle history for selector from memory
+      const angleHistoryRecords = getHistoryForAngle(task.parsed.angle);
+      const angleHistoryText = angleHistoryRecords.length > 0
+        ? formatAngleHistoryForSelector(
+            task.parsed.angle,
+            angleHistoryRecords.map((r) => ({
+              framework: r.framework,
+              hookStyles: r.hookStyles,
+              conceptSummary: r.conceptSummary,
+              reviewScore: r.reviewScore,
+              date: r.batchId.split('T')[0],
+            })),
+          )
+        : undefined;
+
       const selectorPrompt = buildConceptSelectorPrompt(
         conceptsRaw,
         task.parsed.name,
@@ -281,6 +317,8 @@ export async function runAutopilotPipeline(
         analysis,
         usedFrameworks,
         referenceAnalysis,
+        memoryBriefing || undefined,
+        angleHistoryText,
       );
 
       const selectorResponse = await sendMessage(
@@ -322,7 +360,7 @@ export async function runAutopilotPipeline(
         conceptAngleContext: ts.selectedConceptText,
       };
 
-      const scriptPrompt = buildScriptPrompt(scriptParams, analysis);
+      const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined);
       const scriptResult = await sendMessage(
         scriptPrompt.system + resourceCtx + directionBlock,
         scriptPrompt.user,
@@ -356,6 +394,7 @@ export async function runAutopilotPipeline(
     onProgress({ ...state });
 
     try {
+      const pastFailures = getReviewerFailurePatterns();
       const reviewPrompt = buildBatchReviewerPrompt(
         completedTasks.map((t) => ({
           taskName: t.task.parsed.name,
@@ -368,6 +407,8 @@ export async function runAutopilotPipeline(
         analysis,
         direction.instructions,
         referenceAnalysis,
+        memoryBriefing || undefined,
+        pastFailures.length > 0 ? pastFailures : undefined,
       );
 
       state.reviewResult = await sendMessage(
@@ -381,6 +422,14 @@ export async function runAutopilotPipeline(
     } catch (err) {
       state.reviewResult = `Review failed: ${err instanceof Error ? err.message : String(err)}`;
     }
+  }
+
+  // ── Save batch to creative memory ────────────────────────────────────────
+
+  try {
+    saveCompletedBatchToMemory(state, direction, referenceAnalysis);
+  } catch {
+    // Non-fatal — continue even if memory save fails
   }
 
   state.phase = 'complete';
