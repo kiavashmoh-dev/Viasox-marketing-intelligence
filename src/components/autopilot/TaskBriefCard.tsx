@@ -75,7 +75,7 @@ export default function TaskBriefCard({ taskState, index }: Props) {
                 </pre>
               </div>
               <button
-                onClick={() => downloadEcomBriefDoc(scriptResult)}
+                onClick={() => downloadEcomBriefDoc(scriptResult, task.parsed.name)}
                 className="text-xs bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-900 transition-colors"
               >
                 Export .doc

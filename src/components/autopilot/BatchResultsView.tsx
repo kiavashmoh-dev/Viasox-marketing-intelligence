@@ -18,7 +18,7 @@ export default function BatchResultsView({ state, onReset }: Props) {
     // Export each brief individually (browser will handle multiple downloads)
     completed.forEach((ts) => {
       if (ts.scriptResult) {
-        downloadEcomBriefDoc(ts.scriptResult);
+        downloadEcomBriefDoc(ts.scriptResult, ts.task.parsed.name);
       }
     });
   };

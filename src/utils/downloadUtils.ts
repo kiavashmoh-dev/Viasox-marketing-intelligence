@@ -368,7 +368,7 @@ function parseScriptTable(markdown: string, sectionHeader: string): string[][] {
 /**
  * Download an Ecom brief as a styled .doc matching the Ecom Ad Template format
  */
-export function downloadEcomBriefDoc(markdownContent: string): void {
+export function downloadEcomBriefDoc(markdownContent: string, overrideBriefId?: string): void {
   const esc = escapeHtml;
 
   // Parse all sections
@@ -379,14 +379,22 @@ export function downloadEcomBriefDoc(markdownContent: string): void {
   const hooks = parseScriptTable(markdownContent, 'SCRIPT \\(HOOKS\\)');
   const body = parseScriptTable(markdownContent, 'SCRIPT \\(BODY\\)');
 
-  const briefId = briefInfo['Brief ID'] || 'ECOM_BRIEF';
+  // Use override ID (from Asana task name) or fall back to parsed Brief ID
+  const briefId = overrideBriefId || briefInfo['Brief ID'] || 'ECOM_BRIEF';
 
-  // Style constants matching the template
-  const sectionHeaderStyle = 'background:#D9E2F3;padding:8px 12px;font-weight:bold;font-size:14px;color:#1e293b;border:1px solid #B4C6E7;';
-  const labelCellStyle = 'background:#F2F2F2;padding:6px 10px;font-weight:bold;font-size:12px;color:#1e293b;border:1px solid #ddd;width:160px;vertical-align:top;';
-  const valueCellStyle = 'padding:6px 10px;font-size:12px;color:#334155;border:1px solid #ddd;vertical-align:top;';
-  const scriptHeaderStyle = 'background:#D9E2F3;padding:6px 10px;font-weight:bold;font-size:11px;color:#1e293b;border:1px solid #B4C6E7;text-align:left;';
-  const scriptCellStyle = 'padding:6px 10px;font-size:11px;color:#334155;border:1px solid #ddd;vertical-align:top;';
+  // ── Style constants matching E319.docx template exactly ──────────────
+  // Font: Arial, 10pt body / 12pt section headers / 16pt title
+  // Navy label cells: #1b365d with white bold text
+  // Light gray borders: #bfbfbf
+  // Cell padding: 80 top/bottom, 120 left/right (DXA) ≈ 6px 10px
+  const NAVY = '#1b365d';
+  const BORDER = '#bfbfbf';
+
+  const sectionHeaderStyle = `padding:6px 10px;font-weight:bold;font-size:12pt;color:#000;font-family:Arial,sans-serif;`;
+  const labelCellStyle = `background:${NAVY};padding:6px 10px;font-weight:bold;font-size:10pt;color:#ffffff;border:1px solid ${BORDER};width:160px;vertical-align:top;font-family:Arial,sans-serif;`;
+  const valueCellStyle = `padding:6px 10px;font-size:10pt;color:#000;border:1px solid ${BORDER};vertical-align:top;font-family:Arial,sans-serif;`;
+  const scriptHeaderStyle = `background:${NAVY};padding:6px 10px;font-weight:bold;font-size:10pt;color:#ffffff;border:1px solid ${BORDER};text-align:left;font-family:Arial,sans-serif;`;
+  const scriptCellStyle = `padding:6px 10px;font-size:10pt;color:#000;border:1px solid ${BORDER};vertical-align:top;font-family:Arial,sans-serif;`;
 
   const kvRow = (label: string, value: string) =>
     `<tr><td style="${labelCellStyle}">${esc(label)}</td><td style="${valueCellStyle}">${esc(value || '—')}</td></tr>`;
@@ -395,16 +403,18 @@ export function downloadEcomBriefDoc(markdownContent: string): void {
   let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(briefId)}</title>
 <style>
 @page { margin: 0.75in; }
-body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; max-width: 850px; margin: 0 auto; padding: 30px; color: #1e293b; }
-table { border-collapse: collapse; width: 100%; margin-bottom: 20px; page-break-inside: avoid; }
+body { font-family: Arial, sans-serif; max-width: 850px; margin: 0 auto; padding: 30px; color: #000; font-size: 11pt; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 16px; page-break-inside: avoid; }
+h1 { text-align: center; }
 </style></head><body>`;
 
-  // Title
-  html += `<h1 style="font-size:22px;color:#1e293b;margin:0 0 20px 0;">Ecom Ad Template</h1>`;
+  // Title — centered, bold, 16pt
+  html += `<h1 style="font-size:16pt;color:#000;margin:0 0 20px 0;font-weight:bold;font-family:Arial,sans-serif;">Ecom Ad Template</h1>`;
 
   // 1. BRIEF INFO
-  html += `<table><tr><td colspan="2" style="${sectionHeaderStyle}">BRIEF INFO</td></tr>`;
-  html += kvRow('Brief ID', briefInfo['Brief ID'] || '');
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">BRIEF INFO</p>`;
+  html += `<table>`;
+  html += kvRow('Brief ID', briefId);
   html += kvRow('Date', briefInfo['Date'] || '');
   html += kvRow('Product', briefInfo['Product'] || '');
   html += kvRow('Collection', briefInfo['Collection'] || '');
@@ -413,7 +423,8 @@ table { border-collapse: collapse; width: 100%; margin-bottom: 20px; page-break-
   html += `</table>`;
 
   // 2. STRATEGY
-  html += `<table><tr><td colspan="2" style="${sectionHeaderStyle}">STRATEGY</td></tr>`;
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">STRATEGY</p>`;
+  html += `<table>`;
   html += kvRow('Awareness Level', strategy['Awareness Level'] || '');
   html += kvRow('Primary Emotion', strategy['Primary Emotion'] || '');
   html += kvRow('Avatar', strategy['Avatar'] || '');
@@ -421,7 +432,8 @@ table { border-collapse: collapse; width: 100%; margin-bottom: 20px; page-break-
   html += `</table>`;
 
   // 3. OFFER
-  html += `<table><tr><td colspan="2" style="${sectionHeaderStyle}">OFFER</td></tr>`;
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">OFFER</p>`;
+  html += `<table>`;
   html += kvRow('Promo', offer['Promo'] || '');
   html += kvRow('Promo Asset', offer['Promo Asset'] || '');
   html += kvRow('Value Callout', offer['Value Callout'] || '');
@@ -429,7 +441,8 @@ table { border-collapse: collapse; width: 100%; margin-bottom: 20px; page-break-
   html += `</table>`;
 
   // 4. EDITING INSTRUCTIONS
-  html += `<table><tr><td colspan="2" style="${sectionHeaderStyle}">EDITING INSTRUCTIONS</td></tr>`;
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">EDITING INSTRUCTIONS</p>`;
+  html += `<table>`;
   html += kvRow('Pacing', editing['Pacing'] || '');
   html += kvRow('Resolution', editing['Resolution'] || '');
   html += kvRow('Caption & Graphics', editing['Caption & Graphics'] || editing['Captions'] || '');
@@ -440,40 +453,51 @@ table { border-collapse: collapse; width: 100%; margin-bottom: 20px; page-break-
   html += kvRow('Notes', editing['Notes'] || '');
   html += `</table>`;
 
-  // 5. SCRIPT (HOOKS)
+  // 5. REFERENCE (if present)
+  const reference = parseKvTable(markdownContent, 'REFERENCE');
+  if (Object.keys(reference).length > 0) {
+    html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">REFERENCE</p>`;
+    html += `<table>`;
+    for (const [k, v] of Object.entries(reference)) {
+      html += kvRow(k, v);
+    }
+    html += `</table>`;
+  }
+
+  // 6. SCRIPT (HOOKS)
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (HOOKS)</p>`;
   html += `<table>`;
-  html += `<tr><td colspan="4" style="${sectionHeaderStyle}">SCRIPT (HOOKS)</td></tr>`;
-  html += `<tr><th style="${scriptHeaderStyle}width:40px;">#</th><th style="${scriptHeaderStyle}width:120px;">Shot Type</th><th style="${scriptHeaderStyle}width:260px;">Suggested Visual</th><th style="${scriptHeaderStyle}">Hook Line</th></tr>`;
+  html += `<tr><th style="${scriptHeaderStyle}width:40px;">LINE #</th><th style="${scriptHeaderStyle}width:100px;">SHOT TYPE</th><th style="${scriptHeaderStyle}width:220px;">SUGGESTED VISUAL</th><th style="${scriptHeaderStyle}">HOOK LINE</th></tr>`;
   hooks.forEach((row) => {
     const [num, shotType, visual, line] = [row[0] || '', row[1] || '', row[2] || '', row[3] || ''];
-    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td><td style="${scriptCellStyle}width:120px;">${esc(shotType)}</td><td style="${scriptCellStyle}width:260px;">${esc(visual)}</td><td style="${scriptCellStyle}">${esc(line)}</td></tr>`;
+    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td><td style="${scriptCellStyle}width:100px;">${esc(shotType)}</td><td style="${scriptCellStyle}width:220px;">${esc(visual)}</td><td style="${scriptCellStyle}">${esc(line)}</td></tr>`;
   });
   if (hooks.length === 0) {
-    html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#94a3b8;">No hooks parsed</td></tr>`;
+    html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#999;">No hooks parsed</td></tr>`;
   }
   html += `</table>`;
 
-  // 6. SCRIPT (BODY)
+  // 7. SCRIPT (BODY)
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (BODY)</p>`;
   html += `<table>`;
-  html += `<tr><td colspan="4" style="${sectionHeaderStyle}">SCRIPT (BODY)</td></tr>`;
-  html += `<tr><th style="${scriptHeaderStyle}width:40px;">#</th><th style="${scriptHeaderStyle}width:120px;">Shot Type</th><th style="${scriptHeaderStyle}width:260px;">Suggested Visual</th><th style="${scriptHeaderStyle}">Script Line</th></tr>`;
+  html += `<tr><th style="${scriptHeaderStyle}width:40px;">LINE #</th><th style="${scriptHeaderStyle}width:100px;">SHOT TYPE</th><th style="${scriptHeaderStyle}width:220px;">SUGGESTED VISUAL</th><th style="${scriptHeaderStyle}">SCRIPT LINE</th></tr>`;
   body.forEach((row) => {
     const [num, shotType, visual, line] = [row[0] || '', row[1] || '', row[2] || '', row[3] || ''];
-    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td><td style="${scriptCellStyle}width:120px;">${esc(shotType)}</td><td style="${scriptCellStyle}width:260px;">${esc(visual)}</td><td style="${scriptCellStyle}">${esc(line)}</td></tr>`;
+    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td><td style="${scriptCellStyle}width:100px;">${esc(shotType)}</td><td style="${scriptCellStyle}width:220px;">${esc(visual)}</td><td style="${scriptCellStyle}">${esc(line)}</td></tr>`;
   });
   if (body.length === 0) {
-    html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#94a3b8;">No body rows parsed</td></tr>`;
+    html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#999;">No body rows parsed</td></tr>`;
   }
   html += `</table>`;
 
-  html += `<p style="margin-top:30px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px;">Generated by Viasox Marketing Intelligence</p>`;
+  html += `<p style="margin-top:30px;font-size:9pt;color:#999;border-top:1px solid #ddd;padding-top:8px;font-family:Arial,sans-serif;">Generated by Viasox Marketing Intelligence</p>`;
   html += `</body></html>`;
 
   const blob = new Blob([html], { type: 'application/msword' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${briefId.toLowerCase().replace(/\s+/g, '-')}.doc`;
+  a.download = `${briefId}.doc`;
   a.click();
   URL.revokeObjectURL(url);
 }
