@@ -7,9 +7,9 @@ interface Props {
 
 const STEP_LABELS: Record<string, string> = {
   pending: 'Waiting',
-  'generating-concepts': 'Generating concepts...',
-  'selecting-concept': 'Selecting best concept...',
-  'generating-script': 'Writing brief...',
+  'generating-concepts': 'Generating 5 concepts (Opus)...',
+  'selecting-concept': 'Expert strategist selecting best concept (Opus)...',
+  'generating-script': 'Writing full Ecom brief (Opus)...',
   complete: 'Done',
   error: 'Failed',
 };

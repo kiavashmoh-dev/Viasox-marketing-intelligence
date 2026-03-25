@@ -1,12 +1,23 @@
 /**
- * Autopilot Pipeline Engine
+ * Autopilot Pipeline Engine — FULL EXPERT VERSION
  *
- * Orchestrates the full brief generation pipeline:
- * For each task: Generate Concepts → Select Best → Generate Brief
- * Then: Batch Review all briefs
+ * Orchestrates the complete brief generation pipeline with maximum depth:
+ *
+ * 0. Reference Analysis (if media provided) — Vision analysis of style references
+ * For each task:
+ *   1. Generate Concepts — Full angles prompt with Opus
+ *   2. Select Best Concept — Expert selector with complete knowledge stack, Opus
+ *   3. Generate Brief — Full script prompt with Opus
+ * After all tasks:
+ *   4. Batch Review — Expert reviewer with complete knowledge stack, Opus
+ *
+ * All creative agents use claude-opus-4-6.
+ * Framework diversity is enforced across the batch.
+ * Reference media is analyzed via vision and injected into all subsequent steps.
  */
 
-import { sendMessage } from '../api/claude';
+import { sendMessage, sendVisionMessage } from '../api/claude';
+import type { ContentBlock } from '../api/claude';
 import { buildAnglesPrompt } from '../prompts/anglesPrompt';
 import { buildScriptPrompt } from '../prompts/scriptPrompt';
 import { buildResourceContext } from '../prompts/systemBase';
@@ -16,11 +27,10 @@ import { parseConceptBlocks } from '../utils/conceptParser';
 import type { FullAnalysis, ScriptParams, ScriptFramework } from '../engine/types';
 import type { AutopilotTask, AutopilotState, CreativeDirection } from '../engine/autopilotTypes';
 
-const INTER_CALL_DELAY = 2000; // 2s between API calls for rate limiting
-const CONCEPT_MODEL = 'claude-opus-4-6';
-const SCRIPT_MODEL = 'claude-opus-4-6';
-const SELECTOR_MODEL = 'claude-sonnet-4-20250514';
-const REVIEWER_MODEL = 'claude-sonnet-4-20250514';
+// ─── All creative agents use Opus ────────────────────────────────────────────
+
+const OPUS = 'claude-opus-4-6';
+const INTER_CALL_DELAY = 2500; // 2.5s between API calls
 
 const VALID_FRAMEWORKS: ScriptFramework[] = [
   'PAS (Problem-Agitate-Solution)',
@@ -46,12 +56,16 @@ const VALID_FRAMEWORKS: ScriptFramework[] = [
 ];
 
 function matchFramework(suggestion: string): ScriptFramework {
-  // Try exact match first
   const exact = VALID_FRAMEWORKS.find((f) => f === suggestion);
   if (exact) return exact;
-  // Try partial match
   const lower = suggestion.toLowerCase();
-  const partial = VALID_FRAMEWORKS.find((f) => lower.includes(f.toLowerCase().split(' ')[0]));
+  // Try multi-word matching
+  for (const f of VALID_FRAMEWORKS) {
+    const fWords = f.toLowerCase().replace(/[()]/g, '').split(/\s+/);
+    const matchCount = fWords.filter((w) => lower.includes(w) && w.length > 3).length;
+    if (matchCount >= 2) return f;
+  }
+  const partial = VALID_FRAMEWORKS.find((f) => lower.includes(f.toLowerCase().split(' ')[0].replace('(', '')));
   return partial ?? 'PAS (Problem-Agitate-Solution)';
 }
 
@@ -61,47 +75,125 @@ function delay(ms: number): Promise<void> {
 
 function getMaxTokensForDuration(duration: string): number {
   switch (duration) {
-    case '15s': return 7000;
-    case '30s': return 10000;
-    case '60s': return 14000;
-    default: return 10000;
+    case '15s': return 8000;
+    case '30s': return 12000;
+    case '60s': return 16000;
+    default: return 12000;
   }
 }
 
-/**
- * Build the creative direction injection block for prompts.
- */
-function buildDirectionBlock(direction: CreativeDirection): string {
+// ─── Creative Direction Block ────────────────────────────────────────────────
+
+function buildDirectionBlock(direction: CreativeDirection, referenceAnalysis: string): string {
   const parts: string[] = [];
 
   if (direction.instructions.trim()) {
     parts.push(`## CREATIVE DIRECTOR'S INSTRUCTIONS — HIGHEST PRIORITY
 
-The following instructions come directly from the creative director for this batch. These override default behavior and must be followed precisely. Treat these as non-negotiable directives that shape every creative decision — concept selection, angle framing, script writing, hook style, tone, and visual approach.
+The following instructions come directly from the creative director for this batch. These are NON-NEGOTIABLE directives that override default behavior. Every creative decision — concept generation, concept selection, angle framing, script writing, hook style, tone, visual approach, framework choice — must align with these instructions.
 
 <creative_direction>
 ${direction.instructions}
 </creative_direction>`);
   }
 
-  if (direction.referenceMedia.length > 0) {
-    parts.push(`## STYLE REFERENCE MEDIA
+  if (referenceAnalysis) {
+    parts.push(`## STYLE REFERENCE ANALYSIS — MATCH THIS STYLE
 
-${direction.referenceMedia.length} reference ad(s) have been provided as style guides. Analyze each reference for:
-- **Visual style:** Pacing, color grading, framing, text overlay style, transitions
-- **Narrative approach:** How the story unfolds, hook style, emotional arc
-- **Script framework:** What framework the reference appears to use
-- **Tone:** Energy level, formality, emotional register
+The creative director provided reference ads that were analyzed in detail. Here is the complete analysis:
 
-Your concepts and scripts should match the style, energy, and approach of these references while remaining original and tailored to the Viasox brand and the specific task parameters.`);
+<reference_analysis>
+${referenceAnalysis}
+</reference_analysis>
+
+**CRITICAL:** Your concepts and scripts must match the style, energy, pacing, narrative structure, and visual approach identified in these references. The references define the creative template — your job is to fill that template with Viasox-specific content for each task's angle and product.`);
   }
 
   return parts.length > 0 ? '\n\n' + parts.join('\n\n') : '';
 }
 
-/**
- * Run the full autopilot pipeline.
- */
+// ─── Reference Media Analysis ────────────────────────────────────────────────
+
+const REFERENCE_ANALYSIS_SYSTEM = `You are a senior creative strategist analyzing reference advertisements for a DTC compression sock brand called Viasox. You are an expert in direct response video advertising, performance marketing, and creative strategy.
+
+Your job is to deeply analyze the provided reference ad(s) — images, video screenshots, or storyboard frames — and extract every insight that will help create new ads in the same style.
+
+Be EXTREMELY detailed and specific. This analysis will be used by other AI agents to generate concepts and scripts, so they need granular, actionable detail — not vague descriptions.`;
+
+const REFERENCE_ANALYSIS_PROMPT = `Analyze these reference ad(s) in extreme detail. For each reference, extract:
+
+## 1. VISUAL STYLE
+- Color palette and grading (warm/cool, saturated/muted, specific tones)
+- Framing and composition (close-ups, wide shots, rule of thirds, centered)
+- Text overlay style (font weight, position, animation style, color, size relative to frame)
+- Lighting (natural, studio, warm ambient, clinical)
+- Overall aesthetic (raw/polished, UGC-feel/produced, minimal/busy)
+
+## 2. STORYTELLING & NARRATIVE
+- How does the ad open? What's the first thing you see/read?
+- What's the narrative arc? (Problem→Solution? Day-in-life? Testimonial? Demonstration?)
+- When does the product first appear? (early/midpoint/late)
+- How is the product shown? (in-use, close-up, lifestyle, before/after)
+- What's the emotional journey? (anxiety→relief? curiosity→discovery? pain→joy?)
+
+## 3. SCRIPT & COPY APPROACH
+- What script framework does this appear to use? (PAS, AIDA, Before-After-Bridge, etc.)
+- Is the tone conversational, authoritative, confessional, educational?
+- Point of view: First person? Second person ("you")? Third person narrative?
+- Hook style: Question? Bold statement? Shocking stat? Relatable moment?
+- CTA style: Soft discovery? Direct action? Social proof nudge?
+
+## 4. PACING & RHYTHM
+- Is the pacing fast-cut or slow/deliberate?
+- How long do text cards stay on screen?
+- Is there a rhythm pattern (fast-fast-slow, building tempo, etc.)?
+- Music/sound direction implied by the visual style
+
+## 5. KEY TAKEAWAYS FOR REPLICATION
+- What makes this ad effective? (3-5 specific strengths)
+- What should be replicated in new ads? (specific techniques)
+- What should NOT be copied? (elements specific to the reference brand)
+
+Be specific enough that a copywriter and editor could recreate this style for a different product.`;
+
+async function analyzeReferenceMedia(
+  direction: CreativeDirection,
+  apiKey: string,
+  signal: AbortSignal,
+): Promise<string> {
+  if (direction.referenceMedia.length === 0) return '';
+
+  const content: ContentBlock[] = [];
+
+  // Add all reference images
+  for (const media of direction.referenceMedia) {
+    if (media.mediaType.startsWith('image/')) {
+      content.push({
+        type: 'image',
+        source: { type: 'base64', media_type: media.mediaType, data: media.base64 },
+      });
+    }
+  }
+
+  if (content.length === 0) return '';
+
+  // Add the analysis prompt
+  content.push({ type: 'text', text: REFERENCE_ANALYSIS_PROMPT });
+
+  const result = await sendVisionMessage(
+    REFERENCE_ANALYSIS_SYSTEM,
+    content,
+    apiKey,
+    6000,  // Deep analysis needs space
+    OPUS,  // Use Opus for nuanced visual analysis
+    signal,
+  );
+
+  return result;
+}
+
+// ─── Main Pipeline ───────────────────────────────────────────────────────────
+
 export async function runAutopilotPipeline(
   tasks: AutopilotTask[],
   analysis: FullAnalysis,
@@ -112,7 +204,6 @@ export async function runAutopilotPipeline(
   signal: AbortSignal,
 ): Promise<AutopilotState> {
   const resourceCtx = buildResourceContext(resourceContext);
-  const directionBlock = buildDirectionBlock(direction);
 
   const state: AutopilotState = {
     phase: 'running',
@@ -125,6 +216,25 @@ export async function runAutopilotPipeline(
 
   onProgress({ ...state });
 
+  // ── Step 0: Analyze Reference Media (if provided) ──────────────────────
+
+  let referenceAnalysis = '';
+
+  if (direction.referenceMedia.length > 0) {
+    try {
+      referenceAnalysis = await analyzeReferenceMedia(direction, apiKey, signal);
+      await delay(INTER_CALL_DELAY);
+    } catch (err) {
+      // Non-fatal — continue without reference analysis
+      referenceAnalysis = `[Reference analysis failed: ${err instanceof Error ? err.message : String(err)}]`;
+    }
+  }
+
+  const directionBlock = buildDirectionBlock(direction, referenceAnalysis);
+
+  // Track used frameworks for diversity enforcement
+  const usedFrameworks: string[] = [];
+
   // ── Process each task sequentially ──────────────────────────────────────
 
   for (let i = 0; i < state.tasks.length; i++) {
@@ -135,7 +245,7 @@ export async function runAutopilotPipeline(
     const { task } = ts;
 
     try {
-      // ── Step 1: Generate Concepts ─────────────────────────────────────
+      // ── Step 1: Generate Concepts (Opus, full knowledge) ────────────
 
       ts.step = 'generating-concepts';
       onProgress({ ...state });
@@ -146,7 +256,7 @@ export async function runAutopilotPipeline(
         anglesPrompt.user,
         apiKey,
         12000,
-        CONCEPT_MODEL,
+        OPUS,
         signal,
       );
       ts.conceptsRaw = conceptsRaw;
@@ -155,7 +265,7 @@ export async function runAutopilotPipeline(
       await delay(INTER_CALL_DELAY);
       if (signal.aborted) throw new Error('Pipeline cancelled');
 
-      // ── Step 2: Select Best Concept ───────────────────────────────────
+      // ── Step 2: Select Best Concept (Opus, full expert knowledge) ───
 
       ts.step = 'selecting-concept';
       onProgress({ ...state });
@@ -165,16 +275,20 @@ export async function runAutopilotPipeline(
         task.parsed.name,
         task.parsed.angle,
         task.parsed.product,
+        task.product,
         task.parsed.medium,
         task.duration,
+        analysis,
+        usedFrameworks,
+        referenceAnalysis,
       );
 
       const selectorResponse = await sendMessage(
         selectorPrompt.system + directionBlock,
         selectorPrompt.user,
         apiKey,
-        2000,
-        SELECTOR_MODEL,
+        4000,  // Increased for deep reasoning
+        OPUS,
         signal,
       );
 
@@ -182,6 +296,10 @@ export async function runAutopilotPipeline(
       ts.selectedConceptIndex = selection.selectedIndex;
       ts.selectionReasoning = selection.reasoning;
       ts.recommendedFramework = selection.framework;
+
+      // Track framework for diversity
+      const framework = matchFramework(selection.framework);
+      usedFrameworks.push(framework);
 
       // Extract the selected concept text
       const conceptBlocks = parseConceptBlocks(conceptsRaw);
@@ -193,12 +311,11 @@ export async function runAutopilotPipeline(
       await delay(INTER_CALL_DELAY);
       if (signal.aborted) throw new Error('Pipeline cancelled');
 
-      // ── Step 3: Generate Brief ────────────────────────────────────────
+      // ── Step 3: Generate Brief (Opus, full knowledge) ───────────────
 
       ts.step = 'generating-script';
       onProgress({ ...state });
 
-      const framework = matchFramework(selection.framework);
       const scriptParams: ScriptParams = {
         ...task.scriptParamsBase,
         framework,
@@ -211,7 +328,7 @@ export async function runAutopilotPipeline(
         scriptPrompt.user,
         apiKey,
         getMaxTokensForDuration(task.duration),
-        SCRIPT_MODEL,
+        OPUS,
         signal,
       );
 
@@ -227,11 +344,10 @@ export async function runAutopilotPipeline(
       ts.step = 'error';
       ts.error = err instanceof Error ? err.message : String(err);
       onProgress({ ...state });
-      // Continue to next task
     }
   }
 
-  // ── Batch Review ────────────────────────────────────────────────────────
+  // ── Batch Review (Opus, full expert knowledge) ──────────────────────────
 
   const completedTasks = state.tasks.filter((t) => t.step === 'complete' && t.scriptResult);
 
@@ -249,14 +365,17 @@ export async function runAutopilotPipeline(
           framework: t.recommendedFramework ?? 'PAS',
           briefContent: t.scriptResult!,
         })),
+        analysis,
+        direction.instructions,
+        referenceAnalysis,
       );
 
       state.reviewResult = await sendMessage(
         reviewPrompt.system,
         reviewPrompt.user,
         apiKey,
-        8000,
-        REVIEWER_MODEL,
+        12000,  // Increased for thorough per-brief reviews
+        OPUS,
         signal,
       );
     } catch (err) {
