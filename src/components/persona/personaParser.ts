@@ -70,10 +70,11 @@ const SECTION_KEY_MATCHERS: [RegExp, string][] = [
   [/procurement psychology/i, 'procurement_psychology'],
   [/institutional messaging/i, 'institutional_messaging'],
   [/outcomes.*quotes|quotes.*outcomes/i, 'quotes'],
-  // US vs CA geographic comparison (MUST come before market_opportunity to catch "Market Analysis: US vs CA")
-  [/us\s*vs\.?\s*ca|geo.*comparison|united states.*canada|market.*comparison.*us|market.*comparison.*ca/i, 'us_vs_ca_comparison'],
-  // Market (all channels)
-  [/market opportunity|market positioning|market analysis/i, 'market_opportunity'],
+  // Market (all channels) — check BEFORE us_vs_ca so "Market Opportunity" / "Market Positioning" / "Market Analysis"
+  // headings don't get swallowed by the US vs CA matcher
+  [/market opportunity|market positioning|market analysis(?!\s*:?\s*us|\s*:?\s*united)/i, 'market_opportunity'],
+  // US vs CA geographic comparison — only matches headings with explicit US/CA comparison language
+  [/us\s*vs\.?\s*ca|geo.*comparison|united states.*canada/i, 'us_vs_ca_comparison'],
 ];
 
 function normalizeSectionKey(heading: string): string {

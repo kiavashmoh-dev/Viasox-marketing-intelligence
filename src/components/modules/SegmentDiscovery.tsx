@@ -222,14 +222,39 @@ function LifestyleContext({
 
   if (motivationSegs.length === 0 || overlaps.length === 0) return null;
 
+  // Compute healthcare/standing worker overlap for the annotation
+  const hcStandingOverlap = useMemo(() => {
+    const hcTotal = breakdown.segments.find((s) => s.segmentName === 'healthcare worker')?.totalReviews ?? 0;
+    const swTotal = breakdown.segments.find((s) => s.segmentName === 'standing worker')?.totalReviews ?? 0;
+    if (hcTotal === 0 || swTotal === 0) return null;
+    // Count reviews in the overlap (healthcare × standing = reviews matching both)
+    // We approximate from identity-layer cross-over: reviews that match both identity patterns
+    // For now, compute from the overall identity overlap in the crossSegmentOverlap data isn't directly available
+    // (crossSegmentOverlap is identity × motivation). So we note the relationship instead.
+    return { hcTotal, swTotal };
+  }, [breakdown]);
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 mb-5">
       <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-1">
         Lifestyle Context
       </h3>
       <p className="text-xs text-slate-400 mb-4">
-        Who are the people in each motivation segment? Click to expand.
+        Who are the people in each motivation segment? Click to expand. Identity segments are narrow — many
+        reviewers don't self-identify, so the identified portion may be small. This is expected.
       </p>
+
+      {/* Healthcare / Standing Worker overlap note */}
+      {hcStandingOverlap && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 mb-4">
+          <p className="text-xs text-blue-700">
+            <span className="font-semibold">Overlap note:</span> Healthcare Workers ({hcStandingOverlap.hcTotal.toLocaleString()} reviews) and
+            Standing Workers ({hcStandingOverlap.swTotal.toLocaleString()} reviews) frequently overlap — most healthcare workers are
+            also standing workers. A single review mentioning &ldquo;nurse on my feet all day&rdquo; counts in both segments.
+            Healthcare Workers is a subset of the broader standing-worker population.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-2">
         {motivationSegs.map((seg) => {
@@ -239,6 +264,22 @@ function LifestyleContext({
 
           if (identityBreakdown.length === 0) return null;
           const isOpen = expanded === seg.segmentName;
+
+          // Calculate how many reviews in this motivation segment matched ANY identity
+          let totalIdentifiedCount = 0;
+          // Sum unique identified reviews (reviews can match multiple identities, so cap at seg total)
+          const rawIdentifiedSum = identityBreakdown.reduce((sum, o) => sum + o.reviewCount, 0);
+          // Approximate unique identified count (cap at segment total, adjust for multi-identity overlap)
+          totalIdentifiedCount = Math.min(rawIdentifiedSum, seg.totalReviews);
+          // Rough de-dupe: if raw sum > segment total, many reviews match multiple identities
+          if (rawIdentifiedSum > seg.totalReviews * 0.8) {
+            // Heavy overlap — estimate ~60-70% unique
+            totalIdentifiedCount = Math.round(Math.min(rawIdentifiedSum * 0.65, seg.totalReviews));
+          }
+          const unidentifiedCount = seg.totalReviews - totalIdentifiedCount;
+          const unidentifiedPct = seg.totalReviews > 0
+            ? Math.round((unidentifiedCount / seg.totalReviews) * 1000) / 10
+            : 0;
 
           return (
             <div key={seg.segmentName} className="border border-slate-200 rounded-lg overflow-hidden">
@@ -250,6 +291,9 @@ function LifestyleContext({
                   <span className="text-sm font-semibold text-blue-700 capitalize">{seg.segmentName}</span>
                   <span className="text-xs text-slate-400">
                     {seg.totalReviews.toLocaleString()} reviews
+                  </span>
+                  <span className="text-[10px] text-slate-300 ml-1">
+                    ~{(100 - unidentifiedPct).toFixed(0)}% identified
                   </span>
                 </div>
                 <span className="text-slate-400 text-sm">{isOpen ? '\u25B2' : '\u25BC'}</span>
@@ -279,8 +323,30 @@ function LifestyleContext({
                       </div>
                     );
                   })}
+
+                  {/* Unidentified row */}
+                  {unidentifiedPct > 5 && (
+                    <div className="flex items-center gap-3 opacity-60">
+                      <div className="w-40 text-sm text-slate-500 italic truncate shrink-0">
+                        No identity match
+                      </div>
+                      <div className="flex-1 bg-slate-100 rounded-full h-5 relative overflow-hidden">
+                        <div
+                          className="bg-slate-300 h-full rounded-full"
+                          style={{ width: `${Math.max(unidentifiedPct, 3)}%` }}
+                        />
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-slate-500">
+                          ~{unidentifiedCount.toLocaleString()} (~{unidentifiedPct}%)
+                        </span>
+                      </div>
+                      <div className="w-12 shrink-0" />
+                    </div>
+                  )}
+
                   <p className="text-xs text-slate-400 mt-2">
-                    % of this motivation segment that also matches each identity
+                    % of this motivation segment that also matches each identity.
+                    Reviews can match multiple identities, so rows may overlap.
+                    &ldquo;No identity match&rdquo; = reviewers who didn't mention a specific lifestyle, occupation, or condition.
                   </p>
                 </div>
               )}

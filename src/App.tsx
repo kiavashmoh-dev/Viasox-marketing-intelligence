@@ -12,6 +12,8 @@ import HookGenerator from './components/modules/HookGenerator';
 import ScriptWriter from './components/modules/ScriptWriter';
 import IntelligenceReport from './components/modules/IntelligenceReport';
 import CommentIntelligence from './components/modules/CommentIntelligence';
+import ProductIntelligence from './components/modules/ProductIntelligence';
+import AutopilotBriefs from './components/modules/AutopilotBriefs';
 import { useAnalysis } from './hooks/useAnalysis';
 
 export default function App() {
@@ -134,6 +136,10 @@ export default function App() {
           return <IntelligenceReport {...moduleProps} />;
         case 'comments':
           return <CommentIntelligence {...moduleProps} />;
+        case 'product-intelligence':
+          return <ProductIntelligence {...moduleProps} />;
+        case 'autopilot':
+          return <AutopilotBriefs {...moduleProps} />;
         default:
           return null;
       }

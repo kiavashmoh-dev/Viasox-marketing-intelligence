@@ -33,13 +33,13 @@ const CHANNELS: { value: PersonaChannel; label: string; description: string }[] 
   },
   {
     value: 'Retail',
-    label: 'Retail',
-    description: 'Consumer personas reframed as sell-through proof for retail buyers. Category gaps, demand metrics, planogram positioning.',
+    label: 'Retail (Inferred from DTC Data)',
+    description: 'Consumer personas reframed as sell-through proof for retail buyers. Category gaps, demand metrics, planogram positioning. No retail POS data is connected — all insights are inferred from DTC review and order data.',
   },
   {
     value: 'Wholesale',
-    label: 'Wholesale / B2B',
-    description: 'Consumer data translated into institutional outcomes. Staff time savings, compliance rates, ROI narratives, procurement psychology.',
+    label: 'Wholesale / B2B (Inferred from DTC Data)',
+    description: 'Consumer data translated into institutional outcomes. Staff time savings, compliance rates, ROI narratives, procurement psychology. No wholesale distributor data is connected — all insights are inferred from DTC review and order data.',
   },
 ];
 

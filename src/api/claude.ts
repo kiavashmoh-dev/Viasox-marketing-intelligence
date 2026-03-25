@@ -117,6 +117,90 @@ export async function sendMessage(
 }
 
 /* ------------------------------------------------------------------ */
+/*  Vision API (for screenshot parsing)                                */
+/* ------------------------------------------------------------------ */
+
+export type ContentBlock =
+  | { type: 'text'; text: string }
+  | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } };
+
+/**
+ * Send a message with mixed content (text + images) to Claude.
+ * Used for screenshot parsing via vision.
+ */
+export async function sendVisionMessage(
+  system: string,
+  content: ContentBlock[],
+  apiKey: string,
+  maxTokens = 2048,
+  model = 'claude-sonnet-4-20250514',
+  signal?: AbortSignal,
+): Promise<string> {
+  const body = JSON.stringify({
+    model,
+    max_tokens: maxTokens,
+    system,
+    messages: [{ role: 'user', content }],
+  });
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  if (signal) {
+    if (signal.aborted) controller.abort();
+    else signal.addEventListener('abort', () => controller.abort(), { once: true });
+  }
+  const effectiveSignal = controller.signal;
+  const cleanup = () => clearTimeout(timeoutId);
+
+  let response: Response;
+  try {
+    response = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+      body,
+      signal: effectiveSignal,
+    });
+  } catch {
+    if (effectiveSignal.aborted) { cleanup(); throw new Error('Request was cancelled.'); }
+    try {
+      response = await fetch(DIRECT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body,
+        signal: effectiveSignal,
+      });
+    } catch {
+      cleanup();
+      if (effectiveSignal.aborted) throw new Error('Request was cancelled.');
+      throw new Error('Unable to reach the Claude API.');
+    }
+  }
+
+  cleanup();
+
+  if (!response.ok) {
+    const errText = await response.text();
+    if (response.status === 429) throw new Error('Rate limited. Please wait a moment and try again.');
+    if (response.status === 401) throw new Error('Invalid API key.');
+    throw new Error(`API error (${response.status}): ${errText}`);
+  }
+
+  const data: unknown = await response.json();
+  if (!data || typeof data !== 'object' || !('content' in data) || !Array.isArray((data as ClaudeResponse).content)) {
+    throw new Error('Unexpected API response format.');
+  }
+  const typedData = data as ClaudeResponse;
+  const textBlock = typedData.content.find((c) => c.type === 'text');
+  if (!textBlock) throw new Error('No text in response');
+  return textBlock.text;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Multi-turn chat API (for persona output assistant)                 */
 /* ------------------------------------------------------------------ */
 

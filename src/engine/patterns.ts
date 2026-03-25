@@ -65,21 +65,21 @@ export const TRANSFORMATION_PATTERNS: Record<string, RegExp> = {
 // ─── LAYER 1: Identity Segments (narrow — WHO they are) ─────────────────────
 
 export const IDENTITY_SEGMENT_PATTERNS: Record<string, RegExp> = {
-  healthcare_worker: /\b(nurse|nursing|hospital|12[- ]?hour shift|healthcare|CNA|medical (staff|professional)|in the (ER|OR|ICU)|on rounds|scrubs)\b/i,
+  healthcare_worker: /\b(nurse|nursing|hospital|12[- ]?hour shift|healthcare|health ?care|CNA|medical (staff|professional)|in the (ER|OR|ICU)|\bER\b|\bICU\b|\bOR\b|on rounds|scrubs|\bRN\b|\bLPN\b|\bEMT\b|paramedic|clinic|dental|veterinar|pharmacy tech|phlebotom|radiology|x-?ray tech|surgical tech|home health|hospice|night shift.{0,15}hospital|hospital.{0,15}night shift|care ?giver.{0,8}patient|patient care|bedside|triage)\b/i,
 
-  caregiver_gift_buyer: /\b(bought (for|these for)|got (these|them) for|my (mom|mother|dad|father|husband|wife|parent|grandm|grandp|grandfather|grandmother)|gift|stocking stuffer|(christmas|birthday|mother'?s?|father'?s?) (day )?gift|for (him|her)|surprise(d)? (them|him|her)|perfect gift)\b/i,
+  caregiver_gift_buyer: /\b(bought (for|these for)|got (these|them) for|my (mom|mother|dad|father|husband|wife|parent|grandm|grandp|grandfather|grandmother|daughter|son|brother|sister|aunt|uncle|friend)|gift|stocking stuffer|(christmas|birthday|mother'?s?|father'?s?|valentine) (day )?gift|for (him|her)|surprise(d)? (them|him|her)|perfect gift|buying for|ordered for|got (a|some) pair(s)? for|present for)\b/i,
 
-  diabetic_neuropathy: /\b(diabeti[cs]?|diabetes|blood sugar|type [12]|A1C|neuropathy|nerve (damage|pain)|sugar level|insulin)\b/i,
+  diabetic_neuropathy: /\b(diabeti[cs]?|diabetes|blood sugar|type [12]|A1C|neuropathy|nerve (damage|pain)|sugar level|insulin|numbness in (my )?(feet|legs|toes)|feet (go|went|are|feel) numb)\b/i,
 
-  standing_worker: /\b(stand(ing)? all day|on (my|your|their) feet|retail|teacher|teaching|warehouse|factory|behind the counter|concrete floor|delivery|hairstylist|stylist|bartend|waitress|waiter|server|cashier)\b/i,
+  standing_worker: /\b(stand(ing)? all day|on (my|your|their) feet|retail|teacher|teaching|warehouse|factory|behind the counter|concrete floor|delivery|hairstylist|stylist|bartend|waitress|waiter|server|cashier|salon|kitchen|cook(ing)?|chef|construction|shop floor|store|barista|stock(ing)? shelves|grocery|postal|mail carrier|custodian|janitor|security guard|receptionist|long shift|work.{0,10}12 hours|work.{0,10}10 hours|on (my|your) feet.{0,15}(hours|all day)|walk(ing)? all day)\b/i,
 
-  accessibility_mobility: /\b(paralys|paralyzed|arthritis|rheumatoid|hip (issue|problem|replacement)|knee replacement|wheelchair|limited mobility|range of motion|bad (back|knee|hip)|can't (bend|reach)|sock aid|fibromyalgia|fibro|lupus|gout|sciatica|stenosis)\b/i,
+  accessibility_mobility: /\b(paralys|paralyzed|arthritis|rheumatoid|hip (issue|problem|replacement)|knee replacement|wheelchair|limited mobility|range of motion|bad (back|knee|hip)|can't (bend|reach)|sock aid|fibromyalgia|fibro|lupus|gout|sciatica|stenosis|\bMS\b|multiple sclerosis|parkinson|stroke|recovering from|balance (issue|problem)|walker|cane|mobility (issue|problem|challenge)|hard to (bend|reach))\b/i,
 
   traveler: /\b(travel|flight|airplane|aeroplane|vacation|trip|long (flight|drive)|road trip|hotel|airport|flying|flew|cruise)\b/i,
 
-  senior: /\b(([5-9]\d|1\d{2})[- ]?(year|yr)[- ]?old|elderly|senior|aging|getting older|at my age|older (adult|person|gentleman|lady|woman|man))\b/i,
+  senior: /\b(([5-9]\d|1\d{2})[- ]?(year|yr)[- ]?old|elderly|senior|aging|getting older|at my age|older (adult|person|gentleman|lady|woman|man)|retire[d]?|retiree|retirement|golden years|grandma|grandpa|grandmother|grandfather)\b/i,
 
-  pregnant_postpartum: /\b(pregnan|expecting|maternity|postpartum|post-?partum|baby bump|trimester|prenatal|swelling during pregnan)\b/i,
+  pregnant_postpartum: /\b(pregnan|expecting|maternity|postpartum|post-?partum|baby bump|trimester|prenatal|swelling during pregnan|baby shower|expecting mother|due date|morning sickness)\b/i,
 
   medical_therapeutic: /\b(doctor (recommended|told|said|prescribed)|physician|podiatrist|prescribed|varicose|spider vein|vericose|DVT|blood clot|deep vein|post[- ]?surg|after (my )?surgery|post[- ]?op|chemo|chemotherapy|wound care|ulcer|dialysis|lymphedema|edema|heart (condition|failure)|mmHg|compression level|medical[- ]?grade|physical therapy|\bPT\b|rehab)\b/i,
 };

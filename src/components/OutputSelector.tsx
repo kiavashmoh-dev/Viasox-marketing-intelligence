@@ -50,6 +50,18 @@ const modules: { id: ModuleId; title: string; description: string; icon: string 
     description: 'Analyze ad comments \u2014 categorize, extract insights, find angles',
     icon: '\uD83D\uDCAC',
   },
+  {
+    id: 'product-intelligence',
+    title: 'Product & Customer Intelligence',
+    description: 'Revenue by product, new vs repeat customers, segment-level growth drivers, and Comfort Seeker deep-dive',
+    icon: '\uD83D\uDCB0',
+  },
+  {
+    id: 'autopilot',
+    title: 'Autopilot Brief Generator',
+    description: 'Upload Asana screenshot, auto-generate concepts, select the best, write Ecom briefs, and review quality',
+    icon: '\uD83E\uDD16',
+  },
 ];
 
 export default function OutputSelector({ analysis, onSelect, onReset }: Props) {

@@ -156,7 +156,9 @@ export type ModuleId =
   | 'hooks'
   | 'script'
   | 'report'
-  | 'comments';
+  | 'comments'
+  | 'product-intelligence'
+  | 'autopilot';
 
 export interface AppState {
   view: AppView;
