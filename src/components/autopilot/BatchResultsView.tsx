@@ -7,9 +7,11 @@ import { addFeedback } from '../../autopilot/memoryStore';
 interface Props {
   state: AutopilotState;
   onReset: () => void;
+  onRedoTask?: (taskIndex: number, feedback: string) => void;
+  redoingIndex?: number | null;
 }
 
-export default function BatchResultsView({ state, onReset }: Props) {
+export default function BatchResultsView({ state, onReset, onRedoTask, redoingIndex }: Props) {
   const [reviewExpanded, setReviewExpanded] = useState(false);
   const [briefingExpanded, setBriefingExpanded] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
@@ -130,7 +132,13 @@ export default function BatchResultsView({ state, onReset }: Props) {
       {/* Individual Brief Cards */}
       <div className="space-y-3">
         {state.tasks.map((ts, i) => (
-          <TaskBriefCard key={i} taskState={ts} index={i} />
+          <TaskBriefCard
+            key={i}
+            taskState={ts}
+            index={i}
+            onRedo={onRedoTask}
+            isRedoing={redoingIndex === i}
+          />
         ))}
       </div>
 

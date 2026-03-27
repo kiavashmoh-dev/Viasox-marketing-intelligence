@@ -437,3 +437,180 @@ export async function runAutopilotPipeline(
 
   return state;
 }
+
+// ─── Single-Task Redo ─────────────────────────────────────────────────────────
+
+/**
+ * Re-runs the full pipeline (concepts → select → script) for a single task,
+ * injecting the user's feedback as a top-priority creative directive.
+ */
+export async function redoSingleTask(
+  taskIndex: number,
+  feedback: string,
+  currentState: AutopilotState,
+  analysis: FullAnalysis,
+  apiKey: string,
+  resourceContext: string,
+  direction: CreativeDirection,
+  onProgress: (state: AutopilotState) => void,
+  signal: AbortSignal,
+): Promise<AutopilotState> {
+  const state = { ...currentState, tasks: currentState.tasks.map((t) => ({ ...t })) };
+  const ts = state.tasks[taskIndex];
+  if (!ts) return state;
+
+  const { task } = ts;
+  const resourceCtx = buildResourceContext(resourceContext);
+  const memory = loadMemory();
+
+  // Build direction block — inject user feedback at the TOP as highest priority
+  const feedbackDirective = `## REDO FEEDBACK — THIS IS THE #1 PRIORITY FOR THIS BRIEF
+
+The creative director reviewed the previous version of this brief (${task.parsed.name}) and provided the following specific feedback. This feedback MUST be the primary driver of all decisions — concept selection, framework choice, hook style, visual approach, script tone, and script structure. Do NOT repeat the mistakes or patterns from the previous version.
+
+<redo_feedback>
+${feedback}
+</redo_feedback>
+
+Previous brief that needs to be redone (for reference — DO NOT copy this, create something better based on the feedback above):
+<previous_brief>
+${ts.scriptResult || '[no previous brief]'}
+</previous_brief>`;
+
+  const fullDirection: CreativeDirection = {
+    ...direction,
+    instructions: feedbackDirective + (direction.instructions ? '\n\n' + direction.instructions : ''),
+  };
+
+  // Get reference analysis from original direction block (we don't re-analyze)
+  const directionBlock = buildDirectionBlock(fullDirection, '');
+
+  let memoryBriefing = '';
+  if (state.memoryBriefing) {
+    memoryBriefing = state.memoryBriefing;
+  } else if (memory.batches.length > 0) {
+    try {
+      const briefing = await runMemoryCurator(apiKey, signal);
+      if (briefing) memoryBriefing = briefing.briefingText;
+    } catch { /* non-fatal */ }
+    await delay(INTER_CALL_DELAY);
+  }
+
+  // Get used frameworks from OTHER tasks (for diversity)
+  const usedFrameworks = state.tasks
+    .filter((_, i) => i !== taskIndex && _.recommendedFramework)
+    .map((t) => t.recommendedFramework!)
+    .map(matchFramework);
+
+  try {
+    // ── Step 1: Re-generate Concepts ──────────────────────────────────
+
+    ts.step = 'generating-concepts';
+    ts.error = undefined;
+    onProgress({ ...state });
+
+    const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined);
+    const conceptsRaw = await sendMessage(
+      anglesPrompt.system + resourceCtx + directionBlock,
+      anglesPrompt.user,
+      apiKey,
+      12000,
+      OPUS,
+      signal,
+    );
+    ts.conceptsRaw = conceptsRaw;
+    onProgress({ ...state });
+
+    await delay(INTER_CALL_DELAY);
+
+    // ── Step 2: Re-select Concept ─────────────────────────────────────
+
+    ts.step = 'selecting-concept';
+    onProgress({ ...state });
+
+    const angleHistoryRecords = getHistoryForAngle(task.parsed.angle);
+    const angleHistoryText = angleHistoryRecords.length > 0
+      ? formatAngleHistoryForSelector(
+          task.parsed.angle,
+          angleHistoryRecords.map((r) => ({
+            framework: r.framework,
+            hookStyles: r.hookStyles,
+            conceptSummary: r.conceptSummary,
+            reviewScore: r.reviewScore,
+            date: r.batchId.split('T')[0],
+          })),
+        )
+      : undefined;
+
+    const selectorPrompt = buildConceptSelectorPrompt(
+      conceptsRaw,
+      task.parsed.name,
+      task.parsed.angle,
+      task.parsed.product,
+      task.product,
+      task.parsed.medium,
+      task.duration,
+      analysis,
+      usedFrameworks,
+      '',
+      memoryBriefing || undefined,
+      angleHistoryText,
+    );
+
+    const selectorResponse = await sendMessage(
+      selectorPrompt.system + directionBlock,
+      selectorPrompt.user,
+      apiKey,
+      4000,
+      OPUS,
+      signal,
+    );
+
+    const selection = parseSelectorResponse(selectorResponse);
+    ts.selectedConceptIndex = selection.selectedIndex;
+    ts.selectionReasoning = selection.reasoning;
+    ts.recommendedFramework = selection.framework;
+
+    const framework = matchFramework(selection.framework);
+    const conceptBlocks = parseConceptBlocks(conceptsRaw);
+    const blockIndex = Math.max(0, Math.min(selection.selectedIndex - 1, conceptBlocks.length - 1));
+    ts.selectedConceptText = conceptBlocks[blockIndex] ?? conceptsRaw;
+
+    onProgress({ ...state });
+
+    await delay(INTER_CALL_DELAY);
+
+    // ── Step 3: Re-generate Brief ─────────────────────────────────────
+
+    ts.step = 'generating-script';
+    onProgress({ ...state });
+
+    const scriptParams: ScriptParams = {
+      ...task.scriptParamsBase,
+      framework,
+      conceptAngleContext: ts.selectedConceptText,
+    };
+
+    const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined);
+    const maxTokens = getMaxTokensForDuration(task.duration);
+    const scriptResult = await sendMessage(
+      scriptPrompt.system + resourceCtx + directionBlock,
+      scriptPrompt.user,
+      apiKey,
+      maxTokens,
+      OPUS,
+      signal,
+    );
+
+    ts.scriptResult = scriptResult;
+    ts.step = 'complete';
+    onProgress({ ...state });
+  } catch (err) {
+    if (signal.aborted) throw new Error('Redo cancelled');
+    ts.step = 'error';
+    ts.error = err instanceof Error ? err.message : String(err);
+    onProgress({ ...state });
+  }
+
+  return state;
+}

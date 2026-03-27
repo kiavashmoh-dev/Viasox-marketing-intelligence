@@ -3,7 +3,7 @@ import type { FullAnalysis } from '../../engine/types';
 import type { AutopilotTask, AutopilotState, BatchPhase, CreativeDirection } from '../../engine/autopilotTypes';
 import { parseAsanaScreenshot, fileToBase64 } from '../../autopilot/screenshotParser';
 import { mapAsanaTask } from '../../autopilot/asanaMapper';
-import { runAutopilotPipeline } from '../../autopilot/pipelineEngine';
+import { runAutopilotPipeline, redoSingleTask } from '../../autopilot/pipelineEngine';
 import PlannerView from '../autopilot/PlannerView';
 import PipelineProgress from '../autopilot/PipelineProgress';
 import BatchResultsView from '../autopilot/BatchResultsView';
@@ -23,6 +23,8 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
   const [dragOver, setDragOver] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const directionRef = useRef<CreativeDirection>({ instructions: '', referenceMedia: [] });
+  const [redoingIndex, setRedoingIndex] = useState<number | null>(null);
 
   // ── Screenshot Upload ──────────────────────────────────────────────────
 
@@ -71,6 +73,7 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
   const handleRunBatch = useCallback(async (selectedTasks: AutopilotTask[], direction: CreativeDirection) => {
     setPhase('running');
     setError(null);
+    directionRef.current = direction;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -97,6 +100,36 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
       }
     }
   }, [analysis, apiKey, resourceContext]);
+
+  const handleRedoTask = useCallback(async (taskIndex: number, feedback: string) => {
+    if (!pipelineState) return;
+    setRedoingIndex(taskIndex);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const result = await redoSingleTask(
+        taskIndex,
+        feedback,
+        pipelineState,
+        analysis,
+        apiKey,
+        resourceContext,
+        directionRef.current,
+        (state) => setPipelineState({ ...state }),
+        controller.signal,
+      );
+
+      setPipelineState(result);
+    } catch (err) {
+      if ((err as Error).message !== 'Redo cancelled') {
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    } finally {
+      setRedoingIndex(null);
+    }
+  }, [pipelineState, analysis, apiKey, resourceContext]);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
@@ -206,6 +239,8 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
           <BatchResultsView
             state={pipelineState}
             onReset={handleReset}
+            onRedoTask={handleRedoTask}
+            redoingIndex={redoingIndex}
           />
         )}
 

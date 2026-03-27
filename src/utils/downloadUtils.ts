@@ -317,7 +317,7 @@ export function downloadProductionBriefCsv(markdownContent: string, product: str
 /**
  * Parse a markdown key-value table (| Field | Value | format) into an object
  */
-function parseKvTable(markdown: string, sectionHeader: string): Record<string, string> {
+export function parseKvTable(markdown: string, sectionHeader: string): Record<string, string> {
   const result: Record<string, string> = {};
   const headerPattern = new RegExp(`###?\\s*\\d*\\.?\\s*${sectionHeader}`, 'i');
   const headerIdx = markdown.split('\n').findIndex(l => headerPattern.test(l));
@@ -340,7 +340,7 @@ function parseKvTable(markdown: string, sectionHeader: string): Record<string, s
 /**
  * Parse a markdown script table (| # | Shot Type | Visual | Line |) into rows
  */
-function parseScriptTable(markdown: string, sectionHeader: string): string[][] {
+export function parseScriptTable(markdown: string, sectionHeader: string): string[][] {
   const rows: string[][] = [];
   const headerPattern = new RegExp(`###?\\s*\\d*\\.?\\s*${sectionHeader}`, 'i');
   const headerIdx = markdown.split('\n').findIndex(l => headerPattern.test(l));
