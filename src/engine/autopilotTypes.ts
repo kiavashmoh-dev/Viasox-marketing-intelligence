@@ -91,6 +91,10 @@ export interface StrategyQuestion {
   id: string;
   question: string;
   context: string;
+  /** Multiple-choice options — user picks one or types custom */
+  options: string[];
+  /** Which option the strategist recommends (index into options) */
+  recommendedOption?: number;
   suggestedAnswer?: string;
 }
 

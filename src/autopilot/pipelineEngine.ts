@@ -208,6 +208,8 @@ export async function runStrategySession(
       id: q.id,
       question: q.question,
       context: q.context,
+      options: q.options || [],
+      recommendedOption: q.recommendedOption,
       suggestedAnswer: q.suggested,
     })),
     answers: {},

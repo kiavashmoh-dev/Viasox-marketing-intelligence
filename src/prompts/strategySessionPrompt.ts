@@ -89,17 +89,23 @@ Good questions dig into:
 
 For each question, provide a brief context line explaining WHY you're asking it (what decision it will inform).
 
+**CRITICAL: Every question MUST include 3-4 multiple-choice options.** The creative director needs to answer quickly. Each option should be a specific, actionable direction — not vague. Include a recommended option (the one you'd pick). The director can always type a custom answer, but the options should cover the most likely and most strategic choices.
+
 Format your response as:
 
 <analysis>
-[Your strategic analysis here]
+[Your strategic analysis here — use markdown headers (##, ###), bullet points, and bold text for readability. Structure into clear sections.]
 </analysis>
 
 <questions>
 <q id="1">
 <question>[The question]</question>
 <context>[Why this matters for the batch]</context>
-<suggested>[Optional: what you'd recommend if the director doesn't have a strong opinion]</suggested>
+<option>First specific option</option>
+<option>Second specific option</option>
+<option>Third specific option</option>
+<option>Fourth specific option (optional)</option>
+<recommended>0</recommended>
 </q>
 <q id="2">
 ...
@@ -174,12 +180,12 @@ Be extremely specific. "Make it emotional" is useless. "Lead with the moment a n
 
 export function parseStrategyAnalysis(response: string): {
   analysis: string;
-  questions: Array<{ id: string; question: string; context: string; suggested?: string }>;
+  questions: Array<{ id: string; question: string; context: string; options: string[]; recommendedOption?: number; suggested?: string }>;
 } {
   const analysisMatch = response.match(/<analysis>([\s\S]*?)<\/analysis>/);
   const analysis = analysisMatch ? analysisMatch[1].trim() : response.split('<questions>')[0].trim();
 
-  const questions: Array<{ id: string; question: string; context: string; suggested?: string }> = [];
+  const questions: Array<{ id: string; question: string; context: string; options: string[]; recommendedOption?: number; suggested?: string }> = [];
 
   const qRegex = /<q\s+id="(\d+)">([\s\S]*?)<\/q>/g;
   let match;
@@ -188,18 +194,29 @@ export function parseStrategyAnalysis(response: string): {
     const qMatch = block.match(/<question>([\s\S]*?)<\/question>/);
     const cMatch = block.match(/<context>([\s\S]*?)<\/context>/);
     const sMatch = block.match(/<suggested>([\s\S]*?)<\/suggested>/);
+    const recMatch = block.match(/<recommended>(\d+)<\/recommended>/);
+
+    // Extract options
+    const options: string[] = [];
+    const optRegex = /<option>([\s\S]*?)<\/option>/g;
+    let optMatch;
+    while ((optMatch = optRegex.exec(block)) !== null) {
+      options.push(optMatch[1].trim());
+    }
 
     if (qMatch) {
       questions.push({
         id: match[1],
         question: qMatch[1].trim(),
         context: cMatch ? cMatch[1].trim() : '',
+        options,
+        recommendedOption: recMatch ? parseInt(recMatch[1]) : undefined,
         suggested: sMatch ? sMatch[1].trim() : undefined,
       });
     }
   }
 
-  // Fallback if XML parsing fails — try to extract questions from numbered list
+  // Fallback if XML parsing fails
   if (questions.length === 0) {
     const lines = response.split('\n');
     let qId = 1;
@@ -210,6 +227,7 @@ export function parseStrategyAnalysis(response: string): {
           id: String(qId++),
           question: line.replace(/^\d+[\.\)]\s*/, ''),
           context: '',
+          options: [],
         });
       }
     }
