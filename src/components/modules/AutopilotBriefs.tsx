@@ -1,12 +1,27 @@
 import { useState, useRef, useCallback } from 'react';
 import type { FullAnalysis } from '../../engine/types';
-import type { AutopilotTask, AutopilotState, BatchPhase, CreativeDirection } from '../../engine/autopilotTypes';
+import type { AutopilotTask, AutopilotState, BatchPhase, CreativeDirection, StrategySession as StrategySessionType } from '../../engine/autopilotTypes';
 import { parseAsanaScreenshot, fileToBase64 } from '../../autopilot/screenshotParser';
 import { mapAsanaTask } from '../../autopilot/asanaMapper';
-import { runAutopilotPipeline, redoSingleTask } from '../../autopilot/pipelineEngine';
+import {
+  runStrategySession,
+  synthesizeStrategy,
+  analyzeReferenceMedia,
+  runConceptPhase,
+  runScriptPhase,
+  redoSingleTask,
+} from '../../autopilot/pipelineEngine';
+import { loadMemory } from '../../autopilot/memoryStore';
+import { runMemoryCurator } from '../../autopilot/memoryCurator';
+import { buildAnglesPrompt } from '../../prompts/anglesPrompt';
+import { buildResourceContext } from '../../prompts/systemBase';
+import { sendMessage } from '../../api/claude';
+import { buildConceptEvaluatorPrompt, parseConceptEvaluations } from '../../prompts/conceptEvaluatorPrompt';
 import PlannerView from '../autopilot/PlannerView';
 import PipelineProgress from '../autopilot/PipelineProgress';
 import BatchResultsView from '../autopilot/BatchResultsView';
+import StrategySessionUI from '../autopilot/StrategySession';
+import ConceptReview from '../autopilot/ConceptReview';
 
 interface Props {
   analysis: FullAnalysis;
@@ -21,10 +36,20 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
   const [pipelineState, setPipelineState] = useState<AutopilotState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [redoingIndex, setRedoingIndex] = useState<number | null>(null);
+
+  // Strategy session state
+  const [strategySession, setStrategySession] = useState<StrategySessionType | null>(null);
+  const [strategySynthesizing, setStrategySynthesizing] = useState(false);
+  const [strategyBrief, setStrategyBrief] = useState<string | undefined>();
+  const [regenConceptIdx, setRegenConceptIdx] = useState<number | null>(null);
+
+  // Refs for persistence across phases
   const abortRef = useRef<AbortController | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const directionRef = useRef<CreativeDirection>({ instructions: '', referenceMedia: [] });
-  const [redoingIndex, setRedoingIndex] = useState<number | null>(null);
+  const referenceAnalysisRef = useRef('');
+  const memoryBriefingRef = useRef('');
 
   // ── Screenshot Upload ──────────────────────────────────────────────────
 
@@ -68,29 +93,43 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
     if (file) handleFile(file);
   }, [handleFile]);
 
-  // ── Pipeline Execution ─────────────────────────────────────────────────
+  // ── Strategy Session Launch ─────────────────────────────────────────────
 
   const handleRunBatch = useCallback(async (selectedTasks: AutopilotTask[], direction: CreativeDirection) => {
-    setPhase('running');
+    setPhase('strategy-session');
     setError(null);
+    setTasks(selectedTasks);
     directionRef.current = direction;
 
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
-      const result = await runAutopilotPipeline(
+      // Analyze reference media
+      if (direction.referenceMedia.length > 0) {
+        referenceAnalysisRef.current = await analyzeReferenceMedia(direction, apiKey, controller.signal);
+      }
+
+      // Run memory curator
+      const memory = loadMemory();
+      if (memory.batches.length > 0) {
+        try {
+          const briefing = await runMemoryCurator(apiKey, controller.signal);
+          if (briefing) memoryBriefingRef.current = briefing.briefingText;
+        } catch { /* non-fatal */ }
+      }
+
+      // Run strategy session
+      const session = await runStrategySession(
         selectedTasks,
         analysis,
         apiKey,
-        resourceContext,
-        direction,
-        (state) => setPipelineState({ ...state }),
+        referenceAnalysisRef.current,
+        memoryBriefingRef.current || undefined,
         controller.signal,
       );
 
-      setPipelineState(result);
-      setPhase('complete');
+      setStrategySession(session);
     } catch (err) {
       if ((err as Error).message === 'Pipeline cancelled') {
         setPhase('confirming');
@@ -99,7 +138,183 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
         setPhase('error');
       }
     }
-  }, [analysis, apiKey, resourceContext]);
+  }, [analysis, apiKey]);
+
+  // ── Strategy Answers → Synthesis → Concept Generation ──────────────────
+
+  const handleStrategyAnswers = useCallback(async (answers: Record<string, string>) => {
+    if (!strategySession) return;
+
+    const updatedSession = { ...strategySession, answers };
+    setStrategySession(updatedSession);
+    setStrategySynthesizing(true);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      // Synthesize strategy brief
+      const brief = await synthesizeStrategy(
+        updatedSession,
+        tasks,
+        apiKey,
+        memoryBriefingRef.current || undefined,
+        controller.signal,
+      );
+      setStrategyBrief(brief);
+
+      // Move to concept generation
+      setPhase('generating-concepts');
+      setStrategySynthesizing(false);
+
+      // Run concept phase
+      const conceptState = await runConceptPhase(
+        tasks,
+        analysis,
+        apiKey,
+        resourceContext,
+        directionRef.current,
+        referenceAnalysisRef.current,
+        brief,
+        memoryBriefingRef.current || undefined,
+        (state) => setPipelineState({ ...state }),
+        controller.signal,
+      );
+
+      // Store strategy in state
+      conceptState.strategySession = { ...updatedSession, strategyBrief: brief };
+      conceptState.memoryBriefing = memoryBriefingRef.current || undefined;
+      setPipelineState(conceptState);
+      setPhase('concept-review');
+    } catch (err) {
+      setStrategySynthesizing(false);
+      if ((err as Error).message === 'Pipeline cancelled') {
+        setPhase('confirming');
+      } else {
+        setError(err instanceof Error ? err.message : String(err));
+        setPhase('error');
+      }
+    }
+  }, [strategySession, tasks, analysis, apiKey, resourceContext]);
+
+  // ── Concept Approval → Script Generation ───────────────────────────────
+
+  const handleConceptApproval = useCallback(async (
+    selections: Array<{ taskIndex: number; conceptIndex: number }>,
+  ) => {
+    if (!pipelineState) return;
+
+    setPhase('running');
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const result = await runScriptPhase(
+        pipelineState,
+        selections,
+        analysis,
+        apiKey,
+        resourceContext,
+        directionRef.current,
+        referenceAnalysisRef.current,
+        strategyBrief,
+        memoryBriefingRef.current || undefined,
+        (state) => setPipelineState({ ...state }),
+        controller.signal,
+      );
+
+      setPipelineState(result);
+      setPhase('complete');
+    } catch (err) {
+      if ((err as Error).message === 'Pipeline cancelled') {
+        setPhase('concept-review');
+      } else {
+        setError(err instanceof Error ? err.message : String(err));
+        setPhase('error');
+      }
+    }
+  }, [pipelineState, analysis, apiKey, resourceContext, strategyBrief]);
+
+  // ── Concept Regeneration ───────────────────────────────────────────────
+
+  const handleRegenerateConcepts = useCallback(async (taskIndex: number, feedback: string) => {
+    if (!pipelineState) return;
+    setRegenConceptIdx(taskIndex);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      // Re-run concept phase for just this task
+      const state = { ...pipelineState, tasks: pipelineState.tasks.map((t) => ({ ...t })) };
+      const ts = state.tasks[taskIndex];
+      if (!ts) return;
+
+      const directionBlock = `\n\n## CONCEPT REGENERATION — PREVIOUS CONCEPTS WERE REJECTED
+
+The creative director rejected the previous concepts for this task with the following feedback:
+
+<regeneration_feedback>
+${feedback}
+</regeneration_feedback>
+
+Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles from the rejected set.`;
+
+      // Use static imports (already available at module level via pipelineEngine deps)
+
+      const resourceCtx = buildResourceContext(resourceContext);
+
+      ts.step = 'generating-concepts';
+      ts.conceptOptions = undefined;
+      setPipelineState({ ...state });
+
+      const anglesPrompt = buildAnglesPrompt(ts.task.anglesParams, analysis, memoryBriefingRef.current || undefined);
+      const conceptsRaw = await sendMessage(
+        anglesPrompt.system + resourceCtx + directionBlock + (strategyBrief ? `\n\nSTRATEGY BRIEF:\n${strategyBrief}` : ''),
+        anglesPrompt.user,
+        apiKey,
+        12000,
+        'claude-opus-4-6',
+        controller.signal,
+      );
+      ts.conceptsRaw = conceptsRaw;
+
+      ts.step = 'selecting-concept';
+      setPipelineState({ ...state });
+
+      const evalPrompt = buildConceptEvaluatorPrompt(
+        conceptsRaw,
+        ts.task.parsed.name,
+        ts.task.parsed.angle,
+        ts.task.parsed.product,
+        ts.task.parsed.medium,
+        ts.task.duration,
+        strategyBrief,
+        [],
+      );
+
+      const evalResponse = await sendMessage(
+        evalPrompt.system,
+        evalPrompt.user,
+        apiKey,
+        4000,
+        'claude-opus-4-6',
+        controller.signal,
+      );
+
+      ts.conceptOptions = parseConceptEvaluations(evalResponse, conceptsRaw);
+      ts.step = 'awaiting-concept-approval';
+      setPipelineState({ ...state });
+    } catch (err) {
+      if ((err as Error).message !== 'Pipeline cancelled') {
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    } finally {
+      setRegenConceptIdx(null);
+    }
+  }, [pipelineState, analysis, apiKey, resourceContext, strategyBrief]);
+
+  // ── Single Task Redo (post-script) ─────────────────────────────────────
 
   const handleRedoTask = useCallback(async (taskIndex: number, feedback: string) => {
     if (!pipelineState) return;
@@ -120,7 +335,6 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
         (state) => setPipelineState({ ...state }),
         controller.signal,
       );
-
       setPipelineState(result);
     } catch (err) {
       if ((err as Error).message !== 'Redo cancelled') {
@@ -140,6 +354,11 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
     setTasks([]);
     setPipelineState(null);
     setError(null);
+    setStrategySession(null);
+    setStrategyBrief(undefined);
+    setStrategySynthesizing(false);
+    referenceAnalysisRef.current = '';
+    memoryBriefingRef.current = '';
   }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -159,7 +378,7 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
             Autopilot Brief Generator
           </h2>
           <p className="text-slate-500 text-sm">
-            Upload your Asana board screenshot. The system will generate concepts, select the best one per task, write full Ecom briefs, and run a quality review.
+            Upload your Asana board, strategize with your AI creative team, review concepts, then generate full briefs.
           </p>
         </div>
 
@@ -226,7 +445,47 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
           />
         )}
 
-        {/* Phase: Running / Reviewing — PipelineProgress */}
+        {/* Phase: Strategy Session */}
+        {phase === 'strategy-session' && strategySession && (
+          <StrategySessionUI
+            session={strategySession}
+            onSubmitAnswers={handleStrategyAnswers}
+            isSynthesizing={strategySynthesizing}
+          />
+        )}
+
+        {/* Phase: Strategy Session Loading */}
+        {phase === 'strategy-session' && !strategySession && (
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+            <div className="flex items-center justify-center gap-3 text-blue-600 mb-3">
+              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm font-medium">Strategist is analyzing your batch...</span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Your senior creative strategist is studying the tasks, cross-referencing with brand data and past performance, and preparing strategic questions.
+            </p>
+          </div>
+        )}
+
+        {/* Phase: Generating Concepts */}
+        {phase === 'generating-concepts' && pipelineState && (
+          <PipelineProgress
+            state={pipelineState}
+            onCancel={handleCancel}
+          />
+        )}
+
+        {/* Phase: Concept Review */}
+        {phase === 'concept-review' && pipelineState && (
+          <ConceptReview
+            tasks={pipelineState.tasks}
+            onApprove={handleConceptApproval}
+            onRegenerateConcepts={handleRegenerateConcepts}
+            isRegenerating={regenConceptIdx}
+          />
+        )}
+
+        {/* Phase: Running Scripts / Reviewing */}
         {(phase === 'running' || phase === 'reviewing') && pipelineState && (
           <PipelineProgress
             state={pipelineState}
@@ -249,37 +508,13 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
           <div className="bg-white rounded-xl border border-red-200 p-8 text-center">
             <div className="text-3xl mb-3">{'\u26A0\uFE0F'}</div>
             <h3 className="text-lg font-semibold text-slate-800 mb-2">Pipeline Error</h3>
-            <p className="text-sm text-slate-500 mb-4">{error}</p>
+            <p className="text-sm text-red-600 mb-4">{error}</p>
             <button
               onClick={handleReset}
-              className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
             >
-              Try Again
+              Start Over
             </button>
-          </div>
-        )}
-
-        {/* How it works */}
-        {phase === 'idle' && (
-          <div className="mt-8 bg-slate-50 rounded-xl p-5">
-            <h4 className="text-sm font-semibold text-slate-700 mb-3">How It Works</h4>
-            <div className="grid grid-cols-5 gap-3 text-center">
-              {[
-                { step: '1', label: 'Upload', desc: 'Asana screenshot' },
-                { step: '2', label: 'Concepts', desc: '5 per task via AI' },
-                { step: '3', label: 'Select', desc: 'Best concept picked' },
-                { step: '4', label: 'Brief', desc: 'Full Ecom script' },
-                { step: '5', label: 'Review', desc: 'QC all briefs' },
-              ].map((s) => (
-                <div key={s.step}>
-                  <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold mx-auto mb-1.5">
-                    {s.step}
-                  </div>
-                  <div className="text-xs font-semibold text-slate-700">{s.label}</div>
-                  <div className="text-[10px] text-slate-400">{s.desc}</div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>

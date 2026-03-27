@@ -4,12 +4,15 @@
  * Orchestrates the complete brief generation pipeline with maximum depth:
  *
  * 0. Reference Analysis (if media provided) — Vision analysis of style references
- * For each task:
- *   1. Generate Concepts — Full angles prompt with Opus
- *   2. Select Best Concept — Expert selector with complete knowledge stack, Opus
- *   3. Generate Brief — Full script prompt with Opus
- * After all tasks:
- *   4. Batch Review — Expert reviewer with complete knowledge stack, Opus
+ * Phase 1 — Strategy & Concepts:
+ *   1. Strategy Session — Senior strategist analyzes batch, asks questions
+ *   2. Strategy Synthesis — Produces weekly strategy brief from answers
+ *   3. Generate Concepts — Full angles prompt with Opus per task
+ *   4. Evaluate Concepts — Rate and summarize each concept for interactive review
+ * [User reviews and approves concepts]
+ * Phase 2 — Scripts & Review:
+ *   5. Generate Briefs — Full script prompt with Opus per task
+ *   6. Batch Review — Expert reviewer with complete knowledge stack
  *
  * All creative agents use claude-opus-4-6.
  * Framework diversity is enforced across the batch.
@@ -23,9 +26,11 @@ import { buildScriptPrompt } from '../prompts/scriptPrompt';
 import { buildResourceContext } from '../prompts/systemBase';
 import { buildConceptSelectorPrompt, parseSelectorResponse } from '../prompts/conceptSelectorPrompt';
 import { buildBatchReviewerPrompt } from '../prompts/batchReviewerPrompt';
+import { buildConceptEvaluatorPrompt, parseConceptEvaluations } from '../prompts/conceptEvaluatorPrompt';
+import { buildStrategyAnalysisPrompt, buildStrategySynthesisPrompt, parseStrategyAnalysis } from '../prompts/strategySessionPrompt';
 import { parseConceptBlocks } from '../utils/conceptParser';
 import type { FullAnalysis, ScriptParams, ScriptFramework } from '../engine/types';
-import type { AutopilotTask, AutopilotState, CreativeDirection } from '../engine/autopilotTypes';
+import type { AutopilotTask, AutopilotState, CreativeDirection, StrategySession } from '../engine/autopilotTypes';
 import { loadMemory, getHistoryForAngle, getReviewerFailurePatterns } from './memoryStore';
 import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator';
 import { saveCompletedBatchToMemory } from './memoryExtractor';
@@ -33,7 +38,7 @@ import { saveCompletedBatchToMemory } from './memoryExtractor';
 // ─── All creative agents use Opus ────────────────────────────────────────────
 
 const OPUS = 'claude-opus-4-6';
-const INTER_CALL_DELAY = 2500; // 2.5s between API calls
+const INTER_CALL_DELAY = 2500;
 
 const VALID_FRAMEWORKS: ScriptFramework[] = [
   'PAS (Problem-Agitate-Solution)',
@@ -62,7 +67,6 @@ function matchFramework(suggestion: string): ScriptFramework {
   const exact = VALID_FRAMEWORKS.find((f) => f === suggestion);
   if (exact) return exact;
   const lower = suggestion.toLowerCase();
-  // Try multi-word matching
   for (const f of VALID_FRAMEWORKS) {
     const fWords = f.toLowerCase().replace(/[()]/g, '').split(/\s+/);
     const matchCount = fWords.filter((w) => lower.includes(w) && w.length > 3).length;
@@ -87,13 +91,21 @@ function getMaxTokensForDuration(duration: string): number {
 
 // ─── Creative Direction Block ────────────────────────────────────────────────
 
-function buildDirectionBlock(direction: CreativeDirection, referenceAnalysis: string): string {
+function buildDirectionBlock(direction: CreativeDirection, referenceAnalysis: string, strategyBrief?: string): string {
   const parts: string[] = [];
+
+  if (strategyBrief) {
+    parts.push(`## WEEKLY STRATEGY BRIEF — THIS IS THE NORTH STAR
+
+The following strategy brief was produced by a senior creative strategist in collaboration with the creative director. Every creative decision — concept generation, concept selection, angle framing, script writing, hook style, tone, visual approach, framework choice — MUST align with this brief. This takes precedence over default behavior.
+
+<strategy_brief>
+${strategyBrief}
+</strategy_brief>`);
+  }
 
   if (direction.instructions.trim()) {
     parts.push(`## CREATIVE DIRECTOR'S INSTRUCTIONS — HIGHEST PRIORITY
-
-The following instructions come directly from the creative director for this batch. These are NON-NEGOTIABLE directives that override default behavior. Every creative decision — concept generation, concept selection, angle framing, script writing, hook style, tone, visual approach, framework choice — must align with these instructions.
 
 <creative_direction>
 ${direction.instructions}
@@ -103,13 +115,11 @@ ${direction.instructions}
   if (referenceAnalysis) {
     parts.push(`## STYLE REFERENCE ANALYSIS — MATCH THIS STYLE
 
-The creative director provided reference ads that were analyzed in detail. Here is the complete analysis:
-
 <reference_analysis>
 ${referenceAnalysis}
 </reference_analysis>
 
-**CRITICAL:** Your concepts and scripts must match the style, energy, pacing, narrative structure, and visual approach identified in these references. The references define the creative template — your job is to fill that template with Viasox-specific content for each task's angle and product.`);
+**CRITICAL:** Your concepts and scripts must match the style, energy, pacing, narrative structure, and visual approach identified in these references.`);
   }
 
   return parts.length > 0 ? '\n\n' + parts.join('\n\n') : '';
@@ -119,45 +129,26 @@ ${referenceAnalysis}
 
 const REFERENCE_ANALYSIS_SYSTEM = `You are a senior creative strategist analyzing reference advertisements for a DTC compression sock brand called Viasox. You are an expert in direct response video advertising, performance marketing, and creative strategy.
 
-Your job is to deeply analyze the provided reference ad(s) — images, video screenshots, or storyboard frames — and extract every insight that will help create new ads in the same style.
-
-Be EXTREMELY detailed and specific. This analysis will be used by other AI agents to generate concepts and scripts, so they need granular, actionable detail — not vague descriptions.`;
+Your job is to deeply analyze the provided reference ad(s) and extract every insight that will help create new ads in the same style. Be EXTREMELY detailed and specific.`;
 
 const REFERENCE_ANALYSIS_PROMPT = `Analyze these reference ad(s) in extreme detail. For each reference, extract:
 
 ## 1. VISUAL STYLE
-- Color palette and grading (warm/cool, saturated/muted, specific tones)
-- Framing and composition (close-ups, wide shots, rule of thirds, centered)
-- Text overlay style (font weight, position, animation style, color, size relative to frame)
-- Lighting (natural, studio, warm ambient, clinical)
-- Overall aesthetic (raw/polished, UGC-feel/produced, minimal/busy)
+- Color palette and grading, framing, text overlay style, lighting, overall aesthetic
 
 ## 2. STORYTELLING & NARRATIVE
-- How does the ad open? What's the first thing you see/read?
-- What's the narrative arc? (Problem→Solution? Day-in-life? Testimonial? Demonstration?)
-- When does the product first appear? (early/midpoint/late)
-- How is the product shown? (in-use, close-up, lifestyle, before/after)
-- What's the emotional journey? (anxiety→relief? curiosity→discovery? pain→joy?)
+- Opening approach, narrative arc, when/how the product appears, emotional journey
 
 ## 3. SCRIPT & COPY APPROACH
-- What script framework does this appear to use? (PAS, AIDA, Before-After-Bridge, etc.)
-- Is the tone conversational, authoritative, confessional, educational?
-- Point of view: First person? Second person ("you")? Third person narrative?
-- Hook style: Question? Bold statement? Shocking stat? Relatable moment?
-- CTA style: Soft discovery? Direct action? Social proof nudge?
+- Framework used, tone, POV, hook style, CTA style
 
 ## 4. PACING & RHYTHM
-- Is the pacing fast-cut or slow/deliberate?
-- How long do text cards stay on screen?
-- Is there a rhythm pattern (fast-fast-slow, building tempo, etc.)?
-- Music/sound direction implied by the visual style
+- Fast-cut vs deliberate, text card duration, rhythm pattern, music direction
 
 ## 5. KEY TAKEAWAYS FOR REPLICATION
-- What makes this ad effective? (3-5 specific strengths)
-- What should be replicated in new ads? (specific techniques)
-- What should NOT be copied? (elements specific to the reference brand)
+- What makes this effective? What to replicate? What NOT to copy?
 
-Be specific enough that a copywriter and editor could recreate this style for a different product.`;
+Be specific enough that a copywriter and editor could recreate this style.`;
 
 async function analyzeReferenceMedia(
   direction: CreativeDirection,
@@ -167,8 +158,6 @@ async function analyzeReferenceMedia(
   if (direction.referenceMedia.length === 0) return '';
 
   const content: ContentBlock[] = [];
-
-  // Add all reference images
   for (const media of direction.referenceMedia) {
     if (media.mediaType.startsWith('image/')) {
       content.push({
@@ -177,86 +166,108 @@ async function analyzeReferenceMedia(
       });
     }
   }
-
   if (content.length === 0) return '';
-
-  // Add the analysis prompt
   content.push({ type: 'text', text: REFERENCE_ANALYSIS_PROMPT });
 
-  const result = await sendVisionMessage(
+  return await sendVisionMessage(
     REFERENCE_ANALYSIS_SYSTEM,
     content,
     apiKey,
-    6000,  // Deep analysis needs space
-    OPUS,  // Use Opus for nuanced visual analysis
+    6000,
+    OPUS,
+    signal,
+  );
+}
+
+// ─── Strategy Session ───────────────────────────────────────────────────────
+
+export async function runStrategySession(
+  tasks: AutopilotTask[],
+  analysis: FullAnalysis,
+  apiKey: string,
+  referenceAnalysis: string,
+  memoryBriefing: string | undefined,
+  signal: AbortSignal,
+): Promise<StrategySession> {
+  const prompt = buildStrategyAnalysisPrompt(tasks, analysis, memoryBriefing, referenceAnalysis || undefined);
+
+  const response = await sendMessage(
+    prompt.system,
+    prompt.user,
+    apiKey,
+    6000,
+    OPUS,
     signal,
   );
 
-  return result;
+  const parsed = parseStrategyAnalysis(response);
+
+  return {
+    batchAnalysis: parsed.analysis,
+    questions: parsed.questions.map((q) => ({
+      id: q.id,
+      question: q.question,
+      context: q.context,
+      suggestedAnswer: q.suggested,
+    })),
+    answers: {},
+  };
 }
 
-// ─── Main Pipeline ───────────────────────────────────────────────────────────
+export async function synthesizeStrategy(
+  session: StrategySession,
+  tasks: AutopilotTask[],
+  apiKey: string,
+  memoryBriefing: string | undefined,
+  signal: AbortSignal,
+): Promise<string> {
+  const qaPairs = session.questions.map((q) => ({
+    question: q.question,
+    answer: session.answers[q.id] || q.suggestedAnswer || '(No answer provided — use your best judgment)',
+  }));
 
-export async function runAutopilotPipeline(
+  const prompt = buildStrategySynthesisPrompt(
+    session.batchAnalysis,
+    qaPairs,
+    tasks,
+    memoryBriefing,
+  );
+
+  return await sendMessage(
+    prompt.system,
+    prompt.user,
+    apiKey,
+    8000,
+    OPUS,
+    signal,
+  );
+}
+
+// ─── Phase 1: Generate & Evaluate Concepts ──────────────────────────────────
+
+export async function runConceptPhase(
   tasks: AutopilotTask[],
   analysis: FullAnalysis,
   apiKey: string,
   resourceContext: string,
   direction: CreativeDirection,
+  referenceAnalysis: string,
+  strategyBrief: string | undefined,
+  memoryBriefing: string | undefined,
   onProgress: (state: AutopilotState) => void,
   signal: AbortSignal,
 ): Promise<AutopilotState> {
   const resourceCtx = buildResourceContext(resourceContext);
+  const directionBlock = buildDirectionBlock(direction, referenceAnalysis, strategyBrief);
 
   const state: AutopilotState = {
-    phase: 'running',
-    tasks: tasks.map((task) => ({
-      task,
-      step: 'pending',
-    })),
+    phase: 'generating-concepts',
+    tasks: tasks.map((task) => ({ task, step: 'pending' })),
     currentTaskIndex: 0,
   };
-
   onProgress({ ...state });
 
-  // ── Step 0: Analyze Reference Media (if provided) ──────────────────────
-
-  let referenceAnalysis = '';
-
-  if (direction.referenceMedia.length > 0) {
-    try {
-      referenceAnalysis = await analyzeReferenceMedia(direction, apiKey, signal);
-      await delay(INTER_CALL_DELAY);
-    } catch (err) {
-      // Non-fatal — continue without reference analysis
-      referenceAnalysis = `[Reference analysis failed: ${err instanceof Error ? err.message : String(err)}]`;
-    }
-  }
-
-  const directionBlock = buildDirectionBlock(direction, referenceAnalysis);
-
-  // ── Step 0.5: Memory Curator (if memory exists) ─────────────────────────
-
-  let memoryBriefing = '';
-  const memory = loadMemory();
-  if (memory.batches.length > 0) {
-    try {
-      const briefing = await runMemoryCurator(apiKey, signal);
-      if (briefing) {
-        memoryBriefing = briefing.briefingText;
-        state.memoryBriefing = memoryBriefing;
-        onProgress({ ...state });
-      }
-    } catch {
-      // Non-fatal — continue without memory context
-    }
-    await delay(INTER_CALL_DELAY);
-  }
-
-  // Track used frameworks for diversity enforcement
   const usedFrameworks: string[] = [];
-
-  // ── Process each task sequentially ──────────────────────────────────────
 
   for (let i = 0; i < state.tasks.length; i++) {
     if (signal.aborted) throw new Error('Pipeline cancelled');
@@ -266,12 +277,11 @@ export async function runAutopilotPipeline(
     const { task } = ts;
 
     try {
-      // ── Step 1: Generate Concepts (Opus, full knowledge) ────────────
-
+      // ── Generate Concepts ──────────────────────────────────────────
       ts.step = 'generating-concepts';
       onProgress({ ...state });
 
-      const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined);
+      const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing);
       const conceptsRaw = await sendMessage(
         anglesPrompt.system + resourceCtx + directionBlock,
         anglesPrompt.user,
@@ -284,88 +294,122 @@ export async function runAutopilotPipeline(
       onProgress({ ...state });
 
       await delay(INTER_CALL_DELAY);
-      if (signal.aborted) throw new Error('Pipeline cancelled');
 
-      // ── Step 2: Select Best Concept (Opus, full expert knowledge) ───
-
+      // ── Evaluate Concepts ──────────────────────────────────────────
       ts.step = 'selecting-concept';
       onProgress({ ...state });
 
-      // Build angle history for selector from memory
-      const angleHistoryRecords = getHistoryForAngle(task.parsed.angle);
-      const angleHistoryText = angleHistoryRecords.length > 0
-        ? formatAngleHistoryForSelector(
-            task.parsed.angle,
-            angleHistoryRecords.map((r) => ({
-              framework: r.framework,
-              hookStyles: r.hookStyles,
-              conceptSummary: r.conceptSummary,
-              reviewScore: r.reviewScore,
-              date: r.batchId.split('T')[0],
-            })),
-          )
-        : undefined;
-
-      const selectorPrompt = buildConceptSelectorPrompt(
+      const evalPrompt = buildConceptEvaluatorPrompt(
         conceptsRaw,
         task.parsed.name,
         task.parsed.angle,
         task.parsed.product,
-        task.product,
         task.parsed.medium,
         task.duration,
-        analysis,
+        strategyBrief,
         usedFrameworks,
-        referenceAnalysis,
-        memoryBriefing || undefined,
-        angleHistoryText,
       );
 
-      const selectorResponse = await sendMessage(
-        selectorPrompt.system + directionBlock,
-        selectorPrompt.user,
+      const evalResponse = await sendMessage(
+        evalPrompt.system + directionBlock,
+        evalPrompt.user,
         apiKey,
-        4000,  // Increased for deep reasoning
+        4000,
         OPUS,
         signal,
       );
 
-      const selection = parseSelectorResponse(selectorResponse);
-      ts.selectedConceptIndex = selection.selectedIndex;
-      ts.selectionReasoning = selection.reasoning;
-      ts.recommendedFramework = selection.framework;
+      const options = parseConceptEvaluations(evalResponse, conceptsRaw);
+      ts.conceptOptions = options;
 
-      // Track framework for diversity
-      const framework = matchFramework(selection.framework);
-      usedFrameworks.push(framework);
+      // Track top framework for diversity
+      if (options.length > 0) {
+        const sorted = [...options].sort((a, b) => b.strengthRating - a.strengthRating);
+        usedFrameworks.push(sorted[0].recommendedFramework);
+      }
 
-      // Extract the selected concept text
-      const conceptBlocks = parseConceptBlocks(conceptsRaw);
-      const blockIndex = Math.max(0, Math.min(selection.selectedIndex - 1, conceptBlocks.length - 1));
-      ts.selectedConceptText = conceptBlocks[blockIndex] ?? conceptsRaw;
-
+      ts.step = 'awaiting-concept-approval';
       onProgress({ ...state });
 
-      await delay(INTER_CALL_DELAY);
+      if (i < state.tasks.length - 1) {
+        await delay(INTER_CALL_DELAY);
+      }
+    } catch (err) {
       if (signal.aborted) throw new Error('Pipeline cancelled');
+      ts.step = 'error';
+      ts.error = err instanceof Error ? err.message : String(err);
+      onProgress({ ...state });
+    }
+  }
 
-      // ── Step 3: Generate Brief (Opus, full knowledge) ───────────────
+  state.phase = 'concept-review';
+  onProgress({ ...state });
+  return state;
+}
 
+// ─── Phase 2: Generate Scripts from Approved Concepts ───────────────────────
+
+export async function runScriptPhase(
+  currentState: AutopilotState,
+  selections: Array<{ taskIndex: number; conceptIndex: number }>,
+  analysis: FullAnalysis,
+  apiKey: string,
+  resourceContext: string,
+  direction: CreativeDirection,
+  referenceAnalysis: string,
+  strategyBrief: string | undefined,
+  memoryBriefing: string | undefined,
+  onProgress: (state: AutopilotState) => void,
+  signal: AbortSignal,
+): Promise<AutopilotState> {
+  const resourceCtx = buildResourceContext(resourceContext);
+  const directionBlock = buildDirectionBlock(direction, referenceAnalysis, strategyBrief);
+
+  const state = { ...currentState, tasks: currentState.tasks.map((t) => ({ ...t })) };
+  state.phase = 'running';
+  onProgress({ ...state });
+
+  // Apply user selections
+  for (const sel of selections) {
+    const ts = state.tasks[sel.taskIndex];
+    if (!ts || !ts.conceptOptions) continue;
+
+    const chosen = ts.conceptOptions.find((c) => c.index === sel.conceptIndex);
+    if (!chosen) continue;
+
+    ts.selectedConceptIndex = chosen.index;
+    ts.selectedConceptText = chosen.fullText;
+    ts.selectionReasoning = chosen.reasoning;
+    ts.recommendedFramework = chosen.recommendedFramework;
+  }
+
+  // Generate scripts
+  for (let i = 0; i < state.tasks.length; i++) {
+    if (signal.aborted) throw new Error('Pipeline cancelled');
+
+    state.currentTaskIndex = i;
+    const ts = state.tasks[i];
+
+    // Skip tasks that aren't ready
+    if (!ts.selectedConceptText || ts.step === 'error') continue;
+
+    try {
       ts.step = 'generating-script';
       onProgress({ ...state });
 
+      const framework = matchFramework(ts.recommendedFramework || 'PAS');
       const scriptParams: ScriptParams = {
-        ...task.scriptParamsBase,
+        ...ts.task.scriptParamsBase,
         framework,
         conceptAngleContext: ts.selectedConceptText,
       };
 
-      const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined);
+      const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing);
       const scriptResult = await sendMessage(
         scriptPrompt.system + resourceCtx + directionBlock,
         scriptPrompt.user,
         apiKey,
-        getMaxTokensForDuration(task.duration),
+        getMaxTokensForDuration(ts.task.duration),
         OPUS,
         signal,
       );
@@ -385,7 +429,7 @@ export async function runAutopilotPipeline(
     }
   }
 
-  // ── Batch Review (Opus, full expert knowledge) ──────────────────────────
+  // ── Batch Review ────────────────────────────────────────────────────────
 
   const completedTasks = state.tasks.filter((t) => t.step === 'complete' && t.scriptResult);
 
@@ -407,7 +451,7 @@ export async function runAutopilotPipeline(
         analysis,
         direction.instructions,
         referenceAnalysis,
-        memoryBriefing || undefined,
+        memoryBriefing,
         pastFailures.length > 0 ? pastFailures : undefined,
       );
 
@@ -415,7 +459,7 @@ export async function runAutopilotPipeline(
         reviewPrompt.system,
         reviewPrompt.user,
         apiKey,
-        12000,  // Increased for thorough per-brief reviews
+        12000,
         OPUS,
         signal,
       );
@@ -424,13 +468,11 @@ export async function runAutopilotPipeline(
     }
   }
 
-  // ── Save batch to creative memory ────────────────────────────────────────
+  // ── Save to memory ──────────────────────────────────────────────────────
 
   try {
     saveCompletedBatchToMemory(state, direction, referenceAnalysis);
-  } catch {
-    // Non-fatal — continue even if memory save fails
-  }
+  } catch { /* non-fatal */ }
 
   state.phase = 'complete';
   onProgress({ ...state });
@@ -438,12 +480,68 @@ export async function runAutopilotPipeline(
   return state;
 }
 
+// ─── Legacy: Full pipeline (for backward compatibility) ─────────────────────
+
+export async function runAutopilotPipeline(
+  tasks: AutopilotTask[],
+  analysis: FullAnalysis,
+  apiKey: string,
+  resourceContext: string,
+  direction: CreativeDirection,
+  onProgress: (state: AutopilotState) => void,
+  signal: AbortSignal,
+): Promise<AutopilotState> {
+  // This is now a thin wrapper — the new flow uses the phased approach
+  // Keeping for any callers that haven't migrated
+
+  let referenceAnalysis = '';
+  if (direction.referenceMedia.length > 0) {
+    try {
+      referenceAnalysis = await analyzeReferenceMedia(direction, apiKey, signal);
+      await delay(INTER_CALL_DELAY);
+    } catch (err) {
+      referenceAnalysis = `[Reference analysis failed: ${err instanceof Error ? err.message : String(err)}]`;
+    }
+  }
+
+  let memoryBriefing = '';
+  const memory = loadMemory();
+  if (memory.batches.length > 0) {
+    try {
+      const briefing = await runMemoryCurator(apiKey, signal);
+      if (briefing) memoryBriefing = briefing.briefingText;
+    } catch { /* non-fatal */ }
+    await delay(INTER_CALL_DELAY);
+  }
+
+  // Run concept phase
+  const conceptState = await runConceptPhase(
+    tasks, analysis, apiKey, resourceContext, direction,
+    referenceAnalysis, undefined, memoryBriefing,
+    onProgress, signal,
+  );
+
+  // Auto-select top concepts (legacy behavior)
+  const autoSelections = conceptState.tasks.map((ts, i) => {
+    if (!ts.conceptOptions || ts.conceptOptions.length === 0) return { taskIndex: i, conceptIndex: 1 };
+    const sorted = [...ts.conceptOptions].sort((a, b) => b.strengthRating - a.strengthRating);
+    return { taskIndex: i, conceptIndex: sorted[0].index };
+  });
+
+  // Run script phase
+  return await runScriptPhase(
+    conceptState, autoSelections, analysis, apiKey, resourceContext,
+    direction, referenceAnalysis, undefined, memoryBriefing,
+    onProgress, signal,
+  );
+}
+
+// ─── Reference Analysis Export ────────────────────────────────────────────
+
+export { analyzeReferenceMedia };
+
 // ─── Single-Task Redo ─────────────────────────────────────────────────────────
 
-/**
- * Re-runs the full pipeline (concepts → select → script) for a single task,
- * injecting the user's feedback as a top-priority creative directive.
- */
 export async function redoSingleTask(
   taskIndex: number,
   feedback: string,
@@ -463,16 +561,15 @@ export async function redoSingleTask(
   const resourceCtx = buildResourceContext(resourceContext);
   const memory = loadMemory();
 
-  // Build direction block — inject user feedback at the TOP as highest priority
   const feedbackDirective = `## REDO FEEDBACK — THIS IS THE #1 PRIORITY FOR THIS BRIEF
 
-The creative director reviewed the previous version of this brief (${task.parsed.name}) and provided the following specific feedback. This feedback MUST be the primary driver of all decisions — concept selection, framework choice, hook style, visual approach, script tone, and script structure. Do NOT repeat the mistakes or patterns from the previous version.
+The creative director reviewed the previous version of this brief (${task.parsed.name}) and provided the following specific feedback. This feedback MUST be the primary driver of all decisions.
 
 <redo_feedback>
 ${feedback}
 </redo_feedback>
 
-Previous brief that needs to be redone (for reference — DO NOT copy this, create something better based on the feedback above):
+Previous brief that needs to be redone (for reference — DO NOT copy this):
 <previous_brief>
 ${ts.scriptResult || '[no previous brief]'}
 </previous_brief>`;
@@ -482,13 +579,11 @@ ${ts.scriptResult || '[no previous brief]'}
     instructions: feedbackDirective + (direction.instructions ? '\n\n' + direction.instructions : ''),
   };
 
-  // Get reference analysis from original direction block (we don't re-analyze)
-  const directionBlock = buildDirectionBlock(fullDirection, '');
+  const strategyBrief = currentState.strategySession?.strategyBrief;
+  const directionBlock = buildDirectionBlock(fullDirection, '', strategyBrief);
 
-  let memoryBriefing = '';
-  if (state.memoryBriefing) {
-    memoryBriefing = state.memoryBriefing;
-  } else if (memory.batches.length > 0) {
+  let memoryBriefing = currentState.memoryBriefing || '';
+  if (!memoryBriefing && memory.batches.length > 0) {
     try {
       const briefing = await runMemoryCurator(apiKey, signal);
       if (briefing) memoryBriefing = briefing.briefingText;
@@ -496,15 +591,12 @@ ${ts.scriptResult || '[no previous brief]'}
     await delay(INTER_CALL_DELAY);
   }
 
-  // Get used frameworks from OTHER tasks (for diversity)
   const usedFrameworks = state.tasks
     .filter((_, i) => i !== taskIndex && _.recommendedFramework)
     .map((t) => t.recommendedFramework!)
     .map(matchFramework);
 
   try {
-    // ── Step 1: Re-generate Concepts ──────────────────────────────────
-
     ts.step = 'generating-concepts';
     ts.error = undefined;
     onProgress({ ...state });
@@ -522,8 +614,6 @@ ${ts.scriptResult || '[no previous brief]'}
     onProgress({ ...state });
 
     await delay(INTER_CALL_DELAY);
-
-    // ── Step 2: Re-select Concept ─────────────────────────────────────
 
     ts.step = 'selecting-concept';
     onProgress({ ...state });
@@ -577,10 +667,7 @@ ${ts.scriptResult || '[no previous brief]'}
     ts.selectedConceptText = conceptBlocks[blockIndex] ?? conceptsRaw;
 
     onProgress({ ...state });
-
     await delay(INTER_CALL_DELAY);
-
-    // ── Step 3: Re-generate Brief ─────────────────────────────────────
 
     ts.step = 'generating-script';
     onProgress({ ...state });
@@ -592,12 +679,11 @@ ${ts.scriptResult || '[no previous brief]'}
     };
 
     const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined);
-    const maxTokens = getMaxTokensForDuration(task.duration);
     const scriptResult = await sendMessage(
       scriptPrompt.system + resourceCtx + directionBlock,
       scriptPrompt.user,
       apiKey,
-      maxTokens,
+      getMaxTokensForDuration(task.duration),
       OPUS,
       signal,
     );

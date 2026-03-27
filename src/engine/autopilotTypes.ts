@@ -30,15 +30,31 @@ export type PipelineStep =
   | 'pending'
   | 'generating-concepts'
   | 'selecting-concept'
+  | 'awaiting-concept-approval'
   | 'generating-script'
   | 'complete'
   | 'error';
+
+// ─── Concept Selection for Interactive Review ────────────────────────────────
+
+export interface ConceptOption {
+  index: number;
+  title: string;
+  summary: string;
+  fullText: string;
+  recommendedFramework: string;
+  reasoning: string;
+  /** 1-5 strategic strength rating */
+  strengthRating: number;
+}
 
 export interface TaskPipelineState {
   task: AutopilotTask;
   step: PipelineStep;
   /** Raw markdown from the Angles Generator */
   conceptsRaw?: string;
+  /** Parsed concept options for interactive review */
+  conceptOptions?: ConceptOption[];
   /** Which concept (1-5) was selected */
   selectedConceptIndex?: number;
   /** The selected concept's full text */
@@ -69,12 +85,36 @@ export interface CreativeDirection {
   referenceMedia: ReferenceMedia[];
 }
 
+// ─── Strategy Session ───────────────────────────────────────────────────────
+
+export interface StrategyQuestion {
+  id: string;
+  question: string;
+  context: string;
+  suggestedAnswer?: string;
+}
+
+export interface StrategySession {
+  /** Initial strategic analysis of the batch */
+  batchAnalysis: string;
+  /** Targeted questions for the creative director */
+  questions: StrategyQuestion[];
+  /** User's answers (keyed by question id) */
+  answers: Record<string, string>;
+  /** Final strategy brief synthesized from analysis + answers */
+  strategyBrief?: string;
+}
+
 // ─── Batch State ─────────────────────────────────────────────────────────────
 
 export type BatchPhase =
   | 'idle'
   | 'parsing'
   | 'confirming'
+  | 'strategy-session'
+  | 'strategy-synthesizing'
+  | 'generating-concepts'
+  | 'concept-review'
   | 'running'
   | 'reviewing'
   | 'complete'
@@ -90,4 +130,6 @@ export interface AutopilotState {
   error?: string;
   /** Memory curator's briefing (if memory exists) */
   memoryBriefing?: string;
+  /** Strategy session data */
+  strategySession?: StrategySession;
 }
