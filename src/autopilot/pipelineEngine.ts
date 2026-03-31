@@ -284,8 +284,33 @@ export async function runConceptPhase(
       onProgress({ ...state });
 
       const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing);
+
+      // Inject the SPECIFIC angle from Asana as the primary creative directive.
+      // This ensures "Neuropathy" briefs are actually ABOUT neuropathy, not generic.
+      const angleDirective = `\n\n## PRIMARY CREATIVE DIRECTIVE — SPECIFIC ANGLE: "${task.parsed.angle}"
+
+**CRITICAL:** This brief MUST be specifically, unmistakably about "${task.parsed.angle}". Every concept must:
+1. Name "${task.parsed.angle}" explicitly — use the actual word/condition in the script
+2. Show scenarios, symptoms, or experiences directly related to "${task.parsed.angle}"
+3. Reference real customer quotes and review data specifically about "${task.parsed.angle}"
+4. The viewer should understand within the first 3 seconds that this ad is about "${task.parsed.angle}"
+
+If the angle is a medical condition (neuropathy, diabetes, varicose veins, swelling), the concepts must use medically accurate but accessible language about that specific condition. If the angle is a lifestyle (standing all day, travel, gift), the concepts must center on that specific life situation.
+
+DO NOT create generic "comfortable socks" concepts. The angle "${task.parsed.angle}" must be the SOUL of every concept.
+
+**FORMAT: ${task.parsed.medium} (${task.duration})**
+${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed long-form story. Short form means:
+- Experiment with VO and no-VO styles
+- Consider POV-only (viewer sees through the character's eyes)
+- First person, third person, or talking directly to viewer
+- A single powerful moment or image, not a full narrative arc
+- Creative visual treatments: split screen, text overlay, rapid cuts, reaction format
+- The hook IS the ad — there's no "body." Every second is hook.
+- Think TikTok/Reels native, not a TV spot cut short.` : ''}`;
+
       const conceptsRaw = await sendMessage(
-        anglesPrompt.system + resourceCtx + directionBlock,
+        anglesPrompt.system + resourceCtx + directionBlock + angleDirective,
         anglesPrompt.user,
         apiKey,
         12000,
@@ -407,8 +432,28 @@ export async function runScriptPhase(
       };
 
       const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing);
+
+      // Inject angle-specific and format-specific directives into script generation
+      const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
+This script MUST be specifically about "${ts.task.parsed.angle}". The word "${ts.task.parsed.angle}" (or its direct synonym) must appear in the script. The viewer must understand this ad is about "${ts.task.parsed.angle}" — not generic comfort or generic socks.
+
+${ts.task.duration === '15s' ? `## SHORT FORM CREATIVE PRINCIPLES (<15 seconds)
+This is NOT a compressed long-form ad. Short form is its own creative discipline:
+- DO NOT try to tell a full story with problem → agitate → solution → proof → CTA. That's 30-60s thinking forced into 15s.
+- Instead, pick ONE of these short-form approaches:
+  1. **POV Moment** — First-person camera, no dialogue, just the experience (putting on socks, looking at legs, the relief moment)
+  2. **Direct Address** — Talent looks at camera, says ONE powerful line + shows the product. No story setup.
+  3. **Visual Before/After** — Split screen or quick cut: the problem vs. the solution. Zero narration needed.
+  4. **VO over B-roll** — 2-3 seconds of footage with one punchy voiceover line. Let the visual do the work.
+  5. **Text-on-screen** — No VO at all. Bold text over footage. Think TikTok caption style.
+  6. **Reaction Format** — Show someone reacting to the product/result. Authentic surprise > scripted lines.
+  7. **Single Stat** — One powerful number (107,347 reviews, 65% repeat buyers) + product shot. That's the ad.
+
+The script table should have 2-4 rows MAX. Not 6-8 rows squeezed into 15 seconds.
+Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
+
       const scriptResult = await sendMessage(
-        scriptPrompt.system + resourceCtx + directionBlock,
+        scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective,
         scriptPrompt.user,
         apiKey,
         getMaxTokensForDuration(ts.task.duration),

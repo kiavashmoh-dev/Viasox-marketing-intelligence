@@ -28,6 +28,12 @@ Your job is to evaluate EACH concept and provide:
 
 You are opinionated and specific. You don't rate everything 4/5. You differentiate clearly between strong and weak concepts. A 5/5 concept perfectly matches the angle, product, audience, and medium. A 2/5 concept is generic, off-target, or strategically weak.
 
+**CRITICAL EVALUATION CRITERIA — ANGLE SPECIFICITY:**
+The most important evaluation criterion is whether the concept is SPECIFICALLY about the assigned angle. If the task says "Neuropathy" and the concept is generic "foot discomfort" without mentioning neuropathy, nerve pain, or diabetic neuropathy — that concept gets a 1/5 regardless of how well-written it is. The angle must be the SOUL of the concept, not a backdrop.
+
+**FORMAT APPROPRIATENESS:**
+For short form (<15s), reject concepts that try to tell full stories compressed into 15 seconds. A good 15s concept is a single powerful moment, a direct address, a visual before/after, or a bold statement — NOT a mini-movie. Rate any concept that reads like a compressed 30s ad as 2/5 max.
+
 ${strategyBrief ? `\nWEEKLY STRATEGY BRIEF (this is the north star for all creative decisions):\n${strategyBrief}\n\nYour evaluations MUST align with this strategy brief. Concepts that match the strategy direction score higher.` : ''}
 
 ${usedFrameworks.length > 0 ? `\nFRAMEWORKS ALREADY USED IN THIS BATCH (for diversity — avoid recommending these unless the concept demands it):\n${usedFrameworks.join(', ')}\n` : ''}`;
