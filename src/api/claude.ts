@@ -80,10 +80,35 @@ export async function sendMessage(
 
   cleanup();
 
+  // Retry logic for 429 (rate limited) and 529 (overloaded) — up to 3 retries with backoff
+  if (response.status === 429 || response.status === 529) {
+    const MAX_RETRIES = 3;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      if (effectiveSignal.aborted) throw new Error('Request was cancelled.');
+      const delayMs = attempt * 5000 + Math.random() * 2000; // 5s, 10s, 15s + jitter
+      console.log(`API ${response.status} — retrying in ${Math.round(delayMs / 1000)}s (attempt ${attempt}/${MAX_RETRIES})`);
+      await new Promise((r) => setTimeout(r, delayMs));
+      if (effectiveSignal.aborted) throw new Error('Request was cancelled.');
+
+      try {
+        response = await fetch(PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+          body,
+          signal: effectiveSignal,
+        });
+        if (response.ok || (response.status !== 429 && response.status !== 529)) break;
+      } catch { break; }
+    }
+  }
+
   if (!response.ok) {
     const errText = await response.text();
     if (response.status === 429) {
-      throw new Error('Rate limited. Please wait a moment and try again.');
+      throw new Error('Rate limited after 3 retries. The API is congested — please wait a few minutes and try again.');
+    }
+    if (response.status === 529) {
+      throw new Error('API overloaded after 3 retries. Anthropic servers are at capacity — please wait a few minutes and try again.');
     }
     if (response.status === 401) {
       throw new Error('Invalid API key. Please check your Anthropic API key.');
