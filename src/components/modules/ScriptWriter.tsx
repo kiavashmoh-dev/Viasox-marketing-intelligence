@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type {
   FullAnalysis, ProductCategory, ScriptFramework, FunnelStage,
   AwarenessLevel, AdType, OfferType, HookVariationCount, MarketingBookReference,
@@ -9,6 +9,7 @@ import { buildScriptPrompt } from '../../prompts/scriptPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
 import { downloadProductionBriefCsv, downloadEcomBriefDoc } from '../../utils/downloadUtils';
+import { getAllProducts, getAllAdTypes, getAllFrameworks } from '../../utils/customOptionsRegistry';
 import ResultsView from '../ResultsView';
 
 interface Props {
@@ -19,23 +20,12 @@ interface Props {
   conceptAngleContext?: ConceptContext | null;
 }
 
-const PRODUCTS: ProductCategory[] = ['EasyStretch', 'Compression', 'Ankle Compression'];
 const DURATIONS = ['15s', '30s', '60s'] as const;
 const AWARENESS: AwarenessLevel[] = ['Unaware', 'Problem Aware', 'Solution Aware', 'Product Aware', 'Most Aware'];
 const FUNNEL_STAGES: { value: FunnelStage; label: string; description: string }[] = [
   { value: 'TOF', label: 'TOF (Top of Funnel)', description: 'Cold audiences' },
   { value: 'MOF', label: 'MOF (Middle of Funnel)', description: 'Considering' },
   { value: 'BOF', label: 'BOF (Bottom of Funnel)', description: 'Ready to buy' },
-];
-const AD_TYPES: AdType[] = [
-  'AGC (Actor Generated Content)',
-  'UGC (User Generated Content)',
-  'Ecom Style',
-  'Static',
-  'Founder Style',
-  'Fake Podcast Ads',
-  'Spokesperson',
-  'Packaging/Employee',
 ];
 const OFFERS: { value: OfferType; label: string }[] = [
   { value: 'None', label: 'No Offer' },
@@ -50,32 +40,13 @@ const BOOK_REFERENCES: { value: MarketingBookReference; label: string }[] = [
   { value: 'The Brand Gap (Neumeier)', label: 'The Brand Gap (Neumeier)' },
   { value: "The Copywriter's Handbook (Bly)", label: "The Copywriter's Handbook (Bly)" },
 ];
-const FRAMEWORKS: ScriptFramework[] = [
-  // --- Core 12 ---
-  'PAS (Problem-Agitate-Solution)',
-  'AIDA-R (Attention-Interest-Desire-Action-Retention)',
-  'Before-After-Bridge',
-  'Star-Story-Solution',
-  'Feel-Felt-Found',
-  'Problem-Promise-Proof-Push',
-  'Hook-Story-Offer',
-  'Empathy-Education-Evidence',
-  'The Contrast Framework',
-  'The Skeptic Converter',
-  'The Day-in-Life',
-  'The Myth Buster',
-  // --- Manifesto 4.3 + Marketing Books ---
-  'The Enemy Framework',
-  'The Discovery Narrative',
-  'The Professional Authority',
-  'The Demonstration Proof',
-  'The Objection Crusher',
-  'The Identity Alignment',
-  'The Reason-Why (Hopkins)',
-  'The Gradualization (Schwartz)',
-];
 
 export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack, conceptAngleContext }: Props) {
+  // Dynamic option lists from registry (built-in + custom)
+  const PRODUCTS = useMemo(() => getAllProducts() as ProductCategory[], []);
+  const AD_TYPES = useMemo(() => getAllAdTypes() as AdType[], []);
+  const FRAMEWORKS = useMemo(() => getAllFrameworks() as ScriptFramework[], []);
+
   const hasConcept = !!conceptAngleContext;
   const [product, setProduct] = useState<ProductCategory>(conceptAngleContext?.product ?? 'EasyStretch');
   const [persona, setPersona] = useState('');

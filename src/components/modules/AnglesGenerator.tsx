@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { FullAnalysis, ProductCategory, AwarenessLevel, AngleType, FunnelStage, AdType, ConceptContext } from '../../engine/types';
 import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildAnglesPrompt } from '../../prompts/anglesPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
+import { getAllAngleTypes, getAllAdTypes, getAllProducts } from '../../utils/customOptionsRegistry';
 import AnglesResultsView from '../AnglesResultsView';
 
 interface Props {
@@ -14,30 +15,19 @@ interface Props {
   onWriteScript?: (context: ConceptContext) => void;
 }
 
-const PRODUCTS: ProductCategory[] = ['EasyStretch', 'Compression', 'Ankle Compression'];
 const AWARENESS: AwarenessLevel[] = ['Unaware', 'Problem Aware', 'Solution Aware', 'Product Aware', 'Most Aware'];
 const FUNNEL_STAGES: { value: FunnelStage; label: string; description: string }[] = [
   { value: 'TOF', label: 'TOF (Top of Funnel)', description: 'Cold audiences, discovery' },
   { value: 'MOF', label: 'MOF (Middle of Funnel)', description: 'Engaged, considering' },
   { value: 'BOF', label: 'BOF (Bottom of Funnel)', description: 'Ready to buy, retargeting' },
 ];
-const AD_TYPES: AdType[] = [
-  'AGC (Actor Generated Content)',
-  'UGC (User Generated Content)',
-  'Ecom Style',
-  'Static',
-  'Founder Style',
-  'Fake Podcast Ads',
-  'Spokesperson',
-  'Packaging/Employee',
-];
-const ANGLE_TYPES: AngleType[] = [
-  'Problem-Based', 'Emotion-Based', 'Solution-Based', 'Identity-Based',
-  'Comparison-Based', 'Testimonial-Based', 'Seasonal/Situational',
-  'Fear-Based', 'Aspiration-Based', 'Education-Based',
-];
 
 export default function AnglesGenerator({ analysis, apiKey, resourceContext, onBack, onWriteScript }: Props) {
+  // Dynamic option lists from registry (built-in + custom)
+  const PRODUCTS = useMemo(() => getAllProducts() as ProductCategory[], []);
+  const ANGLE_TYPES = useMemo(() => getAllAngleTypes() as AngleType[], []);
+  const AD_TYPES = useMemo(() => getAllAdTypes() as AdType[], []);
+
   const [product, setProduct] = useState<ProductCategory>('EasyStretch');
   const [awareness, setAwareness] = useState<AwarenessLevel>('Problem Aware');
   const [angleType, setAngleType] = useState<AngleType>('Problem-Based');

@@ -1,5 +1,6 @@
 import type { ProductCategory, AngleType, AwarenessLevel, ScriptParams } from '../engine/types';
 import type { ParsedAsanaTask, AutopilotTask } from '../engine/autopilotTypes';
+// Custom directives are read in pipelineEngine.ts, not here
 
 function mapProduct(raw: string): ProductCategory {
   const lower = raw.toLowerCase();

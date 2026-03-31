@@ -32,6 +32,7 @@ import { parseConceptBlocks } from '../utils/conceptParser';
 import type { FullAnalysis, ScriptParams, ScriptFramework } from '../engine/types';
 import type { AutopilotTask, AutopilotState, CreativeDirection, StrategySession } from '../engine/autopilotTypes';
 import { loadMemory, getHistoryForAngle, getReviewerFailurePatterns } from './memoryStore';
+import { getAngleDirectives } from '../utils/customOptionsRegistry';
 import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator';
 import { saveCompletedBatchToMemory } from './memoryExtractor';
 
@@ -287,7 +288,15 @@ export async function runConceptPhase(
 
       // Inject the SPECIFIC angle from Asana as the primary creative directive.
       // This ensures "Neuropathy" briefs are actually ABOUT neuropathy, not generic.
+      // Also check for custom angle directives from the registry.
+      const customDirectives = getAngleDirectives()
+        .filter((d) => d.angle.toLowerCase() === task.parsed.angle.toLowerCase() ||
+                       d.product.toLowerCase() === task.product.toLowerCase())
+        .map((d) => `**Custom Directive (${d.angle} / ${d.product}):** ${d.directive}`)
+        .join('\n');
+
       const angleDirective = `\n\n## PRIMARY CREATIVE DIRECTIVE — SPECIFIC ANGLE: "${task.parsed.angle}"
+${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customDirectives}\n` : ''}
 
 **CRITICAL:** This brief MUST be specifically, unmistakably about "${task.parsed.angle}". Every concept must:
 1. Name "${task.parsed.angle}" explicitly — use the actual word/condition in the script
