@@ -11,13 +11,14 @@ const DIRECT_URL = 'https://api.anthropic.com/v1/messages';
 function computeTimeout(model: string, maxTokens: number): number {
   const isOpus = model.includes('opus');
   if (isOpus) {
-    // Base 4 minutes + 30s per 1K output tokens, min 5 min, max 12 min
-    const ms = 240_000 + Math.ceil(maxTokens / 1000) * 30_000;
-    return Math.max(300_000, Math.min(ms, 720_000));
+    // Opus with massive system prompts can be very slow under load.
+    // Base 8 minutes + 30s per 1K output tokens, min 10 min, max 15 min
+    const ms = 480_000 + Math.ceil(maxTokens / 1000) * 30_000;
+    return Math.max(600_000, Math.min(ms, 900_000));
   }
-  // Sonnet: base 2 minutes + 15s per 1K output tokens, min 2 min, max 8 min
-  const ms = 120_000 + Math.ceil(maxTokens / 1000) * 15_000;
-  return Math.max(120_000, Math.min(ms, 480_000));
+  // Sonnet: base 3 minutes + 15s per 1K output tokens, min 3 min, max 8 min
+  const ms = 180_000 + Math.ceil(maxTokens / 1000) * 15_000;
+  return Math.max(180_000, Math.min(ms, 480_000));
 }
 
 export async function sendMessage(
