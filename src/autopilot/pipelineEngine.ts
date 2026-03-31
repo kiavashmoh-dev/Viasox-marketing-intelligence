@@ -81,6 +81,33 @@ function delay(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+/**
+ * Wrapper around sendMessage that auto-retries once on timeout errors.
+ * Pipeline tasks should not fail just because a single API call was slow.
+ */
+async function sendMessageWithRetry(
+  system: string,
+  user: string,
+  apiKey: string,
+  maxTokens: number,
+  model: string,
+  signal: AbortSignal,
+): Promise<string> {
+  try {
+    return await sendMessage(system, user, apiKey, maxTokens, model, signal);
+  } catch (err) {
+    // Only retry on timeout errors, not user cancellation or auth errors
+    const msg = err instanceof Error ? err.message : '';
+    if (msg.includes('timed out')) {
+      console.log('API call timed out — retrying once after 5s delay...');
+      await delay(5000);
+      if (signal.aborted) throw new Error('Pipeline cancelled');
+      return await sendMessage(system, user, apiKey, maxTokens, model, signal);
+    }
+    throw err;
+  }
+}
+
 function getMaxTokensForDuration(duration: string): number {
   switch (duration) {
     case '15s': return 8000;
@@ -318,7 +345,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
 - The hook IS the ad — there's no "body." Every second is hook.
 - Think TikTok/Reels native, not a TV spot cut short.` : ''}`;
 
-      const conceptsRaw = await sendMessage(
+      const conceptsRaw = await sendMessageWithRetry(
         anglesPrompt.system + resourceCtx + directionBlock + angleDirective,
         anglesPrompt.user,
         apiKey,
@@ -346,7 +373,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         usedFrameworks,
       );
 
-      const evalResponse = await sendMessage(
+      const evalResponse = await sendMessageWithRetry(
         evalPrompt.system + directionBlock,
         evalPrompt.user,
         apiKey,
@@ -461,7 +488,7 @@ This is NOT a compressed long-form ad. Short form is its own creative discipline
 The script table should have 2-4 rows MAX. Not 6-8 rows squeezed into 15 seconds.
 Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
 
-      const scriptResult = await sendMessage(
+      const scriptResult = await sendMessageWithRetry(
         scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective,
         scriptPrompt.user,
         apiKey,
@@ -511,7 +538,7 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
         pastFailures.length > 0 ? pastFailures : undefined,
       );
 
-      state.reviewResult = await sendMessage(
+      state.reviewResult = await sendMessageWithRetry(
         reviewPrompt.system,
         reviewPrompt.user,
         apiKey,

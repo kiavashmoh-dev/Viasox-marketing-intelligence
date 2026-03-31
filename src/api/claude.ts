@@ -3,8 +3,22 @@ import type { ClaudeResponse } from '../engine/types';
 const PROXY_URL = 'https://viasox-claude-proxy.workers.dev';
 const DIRECT_URL = 'https://api.anthropic.com/v1/messages';
 
-/** Default timeout for API calls: 5 minutes (long persona + market analysis can generate 15K-32K tokens) */
-const API_TIMEOUT_MS = 300_000;
+/**
+ * Compute timeout based on model and max_tokens.
+ * Opus with large outputs can take 5-8+ minutes; Sonnet is faster.
+ * Scale: base 3 min + 30s per 1K tokens for Opus, base 2 min + 15s per 1K tokens for Sonnet.
+ */
+function computeTimeout(model: string, maxTokens: number): number {
+  const isOpus = model.includes('opus');
+  if (isOpus) {
+    // Base 4 minutes + 30s per 1K output tokens, min 5 min, max 12 min
+    const ms = 240_000 + Math.ceil(maxTokens / 1000) * 30_000;
+    return Math.max(300_000, Math.min(ms, 720_000));
+  }
+  // Sonnet: base 2 minutes + 15s per 1K output tokens, min 2 min, max 8 min
+  const ms = 120_000 + Math.ceil(maxTokens / 1000) * 15_000;
+  return Math.max(120_000, Math.min(ms, 480_000));
+}
 
 export async function sendMessage(
   system: string,
@@ -21,9 +35,14 @@ export async function sendMessage(
     messages: [{ role: 'user', content: userMessage }],
   });
 
+  const timeoutMs = computeTimeout(model, maxTokens);
+
+  // Track whether cancellation came from timeout vs caller
+  let timedOut = false;
+
   // Combine caller signal with timeout signal
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
   // If caller provides an abort signal, forward it to our controller
   if (signal) {
     if (signal.aborted) {
@@ -49,9 +68,12 @@ export async function sendMessage(
       signal: effectiveSignal,
     });
   } catch (proxyError) {
-    // If caller aborted, don't retry
+    // If caller aborted or timed out, don't retry
     if (effectiveSignal.aborted) {
       cleanup();
+      if (timedOut) {
+        throw new Error(`API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`);
+      }
       throw new Error('Request was cancelled.');
     }
     // Proxy unreachable - try direct API (works if CORS isn't blocking)
@@ -70,6 +92,9 @@ export async function sendMessage(
     } catch (directError) {
       cleanup();
       if (effectiveSignal.aborted) {
+        if (timedOut) {
+          throw new Error(`API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`);
+        }
         throw new Error('Request was cancelled.');
       }
       throw new Error(
@@ -84,11 +109,19 @@ export async function sendMessage(
   if (response.status === 429 || response.status === 529) {
     const MAX_RETRIES = 3;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      if (effectiveSignal.aborted) throw new Error('Request was cancelled.');
+      if (effectiveSignal.aborted) {
+        throw new Error(timedOut
+          ? `API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`
+          : 'Request was cancelled.');
+      }
       const delayMs = attempt * 5000 + Math.random() * 2000; // 5s, 10s, 15s + jitter
       console.log(`API ${response.status} — retrying in ${Math.round(delayMs / 1000)}s (attempt ${attempt}/${MAX_RETRIES})`);
       await new Promise((r) => setTimeout(r, delayMs));
-      if (effectiveSignal.aborted) throw new Error('Request was cancelled.');
+      if (effectiveSignal.aborted) {
+        throw new Error(timedOut
+          ? `API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`
+          : 'Request was cancelled.');
+      }
 
       try {
         response = await fetch(PROXY_URL, {
@@ -168,8 +201,11 @@ export async function sendVisionMessage(
     messages: [{ role: 'user', content }],
   });
 
+  const timeoutMs = computeTimeout(model, maxTokens);
+  let timedOut = false;
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
   if (signal) {
     if (signal.aborted) controller.abort();
     else signal.addEventListener('abort', () => controller.abort(), { once: true });
@@ -186,7 +222,12 @@ export async function sendVisionMessage(
       signal: effectiveSignal,
     });
   } catch {
-    if (effectiveSignal.aborted) { cleanup(); throw new Error('Request was cancelled.'); }
+    if (effectiveSignal.aborted) {
+      cleanup();
+      throw new Error(timedOut
+        ? `Vision API request timed out after ${Math.round(timeoutMs / 60000)} minutes.`
+        : 'Request was cancelled.');
+    }
     try {
       response = await fetch(DIRECT_URL, {
         method: 'POST',
@@ -201,7 +242,11 @@ export async function sendVisionMessage(
       });
     } catch {
       cleanup();
-      if (effectiveSignal.aborted) throw new Error('Request was cancelled.');
+      if (effectiveSignal.aborted) {
+        throw new Error(timedOut
+          ? `Vision API request timed out after ${Math.round(timeoutMs / 60000)} minutes.`
+          : 'Request was cancelled.');
+      }
       throw new Error('Unable to reach the Claude API.');
     }
   }
@@ -234,9 +279,6 @@ export interface ChatMessage {
   content: string;
 }
 
-/** Chat timeout: 2 minutes (shorter than generation — chat responses are smaller) */
-const CHAT_TIMEOUT_MS = 120_000;
-
 /**
  * Send a multi-turn chat message to Claude.
  * Unlike sendMessage, this accepts a full conversation history.
@@ -256,8 +298,11 @@ export async function sendChatMessage(
     messages,
   });
 
+  const timeoutMs = computeTimeout(model, maxTokens);
+  let timedOut = false;
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
   if (signal) {
     if (signal.aborted) {
       controller.abort();
@@ -283,7 +328,9 @@ export async function sendChatMessage(
   } catch {
     if (effectiveSignal.aborted) {
       cleanup();
-      throw new Error('Request was cancelled.');
+      throw new Error(timedOut
+        ? `Chat request timed out after ${Math.round(timeoutMs / 60000)} minutes.`
+        : 'Request was cancelled.');
     }
     try {
       response = await fetch(DIRECT_URL, {
@@ -300,7 +347,9 @@ export async function sendChatMessage(
     } catch {
       cleanup();
       if (effectiveSignal.aborted) {
-        throw new Error('Request was cancelled.');
+        throw new Error(timedOut
+          ? `Chat request timed out after ${Math.round(timeoutMs / 60000)} minutes.`
+          : 'Request was cancelled.');
       }
       throw new Error('Unable to reach the Claude API. Please check your internet connection.');
     }
