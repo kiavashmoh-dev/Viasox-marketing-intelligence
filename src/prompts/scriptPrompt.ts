@@ -515,6 +515,20 @@ ${getSegmentProductMatrix()}
 
 ${getWinningAdReferenceBank()}
 
+${params.primaryTalkingPoint ? `## ⚠️ PRIMARY TALKING POINT: "${params.primaryTalkingPoint.toUpperCase()}"
+
+**THIS SCRIPT MUST BE ABOUT "${params.primaryTalkingPoint}."** The Primary Talking Point is the SUBJECT MATTER of this ad.
+
+**MANDATORY REQUIREMENTS:**
+1. The word "${params.primaryTalkingPoint}" (or its direct synonym) MUST appear in the script
+2. The hook, body, and CTA must all relate to "${params.primaryTalkingPoint}" — not generic comfort
+3. Use condition-specific customer language, pain descriptions, and emotional triggers for "${params.primaryTalkingPoint}"
+4. The viewer must understand this ad is ABOUT "${params.primaryTalkingPoint}"
+5. If the script could work without mentioning "${params.primaryTalkingPoint}", it is too generic — rewrite it
+
+**AWARENESS LEVEL TREATMENT (${params.awarenessLevel}):**
+${params.awarenessLevel === 'Unaware' ? `For Unaware: SHOW the reality of ${params.primaryTalkingPoint} through visual scenes and life moments in the first half. The word "${params.primaryTalkingPoint}" appears AFTER the awareness shift in the second half. The viewer recognizes the EXPERIENCE before hearing the name.` : `For ${params.awarenessLevel}: "${params.primaryTalkingPoint}" can be named directly. Use it early and build the narrative around it.`}` : ''}
+
 ## MARKETING BOOK FOCUS
 ${buildBookFocus(params.bookReference)}
 

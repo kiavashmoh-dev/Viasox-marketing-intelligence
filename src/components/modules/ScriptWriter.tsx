@@ -59,6 +59,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
   const [offer, setOffer] = useState<OfferType>('None');
   const [hookVariations, setHookVariations] = useState<HookVariationCount>(3);
   const [bookReference, setBookReference] = useState<MarketingBookReference>('All Four Books');
+  const [primaryTalkingPoint, setPrimaryTalkingPoint] = useState('');
 
   // AGC-specific state
   const [agcBodyFormat, setAgcBodyFormat] = useState<AgcBodyFormat>('pov');
@@ -89,6 +90,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         offer,
         hookVariations: (isAgc || isEcom) ? 3 : hookVariations, // AGC: 3 (3×3 matrix = 9 hooks), Ecom: always 3 hooks
         bookReference,
+        primaryTalkingPoint: primaryTalkingPoint.trim() || undefined,
         conceptAngleContext: conceptAngleContext?.content ?? undefined,
         // Production brief params (AGC + all other video types except Ecom/Static)
         ...((isAgc || isVideoProductionBrief) && {
@@ -389,6 +391,14 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
               <select value={duration} onChange={(e) => setDuration(e.target.value as typeof duration)} className={selectClass}>
                 {DURATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Primary Talking Point</label>
+              <p className="text-xs text-slate-400 mb-2">The specific condition or focus — e.g., Diabetes, Neuropathy, Swelling</p>
+              <input type="text" value={primaryTalkingPoint} onChange={(e) => setPrimaryTalkingPoint(e.target.value)}
+                placeholder="e.g., Diabetes"
+                className={selectClass} />
             </div>
 
             <div>

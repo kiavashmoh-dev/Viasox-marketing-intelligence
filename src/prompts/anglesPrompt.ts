@@ -536,6 +536,29 @@ ${getAwarenessConceptGuide(params.awarenessLevel)}
 
 ${buildAngleTypeMandate(params.angleType)}
 
+${params.primaryTalkingPoint ? `## ⚠️ PRIMARY TALKING POINT: "${params.primaryTalkingPoint.toUpperCase()}"
+
+**THIS IS THE #1 CREATIVE DIRECTIVE. Every concept MUST be about "${params.primaryTalkingPoint}."**
+
+The Primary Talking Point defines WHAT the ad is about. The Angle Type (${params.angleType}) defines HOW we approach it. Together they create the concept:
+- Angle Type "${params.angleType}" = the STRUCTURAL approach (how we frame, sequence, and emotionally architect the concept)
+- Primary Talking Point "${params.primaryTalkingPoint}" = the SUBJECT MATTER (the condition, topic, or focus that every concept must center on)
+
+**MANDATORY REQUIREMENTS:**
+1. The word "${params.primaryTalkingPoint}" (or its direct medical/common synonym) MUST appear in every concept
+2. Every concept must describe scenarios, symptoms, or experiences SPECIFICALLY related to "${params.primaryTalkingPoint}"
+3. The viewer must understand within the first 3 seconds that this ad is about "${params.primaryTalkingPoint}" (for Problem Aware+) or recognize the EXPERIENCE of "${params.primaryTalkingPoint}" visually (for Unaware)
+4. Generic "comfortable socks" concepts are BANNED. If a concept could work without mentioning "${params.primaryTalkingPoint}", it's too generic — rewrite it
+5. Use the specific customer language, pain descriptions, and emotional triggers from the Angle Language Bank for "${params.primaryTalkingPoint}" if available
+
+**HOW AWARENESS LEVEL CHANGES THE TALKING POINT TREATMENT:**
+- **Unaware:** The talking point's REALITY is shown visually and through life moments — the viewer RECOGNIZES the experience of ${params.primaryTalkingPoint} without it being named in the first half. The word "${params.primaryTalkingPoint}" appears in the second half after the awareness shift.
+- **Problem Aware:** "${params.primaryTalkingPoint}" is named in the HOOK. Lead with the specific pain. The viewer should think "that's EXACTLY my ${params.primaryTalkingPoint} experience."
+- **Solution Aware:** "${params.primaryTalkingPoint}" is assumed known. Lead with why Viasox solves it DIFFERENTLY than what they've tried.
+- **Product Aware / Most Aware:** "${params.primaryTalkingPoint}" is referenced as the reason they already know Viasox. Deepen the proof.
+
+**DO NOT** create concepts about other conditions. If the talking point is "${params.primaryTalkingPoint}", do NOT drift to generic comfort, general swelling, or unrelated conditions. Stay laser-focused.` : ''}
+
 ## PRODUCT LINE STRATEGY: ${params.product}
 ${buildProductLineGuide(params.product)}
 
@@ -595,7 +618,11 @@ ${getProductAnalysis(analysis, params.product)}`;
     ? 'This is a STATIC (image) ad type. Each concept should describe a single compelling image with headline, subhead, and visual composition.'
     : 'This is a VIDEO ad type. Each concept should describe video scenes, movement, dialogue/voiceover, talent, setting, and visual storytelling.';
 
-  const user = `Generate exactly 5 creative ${params.angleType} concepts & angles for ${params.product} at the **${params.awarenessLevel}** awareness level, optimized for ${params.funnelStage} (${params.funnelStage === 'TOF' ? 'Top of Funnel' : params.funnelStage === 'MOF' ? 'Middle of Funnel' : 'Bottom of Funnel'}) using ${params.adType} format.
+  const talkingPointNote = params.primaryTalkingPoint
+    ? `\n\n**⚠️ PRIMARY TALKING POINT: "${params.primaryTalkingPoint}"** — Every concept MUST be specifically about "${params.primaryTalkingPoint}". The word "${params.primaryTalkingPoint}" (or its direct synonym) must appear in every concept. If a concept could exist without mentioning "${params.primaryTalkingPoint}", it is too generic and must be rewritten. The talking point is the SUBJECT; the angle type is the APPROACH.`
+    : '';
+
+  const user = `Generate exactly 5 creative ${params.angleType} concepts & angles for ${params.product}${params.primaryTalkingPoint ? ` focused on "${params.primaryTalkingPoint}"` : ''} at the **${params.awarenessLevel}** awareness level, optimized for ${params.funnelStage} (${params.funnelStage === 'TOF' ? 'Top of Funnel' : params.funnelStage === 'MOF' ? 'Middle of Funnel' : 'Bottom of Funnel'}) using ${params.adType} format.${talkingPointNote}
 
 **CRITICAL — AWARENESS LEVEL IS ${params.awarenessLevel.toUpperCase()}:**
 ${params.awarenessLevel === 'Unaware' ? 'These concepts CANNOT mention the product, problem, or solution in the first 50% of the concept. Lead with pure identification, story, or curiosity. The concept structure must be: Identification → Disruption → Discovery → Curiosity. The product appears LAST. CTA is soft ("learn more," "discover"). This must read like CONTENT, not an ad.' : ''}${params.awarenessLevel === 'Problem Aware' ? 'These concepts must lead with SPECIFIC, VIVID pain that the viewer recognizes instantly. Use exact customer language from the reviews. Spend 60-70% of the concept on the PAIN (naming it, intensifying it) before bridging to the solution. CTA is medium-soft ("try your first pair," "see how it works").' : ''}${params.awarenessLevel === 'Solution Aware' ? 'These concepts must lead with DIFFERENTIATION — what makes Viasox fundamentally different from what they have tried. Do NOT belabor the problem (they know it). Spend 60-70% on the NEW MECHANISM, proof, and why this solution succeeds where others failed. CTA is medium-direct ("see why X switched," "compare for yourself").' : ''}${params.awarenessLevel === 'Product Aware' ? 'These concepts must assume the viewer ALREADY KNOWS Viasox. Lead with the brand name, deepened proof, or what is NEW. Go deep on a single powerful proof point rather than wide on many benefits. CTA is direct ("shop now," "get your pair").' : ''}${params.awarenessLevel === 'Most Aware' ? 'These concepts must be the MOST DIRECT and OFFER-FOCUSED. Lead with the product name + offer/news. Keep concepts tight — recognition → offer/urgency → CTA. No education, no problem agitation. The deal IS the concept. CTA is maximally direct ("buy now," "claim your pair," "add to cart").' : ''}

@@ -221,6 +221,8 @@ export interface AnglesParams {
   angleType: AngleType;
   funnelStage: FunnelStage;
   adType: AdType;
+  /** Primary talking point — the specific condition, topic, or focus (e.g., "Diabetes", "Neuropathy", "Swelling", "Sock Marks") */
+  primaryTalkingPoint?: string;
 }
 
 export type HookStyle =
@@ -303,6 +305,8 @@ export interface ScriptParams {
   offer: OfferType;
   hookVariations: HookVariationCount;
   bookReference: MarketingBookReference;
+  /** Primary talking point — the specific condition, topic, or focus (e.g., "Diabetes", "Neuropathy") */
+  primaryTalkingPoint?: string;
   conceptAngleContext?: string; // Pre-generated concept/angle to script from
 
   // AGC-specific (only relevant when adType is 'AGC (Actor Generated Content)')

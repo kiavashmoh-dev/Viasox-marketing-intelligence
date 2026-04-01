@@ -33,6 +33,7 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
   const [angleType, setAngleType] = useState<AngleType>('Problem-Based');
   const [funnelStage, setFunnelStage] = useState<FunnelStage>('TOF');
   const [adType, setAdType] = useState<AdType>('UGC (User Generated Content)');
+  const [primaryTalkingPoint, setPrimaryTalkingPoint] = useState('');
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
   // Wrap onWriteScript to bundle current selector state with the concept text
@@ -50,7 +51,7 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
 
   const handleGenerate = (feedback?: string) => {
     const { system, user } = buildAnglesPrompt(
-      { product, awarenessLevel: awareness, angleType, funnelStage, adType },
+      { product, awarenessLevel: awareness, angleType, funnelStage, adType, primaryTalkingPoint: primaryTalkingPoint.trim() || undefined },
       analysis,
     );
     const finalUser = feedback && result
@@ -137,6 +138,18 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
               <select value={angleType} onChange={(e) => setAngleType(e.target.value as AngleType)} className={selectClass}>
                 {ANGLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Primary Talking Point</label>
+              <p className="text-xs text-slate-400 mb-2">The specific condition or focus — e.g., Diabetes, Neuropathy, Swelling, Sock Marks, Varicose Veins</p>
+              <input
+                type="text"
+                value={primaryTalkingPoint}
+                onChange={(e) => setPrimaryTalkingPoint(e.target.value)}
+                placeholder="e.g., Diabetes"
+                className={selectClass}
+              />
             </div>
           </div>
 

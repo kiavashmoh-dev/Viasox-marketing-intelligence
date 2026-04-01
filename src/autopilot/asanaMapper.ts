@@ -126,6 +126,7 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
     offer: 'B2G3',
     hookVariations: 3,
     bookReference: 'All Four Books',
+    primaryTalkingPoint: parsed.angle,
   };
 
   return {
@@ -138,6 +139,7 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
       angleType,
       funnelStage: 'TOF',
       adType: 'Ecom Style',
+      primaryTalkingPoint: parsed.angle,
     },
     scriptParamsBase,
   };
