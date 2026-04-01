@@ -16,6 +16,7 @@ import {
   getVoiceToneExamples,
   getProductObjectionBank,
   getSegmentProductMatrix,
+  getWinningAdReferenceBank,
 } from './manifestoReference';
 
 function buildAngleTypeMandate(angleType: AngleType): string {
@@ -563,6 +564,8 @@ ${getVoiceToneExamples()}
 ${getProductObjectionBank(params.product)}
 
 ${getSegmentProductMatrix()}
+
+${getWinningAdReferenceBank()}
 
 ## SEGMENT-AWARE CONCEPT TARGETING
 When creating concepts, leverage the two-layer segmentation model from the product data:

@@ -21,6 +21,7 @@ import {
   getCustomerVoiceBank,
   getVoiceToneExamples,
   getSegmentProductMatrix,
+  getWinningAdReferenceBank,
 } from './manifestoReference';
 
 export function buildBatchReviewerPrompt(
@@ -68,6 +69,8 @@ ${getCustomerVoiceBank()}
 ${getVoiceToneExamples()}
 
 ${getSegmentProductMatrix()}
+
+${getWinningAdReferenceBank()}
 
 ${getScriptFrameworks()}
 

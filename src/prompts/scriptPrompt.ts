@@ -22,6 +22,7 @@ import {
   getVoiceToneExamples,
   getProductObjectionBank,
   getSegmentProductMatrix,
+  getWinningAdReferenceBank,
 } from './manifestoReference';
 
 function buildFunnelGuide(stage: FunnelStage): string {
@@ -511,6 +512,8 @@ ${getVoiceToneExamples()}
 ${getProductObjectionBank(params.product)}
 
 ${getSegmentProductMatrix()}
+
+${getWinningAdReferenceBank()}
 
 ## MARKETING BOOK FOCUS
 ${buildBookFocus(params.bookReference)}

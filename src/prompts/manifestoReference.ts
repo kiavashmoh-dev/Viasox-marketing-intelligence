@@ -1533,3 +1533,148 @@ Different customer segments enter differently for each product. This matrix defi
 - **+ Compression:** "Compression socks that get compliments — not concerned looks. This is what medical support looks like in 2026." Entry: anti-stigma style revolution. Key proof: 12.0% style stigma eliminated.
 - **+ Ankle Compression:** "Ankle socks that actually do something. The style you want with the support you need." Entry: fashion-forward compression. Key proof: 8.3% fashion/style appeal.`;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Winning Ad Reference Bank — Top-Performing Scripts Studied         */
+/* ------------------------------------------------------------------ */
+
+export function getWinningAdReferenceBank(): string {
+  return `## WINNING AD REFERENCE BANK — STUDIED TOP PERFORMERS
+
+These are real briefs that produced the highest ad spends and returns on the Viasox account. They have been analyzed for what makes them work. DO NOT copy or recreate these scripts. Instead, STUDY the patterns, language choices, emotional arcs, and structural decisions — then apply those principles to create ORIGINAL work at the same quality level.
+
+### PATTERN 1: THE MEASUREMENT/PROOF DEMONSTRATION
+**Why it works:** Transforms an abstract claim ("our socks fit better") into a concrete, visual, undeniable demonstration. The viewer watches the proof happen in real time. Numbers create specificity. Measurements create authority.
+
+**Reference: E194 "The Sock Sizing Scandal" (Ankle Compression, Problem Aware, ~45s)**
+- Hook: "Sock companies think all legs are 14 inches around. Mine are 22."
+- Structure: Investigation/exposé format → measures competing socks (all fail) → measures Viasox (succeeds dramatically) → emotional payoff
+- WHY IT PERFORMED: The hook uses a SPECIFIC number gap (14 vs 22 inches) that immediately creates injustice. The "investigation" framing makes it feel like content, not an ad. Each failed measurement BUILDS frustration before the payoff. The viewer is rooting for a solution by the time Viasox appears.
+- KEY LANGUAGE: "The sock sizing lie," "Translation: Fits small to medium only," "8-inch difference. No wonder they hurt," "They design for average. Ignore everyone else," "If your calves are over 18 inches? You don't exist."
+- EMOTIONAL ARC: Injustice → validation ("your body isn't the problem") → vindication → relief
+
+**Reference: E171 "The 30-Inch Truth" (EasyStretch, Problem Aware, ~45s)**
+- Hook: "30 inches. That's how far these socks stretch."
+- Structure: Measures regular socks (12-14") → "extra wide" (18") → pharmacy ($40, 20") → Viasox (30") → personal demo with 26-inch calves from lymphedema
+- WHY IT PERFORMED: Builds a ladder of failures with ESCALATING specificity (each sock type named with exact measurement). "$40 medical socks from the pharmacy" adds price injustice. "26-inch calves from lymphedema" names the REAL condition — not vague "swelling" but a specific medical reality. "After 20 years of sock torture" — temporal weight.
+- KEY LANGUAGE: "Let me show you the truth," "on a good day" (sarcastic), "THIRTY" (single word for emphasis), "No cutting. No marks. No pain," "socks that tell the truth"
+- EMOTIONAL ARC: Skeptical investigation → escalating disappointment → shock reveal → emotional relief → "I finally found"
+
+**PRINCIPLE TO APPLY:** When writing scripts about fit, comfort, or performance — use SPECIFIC MEASURABLE PROOF. Don't say "they stretch more." Say how far. Don't say "other socks fail." Show EXACTLY how they fail with numbers. Create a ladder of failures before the reveal.
+
+### PATTERN 2: THE MECHANISM REFRAME
+**Why it works:** Takes a product category the viewer thinks they understand (compression socks) and reframes the MECHANISM — revealing that the entire industry approach was wrong. This creates a "wait, I never thought about it that way" moment.
+
+**Reference: C163 "The Pressure" (EasyStretch, Problem Aware, ~30-35s)**
+- Hook: "What if everything you know about compression socks is backwards?"
+- Structure: States industry standard (20-30 mmHg) → explains WHY that fails (10 min to put on, marks, you stop wearing them) → zero compression is worse → reveals the "sweet spot" (12-15 mmHg) → demonstrates ease → shows results
+- WHY IT PERFORMED: The MECHANISM is the star — not the sock, but the INSIGHT about pressure levels. "12-15 mmHg is the sweet spot where compression actually works AND you can wear it all day" — this is a genuinely useful piece of information that makes the viewer smarter. The argument is LOGICAL, not emotional: you can't benefit from compression you don't wear.
+- KEY LANGUAGE: "The compression sock industry has been solving the wrong problem for 50 years," "So you stop wearing them. Which means zero compression. Zero benefits. Zero relief," "gentle enough that you forget you're wearing compression," "The best compression is the compression you actually wear"
+- EMOTIONAL ARC: Curiosity → "aha" moment → logical persuasion → effortless proof → satisfaction
+
+**PRINCIPLE TO APPLY:** When the product has a technical advantage, don't just LIST it. REFRAME the category. Explain WHY the old approach was broken. Give the viewer a genuinely useful insight that makes them feel smarter. The product becomes the logical conclusion of the insight, not the pitch.
+
+### PATTERN 3: THE ANTI-KNEE-HIGH / SHORTCUT ANGLE
+**Why it works:** Positions ankle compression as the SMART choice by framing knee-high compression as overkill. Creates an "I've been doing this wrong" realization.
+
+**Reference: A162 "The Ankle Compression Shortcut" (Ankle Compression, Solution Aware MOF, ~20-25s)**
+- Hook: "Stop paying for 12 inches of sock you don't need."
+- Structure: Names the mistake → locates the real problem zone → shows targeted solution → versatility montage → daily timeline → value/offer
+- WHY IT PERFORMED: The hook is PROVOCATIVE — tells the viewer they're wasting money. "The real issue is down here" with a visual zoom creates the reframe. "6 inches of targeted ankle compression" is a specific mechanism claim. The versatility montage (any shoe, any outfit, any season) addresses the #1 objection.
+- KEY LANGUAGE: "Most people with swollen ankles make the same mistake," "But the real issue is down here," "Just 6 inches of targeted ankle compression," "Full compression benefits. Zero sweat. Zero bulky fabric"
+- EMOTIONAL ARC: Challenge → reframe → "that makes sense" → versatility proof → urgency
+
+### PATTERN 4: THE UNEXPECTED DISCOVERY / "WASN'T EXPECTING" ARC
+**Why it works:** Low expectations → surprising results is the most persuasive narrative structure in DTC advertising. The viewer identifies with the skepticism, which makes the positive outcome MORE believable.
+
+**Reference: A48 "Wasn't Expecting" (Ankle Compression, Problem Aware, ~45s)**
+- Hook: "I didn't think ankle socks could make a difference. I was wrong."
+- Structure: States low expectations → names the specific problem (swelling, soreness) → dismisses full compression for summer → tries Viasox → notices specific unexpected improvements → explains mechanism → endorsement
+- WHY IT PERFORMED: "I didn't think" + "I was wrong" is the PUREST skeptic-to-believer arc. The specific surprise moments ("My feet weren't sore at dinner," "My shoes didn't feel tight," "I wasn't rushing to sit down") are DAILY LIFE observations — not product claims. The viewer recognizes their own routine in these moments.
+- KEY LANGUAGE: "Full-length compression socks were just too much — especially in summer," "I noticed something weird," "My feet weren't sore at dinner," "My shoes didn't feel tight," "I wasn't rushing to sit down," "Don't take my word for it — wear them once, and you'll get it"
+- EMOTIONAL ARC: Skepticism → reluctant trial → surprise → specific proof moments → genuine advocacy
+
+**Reference: A60 (Ankle Compression, TOF Mashup)**
+- Hook: "The difference these compression socks made... I felt it day one!"
+- Structure: Meet the product → NOT like regular tight compression → easy application with pull tab detail → targeted compression mechanism → padded bottom → energy/comfort results → conversion CTA
+- WHY IT PERFORMED: "I felt it day one" creates immediate-results framing. Specifically calls out what it's NOT ("not like your regular, tight compression socks"). The PULL TAB detail — a tiny product feature — becomes memorable because it solves a specific micro-frustration. "I used to think compression socks had to be uncomfortable to work. Turns out, they don't" — belief reframe.
+- KEY LANGUAGE: "A sock that delivers support, comfort and reduces swelling, effortlessly," "It's a small thing, but it makes a big difference," "Their light, targeted compression hits exactly where it matters," "I feel like I have a lot more energy now"
+
+**PRINCIPLE TO APPLY:** Start with LOW expectations or SKEPTICISM. Name specific moments of daily life where the viewer NOTICES the difference (not product features — life changes). Use "I noticed," "I realized," "I wasn't expecting" language. The small specific details (pull tab, shoes fitting, not rushing to sit down) are MORE persuasive than big claims.
+
+### PATTERN 5: THE HOW-TO / EDUCATIONAL AUTHORITY
+**Why it works:** Positions the ad as a TUTORIAL that happens to feature the product. The viewer learns something genuinely useful. The product becomes the tool that executes the lesson.
+
+**Reference: A133 "How to Fix Your Feet in 10 Seconds" (Ankle Compression, Problem Aware, ~45s)**
+- Hook: "10-second ankle swelling fix that lasts all day"
+- Structure: Names the cause (blood pooling) → simple anatomy explanation → "here's the fix" → 2-step tutorial (get ankle compression, slide on) → explains what happens next (360-degree pressure, circulation) → hourly timeline of results → features → authority ("Physical therapists know this")
+- WHY IT PERFORMED: "10 seconds" creates a curiosity gap — can swelling really be fixed that fast? The anatomy explanation (gravity + veins + blood pooling) makes the viewer UNDERSTAND why they swell. Understanding creates buy-in. The hourly timeline (Hour 1, Hour 4, Hour 8) is a PROOF STRUCTURE that builds credibility through specificity. "This is when you'd usually be dying. But you're not." — directly names the viewer's daily pain point.
+- KEY LANGUAGE: "Blood pooling. Right here. In your ankle and arch," "Gravity pulls blood down. Your veins can't push it back up," "By noon, you've got a swamp in your shoes," "This is when you'd usually be dying. But you're not. Your feet feel... normal?"
+- EMOTIONAL ARC: Promise → education → "that makes sense" → simple solution → progressive proof → authority validation
+
+**PRINCIPLE TO APPLY:** When using educational/how-to framing, teach something REAL about the body or the condition. Don't fake expertise — explain the actual mechanism simply. Use a TIMELINE to show progressive results (Hour 1, Hour 4, Hour 8). End with authority validation.
+
+### PATTERN 6: THE AGC TESTIMONIAL WITH OFFER MATH
+**Why it works:** Combines genuine testimonial energy with a B2G3 offer that's broken down into specific math. The viewer simultaneously gets social proof AND calculates the value.
+
+**Reference: AGC 107 (Ankle Compression, AGC format, ~45s)**
+Hooks (3 variations):
+1. Solution hook: "I ditched the knee-high compression for these — and my feet have never felt better." (BROLL: compression knee-highs cut to Viasox ACS on feet)
+2. Curiosity hook: "I was ready to give up on compression socks... until I found these." (BROLL: zooming on tight socks, transition to Viasox)
+3. Reactions hook: "The difference these compression socks made... I felt it day one." (BROLL: extreme closeup of ACS on tippy toes, hop)
+- Script arc: Product intro → compare against knee-highs → "they squeeze the life out of you" → ankle-length = right where support matters → soft/breathable → pull tab genius → no marks reveal → "real comfort and actual relief" → B2G3 math → skeptic-to-believer ("I was skeptical about ankle-only compression") → "swelling stops at the source" → daily use → CTA
+- WHY IT PERFORMED: Three hooks give three DIFFERENT emotional entry points (solution, curiosity, reaction). The body advances from ALL hooks without repeating any. Specific anti-knee-high comparison ("squeeze the life out of you") validates the viewer's frustration. The no-marks reveal is a VISUAL PROOF moment. "Swelling stops at the source" is a mechanism phrase that sticks. Real review quotes read on camera add authenticity.
+
+**Reference: AGC 144 / A141 (Ankle Compression, AGC format)**
+Hooks (3 variations):
+1. "I bought 2 pairs. They sent me 5. This wasn't a mistake..."
+2. "This is the only time you should be buying socks because of this one fact..."
+3. "I almost didn't buy. Now I have 5 pairs. Let me explain..."
+- Script arc: Shock/excitement at B2G3 → explain the deal math → "That's $90 worth of free socks" → callback to swelling problem → "Those balloon ankles" → put on compression easily → "14 mmHg compression, only where you need it" → "Not those knee-high torture devices" → social proof (3,847 people, review quotes) → pattern selection → skeptic-to-believer → "The swelling stops at the source" → daily rotation → CTA
+- WHY IT PERFORMED: The B2G3 hooks are IRRESISTIBLE curiosity triggers — "they sent me 5, this wasn't a mistake" makes the viewer need to know why. The deal math ($90 worth of free socks, $12 per pair) is SPECIFIC and calculable. "Balloon ankles" and "knee-high torture devices" are vivid, memorable phrases. Reading real reviews on camera builds trust.
+
+**PRINCIPLE TO APPLY:** For AGC scripts, use offer math as a HOOK (not just a CTA). Make the deal CALCULABLE ("$90 worth of free socks"). Compare against the bad alternative with vivid language ("torture devices," "squeeze the life out of you"). Include at least one real review read on camera. Build a skeptic-to-believer arc within the testimonial.
+
+### PATTERN 7: THE SWELLING RELIEF JOURNEY (Long-form testimonial)
+**Why it works:** Deep emotional testimonial that traces the full journey from suffering through discovery to transformation. Works for longer formats where emotional investment builds over time.
+
+**Reference: AGC 107 Second Script (Ankle Compression, long-form ~60s)**
+- Opening: "I'm finally getting relief from the swelling in my feet and ankles and I didn't need any expensive treatments."
+- Arc: Frustration with medical advice ("doctor visits or prescriptions") → simple tool discovery → daily improvement ("every day it gets better") → understanding mechanism ("once you understand how swelling works... and how these socks help with circulation") → body healing framing ("you're not causing harm — you're actually helping your body heal") → relief + freedom
+- WHY IT PERFORMED: "I didn't need expensive treatments" immediately positions socks as the ALTERNATIVE to medical intervention — not a medical device, but a practical solution. "You realize you're not causing harm — you're actually helping your body heal" is the most powerful reframe — from passive suffering to active healing. The progression from skepticism to understanding to freedom mirrors the actual customer journey.
+- KEY LANGUAGE: "I feel so relieved," "Like I've finally given my feet the support they've been needing," "It's like saying hello to my feet again — without the constant discomfort," "that feeling... that freedom... it's worth its weight in gold"
+
+---
+
+## UNIVERSAL PRINCIPLES FROM TOP PERFORMERS
+
+### 1. SPECIFICITY OVER GENERALITY — ALWAYS
+Every winning script uses SPECIFIC details: "22-inch calves," "30 inches," "12-15 mmHg," "$40 pharmacy socks," "Hour 8," "3,847 people bought this deal last week." Generic language ("comfortable," "supportive," "great socks") appears NOWHERE in top performers. If a claim can't be made specific, it shouldn't be in the script.
+
+### 2. THE CONDITION IS NAMED AND CONTEXTUALIZED
+Top performers don't say "sock marks are bad." They say WHY sock marks are bad for THIS person: "26-inch calves from lymphedema" (E171), "blood pooling in your ankle and arch" (A133), "those balloon ankles and swelled feet" (AGC 144), "heavy, uncomfortable swelling in my ankles and feet" (AGC 107). The condition is always placed in the context of the person's DAILY LIFE, not presented as an abstract medical fact.
+
+### 3. THE ANTI-ALTERNATIVE IS AS IMPORTANT AS THE PRODUCT
+Every winning script spends significant time on what the viewer ALREADY TRIED and why it failed: "extra wide socks — 18 inches, still not enough" (E194), "$40 medical socks from the pharmacy" (E171), "20-30 mmHg socks that take 10 minutes to put on" (C163), "knee-high torture devices" (AGC 144), "full-length compression in summer — just too much" (A48). The product's value is defined by the failures that preceded it.
+
+### 4. DAILY LIFE PROOF > PRODUCT CLAIMS
+Winners prove the product through LIFE CHANGES, not features: "My feet weren't sore at dinner" (A48), "My shoes didn't feel tight" (A48), "I wasn't rushing to sit down" (A48), "By evening, your ankles are still normal sized" (C163), "Hour 8: This is when you'd usually be dying. But you're not" (A133). These are moments the viewer RECOGNIZES from their own life.
+
+### 5. ONE SMALL DETAIL CREATES MEMORABILITY
+The pull tab (A60, AGC 107), the measuring tape (E194, E171), the pressure gauge sweet spot (C163), "tippy toes hop" (AGC 107). Each winning script has ONE specific visual/product detail that becomes the memorable anchor. Don't try to feature everything — make ONE detail unforgettable.
+
+### 6. THE OFFER IS A STORY, NOT A BANNER
+B2G3 isn't presented as "Buy 2 Get 3 Free." It's: "I bought 2 pairs. They sent me 5" (AGC 144), "$90 worth of free socks" (AGC 144), "Five pairs of wearable compression for $40" (C163), "$12 per pair" (A162). The offer is CALCULATED for the viewer and integrated into the narrative.
+
+### 7. REAL LANGUAGE, NOT AD COPY
+Compare winning language vs. what AI typically generates:
+- WINNING: "By noon, you've got a swamp in your shoes" → AI DEFAULT: "Experience discomfort throughout your day"
+- WINNING: "Those knee-high ones that squeeze the life out of you" → AI DEFAULT: "Unlike traditional compression socks"
+- WINNING: "This is when you'd usually be dying" → AI DEFAULT: "At the end of a long day"
+- WINNING: "My shoes didn't feel tight" → AI DEFAULT: "Reduced swelling and improved comfort"
+- WINNING: "If your calves are over 18 inches? You don't exist" → AI DEFAULT: "Many people struggle to find properly fitting socks"
+The winning scripts sound like a REAL PERSON talking about their real experience. They use humor, frustration, sarcasm, and surprise. They never sound like marketing copy.
+
+### 8. PERSONA IS ALWAYS 50+ WOMAN WITH A REAL CONDITION
+Every top performer features or speaks to a woman 50+ dealing with: lymphedema (E171), swelling/edema (A48, A133, AGC 107), larger calves (E194), compression fatigue (C163, A162), ankle swelling (A60, AGC 144). The persona is NEVER vague ("someone who wants comfortable socks"). She always has a SPECIFIC condition and a SPECIFIC frustration with alternatives.`;
+}
