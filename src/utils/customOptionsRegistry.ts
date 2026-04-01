@@ -51,6 +51,8 @@ export const BASE_ANGLE_TYPES = [
   'Fear-Based',
   'Aspiration-Based',
   'Education-Based',
+  '3 Reasons/Signs Why',
+  'Negative Marketing',
 ] as const;
 
 export const BASE_AD_TYPES = [

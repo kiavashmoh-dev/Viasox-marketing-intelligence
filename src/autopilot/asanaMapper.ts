@@ -64,6 +64,14 @@ function mapAngleType(raw: string): AngleType {
   if (lower.includes('educat') || lower.includes('science') || lower.includes('how'))
     return 'Education-Based';
 
+  // 3 Reasons/Signs Why
+  if (lower.includes('3 reason') || lower.includes('3 sign') || lower.includes('reasons') || lower.includes('signs why'))
+    return '3 Reasons/Signs Why';
+
+  // Negative Marketing
+  if (lower.includes('negative') || lower.includes('exposé') || lower.includes('expose') || lower.includes('scandal') || lower.includes('myth') || lower.includes('lie'))
+    return 'Negative Marketing';
+
   // Default: Problem-Based for medical/pain conditions
   // (neuropathy, swelling, varicose, circulation, pain, marks, etc.)
   return 'Problem-Based';

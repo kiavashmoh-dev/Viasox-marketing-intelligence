@@ -213,7 +213,9 @@ export type AngleType =
   | 'Seasonal/Situational'
   | 'Fear-Based'
   | 'Aspiration-Based'
-  | 'Education-Based';
+  | 'Education-Based'
+  | '3 Reasons/Signs Why'
+  | 'Negative Marketing';
 
 export interface AnglesParams {
   product: ProductCategory;

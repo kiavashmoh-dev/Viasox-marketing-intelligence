@@ -200,6 +200,70 @@ function buildAngleTypeMandate(angleType: AngleType): string {
 5. Each concept must educate on a DIFFERENT topic
 
 **BANNED:** Fake "did you know" hooks that are really just benefit claims. Surface-level "fun facts" without depth. Education that contradicts medical advice.`,
+
+    '3 Reasons/Signs Why': `## ANGLE TYPE MANDATE: 3 REASONS/SIGNS WHY
+
+**STRUCTURAL REQUIREMENT:** Every concept must be ARCHITECTURED AROUND A NUMBERED LIST — 3 specific reasons, signs, or facts that build a compelling case. The list format creates structure, curiosity, and a natural progression. This is a proven high-performing format in DTC advertising because it promises specific, digestible value.
+
+**CONCEPT STRUCTURE:**
+- Opening 15%: Hook with the PROMISE of the list — "3 signs your socks are hurting you," "3 reasons nurses switched to these socks," "3 things your feet are trying to tell you." The number "3" must appear in the hook. The viewer stays because they want to see all 3.
+- Middle 65%: Deliver the 3 items with ESCALATING impact. Reason/Sign #1 is the most relatable (easy entry). #2 is surprising or educational. #3 is the most emotionally powerful or urgent — the one that makes them act.
+- Final 20%: The solution — Viasox addresses all 3. CTA connects back to the list promise.
+
+**MANDATORY ELEMENTS:**
+1. The number "3" must appear in the hook — this is a LIST-PROMISE format
+2. Each of the 3 reasons/signs must be SPECIFIC and DATA-BACKED from review data or medical reality — not vague platitudes
+3. The 3 items must ESCALATE — start accessible, end powerful. The last item should be the emotional gut-punch or the most compelling proof
+4. Each item must be DISTINCT — three variations of the same point = FAIL
+5. The 3 items together must build an INEVITABLE case for the product — by the time the viewer has heard all 3, the CTA feels like a natural conclusion, not a pitch
+6. Use customer language from the review data for each sign/reason — real words, not marketing speak
+
+**FORMAT VARIATIONS:**
+- "3 signs your socks are making your [condition] worse" (problem-focused, great for Problem Aware)
+- "3 reasons 107,000+ women switched to these socks" (social proof + list, great for Solution Aware)
+- "3 things I wish I knew before I spent $200 on socks that don't work" (confession + list, great for Unaware)
+- "3 signs you need to change your socks today" (urgency + list, great for Problem Aware)
+- "3 reasons your doctor would approve of these" (authority + list, great for Diabetes/Neuropathy)
+- "3 things that happened when I stopped wearing regular compression socks" (transformation + list)
+
+**AWARENESS LEVEL ADJUSTMENTS:**
+- Unaware: "3 signs" format works best — signs of a problem they haven't recognized yet. Each sign creates an "oh wait" moment.
+- Problem Aware: "3 reasons why [their current solution] isn't working" — validate their frustration with specific failures.
+- Solution Aware: "3 reasons this compression is different from what you've tried" — differentiation through proof.
+
+**BANNED:** Vague reasons like "they're comfortable" or "they feel great." Each reason must be specific enough to stand alone as a hook.`,
+
+    'Negative Marketing': `## ANGLE TYPE MANDATE: NEGATIVE MARKETING
+
+**STRUCTURAL REQUIREMENT:** Every concept must be ARCHITECTURED AROUND WHAT'S WRONG — with the industry, with competing products, with conventional wisdom, or with what the viewer is currently doing. This is NOT fear-based (which focuses on health anxiety). Negative Marketing focuses on FRUSTRATION, INJUSTICE, and EXPOSING PROBLEMS with alternatives. The emotional engine is righteous indignation, not fear.
+
+**CONCEPT STRUCTURE:**
+- Opening 30%: ATTACK the status quo — name what's broken, unfair, or unacceptable about current options. Be specific and bold. Call out the industry, the "one-size-fits-all" lie, the ugly medical socks, the impossible-to-wear compression, the overpriced pharmacy brands. The viewer should feel validated: "FINALLY someone is saying what I've been thinking."
+- Middle 40%: PROVE the problem — specific evidence that the current options are failing people. Use measurements, comparisons, failed product experiences, and customer frustration language. Stack the evidence so the viewer feels increasingly frustrated with what they've been settling for.
+- Final 30%: THE ALTERNATIVE — Viasox as the answer to everything that's wrong. The product introduction feels like vindication, not a sales pitch. "There's a reason 107,000+ people stopped settling."
+
+**MANDATORY ELEMENTS:**
+1. Each concept must name a SPECIFIC enemy — not just "bad socks" but the specific failure: pharmacy compression that takes 10 minutes to put on, "diabetic socks" that look medical and feel worse, the $40 socks that still leave marks, the sizing lie, the ugly beige tubes
+2. The negativity must be JUSTIFIED — backed by real customer frustrations from the review data. This isn't complaining — it's exposing genuine problems
+3. The tone is CONFIDENT and ASSERTIVE — not angry or bitter. Think "investigative journalist" or "fed-up consumer advocate," not "angry complainter"
+4. The product reveal must feel EARNED — the viewer has been so well-primed with frustration that Viasox feels like sweet relief
+5. Each concept must target a DIFFERENT enemy/problem
+
+**EMOTIONAL ENGINE:**
+- "I've been ripped off" → price injustice (drugstore socks that fail, expensive medical socks that are ugly)
+- "I've been lied to" → false promises ("one-size-fits-all" that doesn't, "comfortable" socks that leave marks)
+- "I've been ignored" → size exclusion (socks designed for average bodies, ignoring anyone over 18-inch calves)
+- "I deserve better" → settling fatigue (accepting ugly/uncomfortable because they didn't know alternatives existed)
+- "Nobody told me" → information gap (didn't know non-binding existed, didn't know compression could be easy)
+
+**AWARENESS LEVEL ADJUSTMENTS:**
+- Unaware: "The thing nobody tells you about your socks" — expose a problem they didn't know they had. The negativity is about the INDUSTRY keeping them in the dark.
+- Problem Aware: "Why your 'diabetic socks' are actually making things worse" — attack the viewer's current solution directly. They already know the problem; show them their current solution is part of it.
+- Solution Aware: "I spent $200 on compression socks before I found these" — attack the alternatives they've considered or tried.
+
+**REFERENCE:** Top performers E194 "The Sock Sizing Scandal" and E171 "The 30-Inch Truth" are both Negative Marketing — they attack the industry's sizing lies with specific measurement proof. C163 "The Pressure" attacks the compression industry's 50-year-old approach.
+
+**BANNED:** Personal attacks on competitors by name. Medical fearmongering (that's Fear-Based, not Negative Marketing). Bitterness or whining tone — this must feel empowering, not victimized. Negativity without a resolution (every concept must end with the Viasox solution).`,
   };
   return mandates[angleType] ?? '';
 }
