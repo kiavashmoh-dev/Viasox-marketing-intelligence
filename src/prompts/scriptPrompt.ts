@@ -14,6 +14,11 @@ import {
   getProductPurchaseTriggers,
   getProductStrategicInsights,
   getTransformationJourney,
+  getEmotionalArchitecture,
+  getVocabularyProtectionRules,
+  getCrossProductEmotionalSystem,
+  getCustomerVoiceBank,
+  getEmotionalLanguageBoundaries,
 } from './manifestoReference';
 
 function buildFunnelGuide(stage: FunnelStage): string {
@@ -485,6 +490,16 @@ ${getProductStrategicInsights(params.product)}
 ${getScriptFrameworks()}
 
 ${getTransformationJourney()}
+
+${getEmotionalArchitecture()}
+
+${getVocabularyProtectionRules()}
+
+${getCrossProductEmotionalSystem()}
+
+${getCustomerVoiceBank()}
+
+${getEmotionalLanguageBoundaries()}
 
 ## MARKETING BOOK FOCUS
 ${buildBookFocus(params.bookReference)}

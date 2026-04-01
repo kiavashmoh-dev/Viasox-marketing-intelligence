@@ -14,6 +14,11 @@ import {
   getTransformationJourney,
   getScriptFrameworks,
   getHookDonts,
+  getMessagingPillars,
+  getBehavioralCodes,
+  getVocabularyProtectionRules,
+  getEmotionalLanguageBoundaries,
+  getCustomerVoiceBank,
 } from './manifestoReference';
 
 export function buildBatchReviewerPrompt(
@@ -47,6 +52,16 @@ ${getCoreFearsDeepDive()}
 ${getEmotionalPainPatterns()}
 
 ${getTransformationJourney()}
+
+${getMessagingPillars()}
+
+${getBehavioralCodes()}
+
+${getVocabularyProtectionRules()}
+
+${getEmotionalLanguageBoundaries()}
+
+${getCustomerVoiceBank()}
 
 ${getScriptFrameworks()}
 

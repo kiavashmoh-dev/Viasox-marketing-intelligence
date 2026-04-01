@@ -7,6 +7,12 @@ import {
   getProductStrategicInsights,
   getEmotionalPainPatterns,
   getEmergingSegments,
+  getMessagingPillars,
+  getEmotionalArchitecture,
+  getBehavioralCodes,
+  getVocabularyProtectionRules,
+  getCustomerVoiceBank,
+  getEmotionalLanguageBoundaries,
 } from './manifestoReference';
 
 function buildAngleTypeMandate(angleType: AngleType): string {
@@ -537,6 +543,18 @@ ${getProductStrategicInsights(params.product)}
 ${getEmotionalPainPatterns()}
 
 ${getEmergingSegments()}
+
+${getMessagingPillars()}
+
+${getEmotionalArchitecture()}
+
+${getBehavioralCodes()}
+
+${getVocabularyProtectionRules()}
+
+${getCustomerVoiceBank()}
+
+${getEmotionalLanguageBoundaries()}
 
 ## SEGMENT-AWARE CONCEPT TARGETING
 When creating concepts, leverage the two-layer segmentation model from the product data:
