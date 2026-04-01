@@ -244,14 +244,26 @@ export default function ConceptReview({ tasks, onApprove, onRegenerateConcepts, 
           <div className="text-sm font-semibold text-amber-800 mb-1">
             {erroredTasks.length} brief{erroredTasks.length > 1 ? 's' : ''} failed during concept generation
           </div>
-          {erroredTasks.map((ts, i) => (
-            <div key={i} className="text-xs text-amber-700 mt-1">
-              <span className="font-medium">{ts.task.parsed.name}:</span>{' '}
-              {ts.error || 'Unknown error'}
-            </div>
-          ))}
+          {erroredTasks.map((ts, ei) => {
+            const originalIndex = tasks.indexOf(ts);
+            return (
+              <div key={ei} className="flex items-center justify-between text-xs text-amber-700 mt-1.5">
+                <div>
+                  <span className="font-medium">{ts.task.parsed.name}:</span>{' '}
+                  {ts.error || 'Unknown error'}
+                </div>
+                <button
+                  onClick={() => onRegenerateConcepts(originalIndex, 'Auto-retry after failure — generate fresh concepts.')}
+                  disabled={isRegenerating !== null}
+                  className="shrink-0 ml-3 px-2.5 py-1 bg-amber-600 text-white rounded text-[10px] font-medium hover:bg-amber-700 disabled:opacity-40"
+                >
+                  Retry
+                </button>
+              </div>
+            );
+          })}
           <p className="text-xs text-amber-600 mt-2">
-            You can proceed with the {readyIndices.length} successful brief{readyIndices.length !== 1 ? 's' : ''} below.
+            You can retry the failed brief{erroredTasks.length !== 1 ? 's' : ''} or proceed with the {readyIndices.length} successful one{readyIndices.length !== 1 ? 's' : ''} below.
           </p>
         </div>
       )}

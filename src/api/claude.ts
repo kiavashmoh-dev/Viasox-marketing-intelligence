@@ -105,16 +105,17 @@ export async function sendMessage(
 
   cleanup();
 
-  // Retry logic for 429 (rate limited) and 529 (overloaded) — up to 3 retries with backoff
+  // Retry logic for 429 (rate limited) and 529 (overloaded) — up to 5 retries with exponential backoff
   if (response.status === 429 || response.status === 529) {
-    const MAX_RETRIES = 3;
+    const MAX_RETRIES = 5;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       if (effectiveSignal.aborted) {
         throw new Error(timedOut
           ? `API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`
           : 'Request was cancelled.');
       }
-      const delayMs = attempt * 5000 + Math.random() * 2000; // 5s, 10s, 15s + jitter
+      // Exponential backoff: 8s, 16s, 32s, 64s, 128s + jitter
+      const delayMs = Math.min(8000 * Math.pow(2, attempt - 1), 120_000) + Math.random() * 3000;
       console.log(`API ${response.status} — retrying in ${Math.round(delayMs / 1000)}s (attempt ${attempt}/${MAX_RETRIES})`);
       await new Promise((r) => setTimeout(r, delayMs));
       if (effectiveSignal.aborted) {
@@ -138,10 +139,10 @@ export async function sendMessage(
   if (!response.ok) {
     const errText = await response.text();
     if (response.status === 429) {
-      throw new Error('Rate limited after 3 retries. The API is congested — please wait a few minutes and try again.');
+      throw new Error('Rate limited after 5 retries. The API is congested — please wait a few minutes and try again.');
     }
     if (response.status === 529) {
-      throw new Error('API overloaded after 3 retries. Anthropic servers are at capacity — please wait a few minutes and try again.');
+      throw new Error('API overloaded after 5 retries. Anthropic servers are at capacity — please wait a few minutes and try again.');
     }
     if (response.status === 401) {
       throw new Error('Invalid API key. Please check your Anthropic API key.');

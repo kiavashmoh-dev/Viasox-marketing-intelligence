@@ -39,7 +39,7 @@ import { saveCompletedBatchToMemory } from './memoryExtractor';
 // ─── All creative agents use Opus ────────────────────────────────────────────
 
 const OPUS = 'claude-opus-4-6';
-const INTER_CALL_DELAY = 2500;
+const INTER_CALL_DELAY = 5000;
 
 const VALID_FRAMEWORKS: ScriptFramework[] = [
   'PAS (Problem-Agitate-Solution)',
@@ -405,6 +405,95 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
     }
   }
 
+  // ── Auto-retry any failed tasks once (after a cooldown) ─────────────────
+  const failedIndices = state.tasks
+    .map((ts, i) => (ts.step === 'error' ? i : -1))
+    .filter((i) => i >= 0);
+
+  if (failedIndices.length > 0 && !signal.aborted) {
+    console.log(`Auto-retrying ${failedIndices.length} failed task(s) after 15s cooldown...`);
+    await delay(15_000);
+
+    for (const i of failedIndices) {
+      if (signal.aborted) throw new Error('Pipeline cancelled');
+
+      state.currentTaskIndex = i;
+      const ts = state.tasks[i];
+      const { task } = ts;
+
+      try {
+        ts.step = 'generating-concepts';
+        ts.error = undefined;
+        onProgress({ ...state });
+
+        const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing);
+        const customDirectives = getAngleDirectives()
+          .filter((d) => d.angle.toLowerCase() === task.parsed.angle.toLowerCase() ||
+                         d.product.toLowerCase() === task.product.toLowerCase())
+          .map((d) => `**Custom Directive (${d.angle} / ${d.product}):** ${d.directive}`)
+          .join('\n');
+
+        const angleDirective = `\n\n## PRIMARY CREATIVE DIRECTIVE — SPECIFIC ANGLE: "${task.parsed.angle}"
+${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customDirectives}\n` : ''}
+**CRITICAL:** This brief MUST be specifically, unmistakably about "${task.parsed.angle}".
+**FORMAT: ${task.parsed.medium} (${task.duration})**
+${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed long-form story.' : ''}`;
+
+        const conceptsRaw = await sendMessageWithRetry(
+          anglesPrompt.system + resourceCtx + directionBlock + angleDirective,
+          anglesPrompt.user,
+          apiKey,
+          12000,
+          OPUS,
+          signal,
+        );
+        ts.conceptsRaw = conceptsRaw;
+        onProgress({ ...state });
+
+        await delay(INTER_CALL_DELAY);
+
+        ts.step = 'selecting-concept';
+        onProgress({ ...state });
+
+        const evalPrompt = buildConceptEvaluatorPrompt(
+          conceptsRaw,
+          task.parsed.name,
+          task.parsed.angle,
+          task.parsed.product,
+          task.parsed.medium,
+          task.duration,
+          strategyBrief,
+          usedFrameworks,
+        );
+
+        const evalResponse = await sendMessageWithRetry(
+          evalPrompt.system + directionBlock,
+          evalPrompt.user,
+          apiKey,
+          4000,
+          OPUS,
+          signal,
+        );
+
+        const options = parseConceptEvaluations(evalResponse, conceptsRaw);
+        ts.conceptOptions = options;
+        if (options.length > 0) {
+          const sorted = [...options].sort((a, b) => b.strengthRating - a.strengthRating);
+          usedFrameworks.push(sorted[0].recommendedFramework);
+        }
+
+        ts.step = 'awaiting-concept-approval';
+        onProgress({ ...state });
+        await delay(INTER_CALL_DELAY);
+      } catch (err) {
+        if (signal.aborted) throw new Error('Pipeline cancelled');
+        ts.step = 'error';
+        ts.error = err instanceof Error ? err.message : String(err);
+        onProgress({ ...state });
+      }
+    }
+  }
+
   state.phase = 'concept-review';
   onProgress({ ...state });
   return state;
@@ -509,6 +598,59 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
       ts.step = 'error';
       ts.error = err instanceof Error ? err.message : String(err);
       onProgress({ ...state });
+    }
+  }
+
+  // ── Auto-retry failed script tasks once ─────────────────────────────────
+  const failedScriptIndices = state.tasks
+    .map((ts, i) => (ts.step === 'error' && ts.selectedConceptText ? i : -1))
+    .filter((i) => i >= 0);
+
+  if (failedScriptIndices.length > 0 && !signal.aborted) {
+    console.log(`Auto-retrying ${failedScriptIndices.length} failed script task(s) after 15s cooldown...`);
+    await delay(15_000);
+
+    for (const i of failedScriptIndices) {
+      if (signal.aborted) throw new Error('Pipeline cancelled');
+
+      state.currentTaskIndex = i;
+      const ts = state.tasks[i];
+
+      try {
+        ts.step = 'generating-script';
+        ts.error = undefined;
+        onProgress({ ...state });
+
+        const framework = matchFramework(ts.recommendedFramework || 'PAS');
+        const scriptParams: ScriptParams = {
+          ...ts.task.scriptParamsBase,
+          framework,
+          conceptAngleContext: ts.selectedConceptText!,
+        };
+
+        const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing);
+        const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
+This script MUST be specifically about "${ts.task.parsed.angle}".\n`;
+
+        const scriptResult = await sendMessageWithRetry(
+          scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective,
+          scriptPrompt.user,
+          apiKey,
+          getMaxTokensForDuration(ts.task.duration),
+          OPUS,
+          signal,
+        );
+
+        ts.scriptResult = scriptResult;
+        ts.step = 'complete';
+        onProgress({ ...state });
+        await delay(INTER_CALL_DELAY);
+      } catch (err) {
+        if (signal.aborted) throw new Error('Pipeline cancelled');
+        ts.step = 'error';
+        ts.error = err instanceof Error ? err.message : String(err);
+        onProgress({ ...state });
+      }
     }
   }
 
