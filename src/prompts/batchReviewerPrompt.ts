@@ -19,6 +19,8 @@ import {
   getVocabularyProtectionRules,
   getEmotionalLanguageBoundaries,
   getCustomerVoiceBank,
+  getVoiceToneExamples,
+  getSegmentProductMatrix,
 } from './manifestoReference';
 
 export function buildBatchReviewerPrompt(
@@ -62,6 +64,10 @@ ${getVocabularyProtectionRules()}
 ${getEmotionalLanguageBoundaries()}
 
 ${getCustomerVoiceBank()}
+
+${getVoiceToneExamples()}
+
+${getSegmentProductMatrix()}
 
 ${getScriptFrameworks()}
 

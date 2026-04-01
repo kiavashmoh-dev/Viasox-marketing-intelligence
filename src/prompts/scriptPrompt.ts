@@ -19,6 +19,9 @@ import {
   getCrossProductEmotionalSystem,
   getCustomerVoiceBank,
   getEmotionalLanguageBoundaries,
+  getVoiceToneExamples,
+  getProductObjectionBank,
+  getSegmentProductMatrix,
 } from './manifestoReference';
 
 function buildFunnelGuide(stage: FunnelStage): string {
@@ -500,6 +503,12 @@ ${getCrossProductEmotionalSystem()}
 ${getCustomerVoiceBank()}
 
 ${getEmotionalLanguageBoundaries()}
+
+${getVoiceToneExamples()}
+
+${getProductObjectionBank(params.product)}
+
+${getSegmentProductMatrix()}
 
 ## MARKETING BOOK FOCUS
 ${buildBookFocus(params.bookReference)}

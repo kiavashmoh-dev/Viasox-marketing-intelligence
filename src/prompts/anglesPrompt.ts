@@ -13,6 +13,9 @@ import {
   getVocabularyProtectionRules,
   getCustomerVoiceBank,
   getEmotionalLanguageBoundaries,
+  getVoiceToneExamples,
+  getProductObjectionBank,
+  getSegmentProductMatrix,
 } from './manifestoReference';
 
 function buildAngleTypeMandate(angleType: AngleType): string {
@@ -555,6 +558,12 @@ ${getVocabularyProtectionRules()}
 ${getCustomerVoiceBank()}
 
 ${getEmotionalLanguageBoundaries()}
+
+${getVoiceToneExamples()}
+
+${getProductObjectionBank(params.product)}
+
+${getSegmentProductMatrix()}
 
 ## SEGMENT-AWARE CONCEPT TARGETING
 When creating concepts, leverage the two-layer segmentation model from the product data:

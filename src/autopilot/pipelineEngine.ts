@@ -32,6 +32,7 @@ import { parseConceptBlocks } from '../utils/conceptParser';
 import type { FullAnalysis, ScriptParams, ScriptFramework } from '../engine/types';
 import type { AutopilotTask, AutopilotState, CreativeDirection, StrategySession } from '../engine/autopilotTypes';
 import { loadMemory, getHistoryForAngle, getReviewerFailurePatterns } from './memoryStore';
+import { getAngleLanguageBank } from '../prompts/manifestoReference';
 import { getAngleDirectives } from '../utils/customOptionsRegistry';
 import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator';
 import { saveCompletedBatchToMemory } from './memoryExtractor';
@@ -337,6 +338,8 @@ If the angle is a medical condition (neuropathy, diabetes, varicose veins, swell
 
 DO NOT create generic "comfortable socks" concepts. The angle "${task.parsed.angle}" must be the SOUL of every concept.
 
+${getAngleLanguageBank(task.parsed.angle)}
+
 **FORMAT: ${task.parsed.medium} (${task.duration})**
 ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed long-form story. Short form means:
 - Experiment with VO and no-VO styles
@@ -564,6 +567,8 @@ export async function runScriptPhase(
       const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
 This script MUST be specifically about "${ts.task.parsed.angle}". The word "${ts.task.parsed.angle}" (or its direct synonym) must appear in the script. The viewer must understand this ad is about "${ts.task.parsed.angle}" — not generic comfort or generic socks.
 
+${getAngleLanguageBank(ts.task.parsed.angle)}
+
 ${ts.task.duration === '15s' ? `## SHORT FORM CREATIVE PRINCIPLES (<15 seconds)
 This is NOT a compressed long-form ad. Short form is its own creative discipline:
 - DO NOT try to tell a full story with problem → agitate → solution → proof → CTA. That's 30-60s thinking forced into 15s.
@@ -632,7 +637,7 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
 
         const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing);
         const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
-This script MUST be specifically about "${ts.task.parsed.angle}".\n`;
+This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleLanguageBank(ts.task.parsed.angle)}\n`;
 
         const scriptResult = await sendMessageWithRetry(
           scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective,
@@ -829,8 +834,9 @@ ${ts.scriptResult || '[no previous brief]'}
     onProgress({ ...state });
 
     const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined);
+    const regenAngleCtx = `\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
     const conceptsRaw = await sendMessage(
-      anglesPrompt.system + resourceCtx + directionBlock,
+      anglesPrompt.system + resourceCtx + directionBlock + regenAngleCtx,
       anglesPrompt.user,
       apiKey,
       12000,
@@ -906,8 +912,9 @@ ${ts.scriptResult || '[no previous brief]'}
     };
 
     const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined);
+    const regenScriptAngleCtx = `\n\n## ANGLE ENFORCEMENT: "${task.parsed.angle}"\nThis script MUST be specifically about "${task.parsed.angle}".\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
     const scriptResult = await sendMessage(
-      scriptPrompt.system + resourceCtx + directionBlock,
+      scriptPrompt.system + resourceCtx + directionBlock + regenScriptAngleCtx,
       scriptPrompt.user,
       apiKey,
       getMaxTokensForDuration(task.duration),

@@ -614,3 +614,922 @@ Customers who need compression in summer but find knee-highs too hot.
 - Message: "Summer-ready compression" — breakthrough positioning
 - Cross-sell opportunity: Knee-highs for winter, ankle for summer`;
 }
+
+/* ------------------------------------------------------------------ */
+/*  5 Messaging Pillars (from Insiders Intelligence, March 2026)       */
+/* ------------------------------------------------------------------ */
+
+export function getMessagingPillars(): string {
+  return `## THE 5 MESSAGING PILLARS — IMMOVABLE RULES FOR ALL CREATIVE
+Source: Facebook Insiders Intelligence (124 community comments, behavioral coding & emotional mapping), cross-validated with 107,993 reviews. These pillars define WHAT CAN BE SAID across all Viasox creative. They are not copy — they are the immovable rules that all copy must align to. When pillars conflict, follow the numbered priority order.
+
+### PILLAR 1 — Ease Is the Win
+Central belief: Life is already hard. Getting dressed shouldn't be.
+What this allows: Talking about effort reduction. Naming struggle without dramatizing. Positioning ease as meaningful, not trivial.
+What it is NOT: Laziness framing. Convenience fluff. "Effortless lifestyle" clichés.
+System truth: Ease is not a feature. It is the emotional payoff.
+
+### PILLAR 2 — You're Not the Problem
+This is one of the strongest emotional levers in the system.
+What this allows: Reframing self-blame. Validating lived experience. Quietly assigning fault to bad design.
+What it is NOT: Fix-your-body narratives. Before/after body correction framing. Hustle or "push through" language.
+System truth: Good products don't correct people. They correct bad assumptions.
+
+### PILLAR 3 — Relief Before Everything
+Relief comes before joy, style, or loyalty.
+What this allows: Leading with pain resolution. Slowing down the promise. Letting customers arrive at joy themselves.
+What it is NOT: Aspirational-first messaging. Overpromising transformation. Skipping emotional steps.
+System truth: If relief isn't believable, nothing else matters.
+
+### PILLAR 4 — Quiet Confidence
+This brand never needs to shout.
+What this allows: Calm certainty. "It just works" energy. Understated authority.
+What it is NOT: Performance bravado. Aggressive superiority claims. Tech-heavy flexing.
+System truth: Confidence is felt most when it's not forced.
+
+### PILLAR 5 — Normal Is the Goal
+This is subtle and powerful.
+What this allows: Positioning normalcy as aspirational. Celebrating the absence of problems. Making reliability desirable.
+What it is NOT: Extreme transformation stories. Peak-performance narratives. "Next level" framing.
+System truth: For this audience, normal life is the luxury.
+
+### PILLAR PRIORITY RULE
+If pillars conflict in any piece of creative, ALWAYS prioritize in this order: Ease → Relief → Normalcy → Independence → Joy. Never reverse this order.`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Emotional Architecture & Behavioral Laws                           */
+/* ------------------------------------------------------------------ */
+
+export function getEmotionalArchitecture(): string {
+  return `## EMOTIONAL ARCHITECTURE — THE VIASOX EMOTIONAL HIERARCHY
+Source: Facebook Insiders Intelligence, validated against 107,993 reviews. This is the most important behavioral finding. It has a HARD RULE attached.
+
+Customers move through emotions in a PREDICTABLE, SEQUENTIAL ORDER:
+**Struggle → Relief → Normalcy → Independence → Trust → Joy → Advocacy**
+
+### How Each Stage Works
+- **Struggle** — Entry point. Customers arrive in pain, frustration, or defeat. Creative must ACKNOWLEDGE the struggle without dramatizing beyond what customers say.
+- **Relief** — The dominant emotional driver across all personas. Relief is NOT framed as medical. It is framed as ABSENCE OF FRICTION. "Finally" is one of the most powerful words in the dataset. Relief is quiet, not dramatic.
+- **Normalcy** — The emotional destination most customers didn't realize they were missing. "I feel normal" and "this is how it should be." For this audience, NORMAL LIFE IS THE LUXURY — not transformation, not peak performance.
+- **Independence** — Emotionally sharper than normalcy, especially for aging or mobility-limited users. Being able to dress without help restores DIGNITY. The win is autonomy, not the sock.
+- **Trust** — Built post-purchase, never before. Trust that the product won't hurt, will fit the same tomorrow, that they don't need to keep searching.
+- **Joy** — Appears ONLY after relief is secured. Patterns, colors, collection behavior, gifting. Joy is ALLOWED because pain is gone — it is never promised upfront.
+- **Advocacy** — Users self-initiate promotion. They recommend without hype, framing the product as "the answer," not a brand.
+
+### THE HIERARCHY RULE
+If creative messaging conflicts on emotional tone, ALWAYS prioritize: Ease → Relief → Normalcy → Independence → Joy.
+**Never reverse this order.** Leading with joy before relief is established feels hollow. Leading with independence before acknowledging struggle feels tone-deaf.
+
+### THE IDENTITY SHIFT — "You're Not the Problem"
+One of the strongest emotional levers. Customers undergo a specific identity reframe after experiencing relief.
+- Before Viasox: "My legs are the problem" / "This is just how my body is now" / "I have to work around this" / "I need help with small things"
+- After Viasox: "The socks were the problem" / "I wasn't difficult — the product was wrong" / "This is manageable" / "I can do this myself"
+Customers feel VALIDATED, NOT FIXED. Good products don't correct people — they correct bad assumptions about what people need.
+- In TOF ads: Quietly assign fault to "regular socks" or "other brands," never to the customer's body
+- In testimonials: Let customers voice the shift themselves ("I thought my legs were the problem...")
+- In copy: Avoid any framing that implies the customer needs to be fixed, improved, or empowered. They need to be UNDERSTOOD
+- NEVER use: "Fix your legs," "Don't let pain stop you," "Power through discomfort" — pain ALREADY stopped them, that's the point
+
+### EMOTIONAL SAFETY SIGNAL
+Users feel safe trying this product, safe wearing it all day, safe recommending it.
+Safety here is EMOTIONAL, not clinical. It means: "This won't hurt me. This won't make things worse. This won't embarrass me."
+This is why Viasox's quiet, gentle tone works. Aggressive marketing triggers the opposite of safety — it reminds customers of all the products that overpromised and hurt them.`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  10 Behavioral Codes                                                */
+/* ------------------------------------------------------------------ */
+
+export function getBehavioralCodes(): string {
+  return `## 10 BEHAVIORAL CODES — REUSABLE STRATEGIC TRUTHS
+Source: Insiders Intelligence behavioral coding, validated against 107,993 reviews. Each code is a system-level principle that applies across products, channels, and campaigns.
+
+### Code 1: Friction Elimination Restores Normalcy
+Customers describe a before-state of friction that shaped daily behavior — avoiding socks, delaying getting dressed, needing help, choosing shoes based on sock tolerance. After Viasox, socks fade into the background. The product wins by DISAPPEARING FROM CONSCIOUS THOUGHT.
+**Use when:** Structuring before/after narratives. The "after" is not dramatic — it's invisible.
+
+### Code 2: Autonomy Is the Emotional Win, Not the Sock
+Explicit mentions of "I can do this myself" are disproportionately emotional for a product category. Relief tied to not needing help carries more weight than any feature.
+**Use when:** Writing caregiver or independence-angle creative. The hero moment is doing it alone.
+
+### Code 3: Low-Effort Products Outperform High-Performance Ones When Mobility Is Limited
+"Easy to put on" appears more than medical or compression terms. Success is defined by lack of struggle, not intensity of support.
+**Use when:** Deciding whether to lead with ease or compression specs. For this audience, ease wins.
+
+### Code 4: Trust Converts Trial Into Routine
+Once trust is established, usage becomes habitual. Customers transition from "trying" to "wear every day." Extended wear contexts emerge (all day, night, travel).
+**Use when:** Planning retention or reorder messaging. Trust language beats promo language.
+
+### Code 5: Relief Products Collapse Choice Sets
+Customers do not layer or rotate — they REPLACE. They stop buying regular socks, donate old ones, re-purchase the same product, and reduce experimentation.
+**Use when:** Framing value props. The promise isn't "add this to your collection" — it's "replace everything else."
+
+### Code 6: Once Pain Is Solved, Joy Is Allowed
+After functional trust is established, expressive behavior emerges — buying multiple pairs, choosing patterns, collecting, gifting.
+**Use when:** Planning creative sequencing. Joy-based creative (patterns, colors, fun) works for retargeting and retention, NOT for cold prospecting.
+
+### Code 7: Good Products Rewrite Self-Narratives
+Customers reframe self-blame after relief. Before: assumed body was the problem. After: reassign blame to product design and feel validated.
+**Use when:** Writing testimonial angles or "realization" hooks. The most powerful moment is when the customer realizes it was never their fault.
+
+### Code 8: High Disappointment History Amplifies Loyalty When Expectations Are Exceeded
+High skepticism before purchase converts to high loyalty after. "Tried everything" + "Didn't expect much" → strong post-purchase certainty.
+**Use when:** Writing skeptic-to-believer narratives. The deeper the doubt, the stronger the conversion story.
+
+### Code 9: Relief Creates Loss Aversion (Desire Protection)
+Once relief is achieved, users become PROTECTIVE of it. They avoid new brands, buy extras "just in case," and recommend only what they trust.
+**Use when:** Planning promo strategy. Discounts are not about excitement — they are about SECURING CONTINUITY. Users buy more to lock in relief, avoid running out, and protect their baseline comfort. "Stock up on the comfort you count on" beats "Exciting new deals!"
+
+### Code 10: Relief Products Move Users From Coping Mode to Living Mode
+Customers stop thinking short-term. "Every day," "from now on," "never going back" signal a permanent shift from managing a problem to living without one.
+**Use when:** Writing long-term value messaging. The product doesn't solve a moment — it changes a default.`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Vocabulary Protection Rules                                        */
+/* ------------------------------------------------------------------ */
+
+export function getVocabularyProtectionRules(): string {
+  return `## VOCABULARY PROTECTION RULES — LANGUAGE THAT CONVERTS
+Source: Customer vocabulary bank (124 community comments + 107,993 reviews). Customer words > brand words > marketing words.
+
+### CORE LOCKED LANGUAGE — Use These Exact Words
+These appear repeatedly in customer feedback and should NEVER be replaced:
+easy to put on, easy, no struggle, no pain, doesn't hurt, not tight, not restrictive, soft, stretchy, comfortable, gentle, goes on easily, slips on, doesn't dig in, doesn't cut off circulation, doesn't leave marks, no sock lines
+
+### VOCABULARY SUBSTITUTION RULES
+- Do NOT replace "easy" with "effortless" — "Easy" is their word. "Effortless" is a copywriter's word.
+- Do NOT replace "comfortable" with "luxurious" — Luxury implies aspiration. Comfort implies relief. Different emotional registers.
+- Do NOT over-medicalize relief — Customers say "my legs feel better," not "improved venous return."
+- Do NOT dramatize pain beyond customer language — Customers describe struggle plainly. Escalating into dramatic suffering feels exploitative and breaks trust.
+- Do NOT reframe independence as "empowerment" — Customers frame it as regaining normal life, not being empowered. "Empowerment" is a brand word, not a customer word.
+- Clarity beats cleverness. Every time.
+
+### WORDS CUSTOMERS RARELY USE — Use Cautiously or Avoid
+performance, athletic, high-compression, medical-grade, power, endurance, effortless (unless quoting), luxurious, empowerment, next level, game-changing (use sparingly — customers say "game changer" but it's earned, not promised)
+
+### RELIEF POWER WORDS — Use Liberally
+- "finally" — THE most powerful word in the entire dataset. Signals the end of a long search.
+- "at last," "immediate relief," "huge difference," "so much better," "problem solved"
+- "wish I found these sooner," "never going back," "won't buy anything else," "only socks I wear now"
+
+### COMPARISON LANGUAGE CUSTOMERS USE
+Customers compare EXPERIENCES, not specs:
+"unlike other socks," "not like regular socks," "better than compression socks I tried," "nothing else worked," "tried everything before this," "these are different," "way better than Amazon ones"
+
+### COPY AUDIT FRAMEWORK
+1. Read the copy out loud
+2. Ask: "Would a customer say this in a Facebook comment?"
+3. If not, find the customer-language equivalent
+4. If no equivalent exists, question whether the message belongs at all`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Cross-Product Emotional System                                     */
+/* ------------------------------------------------------------------ */
+
+export function getCrossProductEmotionalSystem(): string {
+  return `## CROSS-PRODUCT EMOTIONAL SYSTEM
+Source: Insiders Intelligence, validated against 107,993 reviews.
+
+### How the Products Connect Emotionally
+- **EasyStretch** — Earns trust. Rewrites sock expectations. This is where the brand relationship begins. Emotional job: remove friction, restore normalcy, rebuild trust with socks as a category.
+- **Compression** — Extends trust into support. Maintains relief across needs. Emotional job: provide stability without reintroducing pain. Protects RELIEF CONTINUITY.
+- **Ankle Compression** — Lowers the barrier. Introduces support gently. Emotional job: make compression approachable for people who don't think compression is for them. Widens the TRUST FUNNEL.
+
+### The Upgrade Insight
+PEOPLE DON'T UPGRADE FOR PERFORMANCE. THEY UPGRADE TO PROTECT RELIEF.
+When a customer moves from EasyStretch to Compression, or tries Ankle alongside regulars, it's not because they want "more." It's because they want to EXTEND AND PROTECT the relief they already have. This distinction matters for cross-sell messaging — NEVER frame it as an upgrade. Frame it as expanding what already works.
+
+### Desire Protection Behavior
+Once relief is achieved, customers become PROTECTIVE of it:
+- They avoid trying new brands
+- They buy extras "just in case"
+- They recommend only what they trust
+- They stock up during sales to secure continuity
+
+What this means for promos: Discounts are not about excitement. They are about SECURING CONTINUITY. "Stock up on the comfort you count on" beats "Exciting new deals!"
+
+### One-Line Product Summaries
+- EasyStretch: Removes the fight
+- Compression: Maintains relief
+- Ankle Compression: Makes support approachable`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Deep Customer Voice Bank                                           */
+/* ------------------------------------------------------------------ */
+
+export function getCustomerVoiceBank(): string {
+  return `## DEEP CUSTOMER VOICE BANK — REAL QUOTES BY EMOTIONAL STAGE
+These are REAL customer quotes organized by psychological pattern. Use these as creative fuel — the language, the specificity, the emotion. Never use verbatim in ads, but use as the emotional register to match.
+
+### PHYSICAL PAIN VOICES
+**Sock Marks (8.8%, 9,485 reviews):**
+- "Deep red rings around my calves"
+- "Marks that last for hours after taking them off"
+- "Indentations so deep you can feel the grooves"
+- "Look like someone tied rubber bands around my legs"
+Hidden psychology: Sock marks represent visible evidence of a failing body — a daily reminder that even basic clothing has become an enemy.
+
+**Binding & Constriction (5.3%, 5,724 reviews):**
+- "Feel like tourniquets"
+- "Cutting off my circulation"
+- "Squeezing the life out of me"
+- "Can't wait to rip them off"
+
+**Swelling & Edema (6.6%, 7,128 reviews):**
+- "Legs swell up like balloons"
+- "Can't fit in my shoes by evening"
+- "Ankles disappear into cankles"
+- "The swelling went down by MORE THAN HALF the first day" (transformation metric — USE IN ADS)
+Product connection: ACS customers mention swelling in 12.0% of reviews — THE pain point for ankle compression.
+
+**The Daily Dressing Struggle (5-11.4%, MAJOR UPDATE):**
+- "Takes me 20 minutes to put on socks"
+- "Need my husband to help me"
+- "Gave up wearing compression socks"
+- "I simply could not get normal socks on due to hip issues"
+- "Finally, a pair I can put on without struggling"
+CRITICAL: This was SEVERELY underestimated. "Easy to put on" is a TOP 3 benefit, especially for Compression (11.4%).
+
+### EMOTIONAL PAIN VOICES
+**The Morning Struggle:**
+- "Some mornings I just wear slippers all day because I can't face the struggle"
+- "I have to psyche myself up for 10 minutes before attempting"
+- "Start every day already defeated and exhausted"
+
+**The Afternoon Countdown:**
+- "Watch the clock from 2 PM onward — can't focus on anything else"
+- "Have considered leaving work early just to take them off"
+- "Keep spare socks in my desk for when I can't stand it anymore"
+- "Decline after-work invitations because I need to get home to my feet"
+
+**The Closet Graveyard (3.1%, 689 reviews):**
+- "Counted 23 pairs of failed socks — over $500 wasted"
+- "Feel stupid every time I open that drawer"
+- "Keep them as reminder not to believe marketing lies"
+- "It's proof that my body is the problem, not the socks"
+
+**The "Never Again" Breaking Point:**
+- "When the ER nurse had to cut my socks off — circulation completely cut"
+- "Morning I missed my daughter's recital because I couldn't get dressed"
+- "When my feet turned purple and I thought I was having a medical emergency"
+- "The business trip where I had to ask a colleague for help"
+
+**Search Desperation:**
+- "This is attempt #47 — yes, I keep count"
+- "If these don't work, I'm done trying"
+- "Spent my entire tax refund on different socks"
+- 3 reviews explicitly mention "last try," 1 mentions completely "giving up"
+
+### SOCIAL PAIN VOICES
+**The Burden Fear (427 reviews, 12.6%):**
+- "Don't want to ask for help"
+- "Hate that my kids see me struggle"
+- "Wife has to help me dress"
+Gift-giving pattern (100 reviews, 3.7%) reveals widespread family involvement in sock struggles.
+
+**The Shrinking Social Circle (287 reviews):**
+- "Don't go out as much"
+- "Skip family gatherings"
+- "Gave up walking group"
+- "The ankle socks in black and navy... easy to wear around the house and wear out when running errands" — reveals how limited activities have become when basic errands are noteworthy accomplishments.
+
+### TRANSFORMATION VOICES
+**The Revelation Moment:**
+- "I couldn't believe the difference they made. Sure keeps my swelling down in feet and ankles. Love them, already ordered another pair and one for my husband!"
+- "It is exciting to do what the doctors have wanted me to do and it is no longer a struggle as before. I couldn't be happier."
+- "I was shocked when they actually worked"
+
+**The Skeptic-to-Believer Arc (624 reviews with skepticism, avg 4.6 stars):**
+1. "I didn't believe it either"
+2. "I almost didn't try"
+3. "Something made me order"
+4. "I was shocked when..."
+5. "Now I tell everyone"
+
+**The Language of Liberation:**
+- Temporal markers: "Now I can..." / "Finally able to..." / "For the first time in years..." / "No longer have to..."
+- Capability: "I can walk again" / "I can work all day" / "I can travel" / "I can keep up"
+- Emotional: "I love my Viasox" (12,156 mentions, 31.8%) / "Game changer" (1,793 uses, 1.66%) / "Worth every penny"
+- Specific metrics (GOLD FOR ADS): "After 1 week my feet hurt about 90% less" / "The swelling went down by MORE THAN HALF the first day" / "No swelling at end of shift"
+
+### SUCCESS INDICATORS (from 107,993 reviews)
+1. Multiple purchases — 19.5% become repeat customers
+2. Gift giving — 2-6.7% buy for others (sharing liberation)
+3. Active recommendation — "Telling all my friends and family"
+4. Collector behavior — "I bought so many I'm beginning to worry about my sanity" (15+ pairs)
+5. Regret language — "Wish I had bought more" (0.54%) — signals strong reorder intent`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Emotional Language Boundaries                                      */
+/* ------------------------------------------------------------------ */
+
+export function getEmotionalLanguageBoundaries(): string {
+  return `## EMOTIONAL LANGUAGE BOUNDARIES
+
+### What Does NOT Resonate With This Audience
+- Aggressive performance framing
+- "Power through it" language
+- Over-medicalization
+- Minimizing struggle ("it's just socks")
+- Hustle or grit narratives
+- "Empowerment" buzzwords
+- Extreme transformation stories
+- Peak-performance narratives
+- "Next level" framing
+
+### What DOES Resonate
+- Gentleness
+- Understanding
+- Quiet confidence
+- "You're not the problem" framing
+- Calm certainty
+- "It just works" energy
+- Celebrating the absence of problems
+- Making reliability desirable
+
+### The Brand Emotional Identity
+This brand represents:
+- Consideration over correction
+- Ease over force
+- Thoughtfulness over toughness
+- Humanity over performance
+Viasox does not "push people through pain." It removes the need for pain entirely.
+
+### What We Are vs. What We're Not
+✅ A comfort-first brand that happens to help medical issues
+✅ A community of people who "get it"
+✅ An inclusive solution for multiple leg/foot issues
+✅ Selling daily relief and dignity
+✅ Using empathy and humor to connect
+❌ Not a medical device company
+❌ Not a fashion brand
+❌ Not a one-size-fits-all solution
+❌ Not selling transformation
+❌ Not using fear to sell`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Voice & Tone Examples — "Write Like This / Not Like This"          */
+/* ------------------------------------------------------------------ */
+
+export function getVoiceToneExamples(): string {
+  return `## VOICE & TONE — WORKED EXAMPLES
+
+These are calibration examples. Every script, hook, and concept generated must match the quality and tone of the GOOD examples. If it reads like a BAD example, rewrite it.
+
+### HOOKS — GOOD vs. BAD
+
+**GOOD Hook (Problem Aware / Neuropathy):**
+"I used to dread the walk from my bed to the bathroom. Not because of the distance — because I couldn't feel the floor beneath me."
+WHY IT WORKS: Sensory detail. Specific moment. The reader feels the scene. No product mention. Emotional entry through loss of feeling, not "foot pain."
+
+**BAD Hook (same brief, common AI mistake):**
+"Are you tired of dealing with neuropathy pain in your feet? Discover the socks that 107,000 customers swear by!"
+WHY IT FAILS: Generic question hook. "Tired of dealing with" is dead language. Leads with product category. Sounds like every sock ad. No sensory detail, no scene, no emotion.
+
+**GOOD Hook (Unaware / Swelling):**
+"By 3pm, she's already thinking about getting home — not because she's tired of work, but because her shoes stopped fitting two hours ago."
+WHY IT WORKS: Third-person story. Specific time (3pm). Relatable scenario that doesn't name the problem directly. The reader self-selects ("that's me"). No product, no medical language.
+
+**BAD Hook (same brief, common AI mistake):**
+"Did you know that leg swelling affects millions of Americans? There's finally a solution that actually works."
+WHY IT FAILS: "Did you know" is the weakest hook formula. Leading with statistics on an Unaware audience. "Finally a solution" is cliché. Sounds like a pharma commercial.
+
+**GOOD Hook (Problem Aware / Sock Marks):**
+"Those lines were still there at dinner. Eight hours after I took my socks off — still there. Red. Deep. Like my legs were branded."
+WHY IT WORKS: Visceral. Specific timeframe (8 hours). The word "branded" creates a powerful image. The reader who has this problem will feel SEEN.
+
+**BAD Hook (same brief):**
+"Sock marks can be painful and embarrassing. But they don't have to be — not anymore."
+WHY IT FAILS: Tells instead of shows. "Painful and embarrassing" is generic. "Not anymore" is an overused copywriting crutch.
+
+### BODY COPY — GOOD vs. BAD
+
+**GOOD Body (Confession Arc / EasyStretch):**
+"I have a drawer full of socks I can't wear. Some cost $40. Some were gifts. Every single one leaves marks so deep my husband thinks I'm having a reaction. Last month I counted — eleven pairs, bought over three years. Each one I bought thinking 'this will be different.' I was running out of options, and honestly, I was running out of hope."
+WHY IT WORKS: Uses the "closet graveyard" pattern from review data. Specific details ($40, eleven pairs, three years). The husband detail adds social dimension. "Running out of hope" — earned emotional weight, not stated emotion.
+
+**BAD Body (same concept):**
+"If you're like thousands of other women, you've struggled to find comfortable socks that don't leave marks. Regular socks just don't cut it when you have swelling or circulation issues. You've probably tried many different brands without success."
+WHY IT FAILS: "If you're like thousands" — generic targeting. "Regular socks just don't cut it" — cliché. "You've probably tried" — assumes instead of showing. No sensory detail. No story. Could be any product.
+
+**GOOD Body (Permission Narrative / Compression):**
+"Nobody told me I was allowed to have compression socks that looked like this. For six years, I hid my legs. Beige tubes under long pants in August. My daughter said I looked like I was in a hospital and I just… stopped going out. Then my nurse friend showed me her pair. Purple with little flowers. I said 'Those are compression socks?' She laughed. 'Girl, I wear these on 14-hour shifts.'"
+WHY IT WORKS: "Nobody told me I was allowed" — Permission language. Specific details (six years, beige tubes, August, purple with flowers, 14-hour shifts). Dialogue feels real. Hits the Medical Device Stigma fear. The nurse friend is social proof embedded in narrative.
+
+**BAD Body (same concept):**
+"Many people avoid compression socks because they think they're ugly. But Viasox has changed the game with stylish designs that look great while providing medical-grade support. With over 100 patterns to choose from, you'll never have to sacrifice style for comfort again."
+WHY IT FAILS: "Changed the game" — banned cliché. "Medical-grade" — over-medicalized. "100 patterns" is a feature list, not a story. "Sacrifice style for comfort" — generic ad language. No human voice, no scene, no emotion.
+
+### CTA — GOOD vs. BAD
+
+**GOOD CTA (TOF):**
+"See why 107,993 people stopped settling. Your feet already know what they need."
+WHY IT WORKS: Social proof number. "Stopped settling" frames the action as empowerment. "Your feet already know" — gentle, confident, body-wisdom language. Soft — no "buy now."
+
+**BAD CTA (TOF):**
+"Shop our bestselling collection today and experience the Viasox difference! Use code COMFORT20 for 20% off your first order!"
+WHY IT FAILS: TOF = soft CTA only. "Shop today" is hard sell. "Experience the difference" is meaningless. Promo code at TOF is premature — they don't know who you are yet.
+
+### AWARENESS LEVEL — STRUCTURAL DIFFERENCES (same product, same angle)
+
+**UNAWARE script opening (Neuropathy / EasyStretch):**
+"She reorganized her morning routine around one thing. Not breakfast. Not the kids. The ten minutes she needs to get dressed from the waist down. She doesn't talk about it. Her husband doesn't know it takes that long. But every morning, before anyone else is up, she sits on the edge of the bed and fights with her own feet."
+STRUCTURE: No product. No medical language. Pure story. Identification. The product doesn't appear until the final 20%.
+
+**PROBLEM AWARE script opening (same angle/product):**
+"The tingling starts before your feet even hit the floor. You know the feeling — that pins-and-needles burn that your doctor calls 'peripheral neuropathy' but you call 'my morning reminder that things aren't getting better.' You've tried the diabetic socks from the pharmacy. You've tried going barefoot. You've tried ignoring it."
+STRUCTURE: Names the problem immediately with sensory detail. Uses customer language ("pins-and-needles burn"). Acknowledges failed solutions (Cycle of False Hope). Product appears around 40%.
+
+**SOLUTION AWARE script opening (same angle/product):**
+"You already know you need non-binding socks. The question is — why do all of them feel like they were designed by someone who's never actually had neuropathy? Because here's what nobody tells you: non-binding and non-compressing are NOT the same thing."
+STRUCTURE: Assumes they know the solution category. Leads with DIFFERENTIATION — the mechanism gap. No problem setup needed. Product appears within the first 30%.`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Angle-Specific Customer Language Banks                             */
+/* ------------------------------------------------------------------ */
+
+export function getAngleLanguageBank(angle: string): string {
+  const banks: Record<string, string> = {
+    'Neuropathy': `## ANGLE LANGUAGE BANK: NEUROPATHY
+
+### How Customers Describe Their Pain (Use These EXACT Phrases)
+**Physical Sensations:**
+- "Tingling that never stops"
+- "Pins and needles — but not the kind that goes away"
+- "Burning on the bottoms of my feet"
+- "Feels like I'm walking on hot coals"
+- "Numbness that creeps up from my toes"
+- "Can't feel the floor / can't feel my feet"
+- "Like my feet are wrapped in cotton — but the bad kind"
+- "The buzzing" / "electric feeling" / "constant static"
+- "Sharp, stabbing pain that comes in waves"
+- "Hypersensitive — even the sheet on my feet at night hurts"
+
+**Daily Impact Language:**
+- "I dread the walk to the bathroom every morning"
+- "I have to look at my feet to know where they are"
+- "I stumble because I can't feel the ground"
+- "I'm afraid of stepping on something and not knowing"
+- "I check my feet every night for cuts I couldn't feel"
+- "I can't walk barefoot anymore"
+- "My balance is getting worse"
+- "I'm afraid to walk on uneven ground"
+
+**Emotional Language:**
+- "It's getting worse and that scares me"
+- "I'm afraid of what comes next" (progression fear)
+- "My doctor said it's permanent — that word destroyed me"
+- "I feel like my body is betraying me from the feet up"
+- "I used to love walking. Now I count steps."
+- "Nobody can see it. Nobody understands it."
+- "I look fine. My feet are screaming."
+
+**Sock-Specific Frustration:**
+- "Every sock I try makes it worse — they squeeze the nerves"
+- "Even diabetic socks feel too tight on bad days"
+- "I need something that barely touches me but still stays on"
+- "Seamless is the only thing I can tolerate"
+- "The seam across the toes is torture"
+
+**Transformation Language (post-Viasox):**
+- "First socks that don't aggravate my neuropathy"
+- "I forgot I was wearing them — and that's the best thing I can say"
+- "Gentle enough for my worst days"
+- "No pressure on the nerves. Finally."
+- "I can wear socks again without dreading it"
+
+### Words to AVOID for Neuropathy Ads
+- "Cure" / "heal" / "fix" (neuropathy is often permanent — never promise reversal)
+- "Compression" as a lead benefit (neuropathy patients fear compression = squeezing damaged nerves)
+- "High-performance" / "athletic" (misreads the audience completely)
+- "Mild discomfort" (minimizes their experience — it's NOT mild to them)
+- "Diabetic socks" as sole framing (not all neuropathy is diabetic)
+
+### Neuropathy-Specific Emotional Triggers for Ads
+1. **Progression Fear** — "What if I lose feeling entirely?" → Position Viasox as "protecting what you still have"
+2. **Invisible Suffering** — "I look fine but I'm not" → Validate the hidden struggle
+3. **The Barefoot Test** — The moment they realize they can't feel the floor → Recreate this scene
+4. **Night Pain** — Sheets touching feet, can't sleep → Evening relief angle
+5. **The Nerve Squeeze** — Regular socks compressing damaged nerves → "Finally socks that don't fight your nerves"`,
+
+    'Swelling': `## ANGLE LANGUAGE BANK: SWELLING (EDEMA)
+
+### How Customers Describe Their Pain (Use These EXACT Phrases)
+**Physical Sensations:**
+- "My legs swell up like balloons by afternoon"
+- "Ankles disappear by 3pm"
+- "Puffy feet that don't fit in shoes anymore"
+- "Heavy — like I'm carrying water bags on each leg"
+- "When I press my shin, the dent stays for minutes"
+- "Tight skin that feels like it might split"
+- "My feet look like loaves of bread"
+- "The throbbing starts around noon and just builds"
+- "Can see the outline of my socks for HOURS after taking them off"
+- "Deep red rings / grooves / channels in my legs"
+
+**Daily Impact Language:**
+- "I buy shoes a size up just to make it through the day"
+- "By lunchtime I'm already thinking about taking my socks off"
+- "I have morning shoes and afternoon shoes — two different sizes"
+- "I stopped wearing sandals because people stare"
+- "I elevate my legs the second I get home"
+- "I dread the afternoon. My legs just... expand."
+- "Flying is a nightmare — my ankles triple in size"
+- "I can't wear boots anymore. My calves won't fit by end of day."
+
+**Emotional Language:**
+- "I feel disgusting when my legs swell"
+- "I used to have nice ankles. Now I have... pillows."
+- "I avoid any situation where someone might see my legs"
+- "My husband pretends not to notice but I catch him looking"
+- "I feel like an old person and I'm only 48"
+- "Summer used to be my favorite season. Now I dread it."
+- "I just want to feel normal again"
+
+**Sock/Compression-Specific Frustration:**
+- "Regular socks just create a tourniquet effect"
+- "Compression socks were so hard to get on I gave up"
+- "The elastic digs in and makes the swelling WORSE above the sock"
+- "Tried support hose from the pharmacy — beige, ugly, impossible to get on"
+- "I need help just to get compression socks on"
+- "Everything either too tight (more marks) or too loose (no support)"
+
+**Transformation Language (post-Viasox):**
+- "The swelling went down by MORE THAN HALF the first day"
+- "No marks. For the first time in YEARS, no marks."
+- "I could see my ankles again by the second week"
+- "My shoes fit all day now"
+- "I forgot to elevate my legs because I didn't need to"
+- "I wore a skirt for the first time in three years"
+
+### Words to AVOID for Swelling Ads
+- "Water retention" as sole framing (feels clinical, not emotional)
+- "Edema" in hooks (customers say "swelling" — save medical terms for body copy)
+- "Bloated" (associated with stomach, confuses the issue)
+- "Fluid" on its own (too vague — say "the fluid that pools in your legs")
+- "Lymphatic" in TOF (too medical for cold audiences)
+
+### Swelling-Specific Emotional Triggers for Ads
+1. **The 3pm Dread** — The afternoon countdown when swelling peaks → Show the clock, the tight shoes, the relief fantasy
+2. **The Mark Reveal** — Taking off socks to find deep red grooves → This is the "before" scene that hits hardest
+3. **The Two-Size Life** — Owning shoes in two sizes → Relatable detail that signals you understand
+4. **Summer Shame** — Hiding legs in heat → Connect to dignity and social confidence
+5. **The Impossible Sock** — Can't get compression socks on, gave up → This is the entry point for "easy to put on" messaging`,
+
+    'Diabetes': `## ANGLE LANGUAGE BANK: DIABETES (FOOT CARE)
+
+### How Customers Describe Their Pain (Use These EXACT Phrases)
+**Physical Concerns:**
+- "My doctor said I need to protect my feet — that's not optional"
+- "I check my feet every night for cuts or sores"
+- "Can't feel small injuries — a blister could become a big problem"
+- "Circulation is the issue — anything too tight cuts off blood flow"
+- "My feet are always cold because of poor circulation"
+- "Dry, cracking skin on my feet that won't heal"
+- "I'm terrified of a foot wound that won't close"
+- "Tingling and numbness — diabetic neuropathy is getting worse"
+- "My toes are always cold, even in summer"
+
+**Daily Impact Language:**
+- "I can't just grab any socks — everything has to be diabetic-safe"
+- "I read labels on socks like I read labels on food"
+- "One wrong pair and I'm dealing with blisters for a week"
+- "Seams across the toes are the enemy"
+- "I need moisture-wicking or I get fungal infections"
+- "I have to be careful with EVERYTHING that touches my feet"
+- "My feet need more care than the rest of my body combined"
+- "I've spent more on socks in the last year than on regular clothes"
+
+**Emotional Language:**
+- "Diabetes takes everything, one body part at a time"
+- "My feet are the thing I worry about most"
+- "The fear of amputation is always in the back of my mind"
+- "I feel like I'm managing a ticking time bomb"
+- "I don't want socks that remind me I'm diabetic — I know I'm diabetic"
+- "Every pair of diabetic socks I've tried looks medical and feels worse"
+- "I want to feel normal. Just normal socks that are safe for me."
+- "My wife worries about my feet more than I do"
+
+**Sock-Specific Frustration:**
+- "Diabetic socks from the pharmacy are ugly, thin, and fall down"
+- "They say 'diabetic' on them. I don't want that."
+- "Either they're medical-looking or they're not actually safe"
+- "No one makes diabetic socks in patterns. It's always white or black."
+- "I need non-binding AND moisture-wicking AND seamless — that combination barely exists"
+- "Most so-called diabetic socks are just regular socks with a label"
+
+**Transformation Language (post-Viasox):**
+- "Finally, diabetic socks that don't LOOK like diabetic socks"
+- "It is exciting to do what the doctors have wanted me to do and it is no longer a struggle"
+- "Safe for my diabetes AND I actually like wearing them"
+- "My doctor approved them — that matters to me"
+- "I don't have to choose between my health and looking normal anymore"
+
+### Words to AVOID for Diabetes Ads
+- "Cure" / "treat" / "manage your diabetes" (socks don't manage diabetes)
+- "Medical device" / "clinical" / "therapeutic" (they want NORMAL, not medical)
+- "Diabetic" in the brand positioning (it's one feature, not the identity — lead with comfort)
+- "Blood sugar" as a sock benefit (socks don't affect blood sugar)
+- "Complication prevention" (too scary for TOF, too clinical overall)
+
+### Diabetes-Specific Emotional Triggers for Ads
+1. **The Normalization Desire** — "I just want normal socks that are safe for me" → Position comfort FIRST, diabetic safety as a bonus
+2. **The Doctor Mandate** — Doctor said "protect your feet" but didn't say HOW → Fill the knowledge gap with a warm recommendation
+3. **The Medical-Device Rebellion** — Refusing to look sick → Lead with style and patterns, reveal diabetic-safe SECOND
+4. **The Caregiver's Search** — Spouse/child looking for the right socks → Gift angle with care language
+5. **The Foot Check Ritual** — Nightly foot inspection routine → Show how the right socks reduce the anxiety of this ritual`,
+
+    'Varicose Veins': `## ANGLE LANGUAGE BANK: VARICOSE VEINS
+
+### How Customers Describe Their Pain (Use These EXACT Phrases)
+**Physical Sensations:**
+- "Visible veins that keep getting worse"
+- "Blue and purple ropes running down my legs"
+- "Spider veins spreading like a roadmap"
+- "Aching, heavy legs especially at end of day"
+- "Throbbing behind my knees"
+- "My legs feel like they weigh twice as much by evening"
+- "Burning along the vein lines"
+- "Itching over the veins — drives me crazy"
+- "Restless legs at night, can't get comfortable"
+- "Legs cramp up if I stand too long"
+
+**Daily Impact Language:**
+- "I haven't worn shorts in five years"
+- "I cross my legs to hide them in every meeting"
+- "Summer is my enemy — how do you hide legs in July?"
+- "I used to have great legs. Now I can't look at them."
+- "I cover my legs even at the beach"
+- "My daughter asked 'what's wrong with your legs, mommy?'"
+- "I cancelled a vacation because it was a pool resort"
+- "Standing at work all day makes them visibly worse by shift end"
+
+**Emotional Language:**
+- "I feel like my legs are aging faster than the rest of me"
+- "It's vanity AND pain — people dismiss the vanity part but it matters"
+- "I used to be confident. Now I plan every outfit around hiding my legs."
+- "My husband says he doesn't care but I care"
+- "I feel like I've lost a part of my femininity"
+- "Every new vein that appears feels like losing a battle"
+- "People think it's cosmetic. The pain is real."
+
+**Sock/Compression-Specific Frustration:**
+- "Compression stockings make me look like a grandma"
+- "The support hose my doctor recommended are UGLY"
+- "I can't get them on by myself — they're like wrestling a snake"
+- "They're hot, they roll down, they look terrible under anything"
+- "I need the support but I refuse to wear those things"
+- "Compression socks that actually look like normal socks? That doesn't exist... does it?"
+
+**Transformation Language (post-Viasox):**
+- "I can finally support my veins without looking like I'm in a hospital"
+- "The aching was noticeably better after the first full day"
+- "My legs don't throb anymore at the end of shifts"
+- "I wore a dress for the first time in years — the socks gave me confidence"
+- "Pretty AND functional — I didn't think that was possible in compression"
+
+### Words to AVOID for Varicose Veins Ads
+- "Ugly veins" / "hideous" (never insult the viewer's body)
+- "Vein disease" / "venous insufficiency" in hooks (too clinical for TOF)
+- "Old" / "aging" as descriptors (they already fear it — don't confirm)
+- "Cure varicose veins" (compression supports, it doesn't cure)
+- "Medical-grade compression" as a lead (triggers ugly-stockings association)
+
+### Varicose Veins-Specific Emotional Triggers for Ads
+1. **The Visibility Shame** — Hiding legs in every season → Show the liberation of not having to hide
+2. **Beauty + Function** — "I can't believe these are compression socks" → The reveal moment
+3. **The Aching Evening** — Legs throbbing after standing all day → Evening relief narrative
+4. **The Style Reclamation** — Wearing what they want again → Pair with confidence/dignity
+5. **The Dismissal** — "People say it's just cosmetic" → Validate that appearance AND pain both matter`,
+  };
+
+  // Default for any angle not in the bank
+  const defaultBank = `## ANGLE LANGUAGE BANK: ${angle.toUpperCase()}
+
+Focus on the specific symptoms, daily impact, emotional weight, and customer vocabulary associated with ${angle}. Use sensory details — what does this condition LOOK like, FEEL like, and how does it change someone's daily routine? What socks have they tried and why did those fail? What words do THEY use (not medical terms)?`;
+
+  return banks[angle] ?? defaultBank;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Product Deep Dives with Objection Banks                            */
+/* ------------------------------------------------------------------ */
+
+export function getProductObjectionBank(product: ProductCategory): string {
+  const banks: Record<ProductCategory, string> = {
+    'EasyStretch': `## PRODUCT OBJECTION BANK: EASYSTRETCH
+
+### Top Objections & Counter-Arguments
+
+**1. "They're just socks. Why would I pay $12/pair?"**
+Counter: "The average customer who switches to EasyStretch spends LESS per year on socks. They stop buying 3-4 failed pairs from the drugstore ($8-15 each) that end up in the sock graveyard. EasyStretch is the last pair they buy — 19.5% become repeat customers who collect 5-15+ pairs because they work."
+Proof: 19.5% repeat purchase rate. "Worth every penny" appears in 4,200+ reviews.
+
+**2. "How are these different from regular diabetic socks?"**
+Counter: "Most diabetic socks are thin, beige, medical-looking, and fall down. They check the medical box but fail on every comfort metric. EasyStretch was designed from the CUSTOMER experience backward — wide-mouth opening (you can actually get them on yourself), non-binding top (no marks, no tourniquet feeling), bamboo blend (softer than anything in a pharmacy), and 100+ patterns (you'd never guess they're diabetic-safe). The medical benefits are built IN, not bolted ON."
+Proof: 12.3% cite style/patterns as a primary reason. "Doesn't look medical" appears in 1,800+ reviews.
+
+**3. "I've tried 'comfortable' socks before. They all leave marks."**
+Counter: "That's the Cycle of False Hope — and we know it well because 3.1% of our reviews mention a 'drawer full of failed socks.' EasyStretch's non-binding bamboo top is engineered differently. It stays up through gentle grip, not elastic squeeze. 8.8% of reviews specifically mention 'no marks' — that's 3,385 people who had the same drawer of failures and found the exit."
+Proof: 8.8% (3,385 reviews) specifically cite no sock marks. Closet graveyard pattern in 689 reviews.
+
+**4. "Are they actually medical-grade? My doctor said I need diabetic socks."**
+Counter: "EasyStretch meets every criterion doctors specify for diabetic-safe socks: non-binding, seamless toe construction, moisture-wicking, no tight elastic. But unlike pharmacy diabetic socks, they're also genuinely comfortable and beautiful. Several customers report their doctors approving them after seeing them."
+Proof: 7.1% bought specifically on medical mandate. "Doctor recommended" / "doctor approved" in customer language.
+
+**5. "Will they actually fit? I have very swollen legs/wide calves."**
+Counter: "EasyStretch is designed for the bodies that other socks forget. The wide-mouth opening means you don't have to wrestle them on — they slide. The non-binding top means they don't create a tourniquet above the swelling. 12.7% of reviews specifically mention 'finally fits' — these are people who had given up on finding socks that accommodate their real body."
+Proof: 12.7% (4,847 reviews) cite "finally fits." Wide-mouth opening is the #1 accessibility feature.
+
+**6. "My [parent/spouse] needs help getting dressed. Will these help?"**
+Counter: "This is exactly why the wide-mouth opening exists. 9.3% of EasyStretch buyers are caregivers — adult children or spouses who were exhausted from the daily sock struggle. The most common feedback: 'My mother can put them on HERSELF now.' That's not just convenience — it's dignity for both of you."
+Proof: 9.3% caregiver purchase trigger. "Can do it myself" = independence restored.
+
+**7. "They'll probably stretch out and fall down after a few washes."**
+Counter: "The bamboo blend maintains its shape through wash cycles. 5.1% of reviews specifically mention 'stays up all day' — not through tight elastic (which creates marks) but through the fabric's natural grip. Customers report wearing the same pairs for 12+ months with no sagging."
+Proof: 5.1% (1,967 reviews) cite stays-up performance.
+
+### EasyStretch Proof Hierarchy (Strongest → Supporting)
+1. **No Marks** (8.8%, 3,385 reviews) — THE killer differentiator. Lead with this.
+2. **Finally Fits** (12.7%, 4,847) — For the size/swelling audience, this IS the message
+3. **Easy to Put On** (5.0%, 1,921) — For accessibility/independence, this IS the message
+4. **Style/Patterns** (12.3%, 4,694) — Against medical-device stigma, THIS is the counter
+5. **Comfort** (29.0%, 11,108) — Universal baseline, strongest frequency but least differentiating
+
+### EasyStretch Biggest Misconceptions to Proactively Address
+1. "Non-binding means they'll fall down" → Wrong. Non-binding = no elastic squeeze. They stay up through fabric grip.
+2. "These are compression socks" → NEVER call EasyStretch compression. They are the OPPOSITE — non-binding comfort socks.
+3. "Diabetic socks = ugly and thin" → EasyStretch breaks this assumption. 100+ patterns. Thicker bamboo blend.
+4. "I need help to put on any special sock" → Wide-mouth opening changes this. Independence is the value prop.
+
+### EasyStretch Transformation Metrics (Use in Scripts)
+- "Zero marks after 8 hours of wear" (derived from 8.8% no-marks data)
+- "Put them on myself for the first time in months" (from caregiver/independence data)
+- "I went from 0 comfortable pairs to ordering my 15th" (from collector behavior data)
+- "After 1 week my feet hurt about 90% less" (direct customer quote)
+- "No more morning sock struggle" (from 5.0% easy application data)`,
+
+    'Compression': `## PRODUCT OBJECTION BANK: COMPRESSION
+
+### Top Objections & Counter-Arguments
+
+**1. "Compression socks are impossible to get on."**
+Counter: "That's exactly what 11.4% of our customers said about EVERY compression sock they tried before Viasox. The reason most compression socks are hard to put on is poor design, not compression level. Viasox uses a graduated compression design with a wider opening that doesn't require the wrestling match. 'Easy to put on' jumped from 9.1% to 11.4% in our reviews — it's now a TOP 3 benefit."
+Proof: 11.4% (3,347 reviews) specifically cite easy application. This is the #2 solved pain point.
+
+**2. "Compression socks look like medical devices. I refuse to wear beige tubes."**
+Counter: "You're describing the OLD generation of compression socks. 12.0% of our reviews are from people who specifically mention escaping the 'beige tube' look. Viasox Compression comes in 100+ patterns — flowers, geometric, bold colors. Nurses wear them on 14-hour shifts and get compliments. These don't look like compression socks because they weren't designed to."
+Proof: 12.0% (3,523 reviews) cite style stigma eliminated. 15.8% bought specifically because of the style discovery.
+
+**3. "I tried compression before and it made things worse — too tight, too painful."**
+Counter: "Most compression socks use a one-size-squeezes-all approach. Viasox graduated compression is stronger at the ankle and gradually decreases up the leg — working WITH your circulation, not against it. 10.0% of reviews specifically mention solving the 'too tight' problem. If your last compression socks felt like tourniquets, they were designed wrong."
+Proof: 10.0% (2,936 reviews) cite "too tight" problem solved. Graduated compression vs. uniform squeeze.
+
+**4. "Compression socks are for old/sick people. I don't need medical socks."**
+Counter: "The fastest-growing segment buying Viasox Compression is healthcare workers on 12-hour shifts and people who stand all day. This isn't about being sick — it's about legs that work as hard as you do. 7.5% of reviews are from people who need their legs to perform at work. Nurses, teachers, retail workers, servers."
+Proof: 7.5% work-related purchases. 7.4% "work crisis" as purchase trigger.
+
+**5. "$30 for socks? That's expensive."**
+Counter: "Track the price journey our customers take: '$30 for socks seemed crazy' → 'I decided to try one pair' → 'Worth every penny' → 'I now own 15 pairs.' The math: a $30 pair that lasts 12+ months vs. 4 drugstore pairs at $8-12 that fail within weeks. The real cost is the sock graveyard — all the money you've already wasted on socks that didn't work."
+Proof: 19.5% become repeat customers (collector behavior). "Worth every penny" in 4,200+ reviews. Average repeat customer owns 5-15 pairs.
+
+**6. "How do I know what compression level I need?"**
+Counter: "Viasox compression is designed for everyday wear — the level that helps circulation and reduces swelling without requiring a prescription or medical fitting. If your doctor prescribed specific mmHg, check with them. But for the 93% of customers who buy for daily comfort, work endurance, or swelling management — Viasox is the sweet spot between 'too loose to help' and 'too tight to wear.'"
+Proof: Only 0.45% mention doctor recommendation — vast majority are self-selecting for comfort, not medical prescription.
+
+**7. "Will they last? I'm buying for daily wear / long shifts."**
+Counter: "7.5% of our compression reviews come from people wearing them on full work shifts — 8, 10, 14 hours. They report consistent compression throughout the day, no rolling down, no losing shape. 19.5% become repeat buyers who rotate multiple pairs for daily use."
+Proof: 7.5% work endurance testimonials. 19.5% repeat/collector rate.
+
+### Compression Proof Hierarchy (Strongest → Supporting)
+1. **Easy to Put On** (11.4%, 3,347 reviews) — THE differentiator vs. all other compression brands
+2. **Style/No Stigma** (12.0%, 3,523) — Against the "medical device" perception, this wins
+3. **Too-Tight Solved** (10.0%, 2,936) — For burned-by-compression audience, this IS the message
+4. **Work Endurance** (7.5%, 2,202) — For professional/shift-worker audience
+5. **Comfort** (29.0%, 8,513) — Universal baseline
+
+### Compression Biggest Misconceptions to Proactively Address
+1. "All compression socks feel like tourniquets" → Graduated compression ≠ uniform squeeze
+2. "Compression socks = old people socks" → Fastest growth is nurses, teachers, athletes
+3. "If they're easy to put on, the compression must be weak" → Engineering, not force
+4. "I need a prescription" → 93%+ buy without prescription for daily comfort
+
+### Compression Transformation Metrics (Use in Scripts)
+- "No swelling at end of shift" (from work endurance data)
+- "My legs don't ache at 3pm anymore" (from afternoon relief pattern)
+- "I wore a skirt for the first time in three years" (from style stigma data)
+- "I went from dreading putting them on to forgetting they're compression" (from easy application data)
+- "The swelling went down by MORE THAN HALF the first day" (direct customer quote)`,
+
+    'Ankle Compression': `## PRODUCT OBJECTION BANK: ANKLE COMPRESSION
+
+### Top Objections & Counter-Arguments
+
+**1. "Ankle-length compression can't be as effective as knee-high."**
+Counter: "Ankle compression targets the area where most swelling concentrates — the foot and ankle. For localized swelling (12.0% of reviews), ankle-length compression directly addresses the problem zone. Not everyone needs full-leg compression. If your swelling is concentrated below the calf, ankle compression gives you targeted support without the heat, hassle, and knee-high commitment."
+Proof: 12.0% (2,367 reviews) cite localized swelling as primary pain point. Only 0.06% migrated from knee-highs.
+
+**2. "These are just regular ankle socks with a marketing label."**
+Counter: "Graduated compression in ankle socks is engineered differently from regular ankle socks — the compression is concentrated around the arch and ankle where it matters most. 27.6% of reviews mention comfort that goes beyond what regular socks provide. The difference is measurable in how your feet feel after 8 hours standing."
+Proof: 27.6% comfort achieved. 5.5% work-related fatigue solved.
+
+**3. "I need full compression socks for my condition."**
+Counter: "For many conditions, ankle compression is the ENTRY POINT — not a compromise. 31.2% of our ankle compression customers bought for general comfort, discovering the benefits of compression for the first time. Only 0.06% already owned knee-highs. This isn't a downgrade — for most people, it's where compression begins."
+Proof: Gateway product insight — 0.06% crossover from knee-highs. 26.5% targeted need purchases.
+
+**4. "Will these work with my shoes / work dress code?"**
+Counter: "That's exactly why 3.9% of reviews specifically mention discreet wear — ankle compression fits inside any shoe without showing. No knee-high sock lines under pants, no visible compression. 8.3% cite fashion/style appeal. They work with sneakers, dress shoes, loafers — anything you'd wear regular ankle socks with."
+Proof: 3.9% (771 reviews) cite discreet wear. 8.3% (1,635) style appeal.
+
+**5. "They'll be too hot in summer."**
+Counter: "This is one of the top reasons people switch FROM knee-highs TO ankle compression. 4.0% of reviews specifically mention solving heat intolerance, and 3.7% cite seasonal need as their purchase trigger. When it's 90 degrees and you still need support, ankle-length compression is the answer."
+Proof: 4.0% (790 reviews) heat intolerance solved. 3.6% seasonal shift as trigger.
+
+**6. "I'm pregnant — is ankle compression safe and enough for me?"**
+Counter: "Pregnancy swelling concentrates in feet and ankles — exactly where ankle compression targets. The current 0.48% of reviews mentioning pregnancy represents a massively underserved segment. Ankle compression provides the support without the full-leg squeeze that becomes uncomfortable as pregnancy progresses."
+Proof: 0.48% pregnancy segment — underexploited opportunity.
+
+**7. "I'm on my feet all day at work. Will ankle socks give enough support?"**
+Counter: "5.5% of ankle compression reviews come from people solving work-related fatigue. Nurses, teachers, retail workers — people who need foot and ankle support but can't (or won't) wear knee-highs on shift. Healthcare workers are 0.45% of reviews and growing — another major underserved segment."
+Proof: 5.5% (1,079 reviews) work-related fatigue. 7.5% professional imperative trigger.
+
+### Ankle Compression Proof Hierarchy (Strongest → Supporting)
+1. **Localized Swelling Relief** (12.0%, 2,367) — THE core value proposition
+2. **Fashion/Style** (8.3%, 1,635) — This is a FASHION product that happens to compress
+3. **Work Fatigue Solved** (5.5%, 1,079) — For the professional audience
+4. **Heat/Season Solution** (4.0%, 790) — Summer compression alternative
+5. **Discreet Wear** (3.9%, 771) — Invisible support, any shoe
+
+### Ankle Compression Biggest Misconceptions to Proactively Address
+1. "Ankle = less effective" → Ankle = TARGETED for where most swelling occurs
+2. "This is a compromise product" → This is a GATEWAY product that reaches people who'd never try knee-highs
+3. "Compression socks have to be tall" → Only if your problem is above the ankle
+4. "These are just for summer" → Year-round product for targeted support + shoe versatility
+
+### Ankle Compression Transformation Metrics (Use in Scripts)
+- "My ankles looked normal again by the second week" (from localized swelling data)
+- "I can wear my favorite shoes again" (from discreet wear data)
+- "No more end-of-shift foot throb" (from work fatigue data)
+- "Summer compression without the heat trap" (from seasonal data)
+- "I didn't even know ankle compression existed — now I own 8 pairs" (from gateway insight)
+
+### Ankle Compression: Segment × Product Intersections
+- **Healthcare Workers** → "Invisible compression under scrubs and work shoes. No one knows you're wearing support."
+- **Pregnant Women** → "Ankle support that grows with you. No wrestling with knee-highs at 8 months."
+- **Seniors** → "Easy to reach, easy to put on. Ankle-height means no bending to your knees."
+- **Travelers** → "Flight socks that don't scream 'compression.' Pack light, support your ankles on long flights."
+- **Standing Workers** → "8 hours on your feet. Your ankles absorb every minute. Give them backup."`,
+
+    'Other': `## PRODUCT OBJECTION BANK: GENERAL
+
+Common objections across all Viasox products:
+1. Price → "Worth every penny" (4,200+ reviews). Cost per wear is lower than drugstore alternatives.
+2. "Just socks" → 107,993 reviews and 19.5% repeat purchase rate say otherwise.
+3. Skepticism → 624 skeptic-to-believer reviews averaging 4.6 stars.
+4. Medical concerns → Designed with medical needs in mind but looks/feels like premium regular socks.`,
+  };
+
+  return banks[product] ?? banks['Other'];
+}
+
+/* ------------------------------------------------------------------ */
+/*  Segment × Product Intersection Matrix                              */
+/* ------------------------------------------------------------------ */
+
+export function getSegmentProductMatrix(): string {
+  return `## SEGMENT × PRODUCT INTERSECTION MATRIX
+
+Different customer segments enter differently for each product. This matrix defines HOW to speak to each segment × product combination.
+
+### HEALTHCARE WORKERS (Nurses, Aides, Standing Professionals)
+- **+ EasyStretch:** "12-hour shifts destroy your feet. These are the socks nurses pass around the break room." Entry: work endurance, word-of-mouth. Key proof: "No marks after a double shift."
+- **+ Compression:** "Your legs carry the weight of everyone you care for. Graduated compression that works as hard as you do." Entry: professional necessity. Key proof: "No swelling at end of shift."
+- **+ Ankle Compression:** "Invisible support under scrubs. No one knows — but your feet do." Entry: discreet professional wear. Key proof: "No more end-of-shift throb."
+
+### SENIORS (65+, Independence-Focused)
+- **+ EasyStretch:** "The wide-mouth opening means you don't need to ask for help. Put them on yourself — every single morning." Entry: independence preservation. Key proof: "My mother can do it herself now."
+- **+ Compression:** "Support your legs without the pharmacy-aisle struggle. Slides on. No wrestling. Real compression." Entry: ease + efficacy. Key proof: "Easy to put on AND actually works."
+- **+ Ankle Compression:** "Reach your feet, not your knees. Ankle-height compression for bodies that don't bend like they used to." Entry: accessibility + targeted support. Key proof: "I can reach these myself."
+
+### CAREGIVERS (Adult Children, Spouses Buying for Others)
+- **+ EasyStretch:** "Give them back their independence. Give yourself back your mornings." Entry: dual benefit (wearer + caregiver). Key proof: "She can dress herself again."
+- **+ Compression:** "The socks you stop worrying about. They're wearing support, they look great, and they didn't need your help to put them on." Entry: peace of mind. Key proof: "I stopped getting the 'can you help me' call."
+- **+ Ankle Compression:** "Easy enough for them to manage alone. Supportive enough that you stop worrying." Entry: low-intervention care. Key proof: "Dad puts them on without me."
+
+### SKEPTICS / CYCLE-OF-FALSE-HOPE (Burned by Past Purchases)
+- **+ EasyStretch:** "You have a drawer full of failures. We know — 3.1% of our reviews mention that exact drawer. This is the pair that ends the cycle." Entry: shared understanding of defeat. Key proof: 689 "closet graveyard" reviews.
+- **+ Compression:** "You 'tried compression before.' But you tried the OLD kind. 10.0% of our reviews say the same thing — and then they found these." Entry: differentiation from past failures. Key proof: 10.0% "too tight solved" reviews.
+- **+ Ankle Compression:** "If you've given up on compression because knee-highs were too much, this is the re-entry point." Entry: second chance at compression. Key proof: 0.06% crossover — 99.94% are NEW to compression.
+
+### STYLE-CONSCIOUS (Fashion + Function Seekers)
+- **+ EasyStretch:** "100+ patterns. Your friends will ask where you got them. You'll casually mention they're also diabetic-safe." Entry: style discovery. Key proof: 12.3% cite patterns as primary driver.
+- **+ Compression:** "Compression socks that get compliments — not concerned looks. This is what medical support looks like in 2026." Entry: anti-stigma style revolution. Key proof: 12.0% style stigma eliminated.
+- **+ Ankle Compression:** "Ankle socks that actually do something. The style you want with the support you need." Entry: fashion-forward compression. Key proof: 8.3% fashion/style appeal.`;
+}
