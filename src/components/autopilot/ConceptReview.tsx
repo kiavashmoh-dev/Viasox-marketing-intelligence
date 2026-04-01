@@ -208,8 +208,12 @@ export default function ConceptReview({ tasks, onApprove, onRegenerateConcepts, 
     return init;
   });
 
-  const tasksWithConcepts = tasks.filter((ts) => ts.conceptOptions && ts.conceptOptions.length > 0);
-  const allSelected = tasksWithConcepts.every((_, i) => selections[i] !== undefined);
+  // Track tasks with concepts by their ORIGINAL index
+  const readyIndices = tasks
+    .map((ts, i) => (ts.conceptOptions && ts.conceptOptions.length > 0 ? i : -1))
+    .filter((i) => i >= 0);
+  const erroredTasks = tasks.filter((ts) => ts.step === 'error');
+  const allSelected = readyIndices.length > 0 && readyIndices.every((i) => selections[i] !== undefined);
 
   const handleApprove = () => {
     const result = Object.entries(selections).map(([idx, conceptIdx]) => ({
@@ -234,6 +238,24 @@ export default function ConceptReview({ tasks, onApprove, onRegenerateConcepts, 
         </div>
       </div>
 
+      {/* Errored tasks banner */}
+      {erroredTasks.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="text-sm font-semibold text-amber-800 mb-1">
+            {erroredTasks.length} brief{erroredTasks.length > 1 ? 's' : ''} failed during concept generation
+          </div>
+          {erroredTasks.map((ts, i) => (
+            <div key={i} className="text-xs text-amber-700 mt-1">
+              <span className="font-medium">{ts.task.parsed.name}:</span>{' '}
+              {ts.error || 'Unknown error'}
+            </div>
+          ))}
+          <p className="text-xs text-amber-600 mt-2">
+            You can proceed with the {readyIndices.length} successful brief{readyIndices.length !== 1 ? 's' : ''} below.
+          </p>
+        </div>
+      )}
+
       {/* Per-task concept review */}
       {tasks.map((ts, i) => (
         ts.conceptOptions && ts.conceptOptions.length > 0 ? (
@@ -257,8 +279,8 @@ export default function ConceptReview({ tasks, onApprove, onRegenerateConcepts, 
           className="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {allSelected
-            ? `Approve ${tasksWithConcepts.length} Concepts — Generate Briefs`
-            : `Select concepts for all ${tasksWithConcepts.length} briefs to continue`}
+            ? `Approve ${readyIndices.length} Concept${readyIndices.length !== 1 ? 's' : ''} — Generate Briefs`
+            : `Select concepts for all ${readyIndices.length} brief${readyIndices.length !== 1 ? 's' : ''} to continue`}
         </button>
         <p className="text-[10px] text-slate-400 text-center mt-2">
           Once approved, the script writer will generate full briefs using your selected concepts and the strategy brief.
