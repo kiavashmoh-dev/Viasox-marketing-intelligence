@@ -102,6 +102,127 @@ function mapAwarenessLevel(angle: string, _medium: string): AwarenessLevel {
   return 'Unaware';
 }
 
+/**
+ * Dynamically select the best persona for this task based on the angle,
+ * product, and awareness level.
+ *
+ * The persona is drawn from Viasox's real customer segments (identified
+ * from 107,993 reviews) and product-specific persona hierarchies. The
+ * selection follows this priority:
+ *
+ * 1. If the angle maps to a specific IDENTITY segment (nurse, senior,
+ *    caregiver, pregnant), use that segment × product persona.
+ * 2. If the angle is a medical condition, match to the persona most
+ *    likely to experience it (e.g., Diabetes → Beth the Quiet Fighter
+ *    managing a daily condition).
+ * 3. If the angle is lifestyle/situational, match to the persona whose
+ *    life situation aligns (e.g., Travel → Linda the Practical Optimist
+ *    researching solutions).
+ * 4. Rotate between primary archetypes to maintain diversity.
+ */
+function mapPersona(angle: string, product: ProductCategory, _awarenessLevel: AwarenessLevel): string {
+  const lower = angle.toLowerCase();
+
+  // ── Identity-specific personas (angle IS the persona) ──────────────
+  if (lower.includes('nurse') || lower.includes('healthcare') || lower.includes('standing')) {
+    switch (product) {
+      case 'EasyStretch': return 'Healthcare Worker (Nurse/Aide) — woman 50+, on her feet 12-hour shifts. Entry: work endurance. "These are the socks nurses pass around the break room."';
+      case 'Compression': return 'Healthcare Worker (Nurse/Aide) — woman 50+, legs carrying the weight of everyone she cares for. Entry: professional necessity. Graduated compression that works as hard as she does.';
+      case 'Ankle Compression': return 'Healthcare Worker (Nurse/Aide) — woman 50+, needs invisible support under scrubs. Entry: discreet professional wear. No one knows — but her feet do.';
+      default: return 'Healthcare Worker (Nurse/Aide) — woman 50+, on her feet all day. Needs socks that perform through a 12-hour shift without marks or fatigue.';
+    }
+  }
+
+  if (lower.includes('senior') || lower.includes('elder') || lower.includes('aging') || lower.includes('independen')) {
+    switch (product) {
+      case 'EasyStretch': return 'Beth the Quiet Fighter — woman 65+, lives with daily discomfort but won\'t complain. The wide-mouth opening means she doesn\'t need to ask for help. Independence is everything.';
+      case 'Compression': return 'Beth the Quiet Fighter — woman 65+, needs support but refuses to struggle with pharmacy compression. Entry: ease + efficacy. "Easy to put on AND actually works."';
+      case 'Ankle Compression': return 'Beth the Quiet Fighter — woman 65+, body doesn\'t bend like it used to. Ankle-height means she can reach her feet herself. Entry: accessibility + targeted support.';
+      default: return 'Beth the Quiet Fighter — woman 65+, lives with daily discomfort silently. Puts others first. When she finds something that works, she\'s quietly loyal.';
+    }
+  }
+
+  if (lower.includes('caregiv') || lower.includes('gift') || lower.includes('mother') || lower.includes('father')) {
+    switch (product) {
+      case 'EasyStretch': return 'Caregiver (Adult Daughter) — woman 50+, buying for her mother. "Give her back her independence. Give yourself back your mornings." Dual benefit: wearer + caregiver.';
+      case 'Compression': return 'Caregiver (Adult Daughter) — woman 50+, tired of the daily "can you help me" call. Wants socks her mother can wear without help. Entry: peace of mind.';
+      case 'Ankle Compression': return 'Caregiver (Adult Daughter) — woman 50+, wants something easy enough for her parent to manage alone. Entry: low-intervention care.';
+      default: return 'Caregiver (Adult Daughter) — woman 50+, buying for a parent. The unspoken truth: she\'s exhausted too. Needs a solution for both of them.';
+    }
+  }
+
+  if (lower.includes('pregnan') || lower.includes('expecting')) {
+    return 'Expecting Mother — woman experiencing pregnancy swelling in feet and ankles. Needs support without full-leg squeeze that becomes uncomfortable as pregnancy progresses. Ankle compression is the entry point.';
+  }
+
+  // ── Medical condition personas ─────────────────────────────────────
+  if (lower.includes('neuropath')) {
+    return 'Beth the Quiet Fighter — woman 55+, living with diabetic peripheral neuropathy. Daily reality: tingling, numbness, burning in feet. Fear of progression. Needs non-binding comfort that doesn\'t aggravate nerve pain. She doesn\'t want to be seen as sick.';
+  }
+
+  if (lower.includes('diabet')) {
+    return 'Beth the Quiet Fighter — woman 55+, managing diabetes daily. Checks her feet every morning. Doctor told her to wear diabetic socks — but the medical-looking ones make her feel old and sick. Needs diabetic-safe design that looks and feels like normal socks.';
+  }
+
+  if (lower.includes('varicose') || lower.includes('spider vein')) {
+    return 'Linda the Practical Optimist — woman 55+, visible veins she\'s self-conscious about. Has researched compression but hates the ugly beige tubes. Avoids shorts and skirts. Wants medical function without medical-device appearance.';
+  }
+
+  if (lower.includes('swell') || lower.includes('edema') || lower.includes('lymph')) {
+    return 'Beth the Quiet Fighter — woman 55+, ankles swollen by end of day. Sock marks that take hours to fade. Has tried "extra wide" socks that still leave marks. Doesn\'t complain about it, but it\'s the first thing she notices every evening.';
+  }
+
+  if (lower.includes('dvt') || lower.includes('blood clot') || lower.includes('circulat')) {
+    return 'Linda the Practical Optimist — woman 55+, managing a circulation condition. Researches everything. Reads every review. Doctor recommended compression but pharmacy options are uncomfortable and hard to put on. She values specifics over emotion.';
+  }
+
+  if (lower.includes('plantar') || lower.includes('foot pain') || lower.includes('arch')) {
+    return 'Beth the Quiet Fighter — woman 55+, first steps every morning are painful. Has tried insoles, stretches, everything. The foot pain is a daily reminder. Doesn\'t talk about it much, but it shapes every decision about shoes and activity.';
+  }
+
+  if (lower.includes('sock mark') || lower.includes('mark')) {
+    return 'Linda the Practical Optimist — woman 55+, tired of red rings on her legs at the end of every day. Sees the marks as proof her body is changing. Has a drawer full of failed socks. Ready to try something different but needs convincing evidence.';
+  }
+
+  // ── Lifestyle/situational personas ─────────────────────────────────
+  if (lower.includes('travel') || lower.includes('flight') || lower.includes('vacation')) {
+    return 'Linda the Practical Optimist — woman 55+, planning a trip and researching how to prevent leg swelling on long flights. Reads reviews carefully. Wants something that works AND fits in her luggage without looking medical at the resort.';
+  }
+
+  if (lower.includes('comfort') || lower.includes('relief') || lower.includes('freedom')) {
+    return 'Beth the Quiet Fighter — woman 55+, has normalized her discomfort for years. "It\'s just part of getting older." Doesn\'t know how much better it could be. When she finds relief, the emotional response is disproportionate — because she\'d stopped hoping.';
+  }
+
+  if (lower.includes('style') || lower.includes('fashion') || lower.includes('pattern')) {
+    return 'Style-Conscious — woman 55+, refuses to wear anything that looks medical or institutional. Patterns and colors matter. "Why should I have to hide my socks?" Wants compression that gets compliments, not concerned looks.';
+  }
+
+  // ── Negative Marketing / Education personas ────────────────────────
+  if (lower.includes('negative') || lower.includes('scandal') || lower.includes('myth') ||
+      lower.includes('lie') || lower.includes('expose') || lower.includes('exposé')) {
+    return 'Linda the Practical Optimist — woman 55+, skeptical and research-driven. Has been burned by products that overpromise. Responds to exposé-style content because it matches how she already thinks: "I knew something was off." Validation through evidence.';
+  }
+
+  if (lower.includes('educat') || lower.includes('science') || lower.includes('how') ||
+      lower.includes('reason') || lower.includes('sign')) {
+    return 'Linda the Practical Optimist — woman 55+, the researcher. Wants to understand WHY something works, not just that it does. Reads the full product page, checks the science, compares options. Informational content converts her because it respects her intelligence.';
+  }
+
+  // ── Default: rotate based on product ───────────────────────────────
+  // Use product to determine default persona since different products
+  // attract different primary segments
+  switch (product) {
+    case 'EasyStretch':
+      return 'Beth the Quiet Fighter — woman 55+, lives with daily discomfort but doesn\'t complain. Has a drawer full of failed socks. Puts others first. When she finds something that works, she\'s quietly loyal and tells everyone.';
+    case 'Compression':
+      return 'Linda the Practical Optimist — woman 55+, has accepted she needs compression but refuses to accept it has to look and feel medical. Researches everything. Skeptical but hopeful. When convinced, she becomes an evangelist.';
+    case 'Ankle Compression':
+      return 'Skeptic / Cycle-of-False-Hope — woman 55+, has given up on compression because knee-highs were too much. Doesn\'t know ankle compression exists as a category. This is her re-entry point to compression therapy.';
+    default:
+      return 'Beth the Quiet Fighter — woman 55+, lives with daily discomfort silently. Doesn\'t ask for help. When she finds something that genuinely works, her quiet loyalty turns into quiet evangelism.';
+  }
+}
+
 function mapDuration(medium: string): '15s' | '30s' | '60s' {
   const lower = medium.toLowerCase();
   if (lower.includes('short')) return '15s';
@@ -122,10 +243,11 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
   const duration = mapDuration(parsed.medium);
   const angleType = mapAngleType(parsed.angle);
   const awarenessLevel = mapAwarenessLevel(parsed.angle, parsed.medium);
+  const persona = mapPersona(parsed.angle, product, awarenessLevel);
 
   const scriptParamsBase: Omit<ScriptParams, 'framework' | 'conceptAngleContext'> = {
     product,
-    persona: '',
+    persona,
     duration,
     funnelStage: 'TOF',
     awarenessLevel,
