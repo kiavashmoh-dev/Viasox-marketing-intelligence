@@ -8,16 +8,15 @@ const DIRECT_URL = 'https://api.anthropic.com/v1/messages';
  * Opus with large outputs can take 5-8+ minutes; Sonnet is faster.
  * Scale: base 3 min + 30s per 1K tokens for Opus, base 2 min + 15s per 1K tokens for Sonnet.
  */
-function computeTimeout(model: string, maxTokens: number): number {
+function computeTimeout(model: string, _maxTokens: number): number {
   const isOpus = model.includes('opus');
   if (isOpus) {
     // Opus with massive system prompts can be very slow under load.
-    // Fixed 20 minutes for all Opus calls
-    return 1_200_000;
+    // Fixed 30 minutes for all Opus calls
+    return 1_800_000;
   }
-  // Sonnet: base 3 minutes + 15s per 1K output tokens, min 3 min, max 8 min
-  const ms = 180_000 + Math.ceil(maxTokens / 1000) * 15_000;
-  return Math.max(180_000, Math.min(ms, 480_000));
+  // Sonnet: fixed 15 minutes
+  return 900_000;
 }
 
 export async function sendMessage(
@@ -105,17 +104,17 @@ export async function sendMessage(
 
   cleanup();
 
-  // Retry logic for 429 (rate limited) and 529 (overloaded) — up to 5 retries with exponential backoff
+  // Retry logic for 429 (rate limited) and 529 (overloaded) — up to 8 retries with exponential backoff
   if (response.status === 429 || response.status === 529) {
-    const MAX_RETRIES = 5;
+    const MAX_RETRIES = 8;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       if (effectiveSignal.aborted) {
         throw new Error(timedOut
           ? `API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`
           : 'Request was cancelled.');
       }
-      // Exponential backoff: 8s, 16s, 32s, 64s, 128s + jitter
-      const delayMs = Math.min(8000 * Math.pow(2, attempt - 1), 120_000) + Math.random() * 3000;
+      // Exponential backoff: 15s, 30s, 60s, 120s, 180s, 180s, 180s, 180s + jitter
+      const delayMs = Math.min(15000 * Math.pow(2, attempt - 1), 180_000) + Math.random() * 5000;
       console.log(`API ${response.status} — retrying in ${Math.round(delayMs / 1000)}s (attempt ${attempt}/${MAX_RETRIES})`);
       await new Promise((r) => setTimeout(r, delayMs));
       if (effectiveSignal.aborted) {
@@ -139,10 +138,10 @@ export async function sendMessage(
   if (!response.ok) {
     const errText = await response.text();
     if (response.status === 429) {
-      throw new Error('Rate limited after 5 retries. The API is congested — please wait a few minutes and try again.');
+      throw new Error('Rate limited after 8 retries. The API is congested — please wait a few minutes and try again.');
     }
     if (response.status === 529) {
-      throw new Error('API overloaded after 5 retries. Anthropic servers are at capacity — please wait a few minutes and try again.');
+      throw new Error('API overloaded after 8 retries. Anthropic servers are at capacity — please wait a few minutes and try again.');
     }
     if (response.status === 401) {
       throw new Error('Invalid API key. Please check your Anthropic API key.');

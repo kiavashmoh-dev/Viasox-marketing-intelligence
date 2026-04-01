@@ -39,7 +39,7 @@ import { saveCompletedBatchToMemory } from './memoryExtractor';
 // ─── All creative agents use Opus ────────────────────────────────────────────
 
 const OPUS = 'claude-opus-4-6';
-const INTER_CALL_DELAY = 5000;
+const INTER_CALL_DELAY = 8000;
 
 const VALID_FRAMEWORKS: ScriptFramework[] = [
   'PAS (Problem-Agitate-Solution)',
@@ -82,7 +82,7 @@ function delay(ms: number): Promise<void> {
 }
 
 /**
- * Wrapper around sendMessage that auto-retries once on timeout errors.
+ * Wrapper around sendMessage that auto-retries twice on timeout or overload errors.
  * Pipeline tasks should not fail just because a single API call was slow.
  */
 async function sendMessageWithRetry(
@@ -93,19 +93,21 @@ async function sendMessageWithRetry(
   model: string,
   signal: AbortSignal,
 ): Promise<string> {
-  try {
-    return await sendMessage(system, user, apiKey, maxTokens, model, signal);
-  } catch (err) {
-    // Only retry on timeout errors, not user cancellation or auth errors
-    const msg = err instanceof Error ? err.message : '';
-    if (msg.includes('timed out')) {
-      console.log('API call timed out — retrying once after 5s delay...');
-      await delay(5000);
-      if (signal.aborted) throw new Error('Pipeline cancelled');
+  const MAX_ATTEMPTS = 3;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
       return await sendMessage(system, user, apiKey, maxTokens, model, signal);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      const isRetryable = msg.includes('timed out') || msg.includes('overloaded') || msg.includes('Rate limited');
+      if (!isRetryable || attempt === MAX_ATTEMPTS) throw err;
+      const waitMs = attempt * 15000 + Math.random() * 5000;
+      console.log(`Pipeline retry ${attempt}/${MAX_ATTEMPTS - 1} — waiting ${Math.round(waitMs / 1000)}s...`);
+      await delay(waitMs);
+      if (signal.aborted) throw new Error('Pipeline cancelled');
     }
-    throw err;
   }
+  throw new Error('Unreachable');
 }
 
 function getMaxTokensForDuration(duration: string): number {
@@ -412,7 +414,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
 
   if (failedIndices.length > 0 && !signal.aborted) {
     console.log(`Auto-retrying ${failedIndices.length} failed task(s) after 15s cooldown...`);
-    await delay(15_000);
+    await delay(30_000);
 
     for (const i of failedIndices) {
       if (signal.aborted) throw new Error('Pipeline cancelled');
@@ -608,7 +610,7 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
 
   if (failedScriptIndices.length > 0 && !signal.aborted) {
     console.log(`Auto-retrying ${failedScriptIndices.length} failed script task(s) after 15s cooldown...`);
-    await delay(15_000);
+    await delay(30_000);
 
     for (const i of failedScriptIndices) {
       if (signal.aborted) throw new Error('Pipeline cancelled');
