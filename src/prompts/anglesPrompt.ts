@@ -209,7 +209,7 @@ function buildProductLineGuide(product: ProductCategory): string {
 
 **PRODUCT IDENTITY:** EasyStretch is Viasox's COMFORT-FIRST line. These are non-binding, non-compression socks designed for people who need maximum comfort without any constriction. They are NOT compression socks.
 
-**PRIMARY AUDIENCE:** Diabetics, neuropathy patients, seniors, people with edema, anyone who has experienced painful sock marks, swelling, or circulation issues from regular socks.
+**PRIMARY AUDIENCE:** Women 50+ — diabetics, neuropathy patients, seniors, people with edema, anyone who has experienced painful sock marks, swelling, or circulation issues from regular socks.
 
 **CORE MESSAGING PILLARS (in priority order):**
 1. **No Sock Marks / No Constriction** — The #1 selling point. Emphasize the non-binding top that eliminates red marks and indentations.
@@ -233,7 +233,7 @@ function buildProductLineGuide(product: ProductCategory): string {
 
 **PRODUCT IDENTITY:** Viasox Compression is the PERFORMANCE + MEDICAL line. These are true graduated compression socks (15-20 mmHg) designed for people who need active circulatory support — but with the comfort and style that Viasox is known for.
 
-**PRIMARY AUDIENCE:** Healthcare workers (nurses, doctors), standing workers (retail, warehouse, teachers), travelers, post-surgery recovery, people with chronic venous insufficiency, athletes, pregnant women.
+**PRIMARY AUDIENCE:** Women 50+ with swelling/edema/varicose veins, healthcare workers (nurses on 12-hour shifts), standing workers (retail, warehouse, teachers), travelers, post-surgery recovery, people with chronic venous insufficiency.
 
 **CORE MESSAGING PILLARS (in priority order):**
 1. **Real Compression, Real Comfort** — Medical-grade graduated compression that DOESN'T feel like a tourniquet. This is the key differentiator vs. pharmacy compression.
@@ -257,25 +257,24 @@ function buildProductLineGuide(product: ProductCategory): string {
 
 **PRODUCT IDENTITY:** Viasox Ankle Compression is the TARGETED SUPPORT line. These are ankle-length graduated compression socks for people who want compression benefits in a low-profile, versatile format.
 
-**PRIMARY AUDIENCE:** Active professionals, athletes, people who wear low-cut shoes, warmer climates, those who want compression but dislike crew-length socks, standing workers in summer.
+**PRIMARY AUDIENCE:** Women 50+ with localized ankle/foot swelling, standing workers (nurses, retail, teachers), women who prefer ankle-length socks for shoe versatility, warm-climate customers who find knee-highs too hot, and anyone new to compression who finds knee-highs intimidating.
 
 **CORE MESSAGING PILLARS (in priority order):**
 1. **Compression Without the Crew** — Full graduated compression in ankle length. Get the benefits without the visible sock.
 2. **Versatile & Discreet** — Works with any shoe: sneakers, loafers, dress shoes, boots. No one knows you're wearing compression.
 3. **All-Season Comfort** — Perfect for warm weather when crew-length compression is too hot.
 4. **Same Technology, Shorter Length** — Same graduated compression technology as the full line, just in ankle format.
-5. **Active Lifestyle Fit** — For people who are mobile, active, and don't want to feel "medical."
+5. **Gateway to Compression** — For people who've never tried compression and find knee-highs too medical or too much.
 
 **MESSAGING RULES FOR ANKLE COMPRESSION:**
-- Position as the MODERN, ACTIVE choice — younger, more mobile audience
 - Lead with VERSATILITY and LIFESTYLE FIT, then compression benefits
 - The "invisible compression" angle is unique to this line — compression nobody sees
 - Summer/warm weather is a natural seasonal hook
-- Athletic and fitness contexts work well for this product
-- Avoid heavy medical messaging — this line skews younger and more active
 - The "I didn't know they made ankle compression" discovery angle is effective
+- NEVER target gym-goers, athletes, or young fitness audiences — our customer is a woman 50+ who wants ankle support without the knee-high commitment
+- Even when the angle feels "active," the person is a 55-year-old woman who walks daily or stands for work, NOT a 30-year-old at the gym
 
-**EMOTIONAL TERRITORY:** Freedom, modern/active lifestyle, versatility, "compression my way," style-conscious health decisions, discreet self-care`,
+**EMOTIONAL TERRITORY:** Freedom, versatility, "compression my way," style-conscious health decisions, discreet self-care, "I can finally try compression without it feeling like a medical event"`,
 
     'Other': `**GENERAL VIASOX LINE**
 

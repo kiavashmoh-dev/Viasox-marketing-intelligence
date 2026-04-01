@@ -138,21 +138,23 @@ function buildScriptProductGuide(product: ProductCategory): string {
 
 **PRODUCT IDENTITY:** Full graduated compression in discreet ankle-length format.
 
+**CORE AUDIENCE:** Women 50+ with localized ankle/foot swelling, standing workers (nurses, retail), warm-climate customers, and people new to compression who find knee-highs too intimidating or too medical.
+
 **SCRIPT MESSAGING RULES:**
-- Position as MODERN, ACTIVE, VERSATILE choice — skews younger and more mobile
+- Position as VERSATILE and ACCESSIBLE — the gateway to compression for people who'd never try knee-highs
 - Primary proof language: "invisible compression," "works with any shoe," "compression nobody sees"
-- Core messaging pillars (in priority order): Compression Without the Crew → Versatile & Discreet → All-Season → Same Technology Shorter Length → Active Lifestyle Fit
+- Core messaging pillars (in priority order): Compression Without the Crew → Versatile & Discreet → All-Season → Same Technology Shorter Length → Gateway to Compression
 - When showing product in use: show VERSATILITY (sneakers, loafers, dress shoes), the SURPRISE that it's compression, the WARM WEATHER advantage
 - The "I didn't know they made ankle compression" discovery moment is a strong script beat
-- Avoid heavy medical messaging — this line is for active, style-conscious people
+- NEVER target gym-goers, athletes, or young fitness audiences — our customer is a woman 50+ who wants ankle support without the knee-high commitment
 
 **SCRIPT TALENT/SETTING:**
-- Active professional putting on ankle socks with dress shoes (discreet)
-- Gym-goer or runner (athletic context)
-- Summer setting where crew socks would be too hot
-- Shoe try-on montage showing versatility
+- Woman 50+ putting on ankle socks with everyday shoes (accessibility)
+- Nurse finishing a shift in comfortable ankle socks (discreet professional)
+- Summer setting where crew socks would be too hot (seasonal relief)
+- Woman discovering ankle compression exists for the first time (gateway moment)
 
-**EMOTIONAL TERRITORY:** Freedom, modern lifestyle, versatility, "compression my way," discreet self-care`,
+**EMOTIONAL TERRITORY:** Freedom, versatility, "compression my way," discreet self-care, "I can finally try compression without it feeling medical"`,
 
     'Other': `## PRODUCT LINE: GENERAL VIASOX
 Focus on universal value propositions: superior comfort, no sock marks, beautiful designs, purpose-built quality, 107K+ customer base. Tailor messaging based on other selectors.`,
@@ -1044,6 +1046,7 @@ The brief should:
 7. Use real customer language pulled directly from the review data
 8. End with 8-12 extra B-roll shots
 9. Heavily apply the principles from ${params.bookReference} throughout
+10. The FIRST line of the body must NEVER repeat or paraphrase ANY hook — hooks are entry points into the body, the body advances from where any hook leaves off
 
 CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : params.adType === 'Ecom Style' ? `OUTPUT STRUCTURE — ECOM AD BRIEF (follow the dedicated Ecom template from system instructions):
 
@@ -1067,6 +1070,12 @@ ECOM CRITICAL RULES:
 - Script body row count adapts to concept and duration — each row = one thought, one breath
 - Choose a script framework that fits the concept, don't default to the same arc every time
 - Avoid overused patterns: "3pm fatigue", "sock drawer", "Here's the thing...", "What if you could...", "The result?"
+
+⚠️ HOOK-TO-BODY TRANSITION RULE (MANDATORY):
+- The FIRST line of the body script must NEVER repeat, paraphrase, or closely echo ANY of the 3 hooks. The hooks are ENTRY POINTS that each lead into the SAME body. If the body's first line says the same thing as a hook, the viewer hears the same sentence twice back-to-back — that's a production failure.
+- Each hook is a different door INTO the same room. The body is the room. The body's first line must ADVANCE the narrative from where any hook would leave off — not restart it.
+- Example FAIL: Hook = "I used to dread putting on socks every morning." → Body Line 1 = "Every morning was a struggle just to get my socks on." (Same idea, reworded.)
+- Example PASS: Hook = "I used to dread putting on socks every morning." → Body Line 1 = "Twenty minutes. That's how long it took — and by the time I was done, I was exhausted before my day even started." (Advances the story with new specific detail.)
 
 The brief should:
 1. Follow the exact ${params.framework} framework structure through the script body
@@ -1143,6 +1152,7 @@ The brief should:
 7. Use real customer language pulled directly from the review data
 8. End with a clear, specific CTA appropriate for ${params.funnelStage}
 9. Heavily apply the principles from ${params.bookReference} throughout
+10. The FIRST line of the body must NEVER repeat or paraphrase ANY hook — hooks are entry points into the body, the body advances from where any hook leaves off
 
 CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.`}`;
 

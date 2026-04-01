@@ -83,8 +83,9 @@ Ecom ads are built entirely in post-production:
 
 ## PER-BRIEF CHECKS (10) — SCORE EACH ONE:
 
-**1. Hook Differentiation**
+**1. Hook Differentiation + Hook-Body Separation**
 Are the 3 hooks genuinely DIFFERENT approaches — different hook formulas (Question vs Statement vs Revelation), different emotional entry points, different visual openings? Three variations on the same idea = FAIL. Two similar + one different = FLAG.
+**CRITICAL ADDITIONAL CHECK:** Does the FIRST LINE of the body script repeat, paraphrase, or closely echo ANY of the 3 hooks? Each hook is a different entry point that leads into the SAME body. If the body's first line says essentially the same thing as one of the hooks, the viewer will hear the same sentence twice back-to-back — that's a FAIL. The body's first line must ADVANCE the narrative from where any hook would leave off, not restart it.
 
 **2. Problem Specificity**
 Does the brief name a SPECIFIC pain point with SENSORY detail? "Foot discomfort" = FAIL. "The numbness that creeps up from your toes by 3pm" = PASS. Use the angle-specific language: Neuropathy = tingling/numbness/burning; Swelling = puffy/heavy/tight; Diabetes = circulation/foot care/non-binding; Varicose Veins = visible veins/aching/appearance.
@@ -96,6 +97,9 @@ Does the brief's ENTIRE narrative orbit the assigned angle, or does it just ment
 **3b. Awareness Level Correctness**
 Check that the brief follows the CORRECT awareness level principles:
 - UNAWARE briefs: Product does NOT appear in the first 50% of the script. No mention of socks, compression, marks, or Viasox until the second half. The first half is pure identification/story/lifestyle content. CTA is SOFT (learn more, discover, see why). If the script leads with a problem statement or pain point in the first line, it's Problem Aware structure disguised as Unaware = FAIL.
+  HOWEVER: Unaware does NOT mean vague or abstract. The viewer must still understand the ad's WORLD within 3 seconds (a woman, a morning, a struggle, legs). The condition should be VISIBLE through sensory details (red marks shown, swollen ankles shown, wincing) even if not named. If an Unaware brief is so vague that a viewer wouldn't know what it's about until the last 3 seconds = FLAG. The angle's reality must be SHOWN visually even when not SAID verbally.
+  Also check: Does the product reveal feel earned? Is there a clear "awareness shift" moment bridging the story to the product? If the product appears out of nowhere with no bridge = FLAG.
+  Also check: Is the audience correct? ALL Viasox briefs target women 50+. If the Unaware brief describes or implies a younger demographic (gym-goers, young professionals, athletes, anyone under 40) = FAIL.
 - PROBLEM AWARE briefs: Lead with specific vivid pain. Product appears in the second half. CTA is medium-soft.
 - If the awareness level doesn't match the brief's actual structure = FAIL.
 
@@ -133,7 +137,16 @@ Viasox is 70% Caregiver (warm, empathetic, helpful) / 30% Regular Guy (approacha
 - Overly polished/corporate? = FLAG
 The script should feel like someone who genuinely cares telling you about something that helped them.
 
-**10. Completeness & Structure**
+**10. Audience Accuracy (MANDATORY)**
+ALL Viasox products target WOMEN 50+ as the core audience. Check the brief's Primary Persona / Avatar:
+- Does it describe a woman over 50? If the persona is "active 25-40 year old," "gym-goer," "young professional," "athlete," or any demographic under 50 = AUTOMATIC FAIL.
+- Even "active" personas must be 50+ women who walk, garden, travel, or stand for work — not fitness enthusiasts or young athletes.
+- Healthcare workers in our audience are women 50+ nurses, not young medical residents.
+- Ankle Compression does NOT skew younger. There is no "younger" product line.
+- The ONLY acceptable exception: gift-buyer angle where an adult child (any age) is buying FOR a parent 50+.
+- Check talent descriptions, settings, and scenarios — do they imply a 50+ woman's world or a younger person's world?
+
+**11. Completeness & Structure**
 All Ecom brief sections present and properly formatted?
 - Brief Info (ID, Date, Product, Collection, Format)
 - Strategy (Awareness, Emotion, Avatar, Landing Page)

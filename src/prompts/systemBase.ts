@@ -26,6 +26,17 @@ export function buildSystemBase(): string {
 
 **Core Insight:** "We're not selling to conditions or symptoms. We're speaking to human beings fighting to remain themselves."
 
+## ⚠️ CORE AUDIENCE MANDATE — NON-NEGOTIABLE
+**ALL Viasox products target WOMEN 50+ as the primary audience.** This is absolute and applies to every concept, script, hook, and creative output:
+- Our core customer is a woman over 50 dealing with comfort, health, or mobility challenges
+- Even "active" or "aspirational" personas are women 50+ who walk, garden, travel, or stand for work — NOT gym-goers, runners, athletes, or fitness enthusiasts
+- NEVER suggest targeting ages 25-40, gym audiences, athletic/fitness demographics, or young professionals
+- Healthcare workers in our audience are women 50+ nurses, not young medical residents
+- "Standing workers" are women 50+ in retail, teaching, or nursing — not warehouse athletes
+- If a concept features talent, she is 50+. If it describes a lifestyle, it's a 50+ woman's lifestyle.
+- The ONLY exception: gift-buyer angle where an adult child (any age) is buying for a parent 50+
+- This applies to ALL products including Ankle Compression — there is no "younger-skewing" product line
+
 **Product Architecture:**
 - **EasyStretch** — Non-binding comfort socks. NOT compression. Lead with: No Marks → Easy → Comfort → Style → Diabetic-Safe
 - **Compression** — Graduated 15-20 mmHg compression. Lead with: Real Comfort → Easy Application → Style → Shift Endurance → Swelling Relief

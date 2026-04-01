@@ -73,7 +73,21 @@ These people do NOT know they have a problem worth solving. They may have sock m
 - Cannot mention the problem directly
 - Must connect to an existing mass desire (comfort, independence, confidence, health)
 - Must create curiosity or identification strong enough to earn 3+ seconds of attention
-- The headline/hook IS the awareness creation mechanism — it must shift them from "I don't have a problem" to "Wait... do I?"`,
+- The headline/hook IS the awareness creation mechanism — it must shift them from "I don't have a problem" to "Wait... do I?"
+
+**⚠️ COMMON MISTAKES WITH UNAWARE — DO NOT DO THESE:**
+
+1. **Being so vague the ad is about nothing.** Unaware does NOT mean "never mention anything related to the condition." It means the HOOK and first half don't lead with the product or name the condition as a diagnosis. But the ad MUST still be ABOUT something specific and recognizable. A viewer should understand the ad's WORLD within 3 seconds — she should see a woman's morning, see her legs, see the routine. She just shouldn't hear "neuropathy" or "compression socks" yet. SHOW the condition's reality without NAMING it.
+   - WRONG: A vague ad about "comfort" and "feeling good" that could be about anything — mattresses, shoes, lotion.
+   - RIGHT: A woman sitting on the edge of her bed, looking at the red marks on her calves. She doesn't say "sock marks" — but the viewer SEES the problem.
+
+2. **Making the ad so abstract the viewer doesn't know what it's for.** By the END of an Unaware ad, the viewer MUST understand this is about socks/leg comfort. The first half builds identification; the second half reveals the category and product. If someone watches the full ad and still doesn't know what's being sold, the ad fails.
+
+3. **Confusing "Unaware" with "content that has no commercial intent."** Unaware ads ARE still ads. They have a strategic structure: Identification → Disruption → Discovery → Curiosity. Every second serves a purpose. They are just DISGUISED as content in the first half.
+
+4. **Interpreting "don't mention the problem" as "avoid all specificity."** You CAN and SHOULD show specific sensory moments (looking at legs, rubbing ankles, struggling with footwear, wincing). You just don't LABEL them with medical or product terms in the first half. Specificity creates recognition. Vagueness creates nothing.
+
+5. **Making the product reveal feel like a random jump.** The product must feel EARNED — like a natural discovery that emerges from the story. If the first half is about a woman's morning and the second half suddenly pivots to "Buy Viasox!" with no bridge, the ad is structurally broken. The bridge is the awareness shift moment: "Wait — what if the problem isn't my legs? What if it's what I'm putting ON my legs?"`,
 
   'Problem Aware': `## AWARENESS LEVEL: PROBLEM AWARE — CONCEPT & ANGLE RULES
 
@@ -570,7 +584,14 @@ The entire script architecture changes for Unaware. You are not writing a produc
 - Conversational, warm, relatable
 - NEVER clinical, technical, or salesy
 - The viewer should think "this isn't an ad" for at least the first half
-- Mirror their actual self-talk and daily internal monologue`,
+- Mirror their actual self-talk and daily internal monologue
+
+**⚠️ CRITICAL: WHAT UNAWARE DOES NOT MEAN:**
+- Unaware does NOT mean the ad is vague, abstract, or about nothing. The viewer must still understand the AD'S WORLD within the first 3 seconds (she sees a woman, a morning, a routine, legs, a struggle). She just doesn't hear medical terms or product names yet.
+- Unaware does NOT mean avoiding all specificity. SHOW the condition visually (red marks on calves, swollen ankles, struggling to bend down). Just don't LABEL it as "neuropathy" or "edema" in the first half.
+- Unaware does NOT mean the product reveal comes out of nowhere. The reveal must feel EARNED — a natural bridge from the story. "What if the problem isn't your legs? What if it's what you're putting ON your legs?"
+- By the END of an Unaware ad, the viewer MUST know this is about socks/leg comfort. If they watched the whole thing and still don't know what's being sold, the ad fails.
+- The assigned angle (e.g., Neuropathy, Swelling) still drives the VISUAL WORLD and sensory details — the viewer should recognize the physical experience even if no one says the word.`,
 
   'Problem Aware': `## AWARENESS LEVEL: PROBLEM AWARE — SCRIPT ARCHITECTURE
 
