@@ -276,10 +276,10 @@ export function parseStrategyAnalysis(response: string): {
     let qId = 1;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      if (/^\d+[\.\)]\s/.test(line) && line.includes('?')) {
+      if (/^\d+[.)]\s/.test(line) && line.includes('?')) {
         questions.push({
           id: String(qId++),
-          question: line.replace(/^\d+[\.\)]\s*/, ''),
+          question: line.replace(/^\d+[.)]\s*/, ''),
           context: '',
           options: [],
         });

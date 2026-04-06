@@ -264,13 +264,13 @@ function extractTransformationArc(content: string | undefined): TransformationAr
 
   // Try multiple patterns for BEFORE / TURNING POINT / AFTER
   const beforeMatch = content.match(
-    /\*?\*?BEFORE\*?\*?\s*[:\s—\-]+\s*([\s\S]+?)(?=\*?\*?TURNING|\*?\*?AFTER|$)/i
+    /\*?\*?BEFORE\*?\*?\s*[:\s—-]+\s*([\s\S]+?)(?=\*?\*?TURNING|\*?\*?AFTER|$)/i
   );
   const turningMatch = content.match(
-    /\*?\*?TURNING\s*POINT\*?\*?\s*[:\s—\-]+\s*([\s\S]+?)(?=\*?\*?AFTER|$)/i
+    /\*?\*?TURNING\s*POINT\*?\*?\s*[:\s—-]+\s*([\s\S]+?)(?=\*?\*?AFTER|$)/i
   );
   const afterMatch = content.match(
-    /\*?\*?AFTER\*?\*?\s*[:\s—\-]+\s*([\s\S]*?)$/i
+    /\*?\*?AFTER\*?\*?\s*[:\s—-]+\s*([\s\S]*?)$/i
   );
 
   const before = beforeMatch?.[1]?.trim() ?? '';
@@ -331,7 +331,7 @@ export function extractMarketComparison(content: string): MarketComparisonData |
 
   // Look for classification label
   const classMatch = content.match(
-    /[""\*]*(Established Core|Growth Engine|Emerging Opportunity|Niche Strength|Underserved Whitespace)[""\*]*/i
+    /[""*]*(Established Core|Growth Engine|Emerging Opportunity|Niche Strength|Underserved Whitespace)[""*]*/i
   );
 
   const result: MarketComparisonData = {

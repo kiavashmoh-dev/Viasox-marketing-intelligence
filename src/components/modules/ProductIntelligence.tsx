@@ -45,10 +45,11 @@ function pctBar(pct: number, color: string) {
 
 function ProductRevenueDashboard() {
   const se = salesEnrichment;
-  if (!hasSalesEnrichment()) return null;
+  const enrichmentReady = hasSalesEnrichment();
 
   // Aggregate revenue per product from segment byProduct data
   const productRevenue = useMemo(() => {
+    if (!enrichmentReady) return {} as Record<string, number>;
     const rev: Record<string, number> = {};
     for (const product of PRODUCTS) {
       const affinity = se.productAffinity[product];
@@ -57,7 +58,9 @@ function ProductRevenueDashboard() {
       rev[product] = affinity.reduce((sum, entry) => sum + (entry.revenue || 0), 0);
     }
     return rev;
-  }, []);
+  }, [enrichmentReady, se.productAffinity]);
+
+  if (!enrichmentReady) return null;
 
   const totalRev = Object.values(productRevenue).reduce((a, b) => a + b, 0);
   const maxRev = Math.max(...Object.values(productRevenue), 1);
@@ -228,7 +231,7 @@ function SegmentRevenueByProduct() {
 
 function NewVsRepeatBreakdown() {
   const se = salesEnrichment;
-  if (!hasSalesEnrichment()) return null;
+  const enrichmentReady = hasSalesEnrichment();
 
   // Per-product new vs repeat from segment data
   const productStats = useMemo(() => {
@@ -242,6 +245,7 @@ function NewVsRepeatBreakdown() {
       avgOrderValue: number;
     }> = [];
 
+    if (!enrichmentReady) return stats;
     for (const product of PRODUCTS) {
       const affinity = se.productAffinity[product];
       if (!affinity) continue;
@@ -282,7 +286,7 @@ function NewVsRepeatBreakdown() {
     }
 
     return stats;
-  }, []);
+  }, [enrichmentReady, se.productAffinity, se.crossPurchaseMatrix.productOwnership, se.segments]);
 
   // Per-segment new vs repeat (top segments by new customer attraction)
   const segmentAcquisition = useMemo(() => {
@@ -296,6 +300,7 @@ function NewVsRepeatBreakdown() {
       ltv: number;
     }> = [];
 
+    if (!enrichmentReady) return entries;
     for (const [name, seg] of Object.entries(se.segments)) {
       if (!seg.sales || seg.sales.uniqueCustomers < 50) continue;
       const newRate = 100 - seg.sales.repeatPurchaseRate;
@@ -311,9 +316,9 @@ function NewVsRepeatBreakdown() {
     }
 
     return entries.sort((a, b) => b.newCustomers - a.newCustomers);
-  }, []);
+  }, [enrichmentReady, se.segments]);
 
-  if (productStats.length === 0) return null;
+  if (!enrichmentReady || productStats.length === 0) return null;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 mb-5">

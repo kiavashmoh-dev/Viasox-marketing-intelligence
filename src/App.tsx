@@ -68,14 +68,11 @@ export default function App() {
     }
   }, [view, progress?.stage, analysis]);
 
-  // Transition from processing → upload on error
-  useEffect(() => {
-    if (view === 'processing' && analysisError) {
-      setView('upload');
-    }
-  }, [view, analysisError]);
+  // Derive the effective view: if processing failed with an error, show upload immediately
+  // (computed during render so we don't need a setState-in-effect cascade).
+  const effectiveView: AppView = view === 'processing' && analysisError ? 'upload' : view;
 
-  switch (view) {
+  switch (effectiveView) {
     case 'auth':
       return <PasswordGate onSuccess={handleAuthSuccess} />;
 

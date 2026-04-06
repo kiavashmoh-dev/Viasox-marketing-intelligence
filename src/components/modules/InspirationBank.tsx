@@ -656,15 +656,14 @@ function DetailModal({
   const [videoError, setVideoError] = useState<string | null>(null);
 
   // Load the raw video blob from IndexedDB and turn it into an object URL
-  // for the <video> element. Cleanup revokes the URL to free memory.
+  // for the <video> element. Cleanup revokes the URL and resets state to free
+  // memory and clear any prior error before the next item loads.
+  // Non-video items don't need to load anything; videoUrl stays null and the
+  // <video> branch never renders for them.
   useEffect(() => {
-    if (item.kind !== 'video') {
-      setVideoUrl(null);
-      return;
-    }
+    if (item.kind !== 'video') return;
     let revoked = false;
     let url: string | null = null;
-    setVideoError(null);
     getBlob(item.id)
       .then((blob) => {
         if (revoked) return;
@@ -683,6 +682,7 @@ function DetailModal({
       revoked = true;
       if (url) URL.revokeObjectURL(url);
       setVideoUrl(null);
+      setVideoError(null);
     };
   }, [item.id, item.kind]);
 

@@ -112,7 +112,7 @@ export default function SegmentRadarChart({ analysis, selectedPersonas, product:
       },
       totalCount: seg.totalCount,
     }));
-  }, [analysis, selectedPersonas, _product]);
+  }, [analysis, selectedPersonas]);
 
   const colorAssignments = useMemo(() => {
     let iIdx = 0;

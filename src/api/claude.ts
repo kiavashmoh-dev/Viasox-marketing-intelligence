@@ -66,7 +66,7 @@ export async function sendMessage(
       body,
       signal: effectiveSignal,
     });
-  } catch (proxyError) {
+  } catch {
     // If caller aborted or timed out, don't retry
     if (effectiveSignal.aborted) {
       cleanup();
@@ -88,7 +88,7 @@ export async function sendMessage(
         body,
         signal: effectiveSignal,
       });
-    } catch (directError) {
+    } catch {
       cleanup();
       if (effectiveSignal.aborted) {
         if (timedOut) {

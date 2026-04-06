@@ -69,8 +69,8 @@ function AnalysisRenderer({ text }: { text: string }) {
     }
 
     // Numbered lists
-    if (/^\d+[\.\)]\s/.test(trimmed)) {
-      listBuffer.push(trimmed.replace(/^\d+[\.\)]\s+/, ''));
+    if (/^\d+[.)]\s/.test(trimmed)) {
+      listBuffer.push(trimmed.replace(/^\d+[.)]\s+/, ''));
       continue;
     }
 

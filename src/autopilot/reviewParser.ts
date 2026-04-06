@@ -39,10 +39,10 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
   if (!reviewMarkdown) return result;
 
   // Extract per-brief sections — look for task name patterns
-  const briefSections = reviewMarkdown.split(/(?=###?\s+(?:VIASOX|Brief|Task)[\s\-]*\d*)/i);
+  const briefSections = reviewMarkdown.split(/(?=###?\s+(?:VIASOX|Brief|Task)[\s-]*\d*)/i);
 
   for (const section of briefSections) {
-    const nameMatch = section.match(/###?\s+((?:VIASOX|Brief|Task)[\s\-]*\w+)/i);
+    const nameMatch = section.match(/###?\s+((?:VIASOX|Brief|Task)[\s-]*\w+)/i);
     if (!nameMatch) continue;
 
     const taskName = nameMatch[1].trim();
@@ -119,12 +119,12 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
   }
 
   // Extract strongest/weakest
-  const strongestMatch = reviewMarkdown.match(/(?:strongest|best)[:\s]*(?:brief[:\s]*)?(VIASOX[\s\-]*\w+)/i);
+  const strongestMatch = reviewMarkdown.match(/(?:strongest|best)[:\s]*(?:brief[:\s]*)?(VIASOX[\s-]*\w+)/i);
   if (strongestMatch) {
     result.strongestBrief = strongestMatch[1].trim();
   }
 
-  const weakestMatch = reviewMarkdown.match(/(?:weakest|needs.most.work|lowest)[:\s]*(?:brief[:\s]*)?(VIASOX[\s\-]*\w+)/i);
+  const weakestMatch = reviewMarkdown.match(/(?:weakest|needs.most.work|lowest)[:\s]*(?:brief[:\s]*)?(VIASOX[\s-]*\w+)/i);
   if (weakestMatch) {
     result.weakestBrief = weakestMatch[1].trim();
   }

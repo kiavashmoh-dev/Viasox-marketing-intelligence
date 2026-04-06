@@ -220,8 +220,6 @@ function LifestyleContext({
   const motivationSegs = breakdown.segments.filter((s) => s.layer === 'motivation');
   const overlaps = breakdown.crossSegmentOverlap ?? [];
 
-  if (motivationSegs.length === 0 || overlaps.length === 0) return null;
-
   // Compute healthcare/standing worker overlap for the annotation
   const hcStandingOverlap = useMemo(() => {
     const hcTotal = breakdown.segments.find((s) => s.segmentName === 'healthcare worker')?.totalReviews ?? 0;
@@ -233,6 +231,8 @@ function LifestyleContext({
     // (crossSegmentOverlap is identity × motivation). So we note the relationship instead.
     return { hcTotal, swTotal };
   }, [breakdown]);
+
+  if (motivationSegs.length === 0 || overlaps.length === 0) return null;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 mb-5">
