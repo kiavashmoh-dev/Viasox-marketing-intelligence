@@ -17,6 +17,7 @@ export function buildConceptEvaluatorPrompt(
   duration: string,
   strategyBrief: string | undefined,
   usedFrameworks: string[],
+  inspirationContext?: string,
 ): { system: string; user: string } {
   const system = `You are a Senior Creative Strategist evaluating advertising concepts for Viasox, a premium DTC compression sock brand. You have deep expertise in direct response advertising, performance creative, and DTC marketing strategy.
 
@@ -36,7 +37,9 @@ For short form (<15s), reject concepts that try to tell full stories compressed 
 
 ${strategyBrief ? `\nWEEKLY STRATEGY BRIEF (this is the north star for all creative decisions):\n${strategyBrief}\n\nYour evaluations MUST align with this strategy brief. Concepts that match the strategy direction score higher.` : ''}
 
-${usedFrameworks.length > 0 ? `\nFRAMEWORKS ALREADY USED IN THIS BATCH (for diversity — avoid recommending these unless the concept demands it):\n${usedFrameworks.join(', ')}\n` : ''}`;
+${usedFrameworks.length > 0 ? `\nFRAMEWORKS ALREADY USED IN THIS BATCH (for diversity — avoid recommending these unless the concept demands it):\n${usedFrameworks.join(', ')}\n` : ''}
+
+${inspirationContext ? `\n**INSPIRATION BANK PROVEN-PATTERN BIAS:**\nThe inspiration block below contains real reference ads/briefs that have already been judged worth learning from for this exact ad type, angle, and product context. Use them as a proven-pattern lens when rating concepts:\n- Concepts whose hook style, structure, narrative arc, or emotional entry CLOSELY mirror the patterns in these references should score higher (these are the patterns we know work).\n- Concepts that ignore the proven patterns or contradict them should score lower, UNLESS the concept is doing something genuinely fresh that the strategy brief or angle warrants.\n- If a starred reference exists, treat its patterns as especially load-bearing.\nDo NOT name the references in your reasoning. Speak about the *patterns*, not the *examples*.\n${inspirationContext}\n` : ''}`;
 
   const user = `Evaluate the following concepts generated for task **${taskName}** (${product} / ${angle} / ${medium} / ${duration}).
 

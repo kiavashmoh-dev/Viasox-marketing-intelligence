@@ -402,6 +402,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         task.duration,
         strategyBrief,
         usedFrameworks,
+        inspirationCtx,
       );
 
       const evalResponse = await sendMessageWithRetry(
@@ -496,6 +497,7 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
           task.duration,
           strategyBrief,
           usedFrameworks,
+          inspirationCtx,
         );
 
         const evalResponse = await sendMessageWithRetry(
