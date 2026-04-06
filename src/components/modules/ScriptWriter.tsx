@@ -154,24 +154,25 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
     );
     // AGC briefs are much larger (9 hooks × 10 cols + 20-40 body rows + b-roll list)
     // Standard scripts scale with duration + hook count
-    const contextBonus = conceptAngleContext ? 1500 : 0;
-    const feedbackBonus = feedback ? 1000 : 0;
+    // Generous headroom so long-form briefs, production tables, and concept context never get truncated
+    const contextBonus = conceptAngleContext ? 2500 : 0;
+    const feedbackBonus = feedback ? 2000 : 0;
     let maxTokens: number;
     if (isAgc) {
-      maxTokens = Math.min(10000 + contextBonus + feedbackBonus, 16000);
+      maxTokens = Math.min(16000 + contextBonus + feedbackBonus, 24000);
     } else if (isVideoProductionBrief) {
       // Video production briefs use 10-column tables — more output than old 5-column format
-      const durationTokens = duration === '90s' ? 8000 : duration === '60s' ? 6000 : duration === '30s' ? 4500 : 3000;
-      const hookTokens = hookVariations * 400;
-      maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 7000), 16000);
+      const durationTokens = duration === '90s' ? 12000 : duration === '60s' ? 9000 : duration === '30s' ? 7000 : 5000;
+      const hookTokens = hookVariations * 600;
+      maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 12000), 24000);
     } else if (isEcom) {
       // Ecom briefs: full template with 8 sections (Brief Info, Strategy, Offer, Editing Instructions, 3 hooks, body, data points, framework)
-      const durationTokens = duration === '90s' ? 7000 : duration === '60s' ? 5000 : duration === '30s' ? 3500 : 2500;
-      maxTokens = Math.min(Math.max(durationTokens + contextBonus + feedbackBonus, 7000), 16000);
+      const durationTokens = duration === '90s' ? 11000 : duration === '60s' ? 8000 : duration === '30s' ? 6000 : 4500;
+      maxTokens = Math.min(Math.max(durationTokens + contextBonus + feedbackBonus, 12000), 24000);
     } else {
-      const durationTokens = duration === '90s' ? 5500 : duration === '60s' ? 4000 : duration === '30s' ? 2500 : 1500;
-      const hookTokens = hookVariations * 300;
-      maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 6000), 16000);
+      const durationTokens = duration === '90s' ? 9000 : duration === '60s' ? 6500 : duration === '30s' ? 4500 : 3000;
+      const hookTokens = hookVariations * 500;
+      maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 10000), 24000);
     }
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)

@@ -762,8 +762,8 @@ export default function SegmentDiscovery({ analysis, apiKey, resourceContext, on
   const handleGenerate = () => {
     const { system, user } = buildSegmentPrompt({ product, depth }, analysis);
     const segCount = analysis.segmentBreakdown?.segments.length ?? 8;
-    const deepDiveTokens = Math.min(Math.max(segCount * 1000 + 2000, 8000), 16000);
-    generate(system + buildResourceContext(resourceContext), user, depth === 'deep-dive' ? deepDiveTokens : 6000);
+    const deepDiveTokens = Math.min(Math.max(segCount * 1500 + 4000, 14000), 24000);
+    generate(system + buildResourceContext(resourceContext), user, depth === 'deep-dive' ? deepDiveTokens : 12000);
   };
 
   if (result || loading || error) {

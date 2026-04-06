@@ -81,7 +81,7 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
 
     // Phase 1: Categorization
     const { system, user } = buildCommentCategorizationPrompt(comments);
-    const catResult = await categorizationApi.generate(system, user, 16000);
+    const catResult = await categorizationApi.generate(system, user, 24000);
 
     if (!catResult) {
       setError(categorizationApi.error ?? 'Categorization failed');
@@ -127,7 +127,7 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
     const insightsResult = await insightsApi.generate(
       insightsPrompt.system,
       insightsPrompt.user,
-      8000,
+      14000,
     );
 
     if (insightsResult) {
@@ -141,7 +141,7 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
     if (!summary) return;
     const samples = getSamplesByCategory(categorized);
     const { system, user } = buildCommentInsightsPrompt(summary, samples);
-    const result = await insightsApi.generate(system, user, 8000);
+    const result = await insightsApi.generate(system, user, 14000);
     if (result) {
       setInsightsReport(result);
     }

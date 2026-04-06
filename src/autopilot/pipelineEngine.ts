@@ -141,10 +141,10 @@ async function sendMessageWithRetry(
 
 function getMaxTokensForDuration(duration: string): number {
   switch (duration) {
-    case '15s': return 12000;
-    case '30s': return 16000;
-    case '60s': return 20000;
-    default: return 16000;
+    case '15s': return 16000;
+    case '30s': return 20000;
+    case '60s': return 24000;
+    default: return 20000;
   }
 }
 
@@ -319,7 +319,7 @@ export async function runStrategySession(
     prompt.system,
     prompt.user,
     apiKey,
-    8000,
+    12000,
     OPUS,
     signal,
   );
@@ -363,7 +363,7 @@ export async function synthesizeStrategy(
     prompt.system,
     prompt.user,
     apiKey,
-    10000,
+    14000,
     OPUS,
     signal,
   );
@@ -455,7 +455,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
           conceptSystem,
           visionContent,
           apiKey,
-          18000,
+          24000,
           OPUS,
           signal,
         );
@@ -464,7 +464,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
           conceptSystem,
           anglesPrompt.user,
           apiKey,
-          16000,
+          22000,
           OPUS,
           signal,
         );
@@ -494,7 +494,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         evalPrompt.system + directionBlock,
         evalPrompt.user,
         apiKey,
-        6000,
+        9000,
         OPUS,
         signal,
       );
@@ -567,7 +567,7 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
             conceptSystem,
             visionContent,
             apiKey,
-            18000,
+            24000,
             OPUS,
             signal,
           );
@@ -576,7 +576,7 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
             conceptSystem,
             anglesPrompt.user,
             apiKey,
-            16000,
+            22000,
             OPUS,
             signal,
           );
@@ -605,7 +605,7 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
           evalPrompt.system + directionBlock,
           evalPrompt.user,
           apiKey,
-          6000,
+          9000,
           OPUS,
           signal,
         );
@@ -855,7 +855,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
         reviewPrompt.system,
         reviewPrompt.user,
         apiKey,
-        16000,
+        22000,
         OPUS,
         signal,
       );
@@ -950,7 +950,7 @@ ${ts.scriptResult || '[no previous brief]'}
         regenConceptSystem,
         visionContent,
         apiKey,
-        18000,
+        24000,
         OPUS,
         signal,
       );
@@ -959,7 +959,7 @@ ${ts.scriptResult || '[no previous brief]'}
         regenConceptSystem,
         anglesPrompt.user,
         apiKey,
-        16000,
+        22000,
         OPUS,
         signal,
       );
@@ -1008,7 +1008,7 @@ ${ts.scriptResult || '[no previous brief]'}
       selectorPrompt.system + directionBlock,
       selectorPrompt.user,
       apiKey,
-      6000,
+      9000,
       OPUS,
       signal,
     );

@@ -273,13 +273,13 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
       },
       analysis,
     );
-    // Scale tokens: ~2500 per persona for DTC (9 sections), ~2000 for retail/wholesale (8 sections)
-    // Market analysis adds ~2500 tokens per persona (depth + US/CA comparison + citations + cross-segment)
-    // Claude Sonnet 4 supports up to 64K output tokens — cap at 32K for reasonable generation time
-    const baseTokens = channel === 'DTC' ? 2500 : 2000;
-    const marketTokens = includeMarket ? 2500 : 0;
-    const maxTokens = Math.min(selected.length * (baseTokens + marketTokens), 32000);
-    generate(system + buildResourceContext(resourceContext), user, Math.max(maxTokens, 6000), 'claude-opus-4-6');
+    // Scale tokens: ~3500 per persona for DTC (9 sections), ~3000 for retail/wholesale (8 sections)
+    // Market analysis adds ~3500 tokens per persona (depth + US/CA comparison + citations + cross-segment)
+    // Generous headroom so a long persona + market deep-dive never hits the cap
+    const baseTokens = channel === 'DTC' ? 3500 : 3000;
+    const marketTokens = includeMarket ? 3500 : 0;
+    const maxTokens = Math.min(selected.length * (baseTokens + marketTokens), 48000);
+    generate(system + buildResourceContext(resourceContext), user, Math.max(maxTokens, 12000), 'claude-opus-4-6');
   };
 
   if (result || loading || error) {

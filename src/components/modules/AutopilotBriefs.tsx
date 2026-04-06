@@ -263,7 +263,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         anglesPrompt.system + resourceCtx + directionBlock + (strategyBrief ? `\n\nSTRATEGY BRIEF:\n${strategyBrief}` : ''),
         anglesPrompt.user,
         apiKey,
-        16000,
+        22000,
         'claude-opus-4-6',
         controller.signal,
       );
@@ -287,7 +287,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         evalPrompt.system,
         evalPrompt.user,
         apiKey,
-        6000,
+        9000,
         'claude-opus-4-6',
         controller.signal,
       );

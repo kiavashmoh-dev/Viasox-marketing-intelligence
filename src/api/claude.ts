@@ -23,7 +23,7 @@ export async function sendMessage(
   system: string,
   userMessage: string,
   apiKey: string,
-  maxTokens = 4096,
+  maxTokens = 12000,
   model = 'claude-sonnet-4-20250514',
   signal?: AbortSignal,
 ): Promise<string> {
@@ -190,7 +190,7 @@ export async function sendVisionMessage(
   system: string,
   content: ContentBlock[],
   apiKey: string,
-  maxTokens = 2048,
+  maxTokens = 12000,
   model = 'claude-sonnet-4-20250514',
   signal?: AbortSignal,
 ): Promise<string> {
@@ -287,7 +287,7 @@ export async function sendChatMessage(
   system: string,
   messages: ChatMessage[],
   apiKey: string,
-  maxTokens = 2048,
+  maxTokens = 8000,
   model = 'claude-sonnet-4-20250514',
   signal?: AbortSignal,
 ): Promise<string> {

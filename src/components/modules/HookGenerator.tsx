@@ -94,14 +94,15 @@ export default function HookGenerator({ analysis, apiKey, resourceContext, onBac
       },
       analysis,
     );
-    // Scale tokens based on hook count: ~250 tokens per hook for script-mode, ~200 for standalone
-    const tokensPerHook = scriptContext.trim() ? 250 : 200;
-    const feedbackBonus = feedback ? 1000 : 0;
-    const hookTokens = Math.max(count * tokensPerHook + feedbackBonus, 6000);
+    // Scale tokens based on hook count: ~400 tokens per hook for script-mode, ~300 for standalone
+    // Generous headroom so reasoning + rationale per hook never gets truncated
+    const tokensPerHook = scriptContext.trim() ? 400 : 300;
+    const feedbackBonus = feedback ? 2000 : 0;
+    const hookTokens = Math.max(count * tokensPerHook + feedbackBonus, 12000);
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)
       : user;
-    generate(system + buildResourceContext(resourceContext), finalUser, Math.min(hookTokens, 16000), 'claude-opus-4-6');
+    generate(system + buildResourceContext(resourceContext), finalUser, Math.min(hookTokens, 24000), 'claude-opus-4-6');
   };
 
   if (result || loading || error) {

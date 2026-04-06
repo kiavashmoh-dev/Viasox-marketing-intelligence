@@ -12,7 +12,7 @@ import { buildInspirationAnalyzerPrompt } from './inspirationAnalyzerPrompt';
 import { stripDataUrlPrefix } from './frameExtractor';
 import { updateItem } from './inspirationStore';
 
-const MAX_TOKENS = 3500;
+const MAX_TOKENS = 8000;
 const MODEL = 'claude-opus-4-6';
 
 export interface AnalyzeVideoInput {

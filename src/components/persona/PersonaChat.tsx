@@ -326,7 +326,7 @@ export default function PersonaChat({
         systemPrompt.current,
         newApiMessages,
         apiKey,
-        4096,
+        12000,
         'claude-opus-4-6',
         controller.signal,
       );

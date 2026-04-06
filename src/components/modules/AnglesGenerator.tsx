@@ -108,7 +108,7 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)
       : user;
-    generate(system + buildResourceContext(resourceContext), finalUser, 12000, 'claude-opus-4-6');
+    generate(system + buildResourceContext(resourceContext), finalUser, 20000, 'claude-opus-4-6');
   };
 
   if (result || loading || error) {

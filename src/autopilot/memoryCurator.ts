@@ -167,7 +167,7 @@ export async function runMemoryCurator(
     CURATOR_SYSTEM,
     `Here is the complete creative history to analyze:\n\n${curatorInput}`,
     apiKey,
-    4000,
+    10000,
     OPUS,
     signal,
   );

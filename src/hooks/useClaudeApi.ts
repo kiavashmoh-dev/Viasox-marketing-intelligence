@@ -8,7 +8,7 @@ export function useClaudeApi(apiKey: string) {
   const abortRef = useRef<AbortController | null>(null);
 
   const generate = useCallback(
-    async (system: string, userMessage: string, maxTokens = 4096, model?: string) => {
+    async (system: string, userMessage: string, maxTokens = 12000, model?: string) => {
       // Cancel any in-flight request
       abortRef.current?.abort();
       const controller = new AbortController();

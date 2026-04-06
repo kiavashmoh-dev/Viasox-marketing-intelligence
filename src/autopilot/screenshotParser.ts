@@ -34,7 +34,7 @@ export async function parseAsanaScreenshot(
       { type: 'text', text: EXTRACTION_PROMPT },
     ],
     apiKey,
-    2048,
+    6000,
     'claude-sonnet-4-20250514',
     signal,
   );
