@@ -5,13 +5,18 @@
  * task), score each ready item in the bank and return the top N most
  * relevant ones. The injected context block is built from these picks.
  *
- * Scoring rules (additive):
- *   +5  exact adType match
+ * HARD FILTERS (applied before scoring — items that fail these are dropped
+ * entirely, never injected):
+ *   - adType: if specified, item.adType MUST exactly match. A Full AI brief
+ *     will never see Ecom references; an Ecom brief will never see UGC.
+ *   - isFullAi: if specified, item.isFullAi MUST match the boolean.
+ *
+ * Scoring rules (additive, applied to surviving items):
+ *   +5  exact adType match (always true after hard filter, but kept for reasons trail)
  *   +4  exact angleType match
  *   +3  exact framework match (script tasks)
  *   +3  exact productCategory match
  *   +2  duration match
- *   +2  isFullAi match
  *   +2  fullAiSpecification match
  *   +2  fullAiVisualStyle match
  *   +1  hookStyle match
@@ -50,16 +55,36 @@ export async function selectInspiration(
   opts: SelectionOptions
 ): Promise<ScoredInspiration[]> {
   const all = await getAllItems();
-  const ready = all.filter(
+
+  // Step 1: status + starred-only gate
+  let candidates = all.filter(
     (i) => i.status === 'ready' && (!opts.starredOnly || i.starred)
   );
-  if (ready.length === 0) return [];
+  if (candidates.length === 0) return [];
+
+  // Step 2: HARD FILTERS — drop anything whose ad type or full-AI flag
+  // doesn't match the requested brief. A Full AI brief must NEVER see
+  // live-action references and vice versa, regardless of how well the
+  // other tags align.
+  if (opts.adType) {
+    candidates = candidates.filter((item) => {
+      const tags = getEffectiveTags(item);
+      return tags.adType === opts.adType;
+    });
+  }
+  if (opts.isFullAi !== undefined) {
+    candidates = candidates.filter((item) => {
+      const tags = getEffectiveTags(item);
+      return tags.isFullAi === opts.isFullAi;
+    });
+  }
+  if (candidates.length === 0) return [];
 
   const maxResults = opts.maxResults ?? 5;
   const now = Date.now();
   const recencyCutoff = now - RECENCY_DAYS * 24 * 60 * 60 * 1000;
 
-  const scored: ScoredInspiration[] = ready.map((item) => {
+  const scored: ScoredInspiration[] = candidates.map((item) => {
     const tags = getEffectiveTags(item);
     let score = 0;
     const reasons: string[] = [];
@@ -83,10 +108,6 @@ export async function selectInspiration(
     if (opts.duration && tags.duration === opts.duration) {
       score += 2;
       reasons.push(`duration: ${opts.duration}`);
-    }
-    if (opts.isFullAi !== undefined && tags.isFullAi === opts.isFullAi) {
-      score += 2;
-      reasons.push(opts.isFullAi ? 'Full AI' : 'live action');
     }
     if (opts.fullAiSpec && tags.fullAiSpecification === opts.fullAiSpec) {
       score += 2;
