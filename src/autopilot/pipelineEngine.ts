@@ -36,6 +36,7 @@ import { getAngleLanguageBank } from '../prompts/manifestoReference';
 import { getAngleDirectives } from '../utils/customOptionsRegistry';
 import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator';
 import { saveCompletedBatchToMemory } from './memoryExtractor';
+import { getInspirationContextBlock } from '../inspiration/inspirationInjection';
 
 // ─── All creative agents use Opus ────────────────────────────────────────────
 
@@ -80,6 +81,30 @@ function matchFramework(suggestion: string): ScriptFramework {
 
 function delay(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+/**
+ * Pull the most relevant Inspiration Bank context block for an autopilot task.
+ * Never throws — if the bank is empty, unavailable, or errors, returns empty string.
+ */
+async function getInspirationForTask(task: AutopilotTask): Promise<string> {
+  try {
+    const { block } = await getInspirationContextBlock({
+      adType: task.scriptParamsBase.adType,
+      angleType: task.anglesParams.angleType,
+      productCategory: task.product,
+      duration: task.duration,
+      isFullAi: task.scriptParamsBase.adType === 'Full AI (Documentary, story, education, etc)',
+      fullAiSpec: task.scriptParamsBase.fullAiSpecification,
+      fullAiVisualStyle: task.scriptParamsBase.fullAiVisualStyle,
+      framework: undefined,
+      maxResults: 5,
+    });
+    return block;
+  } catch (e) {
+    console.warn('[inspiration] failed to load context for task', e);
+    return '';
+  }
 }
 
 /**
@@ -314,7 +339,8 @@ export async function runConceptPhase(
       ts.step = 'generating-concepts';
       onProgress({ ...state });
 
-      const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing);
+      const inspirationCtx = await getInspirationForTask(task);
+      const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing, inspirationCtx);
 
       // Inject the SPECIFIC angle from Asana as the primary creative directive.
       // This ensures "Neuropathy" briefs are actually ABOUT neuropathy, not generic.
@@ -431,7 +457,8 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         ts.error = undefined;
         onProgress({ ...state });
 
-        const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing);
+        const inspirationCtx = await getInspirationForTask(task);
+        const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing, inspirationCtx);
         const customDirectives = getAngleDirectives()
           .filter((d) => d.angle.toLowerCase() === task.parsed.angle.toLowerCase() ||
                          d.product.toLowerCase() === task.product.toLowerCase())
@@ -561,7 +588,8 @@ export async function runScriptPhase(
         conceptAngleContext: ts.selectedConceptText,
       };
 
-      const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing);
+      const scriptInspirationCtx = await getInspirationForTask(ts.task);
+      const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, scriptInspirationCtx);
 
       // Inject angle-specific and format-specific directives into script generation
       const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
@@ -635,7 +663,8 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
           conceptAngleContext: ts.selectedConceptText!,
         };
 
-        const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing);
+        const retryScriptInspirationCtx = await getInspirationForTask(ts.task);
+        const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, retryScriptInspirationCtx);
         const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
 This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleLanguageBank(ts.task.parsed.angle)}\n`;
 
@@ -833,7 +862,8 @@ ${ts.scriptResult || '[no previous brief]'}
     ts.error = undefined;
     onProgress({ ...state });
 
-    const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined);
+    const regenInspirationCtx = await getInspirationForTask(task);
+    const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined, regenInspirationCtx);
     const regenAngleCtx = `\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
     const conceptsRaw = await sendMessage(
       anglesPrompt.system + resourceCtx + directionBlock + regenAngleCtx,
@@ -881,6 +911,7 @@ ${ts.scriptResult || '[no previous brief]'}
       task.scriptParamsBase.adType,
       task.scriptParamsBase.fullAiSpecification,
       task.scriptParamsBase.fullAiVisualStyle,
+      regenInspirationCtx,
     );
 
     const selectorResponse = await sendMessage(
@@ -914,7 +945,7 @@ ${ts.scriptResult || '[no previous brief]'}
       conceptAngleContext: ts.selectedConceptText,
     };
 
-    const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined);
+    const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined, regenInspirationCtx);
     const regenScriptAngleCtx = `\n\n## ANGLE ENFORCEMENT: "${task.parsed.angle}"\nThis script MUST be specifically about "${task.parsed.angle}".\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
     const scriptResult = await sendMessage(
       scriptPrompt.system + resourceCtx + directionBlock + regenScriptAngleCtx,

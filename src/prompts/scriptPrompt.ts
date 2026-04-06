@@ -472,6 +472,7 @@ export function buildScriptPrompt(
   params: ScriptParams,
   analysis: FullAnalysis,
   memoryBriefing?: string,
+  inspirationContext?: string,
 ): { system: string; user: string } {
   const frameworkDetail =
     FRAMEWORK_DETAILS[params.framework] ??
@@ -1219,5 +1220,8 @@ CRITICAL: Write completely original copy. Every line must be built from the actu
     ? `\n\n## CREATIVE INTELLIGENCE — STYLE & VOICE AWARENESS\n\nThe following briefing summarizes the creative history of this system. Use the sections on "Overused Patterns" and "Proven Strengths" to write scripts that feel fresh while building on what works.\n\n${memoryBriefing}`
     : '';
 
-  return { system: system + memorySection, user };
+  // Inject inspiration bank context if available
+  const inspirationSection = inspirationContext ? `\n\n${inspirationContext}` : '';
+
+  return { system: system + memorySection + inspirationSection, user };
 }

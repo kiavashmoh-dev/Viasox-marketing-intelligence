@@ -35,6 +35,7 @@ export function buildConceptSelectorPrompt(
   adType: AdType = 'Ecom Style',
   fullAiSpecification?: FullAiSpecification,
   fullAiVisualStyle?: FullAiVisualStyle,
+  inspirationContext?: string,
 ): { system: string; user: string } {
   const isFullAi = adType === 'Full AI (Documentary, story, education, etc)';
   const fullAiSkillBlock = isFullAi
@@ -161,7 +162,10 @@ Then select the SINGLE best concept.`;
     memorySection += `\n\n## PAST CREATIVE DECISIONS FOR "${angle}" ANGLE\n\nThe following table shows every brief previously produced for the "${angle}" angle. Use this to consciously select concepts that bring FRESH creative approaches.\n\n${angleHistory}`;
   }
 
-  return { system: system + memorySection, user };
+  // Inject inspiration bank context if available
+  const inspirationSection = inspirationContext ? `\n\n${inspirationContext}` : '';
+
+  return { system: system + memorySection + inspirationSection, user };
 }
 
 function getAngleContext(angle: string): string {

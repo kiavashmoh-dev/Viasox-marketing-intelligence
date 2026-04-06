@@ -8,6 +8,7 @@ import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildScriptPrompt } from '../../prompts/scriptPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
+import { getInspirationContextBlock } from '../../inspiration/inspirationInjection';
 import { downloadProductionBriefCsv, downloadEcomBriefDoc } from '../../utils/downloadUtils';
 import { getAllProducts, getAllAdTypes, getAllFrameworks } from '../../utils/customOptionsRegistry';
 import ResultsView from '../ResultsView';
@@ -101,7 +102,24 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
   const usesWideTables = isAgc || isVideoProductionBrief;
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
-  const handleGenerate = (feedback?: string) => {
+  const handleGenerate = async (feedback?: string) => {
+    let inspirationCtx = '';
+    try {
+      const { block } = await getInspirationContextBlock({
+        adType,
+        productCategory: product,
+        duration,
+        framework,
+        isFullAi,
+        fullAiSpec: isFullAi ? fullAiSpecification : undefined,
+        fullAiVisualStyle: isFullAi ? fullAiVisualStyle : undefined,
+        maxResults: 5,
+      });
+      inspirationCtx = block;
+    } catch (e) {
+      console.warn('[inspiration] failed to load context for script', e);
+    }
+
     const { system, user } = buildScriptPrompt(
       {
         product,
@@ -131,6 +149,8 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         }),
       },
       analysis,
+      undefined,
+      inspirationCtx,
     );
     // AGC briefs are much larger (9 hooks × 10 cols + 20-40 body rows + b-roll list)
     // Standard scripts scale with duration + hook count

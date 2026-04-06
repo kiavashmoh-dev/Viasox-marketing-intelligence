@@ -157,7 +157,8 @@ export type ModuleId =
   | 'script'
   | 'comments'
   | 'product-intelligence'
-  | 'autopilot';
+  | 'autopilot'
+  | 'inspiration';
 
 export interface AppState {
   view: AppView;

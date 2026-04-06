@@ -4,6 +4,7 @@ import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildAnglesPrompt } from '../../prompts/anglesPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
+import { getInspirationContextBlock } from '../../inspiration/inspirationInjection';
 import { getAllAngleTypes, getAllAdTypes, getAllProducts } from '../../utils/customOptionsRegistry';
 import AnglesResultsView from '../AnglesResultsView';
 
@@ -72,7 +73,23 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
       }
     : undefined;
 
-  const handleGenerate = (feedback?: string) => {
+  const handleGenerate = async (feedback?: string) => {
+    let inspirationCtx = '';
+    try {
+      const { block } = await getInspirationContextBlock({
+        adType,
+        angleType,
+        productCategory: product,
+        isFullAi,
+        fullAiSpec: isFullAi ? fullAiSpecification : undefined,
+        fullAiVisualStyle: isFullAi ? fullAiVisualStyle : undefined,
+        maxResults: 5,
+      });
+      inspirationCtx = block;
+    } catch (e) {
+      console.warn('[inspiration] failed to load context for angles', e);
+    }
+
     const { system, user } = buildAnglesPrompt(
       {
         product,
@@ -85,6 +102,8 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
         fullAiVisualStyle: isFullAi ? fullAiVisualStyle : undefined,
       },
       analysis,
+      undefined,
+      inspirationCtx,
     );
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)

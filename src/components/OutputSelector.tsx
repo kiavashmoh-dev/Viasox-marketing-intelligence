@@ -40,6 +40,12 @@ const creativeModules: Module[] = [
     description: 'Upload Asana screenshot, auto-generate concepts, select the best, write Ecom briefs, and review quality',
     icon: '\uD83E\uDD16',
   },
+  {
+    id: 'inspiration',
+    title: 'Inspiration Bank',
+    description: 'Upload reference videos, briefs, and scripts \u2014 auto-tagged and injected as style guidance into every generation',
+    icon: '\uD83D\uDCDA',
+  },
 ];
 
 const insightModules: Module[] = [
