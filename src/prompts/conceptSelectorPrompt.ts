@@ -29,7 +29,6 @@ export function buildConceptSelectorPrompt(
   duration: string,
   analysis: FullAnalysis,
   usedFrameworks: string[],
-  referenceAnalysis: string,
   memoryBriefing?: string,
   angleHistory?: string,
   adType: AdType = 'Ecom Style',
@@ -99,8 +98,6 @@ ${usedFrameworks.length > 0 ? `The following frameworks have ALREADY been used f
 
 ## ALL AVAILABLE FRAMEWORKS
 ${getScriptFrameworks()}
-
-${referenceAnalysis ? `## STYLE REFERENCE ANALYSIS\n\nThe creative director provided reference ads. Here is the analysis of those references:\n\n${referenceAnalysis}\n\nThe selected concept should align with the style, tone, and narrative approach identified in these references.` : ''}
 
 ## EVALUATION CRITERIA (weighted):
 

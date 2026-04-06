@@ -3,7 +3,6 @@
  *
  * Orchestrates the complete brief generation pipeline with maximum depth:
  *
- * 0. Reference Analysis (if media provided) — Vision analysis of style references
  * Phase 1 — Strategy & Concepts:
  *   1. Strategy Session — Senior strategist analyzes batch, asks questions
  *   2. Strategy Synthesis — Produces weekly strategy brief from answers
@@ -16,7 +15,9 @@
  *
  * All creative agents use claude-opus-4-6.
  * Framework diversity is enforced across the batch.
- * Reference media is analyzed via vision and injected into all subsequent steps.
+ * Tasks may be pinned to a specific Inspiration Bank item — when pinned, the
+ * full frames + tags + summary + learnings + script of that ad are injected
+ * into the concept and script generation steps via vision calls.
  */
 
 import { sendMessage, sendVisionMessage } from '../api/claude';
@@ -31,12 +32,14 @@ import { buildStrategyAnalysisPrompt, buildStrategySynthesisPrompt, parseStrateg
 import { parseConceptBlocks } from '../utils/conceptParser';
 import type { FullAnalysis, ScriptParams, ScriptFramework } from '../engine/types';
 import type { AutopilotTask, AutopilotState, CreativeDirection, StrategySession } from '../engine/autopilotTypes';
+import type { InspirationItem } from '../engine/inspirationTypes';
 import { loadMemory, getHistoryForAngle, getReviewerFailurePatterns } from './memoryStore';
 import { getAngleLanguageBank } from '../prompts/manifestoReference';
 import { getAngleDirectives } from '../utils/customOptionsRegistry';
 import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator';
 import { saveCompletedBatchToMemory } from './memoryExtractor';
 import { getInspirationContextBlock } from '../inspiration/inspirationInjection';
+import { getItem as getInspirationItem, getFrames as getInspirationFrames } from '../inspiration/inspirationStore';
 
 // ─── All creative agents use Opus ────────────────────────────────────────────
 
@@ -138,16 +141,16 @@ async function sendMessageWithRetry(
 
 function getMaxTokensForDuration(duration: string): number {
   switch (duration) {
-    case '15s': return 8000;
-    case '30s': return 12000;
-    case '60s': return 16000;
-    default: return 12000;
+    case '15s': return 12000;
+    case '30s': return 16000;
+    case '60s': return 20000;
+    default: return 16000;
   }
 }
 
 // ─── Creative Direction Block ────────────────────────────────────────────────
 
-function buildDirectionBlock(direction: CreativeDirection, referenceAnalysis: string, strategyBrief?: string): string {
+function buildDirectionBlock(direction: CreativeDirection, strategyBrief?: string): string {
   const parts: string[] = [];
 
   if (strategyBrief) {
@@ -168,71 +171,137 @@ ${direction.instructions}
 </creative_direction>`);
   }
 
-  if (referenceAnalysis) {
-    parts.push(`## STYLE REFERENCE ANALYSIS — MATCH THIS STYLE
-
-<reference_analysis>
-${referenceAnalysis}
-</reference_analysis>
-
-**CRITICAL:** Your concepts and scripts must match the style, energy, pacing, narrative structure, and visual approach identified in these references.`);
-  }
-
   return parts.length > 0 ? '\n\n' + parts.join('\n\n') : '';
 }
 
-// ─── Reference Media Analysis ────────────────────────────────────────────────
+// ─── Pinned Inspiration Loader ──────────────────────────────────────────────
 
-const REFERENCE_ANALYSIS_SYSTEM = `You are a senior creative strategist analyzing reference advertisements for a DTC compression sock brand called Viasox. You are an expert in direct response video advertising, performance marketing, and creative strategy.
+interface PinnedInspirationContext {
+  item: InspirationItem;
+  frames: string[];          // base64 jpeg data URLs (with `data:image/...;base64,` prefix)
+  richContext: string;       // formatted text block describing the pin
+}
 
-Your job is to deeply analyze the provided reference ad(s) and extract every insight that will help create new ads in the same style. Be EXTREMELY detailed and specific.`;
+/**
+ * Load a pinned inspiration item (full frames + tags + summary + learnings + script)
+ * for the given task. Returns null if no pin, item not found, or item not ready.
+ */
+async function loadPinnedInspirationForTask(
+  taskName: string,
+  pinnedInspirations: Record<string, string>,
+): Promise<PinnedInspirationContext | null> {
+  const itemId = pinnedInspirations[taskName];
+  if (!itemId) return null;
 
-const REFERENCE_ANALYSIS_PROMPT = `Analyze these reference ad(s) in extreme detail. For each reference, extract:
+  try {
+    const item = await getInspirationItem(itemId);
+    if (!item || item.status !== 'ready') return null;
 
-## 1. VISUAL STYLE
-- Color palette and grading, framing, text overlay style, lighting, overall aesthetic
+    const frames = item.kind === 'video' ? await getInspirationFrames(itemId) : [];
 
-## 2. STORYTELLING & NARRATIVE
-- Opening approach, narrative arc, when/how the product appears, emotional journey
+    const tags = item.tags;
+    const tagPills = [
+      tags.adType !== 'unknown' ? tags.adType : null,
+      tags.angleType !== 'unknown' ? tags.angleType : null,
+      tags.framework && tags.framework !== 'unknown' ? tags.framework : null,
+      tags.duration !== 'unknown' ? tags.duration : null,
+      tags.productCategory && tags.productCategory !== 'unknown' ? tags.productCategory : null,
+      tags.hookStyle && tags.hookStyle !== 'unknown' ? tags.hookStyle : null,
+      tags.emotionalEntry || null,
+      tags.isFullAi ? 'Full AI' : null,
+      tags.fullAiSpecification && tags.fullAiSpecification !== 'unknown' ? tags.fullAiSpecification : null,
+      tags.fullAiVisualStyle && tags.fullAiVisualStyle !== 'unknown' ? tags.fullAiVisualStyle : null,
+      ...(tags.customTags || []),
+    ].filter(Boolean).join(' · ');
 
-## 3. SCRIPT & COPY APPROACH
-- Framework used, tone, POV, hook style, CTA style
+    const learnings = (item.learnings || []).map((l, i) => `${i + 1}. ${l}`).join('\n');
+    const scriptText = item.attachedScriptText || item.textContent || '';
 
-## 4. PACING & RHYTHM
-- Fast-cut vs deliberate, text card duration, rhythm pattern, music direction
+    const richContext = `## PINNED REFERENCE AD — FOLLOW THIS EXAMPLE CLOSELY
 
-## 5. KEY TAKEAWAYS FOR REPLICATION
-- What makes this effective? What to replicate? What NOT to copy?
+The creative director has pinned the following ad from the Inspiration Bank as the primary reference for THIS specific brief. You must study every detail and let it shape this brief's style, structure, hook approach, narrative arc, and visual treatment. This pin OVERRIDES general inspiration matches — when it conflicts with other examples, follow the pin.
 
-Be specific enough that a copywriter and editor could recreate this style.`;
+**Pin Title:** ${item.title}
+**Tags:** ${tagPills || '(none)'}
 
-async function analyzeReferenceMedia(
-  direction: CreativeDirection,
+**Summary (why this ad works):**
+${item.summary}
+
+**Key Learnings to Replicate:**
+${learnings}
+
+**Style Notes:**
+${item.styleNotes}
+${item.hookBreakdown ? `\n**Hook Breakdown (first 3 seconds):**\n${item.hookBreakdown}` : ''}
+${item.narrativeArc ? `\n**Narrative Arc:**\n${item.narrativeArc}` : ''}
+${scriptText ? `\n**Reference Script / Voiceover:**\n${scriptText}` : ''}
+${frames.length > 0 ? `\n**Visual Frames:** ${frames.length} frames from the reference ad are attached as images. Study them carefully — they show the actual look, framing, pacing, and visual language to emulate.` : ''}
+
+**HOW TO USE THIS PIN:**
+1. The new brief should feel like a sibling of this pin — same DNA, fresh execution
+2. Match the hook style and opening approach
+3. Match the narrative pacing and structure
+4. Match the visual language and tone
+5. Apply the listed learnings as creative principles
+6. Do NOT copy lines verbatim — adapt the approach to this brief's specific angle and product
+7. The pin's product/angle may differ from this brief's — translate the STYLE, not the content`;
+
+    return { item, frames, richContext };
+  } catch (e) {
+    console.warn('[pinned-inspiration] failed to load', e);
+    return null;
+  }
+}
+
+/**
+ * Build vision content blocks from a pinned inspiration's frames + a final text prompt.
+ * Strips the `data:image/...;base64,` prefix that frame extractor stores.
+ */
+function buildPinnedVisionContent(
+  pin: PinnedInspirationContext,
+  userText: string,
+): ContentBlock[] {
+  const blocks: ContentBlock[] = [];
+  // Cap at 8 frames for vision call efficiency
+  const frames = pin.frames.slice(0, 8);
+  for (const dataUrl of frames) {
+    const match = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    if (!match) continue;
+    blocks.push({
+      type: 'image',
+      source: { type: 'base64', media_type: match[1], data: match[2] },
+    });
+  }
+  blocks.push({ type: 'text', text: userText });
+  return blocks;
+}
+
+/**
+ * Wrapper around sendVisionMessage that auto-retries on transient errors.
+ */
+async function sendVisionMessageWithRetry(
+  system: string,
+  content: ContentBlock[],
   apiKey: string,
+  maxTokens: number,
+  model: string,
   signal: AbortSignal,
 ): Promise<string> {
-  if (direction.referenceMedia.length === 0) return '';
-
-  const content: ContentBlock[] = [];
-  for (const media of direction.referenceMedia) {
-    if (media.mediaType.startsWith('image/')) {
-      content.push({
-        type: 'image',
-        source: { type: 'base64', media_type: media.mediaType, data: media.base64 },
-      });
+  const MAX_ATTEMPTS = 3;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      return await sendVisionMessage(system, content, apiKey, maxTokens, model, signal);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      const isRetryable = msg.includes('timed out') || msg.includes('overloaded') || msg.includes('Rate limited');
+      if (!isRetryable || attempt === MAX_ATTEMPTS) throw err;
+      const waitMs = attempt * 15000 + Math.random() * 5000;
+      console.log(`Vision pipeline retry ${attempt}/${MAX_ATTEMPTS - 1} — waiting ${Math.round(waitMs / 1000)}s...`);
+      await delay(waitMs);
+      if (signal.aborted) throw new Error('Pipeline cancelled');
     }
   }
-  if (content.length === 0) return '';
-  content.push({ type: 'text', text: REFERENCE_ANALYSIS_PROMPT });
-
-  return await sendVisionMessage(
-    REFERENCE_ANALYSIS_SYSTEM,
-    content,
-    apiKey,
-    6000,
-    OPUS,
-    signal,
-  );
+  throw new Error('Unreachable');
 }
 
 // ─── Strategy Session ───────────────────────────────────────────────────────
@@ -241,17 +310,16 @@ export async function runStrategySession(
   tasks: AutopilotTask[],
   analysis: FullAnalysis,
   apiKey: string,
-  referenceAnalysis: string,
   memoryBriefing: string | undefined,
   signal: AbortSignal,
 ): Promise<StrategySession> {
-  const prompt = buildStrategyAnalysisPrompt(tasks, analysis, memoryBriefing, referenceAnalysis || undefined);
+  const prompt = buildStrategyAnalysisPrompt(tasks, analysis, memoryBriefing);
 
   const response = await sendMessage(
     prompt.system,
     prompt.user,
     apiKey,
-    6000,
+    8000,
     OPUS,
     signal,
   );
@@ -295,7 +363,7 @@ export async function synthesizeStrategy(
     prompt.system,
     prompt.user,
     apiKey,
-    8000,
+    10000,
     OPUS,
     signal,
   );
@@ -309,14 +377,13 @@ export async function runConceptPhase(
   apiKey: string,
   resourceContext: string,
   direction: CreativeDirection,
-  referenceAnalysis: string,
   strategyBrief: string | undefined,
   memoryBriefing: string | undefined,
   onProgress: (state: AutopilotState) => void,
   signal: AbortSignal,
 ): Promise<AutopilotState> {
   const resourceCtx = buildResourceContext(resourceContext);
-  const directionBlock = buildDirectionBlock(direction, referenceAnalysis, strategyBrief);
+  const directionBlock = buildDirectionBlock(direction, strategyBrief);
 
   const state: AutopilotState = {
     phase: 'generating-concepts',
@@ -339,7 +406,9 @@ export async function runConceptPhase(
       ts.step = 'generating-concepts';
       onProgress({ ...state });
 
-      const inspirationCtx = await getInspirationForTask(task);
+      // Load pinned inspiration if any (overrides general bank matches)
+      const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
+      const inspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(task);
       const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing, inspirationCtx);
 
       // Inject the SPECIFIC angle from Asana as the primary creative directive.
@@ -376,14 +445,30 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
 - The hook IS the ad — there's no "body." Every second is hook.
 - Think TikTok/Reels native, not a TV spot cut short.` : ''}`;
 
-      const conceptsRaw = await sendMessageWithRetry(
-        anglesPrompt.system + resourceCtx + directionBlock + angleDirective,
-        anglesPrompt.user,
-        apiKey,
-        12000,
-        OPUS,
-        signal,
-      );
+      const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
+
+      // When pinned, switch to vision call so the model can see the actual frames
+      let conceptsRaw: string;
+      if (pinned && pinned.frames.length > 0) {
+        const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+        conceptsRaw = await sendVisionMessageWithRetry(
+          conceptSystem,
+          visionContent,
+          apiKey,
+          18000,
+          OPUS,
+          signal,
+        );
+      } else {
+        conceptsRaw = await sendMessageWithRetry(
+          conceptSystem,
+          anglesPrompt.user,
+          apiKey,
+          16000,
+          OPUS,
+          signal,
+        );
+      }
       ts.conceptsRaw = conceptsRaw;
       onProgress({ ...state });
 
@@ -409,7 +494,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         evalPrompt.system + directionBlock,
         evalPrompt.user,
         apiKey,
-        4000,
+        6000,
         OPUS,
         signal,
       );
@@ -458,7 +543,8 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         ts.error = undefined;
         onProgress({ ...state });
 
-        const inspirationCtx = await getInspirationForTask(task);
+        const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
+        const inspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(task);
         const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing, inspirationCtx);
         const customDirectives = getAngleDirectives()
           .filter((d) => d.angle.toLowerCase() === task.parsed.angle.toLowerCase() ||
@@ -472,14 +558,29 @@ ${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customD
 **FORMAT: ${task.parsed.medium} (${task.duration})**
 ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed long-form story.' : ''}`;
 
-        const conceptsRaw = await sendMessageWithRetry(
-          anglesPrompt.system + resourceCtx + directionBlock + angleDirective,
-          anglesPrompt.user,
-          apiKey,
-          12000,
-          OPUS,
-          signal,
-        );
+        const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
+
+        let conceptsRaw: string;
+        if (pinned && pinned.frames.length > 0) {
+          const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+          conceptsRaw = await sendVisionMessageWithRetry(
+            conceptSystem,
+            visionContent,
+            apiKey,
+            18000,
+            OPUS,
+            signal,
+          );
+        } else {
+          conceptsRaw = await sendMessageWithRetry(
+            conceptSystem,
+            anglesPrompt.user,
+            apiKey,
+            16000,
+            OPUS,
+            signal,
+          );
+        }
         ts.conceptsRaw = conceptsRaw;
         onProgress({ ...state });
 
@@ -504,7 +605,7 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
           evalPrompt.system + directionBlock,
           evalPrompt.user,
           apiKey,
-          4000,
+          6000,
           OPUS,
           signal,
         );
@@ -542,14 +643,13 @@ export async function runScriptPhase(
   apiKey: string,
   resourceContext: string,
   direction: CreativeDirection,
-  referenceAnalysis: string,
   strategyBrief: string | undefined,
   memoryBriefing: string | undefined,
   onProgress: (state: AutopilotState) => void,
   signal: AbortSignal,
 ): Promise<AutopilotState> {
   const resourceCtx = buildResourceContext(resourceContext);
-  const directionBlock = buildDirectionBlock(direction, referenceAnalysis, strategyBrief);
+  const directionBlock = buildDirectionBlock(direction, strategyBrief);
 
   const state = { ...currentState, tasks: currentState.tasks.map((t) => ({ ...t })) };
   state.phase = 'running';
@@ -590,7 +690,8 @@ export async function runScriptPhase(
         conceptAngleContext: ts.selectedConceptText,
       };
 
-      const scriptInspirationCtx = await getInspirationForTask(ts.task);
+      const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
+      const scriptInspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(ts.task);
       const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, scriptInspirationCtx);
 
       // Inject angle-specific and format-specific directives into script generation
@@ -614,14 +715,30 @@ This is NOT a compressed long-form ad. Short form is its own creative discipline
 The script table should have 2-4 rows MAX. Not 6-8 rows squeezed into 15 seconds.
 Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
 
-      const scriptResult = await sendMessageWithRetry(
-        scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective,
-        scriptPrompt.user,
-        apiKey,
-        getMaxTokensForDuration(ts.task.duration),
-        OPUS,
-        signal,
-      );
+      const scriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective;
+      const scriptTokens = getMaxTokensForDuration(ts.task.duration);
+
+      let scriptResult: string;
+      if (pinned && pinned.frames.length > 0) {
+        const visionContent = buildPinnedVisionContent(pinned, scriptPrompt.user);
+        scriptResult = await sendVisionMessageWithRetry(
+          scriptSystem,
+          visionContent,
+          apiKey,
+          scriptTokens,
+          OPUS,
+          signal,
+        );
+      } else {
+        scriptResult = await sendMessageWithRetry(
+          scriptSystem,
+          scriptPrompt.user,
+          apiKey,
+          scriptTokens,
+          OPUS,
+          signal,
+        );
+      }
 
       ts.scriptResult = scriptResult;
       ts.step = 'complete';
@@ -665,19 +782,36 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
           conceptAngleContext: ts.selectedConceptText!,
         };
 
-        const retryScriptInspirationCtx = await getInspirationForTask(ts.task);
+        const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
+        const retryScriptInspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(ts.task);
         const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, retryScriptInspirationCtx);
         const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
 This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleLanguageBank(ts.task.parsed.angle)}\n`;
 
-        const scriptResult = await sendMessageWithRetry(
-          scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective,
-          scriptPrompt.user,
-          apiKey,
-          getMaxTokensForDuration(ts.task.duration),
-          OPUS,
-          signal,
-        );
+        const retryScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective;
+        const retryScriptTokens = getMaxTokensForDuration(ts.task.duration);
+
+        let scriptResult: string;
+        if (pinned && pinned.frames.length > 0) {
+          const visionContent = buildPinnedVisionContent(pinned, scriptPrompt.user);
+          scriptResult = await sendVisionMessageWithRetry(
+            retryScriptSystem,
+            visionContent,
+            apiKey,
+            retryScriptTokens,
+            OPUS,
+            signal,
+          );
+        } else {
+          scriptResult = await sendMessageWithRetry(
+            retryScriptSystem,
+            scriptPrompt.user,
+            apiKey,
+            retryScriptTokens,
+            OPUS,
+            signal,
+          );
+        }
 
         ts.scriptResult = scriptResult;
         ts.step = 'complete';
@@ -713,7 +847,6 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
         })),
         analysis,
         direction.instructions,
-        referenceAnalysis,
         memoryBriefing,
         pastFailures.length > 0 ? pastFailures : undefined,
       );
@@ -722,7 +855,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
         reviewPrompt.system,
         reviewPrompt.user,
         apiKey,
-        12000,
+        16000,
         OPUS,
         signal,
       );
@@ -734,7 +867,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
   // ── Save to memory ──────────────────────────────────────────────────────
 
   try {
-    saveCompletedBatchToMemory(state, direction, referenceAnalysis);
+    saveCompletedBatchToMemory(state, direction);
   } catch { /* non-fatal */ }
 
   state.phase = 'complete';
@@ -742,66 +875,6 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
 
   return state;
 }
-
-// ─── Legacy: Full pipeline (for backward compatibility) ─────────────────────
-
-export async function runAutopilotPipeline(
-  tasks: AutopilotTask[],
-  analysis: FullAnalysis,
-  apiKey: string,
-  resourceContext: string,
-  direction: CreativeDirection,
-  onProgress: (state: AutopilotState) => void,
-  signal: AbortSignal,
-): Promise<AutopilotState> {
-  // This is now a thin wrapper — the new flow uses the phased approach
-  // Keeping for any callers that haven't migrated
-
-  let referenceAnalysis = '';
-  if (direction.referenceMedia.length > 0) {
-    try {
-      referenceAnalysis = await analyzeReferenceMedia(direction, apiKey, signal);
-      await delay(INTER_CALL_DELAY);
-    } catch (err) {
-      referenceAnalysis = `[Reference analysis failed: ${err instanceof Error ? err.message : String(err)}]`;
-    }
-  }
-
-  let memoryBriefing = '';
-  const memory = loadMemory();
-  if (memory.batches.length > 0) {
-    try {
-      const briefing = await runMemoryCurator(apiKey, signal);
-      if (briefing) memoryBriefing = briefing.briefingText;
-    } catch { /* non-fatal */ }
-    await delay(INTER_CALL_DELAY);
-  }
-
-  // Run concept phase
-  const conceptState = await runConceptPhase(
-    tasks, analysis, apiKey, resourceContext, direction,
-    referenceAnalysis, undefined, memoryBriefing,
-    onProgress, signal,
-  );
-
-  // Auto-select top concepts (legacy behavior)
-  const autoSelections = conceptState.tasks.map((ts, i) => {
-    if (!ts.conceptOptions || ts.conceptOptions.length === 0) return { taskIndex: i, conceptIndex: 1 };
-    const sorted = [...ts.conceptOptions].sort((a, b) => b.strengthRating - a.strengthRating);
-    return { taskIndex: i, conceptIndex: sorted[0].index };
-  });
-
-  // Run script phase
-  return await runScriptPhase(
-    conceptState, autoSelections, analysis, apiKey, resourceContext,
-    direction, referenceAnalysis, undefined, memoryBriefing,
-    onProgress, signal,
-  );
-}
-
-// ─── Reference Analysis Export ────────────────────────────────────────────
-
-export { analyzeReferenceMedia };
 
 // ─── Single-Task Redo ─────────────────────────────────────────────────────────
 
@@ -843,7 +916,7 @@ ${ts.scriptResult || '[no previous brief]'}
   };
 
   const strategyBrief = currentState.strategySession?.strategyBrief;
-  const directionBlock = buildDirectionBlock(fullDirection, '', strategyBrief);
+  const directionBlock = buildDirectionBlock(fullDirection, strategyBrief);
 
   let memoryBriefing = currentState.memoryBriefing || '';
   if (!memoryBriefing && memory.batches.length > 0) {
@@ -864,17 +937,33 @@ ${ts.scriptResult || '[no previous brief]'}
     ts.error = undefined;
     onProgress({ ...state });
 
-    const regenInspirationCtx = await getInspirationForTask(task);
+    const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
+    const regenInspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(task);
     const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined, regenInspirationCtx);
     const regenAngleCtx = `\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
-    const conceptsRaw = await sendMessage(
-      anglesPrompt.system + resourceCtx + directionBlock + regenAngleCtx,
-      anglesPrompt.user,
-      apiKey,
-      12000,
-      OPUS,
-      signal,
-    );
+
+    const regenConceptSystem = anglesPrompt.system + resourceCtx + directionBlock + regenAngleCtx;
+    let conceptsRaw: string;
+    if (pinned && pinned.frames.length > 0) {
+      const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+      conceptsRaw = await sendVisionMessageWithRetry(
+        regenConceptSystem,
+        visionContent,
+        apiKey,
+        18000,
+        OPUS,
+        signal,
+      );
+    } else {
+      conceptsRaw = await sendMessageWithRetry(
+        regenConceptSystem,
+        anglesPrompt.user,
+        apiKey,
+        16000,
+        OPUS,
+        signal,
+      );
+    }
     ts.conceptsRaw = conceptsRaw;
     onProgress({ ...state });
 
@@ -907,7 +996,6 @@ ${ts.scriptResult || '[no previous brief]'}
       task.duration,
       analysis,
       usedFrameworks,
-      '',
       memoryBriefing || undefined,
       angleHistoryText,
       task.scriptParamsBase.adType,
@@ -916,11 +1004,11 @@ ${ts.scriptResult || '[no previous brief]'}
       regenInspirationCtx,
     );
 
-    const selectorResponse = await sendMessage(
+    const selectorResponse = await sendMessageWithRetry(
       selectorPrompt.system + directionBlock,
       selectorPrompt.user,
       apiKey,
-      4000,
+      6000,
       OPUS,
       signal,
     );
@@ -949,14 +1037,31 @@ ${ts.scriptResult || '[no previous brief]'}
 
     const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined, regenInspirationCtx);
     const regenScriptAngleCtx = `\n\n## ANGLE ENFORCEMENT: "${task.parsed.angle}"\nThis script MUST be specifically about "${task.parsed.angle}".\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
-    const scriptResult = await sendMessage(
-      scriptPrompt.system + resourceCtx + directionBlock + regenScriptAngleCtx,
-      scriptPrompt.user,
-      apiKey,
-      getMaxTokensForDuration(task.duration),
-      OPUS,
-      signal,
-    );
+
+    const regenScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + regenScriptAngleCtx;
+    const regenScriptTokens = getMaxTokensForDuration(task.duration);
+
+    let scriptResult: string;
+    if (pinned && pinned.frames.length > 0) {
+      const visionContent = buildPinnedVisionContent(pinned, scriptPrompt.user);
+      scriptResult = await sendVisionMessageWithRetry(
+        regenScriptSystem,
+        visionContent,
+        apiKey,
+        regenScriptTokens,
+        OPUS,
+        signal,
+      );
+    } else {
+      scriptResult = await sendMessageWithRetry(
+        regenScriptSystem,
+        scriptPrompt.user,
+        apiKey,
+        regenScriptTokens,
+        OPUS,
+        signal,
+      );
+    }
 
     ts.scriptResult = scriptResult;
     ts.step = 'complete';

@@ -1,7 +1,8 @@
-import { useState, useRef, useCallback } from 'react';
-import type { AutopilotTask, CreativeDirection, ReferenceMedia } from '../../engine/autopilotTypes';
-import { fileToBase64 } from '../../autopilot/screenshotParser';
+import { useState, useEffect } from 'react';
+import type { AutopilotTask, CreativeDirection } from '../../engine/autopilotTypes';
+import type { InspirationItem } from '../../engine/inspirationTypes';
 import { getMemoryStats } from '../../autopilot/memoryStore';
+import { getAllItems } from '../../inspiration/inspirationStore';
 import MemoryPanel from './MemoryPanel';
 
 interface Props {
@@ -13,11 +14,28 @@ interface Props {
 export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
   const [included, setIncluded] = useState<boolean[]>(tasks.map(() => true));
   const [instructions, setInstructions] = useState('');
-  const [referenceMedia, setReferenceMedia] = useState<ReferenceMedia[]>([]);
-  const [useReferences, setUseReferences] = useState(false);
   const [showMemory, setShowMemory] = useState(false);
-  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const [inspirationItems, setInspirationItems] = useState<InspirationItem[]>([]);
+  const [pinnedByIndex, setPinnedByIndex] = useState<Record<number, string>>({});
   const memStats = getMemoryStats();
+
+  // Load inspiration bank items on mount so we can offer them as pin options
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const items = await getAllItems();
+        if (cancelled) return;
+        const ready = items
+          .filter((it) => it.status === 'ready')
+          .sort((a, b) => (a.title || a.filename).localeCompare(b.title || b.filename));
+        setInspirationItems(ready);
+      } catch (e) {
+        console.warn('[planner] failed to load inspiration items', e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const toggle = (i: number) => {
     setIncluded((prev) => {
@@ -27,36 +45,34 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
     });
   };
 
-  const handleMediaUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const newMedia: ReferenceMedia[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      try {
-        const { base64, mediaType } = await fileToBase64(file);
-        newMedia.push({ base64, mediaType, fileName: file.name });
-      } catch {
-        // Skip files that fail to read
+  const setPin = (taskIndex: number, itemId: string) => {
+    setPinnedByIndex((prev) => {
+      const next = { ...prev };
+      if (itemId === '') {
+        delete next[taskIndex];
+      } else {
+        next[taskIndex] = itemId;
       }
-    }
-
-    setReferenceMedia((prev) => [...prev, ...newMedia]);
-    // Reset input so the same file can be re-uploaded
-    if (mediaInputRef.current) mediaInputRef.current.value = '';
-  }, []);
-
-  const removeMedia = (index: number) => {
-    setReferenceMedia((prev) => prev.filter((_, i) => i !== index));
+      return next;
+    });
   };
 
   const selectedTasks = tasks.filter((_, i) => included[i]);
 
+  // Build the pinnedInspirations map keyed by task name (matching pipelineEngine lookup)
+  const pinnedInspirations: Record<string, string> = {};
+  tasks.forEach((task, i) => {
+    if (included[i] && pinnedByIndex[i]) {
+      pinnedInspirations[task.parsed.name] = pinnedByIndex[i];
+    }
+  });
+
   const direction: CreativeDirection = {
     instructions: instructions.trim(),
-    referenceMedia: useReferences ? referenceMedia : [],
+    pinnedInspirations,
   };
+
+  const pinnedCount = Object.keys(pinnedInspirations).length;
 
   return (
     <div className="space-y-5">
@@ -65,6 +81,7 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
         <h3 className="text-lg font-bold text-slate-800 mb-1">Task Queue</h3>
         <p className="text-sm text-slate-500 mb-4">
           Parsed {tasks.length} tasks from your Asana screenshot. Uncheck any you want to skip.
+          Optionally pin a specific Inspiration Bank ad to follow for any task.
         </p>
 
         <div className="overflow-x-auto mb-2">
@@ -77,7 +94,7 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
                 <th className="py-2 px-2 text-slate-600 font-semibold">Angle</th>
                 <th className="py-2 px-2 text-slate-600 font-semibold">Medium</th>
                 <th className="py-2 px-2 text-slate-600 font-semibold">Duration</th>
-                <th className="py-2 px-2 text-slate-600 font-semibold">Ad Type</th>
+                <th className="py-2 px-2 text-slate-600 font-semibold">Pinned Inspiration (optional)</th>
               </tr>
             </thead>
             <tbody>
@@ -103,19 +120,42 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
                   </td>
                   <td className="py-2 px-2 text-slate-600">{task.parsed.medium}</td>
                   <td className="py-2 px-2 text-slate-600">{task.duration}</td>
-                  <td className="py-2 px-2 text-slate-500 text-xs">Ecom / TOF / B2G3</td>
+                  <td className="py-2 px-2">
+                    {inspirationItems.length === 0 ? (
+                      <span className="text-[10px] text-slate-400 italic">Bank empty</span>
+                    ) : (
+                      <select
+                        value={pinnedByIndex[i] ?? ''}
+                        onChange={(e) => setPin(i, e.target.value)}
+                        disabled={!included[i]}
+                        className="text-xs border border-slate-200 rounded px-2 py-1 bg-white text-slate-700 max-w-[220px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="">— None (use general bank) —</option>
+                        {inspirationItems.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.starred ? '⭐ ' : ''}{item.title || item.filename}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {pinnedCount > 0 && (
+          <div className="mt-3 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded px-3 py-2">
+            <strong>{pinnedCount}</strong> task{pinnedCount !== 1 ? 's have' : ' has'} a pinned inspiration. The full frames, tags, summary, learnings, and script of {pinnedCount !== 1 ? 'each pin' : 'that pin'} will guide concept and script generation for those tasks specifically.
+          </div>
+        )}
       </div>
 
-      {/* Creative Direction */}
+      {/* Instructions */}
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-slate-800 mb-1">Creative Direction</h3>
+        <h3 className="text-lg font-bold text-slate-800 mb-1">Instructions</h3>
         <p className="text-sm text-slate-500 mb-4">
-          Give specific instructions for this batch. These will directly guide how concepts are generated, selected, and scripted.
+          Give specific instructions for this batch. These will directly guide how concepts are generated, selected, and scripted across all tasks.
         </p>
 
         <textarea
@@ -127,87 +167,6 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
         <p className="text-[10px] text-slate-400 mt-1">
           Leave empty for default behavior. Your instructions override default agent decision-making.
         </p>
-
-        {/* Reference Media Toggle */}
-        <div className="mt-5 border-t border-slate-100 pt-5">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h4 className="text-sm font-semibold text-slate-700">Style References</h4>
-              <p className="text-xs text-slate-500">Upload example ads (images or video screenshots) to guide the creative style.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setUseReferences(false)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                  !useReferences ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                }`}
-              >
-                N/A
-              </button>
-              <button
-                onClick={() => setUseReferences(true)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                  useReferences ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                }`}
-              >
-                Add References
-              </button>
-            </div>
-          </div>
-
-          {useReferences && (
-            <div className="space-y-3">
-              {/* Uploaded media grid */}
-              {referenceMedia.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {referenceMedia.map((media, i) => (
-                    <div key={i} className="relative group">
-                      {media.mediaType.startsWith('image/') ? (
-                        <img
-                          src={`data:${media.mediaType};base64,${media.base64}`}
-                          alt={media.fileName}
-                          className="w-24 h-24 object-cover rounded-lg border border-slate-200"
-                        />
-                      ) : (
-                        <div className="w-24 h-24 bg-slate-100 rounded-lg border border-slate-200 flex flex-col items-center justify-center">
-                          <span className="text-lg">{'\uD83C\uDFAC'}</span>
-                          <span className="text-[9px] text-slate-500 mt-1 px-1 truncate w-full text-center">{media.fileName}</span>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => removeMedia(i)}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                      >
-                        x
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Upload button */}
-              <div>
-                <input
-                  ref={mediaInputRef}
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  onChange={handleMediaUpload}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => mediaInputRef.current?.click()}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
-                >
-                  + Upload images or video screenshots
-                </button>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  These references will be analyzed by the concept and script agents to match the style, pacing, and visual approach.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Memory Status */}

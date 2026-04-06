@@ -10,7 +10,6 @@ import type {
   BatchMemoryRecord,
   BriefMemoryRecord,
   FeedbackRecord,
-  ReferenceStyleRecord,
   CreativeIntelligenceBriefing,
   MemoryStats,
 } from './memoryTypes';
@@ -25,7 +24,6 @@ function createEmptyStore(): CreativeMemoryStore {
     version: CURRENT_VERSION,
     batches: [],
     feedback: [],
-    referenceStyles: [],
     lastCuratorBriefing: null,
   };
 }
@@ -181,18 +179,6 @@ export function addFeedback(feedback: FeedbackRecord): void {
   saveMemory(store);
 }
 
-// ─── Reference Styles ───────────────────────────────────────────────────────
-
-export function getReferenceStyleHistory(): ReferenceStyleRecord[] {
-  return loadMemory().referenceStyles;
-}
-
-export function addReferenceStyle(style: ReferenceStyleRecord): void {
-  const store = loadMemory();
-  store.referenceStyles.push(style);
-  saveMemory(store);
-}
-
 // ─── Curator Briefing Cache ─────────────────────────────────────────────────
 
 export function saveCuratorBriefing(briefing: CreativeIntelligenceBriefing): void {
@@ -240,7 +226,6 @@ export function getMemoryStats(): MemoryStats {
     totalBatches: store.batches.length,
     totalBriefs,
     totalFeedback: store.feedback.length,
-    totalReferenceStyles: store.referenceStyles.length,
     storageSizeKB: Math.round((new Blob([raw]).size) / 1024 * 10) / 10,
     oldestBatch: dates.length > 0 ? dates[0] : null,
     newestBatch: dates.length > 0 ? dates[dates.length - 1] : null,

@@ -6,9 +6,9 @@
  */
 
 import type { AutopilotState, CreativeDirection } from '../engine/autopilotTypes';
-import type { BatchMemoryRecord, BriefMemoryRecord, ReferenceStyleRecord } from './memoryTypes';
+import type { BatchMemoryRecord, BriefMemoryRecord } from './memoryTypes';
 import { parseReviewResult } from './reviewParser';
-import { saveBatchToMemory, addReferenceStyle } from './memoryStore';
+import { saveBatchToMemory } from './memoryStore';
 
 // ─── Hook Style Classification ──────────────────────────────────────────────
 
@@ -100,55 +100,11 @@ function extractConceptSummary(conceptText: string): string {
   return lines.slice(0, 2).join(' ').slice(0, 200);
 }
 
-// ─── Reference Style Extraction ─────────────────────────────────────────────
-
-function extractReferenceStyleRecord(
-  batchId: string,
-  referenceAnalysis: string,
-  direction: CreativeDirection,
-): ReferenceStyleRecord | null {
-  if (!referenceAnalysis || referenceAnalysis.startsWith('[Reference analysis failed')) return null;
-
-  // Extract key techniques from analysis
-  const techniques: string[] = [];
-  const techniquePatterns = [
-    /fast[- ]cut/i, /slow[- ]?(?:pacing|reveal|build)/i, /text[- ]heavy/i, /text\s+overlay/i,
-    /close[- ]?up/i, /wide\s+shot/i, /ugc[- ]?(?:style|feel)/i, /cinematic/i, /testimonial/i,
-    /before[- ]?after/i, /split\s+screen/i, /countdown/i, /list[- ]?style/i, /voiceover/i,
-  ];
-  for (const pat of techniquePatterns) {
-    if (pat.test(referenceAnalysis)) {
-      const m = referenceAnalysis.match(pat);
-      if (m) techniques.push(m[0].toLowerCase());
-    }
-  }
-
-  // Extract narrative approach
-  const narrativeMatch = referenceAnalysis.match(/narrative\s+arc[:\s]*([^\n.]+)/i)
-    || referenceAnalysis.match(/framework[:\s]*([^\n.]+)/i);
-  const narrative = narrativeMatch ? narrativeMatch[1].trim().slice(0, 100) : '';
-
-  // Extract tone
-  const toneMatch = referenceAnalysis.match(/tone[:\s]*([^\n.]+)/i);
-  const tone = toneMatch ? toneMatch[1].trim().slice(0, 100) : '';
-
-  return {
-    date: new Date().toISOString().split('T')[0],
-    batchId,
-    fileNames: direction.referenceMedia.map((m) => m.fileName),
-    styleSummary: referenceAnalysis.slice(0, 300),
-    keyTechniques: techniques.slice(0, 8),
-    narrativeApproach: narrative,
-    toneDescription: tone,
-  };
-}
-
 // ─── Main Extractor ─────────────────────────────────────────────────────────
 
 export function saveCompletedBatchToMemory(
   state: AutopilotState,
   direction: CreativeDirection,
-  referenceAnalysis: string,
 ): void {
   const batchId = new Date().toISOString();
   const date = new Date().toISOString().split('T')[0];
@@ -202,7 +158,6 @@ export function saveCompletedBatchToMemory(
     date,
     taskCount: state.tasks.length,
     creativeDirection: direction.instructions,
-    referenceStyleSummary: referenceAnalysis ? referenceAnalysis.slice(0, 300) : '',
     briefs: briefRecords,
     batchReviewSummary: parsedReview?.batchAssessment ?? '',
     batchFlags: [],
@@ -212,10 +167,4 @@ export function saveCompletedBatchToMemory(
 
   // Save to memory
   saveBatchToMemory(batchRecord);
-
-  // Save reference style if analysis exists
-  const styleRecord = extractReferenceStyleRecord(batchId, referenceAnalysis, direction);
-  if (styleRecord) {
-    addReferenceStyle(styleRecord);
-  }
 }

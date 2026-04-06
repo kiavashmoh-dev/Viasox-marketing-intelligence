@@ -22,7 +22,6 @@ export function buildStrategyAnalysisPrompt(
   tasks: AutopilotTask[],
   analysis: FullAnalysis,
   memoryBriefing: string | undefined,
-  referenceAnalysis: string | undefined,
 ): { system: string; user: string } {
   const taskList = tasks.map((t, i) =>
     `${i + 1}. **${t.parsed.name}** — Product: ${t.parsed.product}, Angle: ${t.parsed.angle}, Medium: ${t.parsed.medium} (${t.duration})`
@@ -92,8 +91,7 @@ ${getSegmentProductMatrix()}
 
 ${productKnowledge}
 
-${memoryBriefing ? `\n## CREATIVE MEMORY (what we've learned from past batches):\n${memoryBriefing}\n` : ''}
-${referenceAnalysis ? `\n## REFERENCE STYLE ANALYSIS:\n${referenceAnalysis}\n` : ''}`;
+${memoryBriefing ? `\n## CREATIVE MEMORY (what we've learned from past batches):\n${memoryBriefing}\n` : ''}`;
 
   const user = `Here is this week's creative batch:
 

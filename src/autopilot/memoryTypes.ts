@@ -35,7 +35,6 @@ export interface BatchMemoryRecord {
   date: string;                  // Human-readable date
   taskCount: number;
   creativeDirection: string;     // The instructions field (empty string if none)
-  referenceStyleSummary: string; // Summarized reference analysis (not full text)
   briefs: BriefMemoryRecord[];
   batchReviewSummary: string;    // 3-5 sentence overall batch assessment
   batchFlags: string[];          // Batch-level check results
@@ -51,18 +50,6 @@ export interface FeedbackRecord {
   source: 'creative_direction' | 'manual_feedback' | 'reviewer_pattern';
   content: string;               // What was said
   context: string;               // What angle/product/batch it applied to
-}
-
-// ─── Reference Style Memory ─────────────────────────────────────────────────
-
-export interface ReferenceStyleRecord {
-  date: string;
-  batchId: string;
-  fileNames: string[];           // Original file names of references
-  styleSummary: string;          // 3-4 sentence style description
-  keyTechniques: string[];       // e.g., ["fast-cut pacing", "text-heavy opens"]
-  narrativeApproach: string;     // e.g., "Before-After with slow reveal"
-  toneDescription: string;       // e.g., "warm, conversational, confessional"
 }
 
 // ─── Creative Intelligence Briefing (output of Curator Agent) ───────────────
@@ -84,7 +71,6 @@ export interface CreativeMemoryStore {
   version: number;               // Schema version for migration
   batches: BatchMemoryRecord[];
   feedback: FeedbackRecord[];
-  referenceStyles: ReferenceStyleRecord[];
   lastCuratorBriefing: CreativeIntelligenceBriefing | null;
 }
 
@@ -94,7 +80,6 @@ export interface MemoryStats {
   totalBatches: number;
   totalBriefs: number;
   totalFeedback: number;
-  totalReferenceStyles: number;
   storageSizeKB: number;
   oldestBatch: string | null;
   newestBatch: string | null;

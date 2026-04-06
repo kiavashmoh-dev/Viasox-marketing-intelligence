@@ -35,7 +35,6 @@ export function buildBatchReviewerPrompt(
   }>,
   analysis: FullAnalysis,
   creativeDirectionInstructions: string,
-  referenceAnalysis: string,
   memoryBriefing?: string,
   pastFailures?: Array<{ check: string; count: number }>,
 ): { system: string; user: string } {
@@ -175,9 +174,7 @@ Different creative scenarios, emotional entry points, and narrative approaches a
 **4. Persona Spread**
 Not all briefs targeting the exact same customer archetype. The batch should reach different segments — healthcare workers, seniors, gift-buying caregivers, style-conscious women, skeptical first-timers, etc. If every brief targets "woman with foot pain" = FLAG.
 
-${creativeDirectionInstructions ? `## CREATIVE DIRECTOR'S INSTRUCTIONS — VERIFY COMPLIANCE\n\nThe creative director gave these specific instructions for this batch:\n<creative_direction>\n${creativeDirectionInstructions}\n</creative_direction>\n\nFor EACH brief, verify whether the creative direction was followed. Flag any brief that contradicts or ignores these instructions.` : ''}
-
-${referenceAnalysis ? `## STYLE REFERENCE CONTEXT\n\nReference ads were provided. Here is the analysis:\n${referenceAnalysis}\n\nVerify that briefs align with the style direction from these references.` : ''}`;
+${creativeDirectionInstructions ? `## CREATIVE DIRECTOR'S INSTRUCTIONS — VERIFY COMPLIANCE\n\nThe creative director gave these specific instructions for this batch:\n<creative_direction>\n${creativeDirectionInstructions}\n</creative_direction>\n\nFor EACH brief, verify whether the creative direction was followed. Flag any brief that contradicts or ignores these instructions.` : ''}`;
 
   const user = `## REVIEW DATA CONTEXT
 ${getAllProductData(analysis)}

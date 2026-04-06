@@ -16,7 +16,6 @@ import {
   getAngleUsageCounts,
   getReviewerFailurePatterns,
   getRecentFeedback,
-  getReferenceStyleHistory,
   saveCuratorBriefing,
 } from './memoryStore';
 import type { CreativeIntelligenceBriefing } from './memoryTypes';
@@ -107,25 +106,6 @@ function buildCuratorInput(): string {
     parts.push(`## FEEDBACK HISTORY`);
     for (const fb of feedback) {
       parts.push(`- [${fb.date}] (${fb.source}): "${fb.content.slice(0, 200)}"`);
-    }
-    parts.push('');
-  }
-
-  // Reference style history
-  const styles = getReferenceStyleHistory();
-  if (styles.length > 0) {
-    parts.push(`## REFERENCE STYLE HISTORY`);
-    for (const style of styles.slice(-5)) {
-      parts.push(`- [${style.date}] Files: ${style.fileNames.join(', ')}`);
-      if (style.keyTechniques.length > 0) {
-        parts.push(`  Techniques: ${style.keyTechniques.join(', ')}`);
-      }
-      if (style.narrativeApproach) {
-        parts.push(`  Narrative: ${style.narrativeApproach}`);
-      }
-      if (style.toneDescription) {
-        parts.push(`  Tone: ${style.toneDescription}`);
-      }
     }
     parts.push('');
   }

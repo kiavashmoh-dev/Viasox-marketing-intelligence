@@ -6,7 +6,6 @@ import { mapAsanaTask } from '../../autopilot/asanaMapper';
 import {
   runStrategySession,
   synthesizeStrategy,
-  analyzeReferenceMedia,
   runConceptPhase,
   runScriptPhase,
   redoSingleTask,
@@ -47,8 +46,7 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
   // Refs for persistence across phases
   const abortRef = useRef<AbortController | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const directionRef = useRef<CreativeDirection>({ instructions: '', referenceMedia: [] });
-  const referenceAnalysisRef = useRef('');
+  const directionRef = useRef<CreativeDirection>({ instructions: '', pinnedInspirations: {} });
   const memoryBriefingRef = useRef('');
 
   // ── Screenshot Upload ──────────────────────────────────────────────────
@@ -105,11 +103,6 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
     abortRef.current = controller;
 
     try {
-      // Analyze reference media
-      if (direction.referenceMedia.length > 0) {
-        referenceAnalysisRef.current = await analyzeReferenceMedia(direction, apiKey, controller.signal);
-      }
-
       // Run memory curator
       const memory = loadMemory();
       if (memory.batches.length > 0) {
@@ -124,7 +117,6 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
         selectedTasks,
         analysis,
         apiKey,
-        referenceAnalysisRef.current,
         memoryBriefingRef.current || undefined,
         controller.signal,
       );
@@ -174,7 +166,6 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
         apiKey,
         resourceContext,
         directionRef.current,
-        referenceAnalysisRef.current,
         brief,
         memoryBriefingRef.current || undefined,
         (state) => setPipelineState({ ...state }),
@@ -216,7 +207,6 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
         apiKey,
         resourceContext,
         directionRef.current,
-        referenceAnalysisRef.current,
         strategyBrief,
         memoryBriefingRef.current || undefined,
         (state) => setPipelineState({ ...state }),
@@ -273,7 +263,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         anglesPrompt.system + resourceCtx + directionBlock + (strategyBrief ? `\n\nSTRATEGY BRIEF:\n${strategyBrief}` : ''),
         anglesPrompt.user,
         apiKey,
-        12000,
+        16000,
         'claude-opus-4-6',
         controller.signal,
       );
@@ -297,7 +287,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         evalPrompt.system,
         evalPrompt.user,
         apiKey,
-        4000,
+        6000,
         'claude-opus-4-6',
         controller.signal,
       );
@@ -357,8 +347,8 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
     setStrategySession(null);
     setStrategyBrief(undefined);
     setStrategySynthesizing(false);
-    referenceAnalysisRef.current = '';
     memoryBriefingRef.current = '';
+    directionRef.current = { instructions: '', pinnedInspirations: {} };
   }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────
