@@ -99,15 +99,29 @@ export async function updateItem(item: InspirationItem): Promise<void> {
 export async function getItem(id: string): Promise<InspirationItem | undefined> {
   const db = await openDb();
   const tx = db.transaction([STORE_ITEMS], 'readonly');
-  return promisifyRequest(tx.objectStore(STORE_ITEMS).get(id) as IDBRequest<InspirationItem | undefined>);
+  const result = await promisifyRequest(
+    tx.objectStore(STORE_ITEMS).get(id) as IDBRequest<InspirationItem | undefined>
+  );
+  return result ? normalizeKind(result) : undefined;
+}
+
+/** Normalize legacy data: any item persisted before the schema collapse with
+ *  `kind: 'script'` is now treated as a `'brief'`. Briefs and scripts are the
+ *  same thing in the bank — briefs include scripts inside them. */
+function normalizeKind(item: InspirationItem): InspirationItem {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((item.kind as any) === 'script') {
+    return { ...item, kind: 'brief' };
+  }
+  return item;
 }
 
 export async function getAllItems(): Promise<InspirationItem[]> {
   const db = await openDb();
   const tx = db.transaction([STORE_ITEMS], 'readonly');
   const items = await promisifyRequest(tx.objectStore(STORE_ITEMS).getAll() as IDBRequest<InspirationItem[]>);
-  // Newest first
-  return items.sort((a, b) => (a.uploadedAt < b.uploadedAt ? 1 : -1));
+  // Newest first, normalize legacy kinds
+  return items.map(normalizeKind).sort((a, b) => (a.uploadedAt < b.uploadedAt ? 1 : -1));
 }
 
 export async function getBlob(id: string): Promise<Blob | undefined> {
@@ -185,7 +199,7 @@ export async function getStats(): Promise<InspirationStats> {
   const all = await getAllItems();
   const ready = all.filter((i) => i.status === 'ready');
 
-  const byKind: Record<InspirationKind, number> = { video: 0, brief: 0, script: 0 };
+  const byKind: Record<InspirationKind, number> = { video: 0, brief: 0 };
   const byAdType: Record<string, number> = {};
   const byAngle: Record<string, number> = {};
   const byProduct: Record<string, number> = {};

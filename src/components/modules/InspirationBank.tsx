@@ -1,8 +1,8 @@
 /**
  * Inspiration Bank — main module UI.
  *
- * Lets the user upload reference videos / briefs / scripts, runs the
- * analyzer agent on them, and shows the bank with tag-driven filters.
+ * Lets the user upload reference videos and briefs (briefs include scripts),
+ * runs the analyzer agent on them, and shows the bank with tag-driven filters.
  */
 
 import { useEffect, useMemo, useState, useRef } from 'react';
@@ -39,7 +39,6 @@ interface Props {
 const KIND_LABEL: Record<InspirationKind, string> = {
   video: 'Video Ad',
   brief: 'Brief',
-  script: 'Script',
 };
 
 const AD_TYPES: (AdType | 'all')[] = [
@@ -267,7 +266,7 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
             <div>
               <h2 className="text-2xl font-bold text-slate-800 mb-1">Inspiration Bank</h2>
               <p className="text-slate-500 text-sm">
-                Reference ads, briefs, and scripts the system learns from. Tagged automatically by an
+                Reference ads and briefs the system learns from. Tagged automatically by an
                 expert agent — used by every generator below.
               </p>
             </div>
@@ -283,11 +282,10 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
 
           {/* Stats row */}
           {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <StatTile label="Total" value={String(stats.total)} />
               <StatTile label="Videos" value={String(stats.byKind.video)} />
               <StatTile label="Briefs" value={String(stats.byKind.brief)} />
-              <StatTile label="Scripts" value={String(stats.byKind.script)} />
               <StatTile label="Starred" value={String(stats.starredCount)} />
             </div>
           )}
@@ -309,7 +307,6 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
               <option value="all">All kinds</option>
               <option value="video">Videos</option>
               <option value="brief">Briefs</option>
-              <option value="script">Scripts</option>
             </select>
             <select
               value={filterAdType}
@@ -385,7 +382,7 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-400">
             {items.length === 0
-              ? 'Your inspiration bank is empty. Upload a winning ad, brief, or script to get started.'
+              ? 'Your inspiration bank is empty. Upload a winning ad or brief to get started.'
               : 'No items match your filters.'}
           </div>
         ) : (
@@ -460,7 +457,7 @@ function InspirationCard({
         </div>
       ) : (
         <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 text-4xl">
-          {item.kind === 'brief' ? '\uD83D\uDCC4' : item.kind === 'script' ? '\uD83D\uDCDD' : '\uD83C\uDFAC'}
+          {item.kind === 'brief' ? '\uD83D\uDCC4' : '\uD83C\uDFAC'}
         </div>
       )}
       <div className="p-4 flex-1 flex flex-col">
@@ -527,12 +524,7 @@ function UploadDialog({
   const [attachedScript, setAttachedScript] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const accept =
-    kind === 'video'
-      ? 'video/*'
-      : kind === 'brief'
-        ? '.docx,.pdf,.txt,.md'
-        : '.docx,.pdf,.txt,.md';
+  const accept = kind === 'video' ? 'video/*' : '.docx,.pdf,.txt,.md';
 
   const handleSubmit = () => {
     if (!file) return;
@@ -552,8 +544,8 @@ function UploadDialog({
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Kind</label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['video', 'brief', 'script'] as InspirationKind[]).map((k) => (
+            <div className="grid grid-cols-2 gap-2">
+              {(['video', 'brief'] as InspirationKind[]).map((k) => (
                 <button
                   key={k}
                   onClick={() => {

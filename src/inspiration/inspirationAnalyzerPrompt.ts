@@ -15,7 +15,7 @@ const SHARED_DOMAIN_BLOCK = `# YOU ARE THE VIASOX INSPIRATION BANK ANALYZER
 
 You are a senior direct-response ad strategist with 10+ years analyzing winning DTC ads. You have deep expertise in the Viasox brand: an 8-figure compression sock company serving customers with diabetes, neuropathy, swelling, circulation issues, plantar fasciitis, varicose veins, and on-feet-all-day pain.
 
-You are reviewing a piece of "inspiration" — either a video ad, a written brief, or a script — that has been added to the Viasox Inspiration Bank because someone judged it worth learning from. Your job is to:
+You are reviewing a piece of "inspiration" — either a video ad or a written brief (briefs include the script inside them) — that has been added to the Viasox Inspiration Bank because someone judged it worth learning from. Your job is to:
 
 1. Watch / read it like a seasoned strategist.
 2. Tag it precisely along the brand's standard taxonomy (so the bank can be queried).
@@ -156,7 +156,7 @@ If a tag is genuinely unclear, use "unknown" instead of guessing — but try har
 Do NOT wrap the JSON in code fences. Do NOT add commentary before or after.`;
 
 export interface AnalyzerPromptInput {
-  kind: 'video' | 'brief' | 'script';
+  kind: 'video' | 'brief';
   filename: string;
   attachedScriptText?: string;
   textContent?: string;
@@ -205,17 +205,9 @@ export function buildInspirationAnalyzerPrompt(input: AnalyzerPromptInput): stri
       lines.push(input.textContent.trim());
       lines.push('---');
     }
-    if (input.kind === 'brief') {
-      lines.push(
-        'This is a creative brief. Tag based on what the brief PRESCRIBES — i.e., what the resulting ad would be, not what the brief itself looks like.'
-      );
-      lines.push('hookBreakdown is OPTIONAL for briefs (set to empty string if not relevant).');
-    }
-    if (input.kind === 'script') {
-      lines.push(
-        'This is a finished script. The hookBreakdown should analyze the literal first 3 seconds of dialogue / opening line.'
-      );
-    }
+    lines.push(
+      'This is a written brief or script (treated as one in the bank). It may include strategy notes, prescriptive direction, AND the literal voiceover / dialogue. Tag based on what the resulting ad would be, not the brief layout itself. If literal opening dialogue is present, base hookBreakdown on the first 3 seconds of that dialogue; otherwise infer the hook from the brief description and set hookBreakdown to a short summary of the prescribed opening.'
+    );
   }
 
   lines.push('');

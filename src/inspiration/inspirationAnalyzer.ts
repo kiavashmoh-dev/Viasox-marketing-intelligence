@@ -63,14 +63,14 @@ export async function analyzeVideoItem(
   return persistAnalysis(input.item, analysis);
 }
 
-/** Run the analyzer over a brief or script (text-only). */
+/** Run the analyzer over a brief (text-only). Briefs include scripts inside them. */
 export async function analyzeTextItem(
   input: AnalyzeTextInput,
   apiKey: string,
   signal?: AbortSignal
 ): Promise<InspirationItem> {
   const prompt = buildInspirationAnalyzerPrompt({
-    kind: input.item.kind === 'video' ? 'script' : input.item.kind,
+    kind: 'brief',
     filename: input.item.filename,
     textContent: input.textContent,
   });

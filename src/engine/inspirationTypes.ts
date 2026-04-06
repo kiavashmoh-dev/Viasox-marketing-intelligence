@@ -17,7 +17,7 @@ import type {
   FullAiVisualStyle,
 } from './types';
 
-export type InspirationKind = 'video' | 'brief' | 'script';
+export type InspirationKind = 'video' | 'brief';
 
 export type InspirationStatus = 'analyzing' | 'ready' | 'failed';
 
