@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import type { FullAnalysis, ProductCategory, AwarenessLevel, AngleType, FunnelStage, AdType, ConceptContext } from '../../engine/types';
+import type { FullAnalysis, ProductCategory, AwarenessLevel, AngleType, FunnelStage, AdType, ConceptContext, FullAiSpecification, FullAiVisualStyle } from '../../engine/types';
 import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildAnglesPrompt } from '../../prompts/anglesPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
@@ -22,6 +22,24 @@ const FUNNEL_STAGES: { value: FunnelStage; label: string; description: string }[
   { value: 'BOF', label: 'BOF (Bottom of Funnel)', description: 'Ready to buy, retargeting' },
 ];
 
+const FULL_AI_SPECIFICATIONS: FullAiSpecification[] = [
+  'Documentary',
+  'Historical',
+  'Educational',
+  'Emotional Story',
+  'Aspirational',
+];
+
+const FULL_AI_VISUAL_STYLES: FullAiVisualStyle[] = [
+  'Story with cohesive characters',
+  'Fully Voice Over',
+  'Includes Talking To Camera',
+  'No Humans Shown (Perspective of the feet or socks)',
+  'Historical Visuals and Claims',
+];
+
+const FULL_AI_AD_TYPE: AdType = 'Full AI (Documentary, story, education, etc)';
+
 export default function AnglesGenerator({ analysis, apiKey, resourceContext, onBack, onWriteScript }: Props) {
   // Dynamic option lists from registry (built-in + custom)
   const PRODUCTS = useMemo(() => getAllProducts() as ProductCategory[], []);
@@ -33,7 +51,10 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
   const [angleType, setAngleType] = useState<AngleType>('Problem-Based');
   const [funnelStage, setFunnelStage] = useState<FunnelStage>('TOF');
   const [adType, setAdType] = useState<AdType>('UGC (User Generated Content)');
+  const [fullAiSpecification, setFullAiSpecification] = useState<FullAiSpecification>('Documentary');
+  const [fullAiVisualStyle, setFullAiVisualStyle] = useState<FullAiVisualStyle>('Story with cohesive characters');
   const [primaryTalkingPoint, setPrimaryTalkingPoint] = useState('');
+  const isFullAi = adType === FULL_AI_AD_TYPE;
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
   // Wrap onWriteScript to bundle current selector state with the concept text
@@ -45,13 +66,24 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
           awarenessLevel: awareness,
           funnelStage,
           adType,
+          fullAiSpecification: isFullAi ? fullAiSpecification : undefined,
+          fullAiVisualStyle: isFullAi ? fullAiVisualStyle : undefined,
         });
       }
     : undefined;
 
   const handleGenerate = (feedback?: string) => {
     const { system, user } = buildAnglesPrompt(
-      { product, awarenessLevel: awareness, angleType, funnelStage, adType, primaryTalkingPoint: primaryTalkingPoint.trim() || undefined },
+      {
+        product,
+        awarenessLevel: awareness,
+        angleType,
+        funnelStage,
+        adType,
+        primaryTalkingPoint: primaryTalkingPoint.trim() || undefined,
+        fullAiSpecification: isFullAi ? fullAiSpecification : undefined,
+        fullAiVisualStyle: isFullAi ? fullAiVisualStyle : undefined,
+      },
       analysis,
     );
     const finalUser = feedback && result
@@ -132,6 +164,32 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
                 {AD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
+
+            {isFullAi && (
+              <div className="space-y-5 p-4 rounded-lg border border-purple-200 bg-purple-50/50">
+                <div className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Full AI Configuration</div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Specification</label>
+                  <select
+                    value={fullAiSpecification}
+                    onChange={(e) => setFullAiSpecification(e.target.value as FullAiSpecification)}
+                    className={selectClass}
+                  >
+                    {FULL_AI_SPECIFICATIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Visual Style</label>
+                  <select
+                    value={fullAiVisualStyle}
+                    onChange={(e) => setFullAiVisualStyle(e.target.value as FullAiVisualStyle)}
+                    className={selectClass}
+                  >
+                    {FULL_AI_VISUAL_STYLES.map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Angle Type</label>

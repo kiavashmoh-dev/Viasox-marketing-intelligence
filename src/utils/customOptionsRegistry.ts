@@ -64,6 +64,7 @@ export const BASE_AD_TYPES = [
   'Fake Podcast Ads',
   'Spokesperson',
   'Packaging/Employee',
+  'Full AI (Documentary, story, education, etc)',
 ] as const;
 
 export const BASE_FRAMEWORKS = [

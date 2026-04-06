@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import type {
   FullAnalysis, ProductCategory, ScriptFramework, FunnelStage,
   AwarenessLevel, AdType, OfferType, HookVariationCount, MarketingBookReference,
-  ConceptContext, AgcBodyFormat, AgcPacing,
+  ConceptContext, AgcBodyFormat, AgcPacing, FullAiSpecification, FullAiVisualStyle,
 } from '../../engine/types';
 import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildScriptPrompt } from '../../prompts/scriptPrompt';
@@ -33,6 +33,24 @@ const OFFERS: { value: OfferType; label: string }[] = [
   { value: 'B2G3', label: 'Buy 2 Get 3 (B2G3)' },
 ];
 const HOOK_COUNTS: HookVariationCount[] = [3, 5, 7, 10];
+
+const FULL_AI_SPECIFICATIONS: FullAiSpecification[] = [
+  'Documentary',
+  'Historical',
+  'Educational',
+  'Emotional Story',
+  'Aspirational',
+];
+
+const FULL_AI_VISUAL_STYLES: FullAiVisualStyle[] = [
+  'Story with cohesive characters',
+  'Fully Voice Over',
+  'Includes Talking To Camera',
+  'No Humans Shown (Perspective of the feet or socks)',
+  'Historical Visuals and Claims',
+];
+
+const FULL_AI_AD_TYPE: AdType = 'Full AI (Documentary, story, education, etc)';
 const BOOK_REFERENCES: { value: MarketingBookReference; label: string }[] = [
   { value: 'All Four Books', label: 'All Four Books (Balanced Mix)' },
   { value: 'Scientific Advertising (Hopkins)', label: 'Scientific Advertising (Hopkins)' },
@@ -55,6 +73,12 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
   const [funnelStage, setFunnelStage] = useState<FunnelStage>(conceptAngleContext?.funnelStage ?? 'TOF');
   const [awareness, setAwareness] = useState<AwarenessLevel>(conceptAngleContext?.awarenessLevel ?? 'Problem Aware');
   const [adType, setAdType] = useState<AdType>(conceptAngleContext?.adType ?? 'UGC (User Generated Content)');
+  const [fullAiSpecification, setFullAiSpecification] = useState<FullAiSpecification>(
+    conceptAngleContext?.fullAiSpecification ?? 'Documentary',
+  );
+  const [fullAiVisualStyle, setFullAiVisualStyle] = useState<FullAiVisualStyle>(
+    conceptAngleContext?.fullAiVisualStyle ?? 'Story with cohesive characters',
+  );
   const [promoPeriod, setPromoPeriod] = useState('');
   const [offer, setOffer] = useState<OfferType>('None');
   const [hookVariations, setHookVariations] = useState<HookVariationCount>(3);
@@ -72,7 +96,8 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
 
   const isAgc = adType === 'AGC (Actor Generated Content)';
   const isEcom = adType === 'Ecom Style';
-  const isVideoProductionBrief = !isAgc && !isEcom && adType !== 'Static';
+  const isFullAi = adType === FULL_AI_AD_TYPE;
+  const isVideoProductionBrief = !isAgc && !isEcom && !isFullAi && adType !== 'Static';
   const usesWideTables = isAgc || isVideoProductionBrief;
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
@@ -92,6 +117,10 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         bookReference,
         primaryTalkingPoint: primaryTalkingPoint.trim() || undefined,
         conceptAngleContext: conceptAngleContext?.content ?? undefined,
+        ...(isFullAi && {
+          fullAiSpecification,
+          fullAiVisualStyle,
+        }),
         // Production brief params (AGC + all other video types except Ecom/Static)
         ...((isAgc || isVideoProductionBrief) && {
           ...(isAgc && { agcBodyFormat }),
@@ -183,6 +212,12 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
                 <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-medium">{conceptAngleContext.funnelStage}</span>
                 <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-medium">{conceptAngleContext.awarenessLevel}</span>
                 <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-medium">{conceptAngleContext.adType}</span>
+                {conceptAngleContext.fullAiSpecification && (
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-medium">{conceptAngleContext.fullAiSpecification}</span>
+                )}
+                {conceptAngleContext.fullAiVisualStyle && (
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-medium">{conceptAngleContext.fullAiVisualStyle}</span>
+                )}
               </div>
             </div>
           )}
@@ -262,6 +297,39 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
                 {AD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
+
+            {/* Full AI Configuration (Documentary / Story / Education etc.) */}
+            {isFullAi && (
+              <div className="border rounded-lg p-5 space-y-4 border-purple-200 bg-purple-50/50">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded text-purple-800 bg-purple-200">FULL AI</span>
+                  <span className="text-sm font-medium text-purple-800">Full AI Configuration</span>
+                  {hasConcept && <span className="text-xs text-emerald-600 ml-2">{'\uD83D\uDD12'} From concept</span>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Specification</label>
+                  <select
+                    value={fullAiSpecification}
+                    onChange={(e) => setFullAiSpecification(e.target.value as FullAiSpecification)}
+                    disabled={hasConcept}
+                    className={`${selectClass} bg-white ${hasConcept ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : ''}`}
+                  >
+                    {FULL_AI_SPECIFICATIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Visual Style</label>
+                  <select
+                    value={fullAiVisualStyle}
+                    onChange={(e) => setFullAiVisualStyle(e.target.value as FullAiVisualStyle)}
+                    disabled={hasConcept}
+                    className={`${selectClass} bg-white ${hasConcept ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : ''}`}
+                  >
+                    {FULL_AI_VISUAL_STYLES.map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
 
             {/* Production Brief Settings (AGC + all video types except Ecom/Static) */}
             {(isAgc || isVideoProductionBrief) && (

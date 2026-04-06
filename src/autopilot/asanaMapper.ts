@@ -1,4 +1,4 @@
-import type { ProductCategory, AngleType, AwarenessLevel, ScriptParams } from '../engine/types';
+import type { ProductCategory, AngleType, AwarenessLevel, ScriptParams, AdType, FullAiSpecification, FullAiVisualStyle } from '../engine/types';
 import type { ParsedAsanaTask, AutopilotTask } from '../engine/autopilotTypes';
 // Custom directives are read in pipelineEngine.ts, not here
 
@@ -231,6 +231,58 @@ function mapDuration(medium: string): '15s' | '30s' | '60s' {
 }
 
 /**
+ * Map the Asana medium/format field to an AdType.
+ *
+ * Defaults to "Ecom Style" (the workhorse editing brief format), but
+ * recognizes Full AI hints in the medium field — e.g., "Full AI",
+ * "AI Documentary", "Documentary", "AI Story", "AI Educational",
+ * "AI Aspirational", or anything with "ai" + a Full AI specification keyword.
+ */
+function mapAdType(medium: string, angle: string): AdType {
+  const lower = `${medium} ${angle}`.toLowerCase();
+
+  // Explicit Full AI signals
+  if (lower.includes('full ai') || lower.includes('fullai')) return 'Full AI (Documentary, story, education, etc)';
+  if (lower.includes('ai documentary') || lower.includes('ai doc')) return 'Full AI (Documentary, story, education, etc)';
+  if (lower.includes('ai story') || lower.includes('ai narrative')) return 'Full AI (Documentary, story, education, etc)';
+  if (lower.includes('ai educational') || lower.includes('ai education')) return 'Full AI (Documentary, story, education, etc)';
+  if (lower.includes('ai aspirational')) return 'Full AI (Documentary, story, education, etc)';
+  if (lower.includes('ai historical')) return 'Full AI (Documentary, story, education, etc)';
+  if (lower.includes('ai emotional')) return 'Full AI (Documentary, story, education, etc)';
+
+  // Default workhorse format
+  return 'Ecom Style';
+}
+
+/**
+ * Pick the best Full AI specification (narrative mode) from medium/angle hints.
+ * Defaults to "Documentary" — the most flexible, broadly useful mode.
+ */
+function mapFullAiSpecification(medium: string, angle: string): FullAiSpecification {
+  const lower = `${medium} ${angle}`.toLowerCase();
+
+  if (lower.includes('historical') || lower.includes('history')) return 'Historical';
+  if (lower.includes('educational') || lower.includes('education') || lower.includes('teach') || lower.includes('science')) return 'Educational';
+  if (lower.includes('emotional') || lower.includes('story') || lower.includes('narrative')) return 'Emotional Story';
+  if (lower.includes('aspirational') || lower.includes('aspiration') || lower.includes('freedom') || lower.includes('dignity')) return 'Aspirational';
+  return 'Documentary';
+}
+
+/**
+ * Pick the best Full AI visual style from medium/angle hints.
+ * Defaults to "Story with cohesive characters" — the most concrete, audience-friendly default.
+ */
+function mapFullAiVisualStyle(medium: string, angle: string): FullAiVisualStyle {
+  const lower = `${medium} ${angle}`.toLowerCase();
+
+  if (lower.includes('historical') || lower.includes('history')) return 'Historical Visuals and Claims';
+  if (lower.includes('voice over') || lower.includes('voiceover') || lower.includes(' vo ')) return 'Fully Voice Over';
+  if (lower.includes('talking to camera') || lower.includes('to camera')) return 'Includes Talking To Camera';
+  if (lower.includes('no humans') || lower.includes('feet pov') || lower.includes('sock pov') || lower.includes('perspective')) return 'No Humans Shown (Perspective of the feet or socks)';
+  return 'Story with cohesive characters';
+}
+
+/**
  * Map a parsed Asana task to fully-typed autopilot params.
  *
  * The Asana angle field is the PRIMARY creative directive and must be
@@ -244,6 +296,10 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
   const angleType = mapAngleType(parsed.angle);
   const awarenessLevel = mapAwarenessLevel(parsed.angle, parsed.medium);
   const persona = mapPersona(parsed.angle, product, awarenessLevel);
+  const adType = mapAdType(parsed.medium, parsed.angle);
+  const isFullAi = adType === 'Full AI (Documentary, story, education, etc)';
+  const fullAiSpecification = isFullAi ? mapFullAiSpecification(parsed.medium, parsed.angle) : undefined;
+  const fullAiVisualStyle = isFullAi ? mapFullAiVisualStyle(parsed.medium, parsed.angle) : undefined;
 
   const scriptParamsBase: Omit<ScriptParams, 'framework' | 'conceptAngleContext'> = {
     product,
@@ -251,12 +307,16 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
     duration,
     funnelStage: 'TOF',
     awarenessLevel,
-    adType: 'Ecom Style',
+    adType,
     promoPeriod: 'None',
     offer: 'B2G3',
     hookVariations: 3,
     bookReference: 'All Four Books',
     primaryTalkingPoint: parsed.angle,
+    ...(isFullAi && {
+      fullAiSpecification,
+      fullAiVisualStyle,
+    }),
   };
 
   return {
@@ -268,8 +328,12 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
       awarenessLevel,
       angleType,
       funnelStage: 'TOF',
-      adType: 'Ecom Style',
+      adType,
       primaryTalkingPoint: parsed.angle,
+      ...(isFullAi && {
+        fullAiSpecification,
+        fullAiVisualStyle,
+      }),
     },
     scriptParamsBase,
   };

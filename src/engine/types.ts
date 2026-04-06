@@ -200,7 +200,22 @@ export type AdType =
   | 'Founder Style'
   | 'Fake Podcast Ads'
   | 'Spokesperson'
-  | 'Packaging/Employee';
+  | 'Packaging/Employee'
+  | 'Full AI (Documentary, story, education, etc)';
+
+export type FullAiSpecification =
+  | 'Documentary'
+  | 'Historical'
+  | 'Educational'
+  | 'Emotional Story'
+  | 'Aspirational';
+
+export type FullAiVisualStyle =
+  | 'Story with cohesive characters'
+  | 'Fully Voice Over'
+  | 'Includes Talking To Camera'
+  | 'No Humans Shown (Perspective of the feet or socks)'
+  | 'Historical Visuals and Claims';
 
 export type AngleType =
   | 'Problem-Based'
@@ -224,6 +239,10 @@ export interface AnglesParams {
   adType: AdType;
   /** Primary talking point — the specific condition, topic, or focus (e.g., "Diabetes", "Neuropathy", "Swelling", "Sock Marks") */
   primaryTalkingPoint?: string;
+  /** Full AI-specific: narrative specification (only relevant when adType is 'Full AI') */
+  fullAiSpecification?: FullAiSpecification;
+  /** Full AI-specific: visual style (only relevant when adType is 'Full AI') */
+  fullAiVisualStyle?: FullAiVisualStyle;
 }
 
 export type HookStyle =
@@ -316,6 +335,10 @@ export interface ScriptParams {
   agcPacing?: AgcPacing;
   agcMusicDirection?: string;
   agcTalentDescription?: string;
+
+  // Full AI-specific (only relevant when adType is 'Full AI (Documentary, story, education, etc)')
+  fullAiSpecification?: FullAiSpecification;
+  fullAiVisualStyle?: FullAiVisualStyle;
 }
 
 /** Bundled context passed from Concepts & Angles → Script Writer */
@@ -330,6 +353,10 @@ export interface ConceptContext {
   funnelStage: FunnelStage;
   /** The ad type selected when generating the concept */
   adType: AdType;
+  /** Full AI-specific: narrative specification */
+  fullAiSpecification?: FullAiSpecification;
+  /** Full AI-specific: visual style */
+  fullAiVisualStyle?: FullAiVisualStyle;
 }
 
 // ─── Claude API ────────────────────────────────────────────────────────────

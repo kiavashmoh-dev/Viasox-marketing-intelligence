@@ -451,6 +451,17 @@ Behind-the-scenes warehouse/packing room content. Real team showing care and att
 - Shot Angles: **Dynamic (Third-Person)** for warehouse tours, **Standing** for employee speaking, **Ground-Level** for product close-ups
 - Show the human side: real team, real care, pride in work
 - "We care about every pair" narrative — quality, attention to detail, personal touch`;
+    case 'Full AI (Documentary, story, education, etc)':
+      return `**AD TYPE PRODUCTION STYLE — FULL AI:**
+100% AI-generated footage. No real talent, no live filming, no Viasox stock clips. Every shot is a generation prompt for text-to-video models (Veo / Sora / Runway).
+- Primary Shot Type: **AI-GENERATED** — every row is a visual generation prompt the producer will feed into a model
+- Shot descriptions must read as image/video generation prompts: subject, action, environment, mood, camera language, lighting
+- Voiceover is the dominant audio. Music direction matters — describe it explicitly
+- The Specification (Documentary / Historical / Educational / Emotional Story / Aspirational) sets the narrative mode
+- The Visual Style (Cohesive Characters / Fully VO / Talking To Camera / No Humans Shown / Historical) sets the visual execution language
+- Avoid scenes that AI models struggle with: tight product close-ups with branding, multi-person dialogue, complex hand-product manipulation, real-world brand-accurate locations
+- Maintain identity consistency: if a character recurs, describe her the same way every time so the model can reproduce her
+- Product presence is MINIMAL and symbolic — a brief product beat near the end, a logo card`;
     default:
       return '';
   }
@@ -948,6 +959,28 @@ ${getProductAnalysis(analysis, params.product)}`;
     ? `\nPromo Period: ${params.promoPeriod}`
     : '';
   const isAgc = params.adType === 'AGC (Actor Generated Content)';
+  const isFullAi = params.adType === 'Full AI (Documentary, story, education, etc)';
+  const fullAiDirective = isFullAi
+    ? `\n\n## ⚠️ FULL AI AD TYPE — SPECIAL DIRECTIVE
+
+This is a **Full AI ad**. 100% of the footage is AI-generated — there are NO Viasox clips, no real talent, no live filming. Every visual is synthesized via text-to-video models (Veo / Sora / Runway). The script must be written for AI image/video generation, not for a film crew.
+
+**SPECIFICATION (narrative mode): ${params.fullAiSpecification ?? 'Documentary'}**
+${params.fullAiSpecification === 'Documentary' ? 'Documentary mode — grounded, observational, journalistic. Voiceover-led, cinéma vérité. Real-feeling moments. Think Netflix doc. The viewer should momentarily forget this is an ad.' : ''}${params.fullAiSpecification === 'Historical' ? 'Historical mode — period-accurate settings, archival aesthetics, a journey through time. Use history to illuminate the present problem/solution.' : ''}${params.fullAiSpecification === 'Educational' ? 'Educational mode — teach something genuinely valuable. Anatomy/physiology, metaphors, visual explanations. The ad earns attention by giving knowledge first.' : ''}${params.fullAiSpecification === 'Emotional Story' ? 'Emotional Story mode — character-driven narrative with real emotional stakes. A small specific moment unfolding into something universal. Short film, not ad.' : ''}${params.fullAiSpecification === 'Aspirational' ? 'Aspirational mode — lift the viewer. Beauty, freedom, dignity, possibility. Ethereal/cinematic visuals.' : ''}
+
+**VISUAL STYLE: ${params.fullAiVisualStyle ?? 'Story with cohesive characters'}**
+${params.fullAiVisualStyle === 'Story with cohesive characters' ? 'A cohesive character (or characters) appears across the full ad — same face, wardrobe, world. The script must reference the SAME protagonist scene to scene so the AI generator can maintain identity consistency. Describe the protagonist in detail in the first shot and reference back to her in every subsequent shot ("the same woman from before, now in...").' : ''}${params.fullAiVisualStyle === 'Fully Voice Over' ? 'No dialogue, no lip sync, no on-screen talking. 100% voiceover carries the story. Visuals are pure imagery — scenes, textures, moments. The script should be VO-only. No "says" or "responds" — just narration over visuals.' : ''}${params.fullAiVisualStyle === 'Includes Talking To Camera' ? 'An AI-generated character speaks directly to camera at least once. The script must specify the moment(s) of direct address — tight shot, natural gestures, what they say verbatim. This is the riskiest visual style for AI (lip-sync), so the talking-to-camera moments must be SHORT (single sentences) and the rest of the ad should be VO/imagery.' : ''}${params.fullAiVisualStyle === 'No Humans Shown (Perspective of the feet or socks)' ? 'No humans visible. The script must describe shots from the perspective of feet, socks, or environmental POVs only. Close-ups on textures, floors, shoes, fabrics. Voiceover and on-screen text carry meaning. Scene descriptions should never name a face, body, or person — only feet, legs (mid-shin down), and surrounding objects.' : ''}${params.fullAiVisualStyle === 'Historical Visuals and Claims' ? 'Historical visuals: period costumes, aged film grain, archival-style footage, old photographs coming to life. The CLAIMS in the script must also be historically grounded — cite real history (origin of compression therapy, ancient foot care, WWII nurses, etc.) to give the ad gravity and authority. Every voiceover claim about history must be plausibly accurate.' : ''}
+
+**MANDATORY SCRIPT RULES FOR FULL AI:**
+1. Every shot description must be feasible for current AI text-to-video models. Avoid: tight product close-ups with branding, hands manipulating socks with exact detail, multi-person dialogue scenes, complex choreography, real-world locations that demand brand accuracy.
+2. Use the script body to describe SCENES (visual prompts), VOICEOVER (the line spoken), and SHOT NOTES (camera language, mood, lighting). Treat each row as a generation prompt.
+3. The specification (${params.fullAiSpecification ?? 'Documentary'}) and visual style (${params.fullAiVisualStyle ?? 'Story with cohesive characters'}) must FUNDAMENTALLY shape the script structure, pacing, and tone. Do not write a generic script and slap a label on it.
+4. Product presence is MINIMAL and symbolic — a brief product beat near the end, a logo card. The story is the ad; the product is the resolution.
+5. The protagonist (when shown) is a woman 50+. Describe her with enough detail in the first shot for identity-consistent generation: approximate age, hair color/style, build, clothing palette, environment.
+6. Voiceover should be the dominant audio. Music direction matters — describe it (e.g., "warm minimal piano," "ambient strings building to hopeful resolve").
+7. The angle type determines the EMOTIONAL ARC and STORY FLOW. The Full AI specification + visual style determine HOW that story is visually executed. Both must coexist.
+`
+    : '';
   const conceptLine = params.conceptAngleContext
     ? `
 
@@ -975,7 +1008,7 @@ The pre-loaded concept must deeply shape EVERY section of the AGC production bri
 Funnel Stage: ${params.funnelStage} (${params.funnelStage === 'TOF' ? 'Top of Funnel — cold audience' : params.funnelStage === 'MOF' ? 'Middle of Funnel — considering' : 'Bottom of Funnel — ready to buy'})
 Awareness Level: **${params.awarenessLevel}**
 Target Persona: ${params.persona}${offerLine}${promoLine}
-Primary Book Reference: ${params.bookReference}${conceptLine}
+Primary Book Reference: ${params.bookReference}${conceptLine}${fullAiDirective}
 
 **CRITICAL — AWARENESS LEVEL IS ${params.awarenessLevel.toUpperCase()}:**
 ${params.awarenessLevel === 'Unaware' ? `Follow the Unaware script architecture EXACTLY:
