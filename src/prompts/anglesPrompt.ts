@@ -2,6 +2,7 @@ import type { AnglesParams, AngleType, FullAnalysis, FunnelStage, ProductCategor
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideFull } from './adTypeGuides';
 import { getAwarenessConceptGuide } from './awarenessGuide';
+import { buildFullAiSkillContext } from './fullAiSkillContext';
 import {
   getProductPurchaseTriggers,
   getProductStrategicInsights,
@@ -700,6 +701,13 @@ ${params.fullAiVisualStyle === 'Story with cohesive characters' ? 'A cohesive ch
 3. Concepts must exploit what AI can uniquely do: impossible scale, time travel, surreal transitions, visual metaphor, dreamlike imagery. Do NOT describe concepts that would be better shot live.
 4. Product presence is MINIMAL and symbolic — a brief product beat, a logo end card. The story is the ad; the product is the resolution.
 5. The persona is still a woman 50+ per the core audience mandate. Even in AI-generated worlds, the protagonist (if shown) must be a believable 50+ woman.
+
+${buildFullAiSkillContext({
+  specification: params.fullAiSpecification,
+  visualStyle: params.fullAiVisualStyle,
+  duration: params.duration ?? '60s',
+  mode: 'compact',
+})}
 `
     : '';
 

@@ -17,7 +17,7 @@ export interface AutopilotTask {
   /** Mapped product category */
   product: ProductCategory;
   /** Mapped duration from medium */
-  duration: '15s' | '30s' | '60s';
+  duration: '15s' | '30s' | '60s' | '90s';
   /** Params for the Angles Generator */
   anglesParams: AnglesParams;
   /** Partial ScriptParams — framework filled by concept selector */

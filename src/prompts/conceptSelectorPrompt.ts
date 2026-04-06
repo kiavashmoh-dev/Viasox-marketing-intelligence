@@ -6,9 +6,10 @@
  * Uses Opus for deep, nuanced reasoning.
  */
 
-import type { FullAnalysis, ProductCategory, AdType } from '../engine/types';
+import type { FullAnalysis, ProductCategory, AdType, FullAiSpecification, FullAiVisualStyle } from '../engine/types';
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideCompact } from './adTypeGuides';
+import { buildFullAiSkillContext, type FullAiDuration } from './fullAiSkillContext';
 import {
   getProductPurchaseTriggers,
   getProductStrategicInsights,
@@ -32,8 +33,18 @@ export function buildConceptSelectorPrompt(
   memoryBriefing?: string,
   angleHistory?: string,
   adType: AdType = 'Ecom Style',
+  fullAiSpecification?: FullAiSpecification,
+  fullAiVisualStyle?: FullAiVisualStyle,
 ): { system: string; user: string } {
   const isFullAi = adType === 'Full AI (Documentary, story, education, etc)';
+  const fullAiSkillBlock = isFullAi
+    ? `\n\n${buildFullAiSkillContext({
+        specification: fullAiSpecification,
+        visualStyle: fullAiVisualStyle,
+        duration: (['15s', '30s', '60s', '90s'].includes(duration) ? duration : '60s') as FullAiDuration,
+        mode: 'compact',
+      })}`
+    : '';
 
   const system = `${buildSystemBase()}
 
@@ -75,6 +86,7 @@ Ecom ads are built in post-production from existing footage, product shots, life
 - Product close-ups and unboxing footage
 
 Concepts requiring specific actors, custom locations, or complex multi-scene narratives score LOWER because they cannot be executed in Ecom format.`}
+${fullAiSkillBlock}
 
 ## ANGLE-SPECIFIC KNOWLEDGE
 

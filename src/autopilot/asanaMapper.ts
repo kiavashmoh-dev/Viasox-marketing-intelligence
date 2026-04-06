@@ -223,10 +223,24 @@ function mapPersona(angle: string, product: ProductCategory, _awarenessLevel: Aw
   }
 }
 
-function mapDuration(medium: string): '15s' | '30s' | '60s' {
+function mapDuration(medium: string): '15s' | '30s' | '60s' | '90s' {
   const lower = medium.toLowerCase();
-  if (lower.includes('short')) return '15s';
-  if (lower.includes('expand') || lower.includes('long')) return '60s';
+
+  // Long-form 90s — documentary, AI doc, extended formats
+  if (lower.includes('90') || lower.includes('extra long') || lower.includes('extra-long') ||
+      lower.includes('longform') || lower.includes('long form') ||
+      lower.includes('documentary') || lower.includes(' doc ') || lower.endsWith(' doc') ||
+      lower.includes('ai doc') || lower.includes('full ai'))
+    return '90s';
+
+  // Standard 60s — expanded / long
+  if (lower.includes('expand') || lower.includes('long') || lower.includes('60'))
+    return '60s';
+
+  // Short 15s — shortform / micro
+  if (lower.includes('short') || lower.includes('15'))
+    return '15s';
+
   return '30s'; // Midform default
 }
 
@@ -330,6 +344,7 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
       funnelStage: 'TOF',
       adType,
       primaryTalkingPoint: parsed.angle,
+      duration,
       ...(isFullAi && {
         fullAiSpecification,
         fullAiVisualStyle,

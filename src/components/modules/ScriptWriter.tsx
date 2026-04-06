@@ -20,7 +20,7 @@ interface Props {
   conceptAngleContext?: ConceptContext | null;
 }
 
-const DURATIONS = ['15s', '30s', '60s'] as const;
+const DURATIONS = ['15s', '30s', '60s', '90s'] as const;
 const AWARENESS: AwarenessLevel[] = ['Unaware', 'Problem Aware', 'Solution Aware', 'Product Aware', 'Most Aware'];
 const FUNNEL_STAGES: { value: FunnelStage; label: string; description: string }[] = [
   { value: 'TOF', label: 'TOF (Top of Funnel)', description: 'Cold audiences' },
@@ -141,15 +141,15 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
       maxTokens = Math.min(10000 + contextBonus + feedbackBonus, 16000);
     } else if (isVideoProductionBrief) {
       // Video production briefs use 10-column tables — more output than old 5-column format
-      const durationTokens = duration === '60s' ? 6000 : duration === '30s' ? 4500 : 3000;
+      const durationTokens = duration === '90s' ? 8000 : duration === '60s' ? 6000 : duration === '30s' ? 4500 : 3000;
       const hookTokens = hookVariations * 400;
       maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 7000), 16000);
     } else if (isEcom) {
       // Ecom briefs: full template with 8 sections (Brief Info, Strategy, Offer, Editing Instructions, 3 hooks, body, data points, framework)
-      const durationTokens = duration === '60s' ? 5000 : duration === '30s' ? 3500 : 2500;
+      const durationTokens = duration === '90s' ? 7000 : duration === '60s' ? 5000 : duration === '30s' ? 3500 : 2500;
       maxTokens = Math.min(Math.max(durationTokens + contextBonus + feedbackBonus, 7000), 16000);
     } else {
-      const durationTokens = duration === '60s' ? 4000 : duration === '30s' ? 2500 : 1500;
+      const durationTokens = duration === '90s' ? 5500 : duration === '60s' ? 4000 : duration === '30s' ? 2500 : 1500;
       const hookTokens = hookVariations * 300;
       maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 6000), 16000);
     }

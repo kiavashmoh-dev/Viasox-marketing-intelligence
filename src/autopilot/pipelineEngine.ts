@@ -879,6 +879,8 @@ ${ts.scriptResult || '[no previous brief]'}
       memoryBriefing || undefined,
       angleHistoryText,
       task.scriptParamsBase.adType,
+      task.scriptParamsBase.fullAiSpecification,
+      task.scriptParamsBase.fullAiVisualStyle,
     );
 
     const selectorResponse = await sendMessage(
