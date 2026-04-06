@@ -101,7 +101,7 @@ export default function HookGenerator({ analysis, apiKey, resourceContext, onBac
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)
       : user;
-    generate(system + buildResourceContext(resourceContext), finalUser, Math.min(hookTokens, 16000));
+    generate(system + buildResourceContext(resourceContext), finalUser, Math.min(hookTokens, 16000), 'claude-opus-4-6');
   };
 
   if (result || loading || error) {

@@ -13,7 +13,7 @@ import { stripDataUrlPrefix } from './frameExtractor';
 import { updateItem } from './inspirationStore';
 
 const MAX_TOKENS = 3500;
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-opus-4-6';
 
 export interface AnalyzeVideoInput {
   item: InspirationItem;
