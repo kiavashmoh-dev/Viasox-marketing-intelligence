@@ -43,7 +43,7 @@ const creativeModules: Module[] = [
   {
     id: 'inspiration',
     title: 'Inspiration Bank',
-    description: 'Upload reference videos, briefs, and scripts \u2014 auto-tagged and injected as style guidance into every generation',
+    description: 'Upload reference videos and briefs \u2014 auto-tagged and injected as style guidance into every generation',
     icon: '\uD83D\uDCDA',
   },
 ];
