@@ -10,7 +10,6 @@ import PersonaBuilder from './components/modules/PersonaBuilder';
 import AnglesGenerator from './components/modules/AnglesGenerator';
 import HookGenerator from './components/modules/HookGenerator';
 import ScriptWriter from './components/modules/ScriptWriter';
-import IntelligenceReport from './components/modules/IntelligenceReport';
 import CommentIntelligence from './components/modules/CommentIntelligence';
 import ProductIntelligence from './components/modules/ProductIntelligence';
 import AutopilotBriefs from './components/modules/AutopilotBriefs';
@@ -132,8 +131,6 @@ export default function App() {
               conceptAngleContext={conceptAngleContext}
             />
           );
-        case 'report':
-          return <IntelligenceReport {...moduleProps} />;
         case 'comments':
           return <CommentIntelligence {...moduleProps} />;
         case 'product-intelligence':

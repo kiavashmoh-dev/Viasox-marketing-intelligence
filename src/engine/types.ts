@@ -155,7 +155,6 @@ export type ModuleId =
   | 'angles'
   | 'hooks'
   | 'script'
-  | 'report'
   | 'comments'
   | 'product-intelligence'
   | 'autopilot';

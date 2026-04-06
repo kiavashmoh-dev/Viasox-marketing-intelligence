@@ -7,30 +7,14 @@ interface Props {
   onReset: () => void;
 }
 
-const modules: { id: ModuleId; title: string; description: string; icon: string }[] = [
-  {
-    id: 'segments',
-    title: 'Customer Segment Discovery',
-    description: 'See exactly who your customers are — segmented by data, enriched by AI',
-    icon: '\uD83E\uDDE9',
-  },
-  {
-    id: 'persona',
-    title: 'Customer Persona Builder',
-    description: 'Generate detailed customer personas by product and channel',
-    icon: '\uD83D\uDC64',
-  },
+type Module = { id: ModuleId; title: string; description: string; icon: string };
+
+const creativeModules: Module[] = [
   {
     id: 'angles',
     title: 'Concepts & Angles',
     description: 'Brainstorm new angles grounded in review data',
     icon: '\uD83D\uDCA1',
-  },
-  {
-    id: 'hooks',
-    title: 'Hook Generator',
-    description: 'Generate hooks by awareness level and format',
-    icon: '\uD83C\uDFA3',
   },
   {
     id: 'script',
@@ -39,10 +23,10 @@ const modules: { id: ModuleId; title: string; description: string; icon: string 
     icon: '\uD83C\uDFAC',
   },
   {
-    id: 'report',
-    title: 'Review Intelligence Report',
-    description: 'See what the data reveals about your customers',
-    icon: '\uD83D\uDCCA',
+    id: 'hooks',
+    title: 'Hook Generator',
+    description: 'Generate hooks by awareness level and format',
+    icon: '\uD83C\uDFA3',
   },
   {
     id: 'comments',
@@ -51,16 +35,31 @@ const modules: { id: ModuleId; title: string; description: string; icon: string 
     icon: '\uD83D\uDCAC',
   },
   {
-    id: 'product-intelligence',
-    title: 'Product & Customer Intelligence',
-    description: 'Revenue by product, new vs repeat customers, segment-level growth drivers, and Comfort Seeker deep-dive',
-    icon: '\uD83D\uDCB0',
-  },
-  {
     id: 'autopilot',
     title: 'Autopilot Brief Generator',
     description: 'Upload Asana screenshot, auto-generate concepts, select the best, write Ecom briefs, and review quality',
     icon: '\uD83E\uDD16',
+  },
+];
+
+const insightModules: Module[] = [
+  {
+    id: 'segments',
+    title: 'Customer Segments',
+    description: 'See exactly who your customers are — segmented by data, enriched by AI',
+    icon: '\uD83E\uDDE9',
+  },
+  {
+    id: 'persona',
+    title: 'Persona Builder',
+    description: 'Generate detailed customer personas by product and channel',
+    icon: '\uD83D\uDC64',
+  },
+  {
+    id: 'product-intelligence',
+    title: 'Product & Customer Intelligence',
+    description: 'Revenue by product, new vs repeat customers, segment-level growth drivers, and Comfort Seeker deep-dive',
+    icon: '\uD83D\uDCB0',
   },
 ];
 
@@ -131,22 +130,63 @@ export default function OutputSelector({ analysis, onSelect, onReset }: Props) {
           </div>
         </div>
 
-        {/* Module Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {modules.map((mod) => (
-            <button
-              key={mod.id}
-              onClick={() => onSelect(mod.id)}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-left hover:shadow-md hover:border-blue-300 transition-all group"
-            >
-              <div className="text-3xl mb-3">{mod.icon}</div>
-              <h3 className="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
-                {mod.title}
-              </h3>
-              <p className="text-sm text-slate-500 mt-1">{mod.description}</p>
-            </button>
-          ))}
-        </div>
+        {/* Creatives Section */}
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-200 to-transparent" />
+            <h2 className="text-xs font-bold text-blue-600 uppercase tracking-widest whitespace-nowrap">
+              Creatives
+            </h2>
+            <div className="h-px flex-1 bg-gradient-to-l from-blue-200 to-transparent" />
+          </div>
+          <p className="text-sm text-slate-500 mb-5 text-center">
+            Generate ad creative — concepts, scripts, hooks, and full briefs
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {creativeModules.map((mod) => (
+              <button
+                key={mod.id}
+                onClick={() => onSelect(mod.id)}
+                className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-left hover:shadow-md hover:border-blue-300 transition-all group"
+              >
+                <div className="text-3xl mb-3">{mod.icon}</div>
+                <h3 className="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
+                  {mod.title}
+                </h3>
+                <p className="text-sm text-slate-500 mt-1">{mod.description}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Insights Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-px flex-1 bg-gradient-to-r from-emerald-200 to-transparent" />
+            <h2 className="text-xs font-bold text-emerald-600 uppercase tracking-widest whitespace-nowrap">
+              Insights
+            </h2>
+            <div className="h-px flex-1 bg-gradient-to-l from-emerald-200 to-transparent" />
+          </div>
+          <p className="text-sm text-slate-500 mb-5 text-center">
+            Understand your customers — segments, personas, and product intelligence
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {insightModules.map((mod) => (
+              <button
+                key={mod.id}
+                onClick={() => onSelect(mod.id)}
+                className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-left hover:shadow-md hover:border-emerald-300 transition-all group"
+              >
+                <div className="text-3xl mb-3">{mod.icon}</div>
+                <h3 className="text-lg font-semibold text-slate-800 group-hover:text-emerald-600 transition-colors">
+                  {mod.title}
+                </h3>
+                <p className="text-sm text-slate-500 mt-1">{mod.description}</p>
+              </button>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );
