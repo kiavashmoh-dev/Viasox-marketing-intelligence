@@ -21,6 +21,7 @@ import {
   getStats,
   generateId,
   clearAll,
+  getBlob,
 } from '../../inspiration/inspirationStore';
 import { extractVideoFrames } from '../../inspiration/frameExtractor';
 import { extractTextFromFile } from '../../inspiration/textExtractor';
@@ -651,6 +652,39 @@ function DetailModal({
   const [overrides, setOverrides] = useState<Partial<InspirationTags>>(item.userTagOverrides ?? {});
   const [notes, setNotes] = useState(item.userNotes);
   const [customTagInput, setCustomTagInput] = useState('');
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+
+  // Load the raw video blob from IndexedDB and turn it into an object URL
+  // for the <video> element. Cleanup revokes the URL to free memory.
+  useEffect(() => {
+    if (item.kind !== 'video') {
+      setVideoUrl(null);
+      return;
+    }
+    let revoked = false;
+    let url: string | null = null;
+    setVideoError(null);
+    getBlob(item.id)
+      .then((blob) => {
+        if (revoked) return;
+        if (!blob) {
+          setVideoError('Video file not found in storage.');
+          return;
+        }
+        url = URL.createObjectURL(blob);
+        setVideoUrl(url);
+      })
+      .catch((e) => {
+        if (revoked) return;
+        setVideoError(e instanceof Error ? e.message : String(e));
+      });
+    return () => {
+      revoked = true;
+      if (url) URL.revokeObjectURL(url);
+      setVideoUrl(null);
+    };
+  }, [item.id, item.kind]);
 
   const updateOverride = <K extends keyof InspirationTags>(key: K, value: InspirationTags[K]) => {
     const next = { ...overrides, [key]: value };
@@ -701,12 +735,32 @@ function DetailModal({
         </div>
 
         <div className="p-6 space-y-5">
-          {item.thumbnailDataUrl && (
-            <img
-              src={item.thumbnailDataUrl}
-              alt=""
-              className="w-full max-h-72 object-contain rounded-lg bg-slate-100"
-            />
+          {item.kind === 'video' ? (
+            videoUrl ? (
+              <video
+                src={videoUrl}
+                poster={item.thumbnailDataUrl}
+                controls
+                playsInline
+                className="w-full max-h-[28rem] rounded-lg bg-black"
+              />
+            ) : videoError ? (
+              <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                {videoError}
+              </div>
+            ) : (
+              <div className="w-full aspect-video flex items-center justify-center rounded-lg bg-slate-100 text-slate-400 text-sm">
+                Loading video…
+              </div>
+            )
+          ) : (
+            item.thumbnailDataUrl && (
+              <img
+                src={item.thumbnailDataUrl}
+                alt=""
+                className="w-full max-h-72 object-contain rounded-lg bg-slate-100"
+              />
+            )
           )}
 
           {item.status === 'failed' && (
