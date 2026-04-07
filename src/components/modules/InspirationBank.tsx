@@ -686,6 +686,15 @@ function DetailModal({
     };
   }, [item.id, item.kind]);
 
+  // Esc-to-close so the user always has a way out even if they can't see the X.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   const updateOverride = <K extends keyof InspirationTags>(key: K, value: InspirationTags[K]) => {
     const next = { ...overrides, [key]: value };
     setOverrides(next);
@@ -710,31 +719,80 @@ function DetailModal({
     onTagsChange(next);
   };
 
+  // Top-level tag pills shown right under the title so the user gets the
+  // full classification at a glance without scrolling.
+  const headerPills: Array<{ label: string; tone: 'blue' | 'violet' | 'emerald' | 'amber' | 'slate' }> = [];
+  if (tags.adType && tags.adType !== 'unknown') headerPills.push({ label: tags.adType, tone: 'blue' });
+  if (tags.angleType && tags.angleType !== 'unknown') headerPills.push({ label: tags.angleType, tone: 'violet' });
+  if (tags.productCategory && tags.productCategory !== 'unknown') headerPills.push({ label: tags.productCategory, tone: 'emerald' });
+  if (tags.duration && tags.duration !== 'unknown') headerPills.push({ label: tags.duration, tone: 'amber' });
+  if (tags.framework && tags.framework !== 'unknown') headerPills.push({ label: String(tags.framework), tone: 'slate' });
+
+  const pillTone: Record<string, string> = {
+    blue: 'bg-blue-100 text-blue-700 border-blue-200',
+    violet: 'bg-violet-100 text-violet-700 border-violet-200',
+    emerald: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    amber: 'bg-amber-100 text-amber-800 border-amber-200',
+    slate: 'bg-slate-100 text-slate-700 border-slate-200',
+  };
+
   return (
-    <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-6 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full my-12">
-        <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-start justify-between rounded-t-xl">
-          <div>
-            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              {item.title}
+    // Backdrop: click outside the card closes. We use items-start with a
+    // small top offset (no flex centering) so the modal is reliably scrollable
+    // on small viewports — `items-center` + `overflow-y-auto` is the classic
+    // broken-modal trap that hides the top of tall content above scroll origin.
+    <div
+      className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Fixed header — never scrolls, X is always reachable */}
+        <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-start justify-between gap-4 flex-shrink-0">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold text-slate-800 truncate">{item.title}</h3>
               <button
                 onClick={onStar}
-                className={`text-2xl leading-none ${item.starred ? 'text-yellow-400' : 'text-slate-300 hover:text-yellow-400'}`}
+                className={`text-2xl leading-none flex-shrink-0 transition-colors ${
+                  item.starred ? 'text-yellow-400' : 'text-slate-300 hover:text-yellow-400'
+                }`}
+                aria-label={item.starred ? 'Unstar' : 'Star'}
               >
                 {item.starred ? '\u2605' : '\u2606'}
               </button>
-            </h3>
-            <div className="text-xs text-slate-500 mt-1">
-              {KIND_LABEL[item.kind]} · {item.filename} · uploaded{' '}
+            </div>
+            <div className="text-xs text-slate-500 mt-1 truncate">
+              {KIND_LABEL[item.kind]} {'\u00B7'} {item.filename} {'\u00B7'} uploaded{' '}
               {new Date(item.uploadedAt).toLocaleString()}
             </div>
+            {headerPills.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {headerPills.map((p, i) => (
+                  <span
+                    key={i}
+                    className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full border ${pillTone[p.tone]}`}
+                  >
+                    {p.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl">
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 w-9 h-9 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center text-lg transition-colors"
+            aria-label="Close"
+            type="button"
+          >
             {'\u2715'}
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        {/* Scrollable body — has its own overflow context so the X stays put */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 bg-slate-50">
           {item.kind === 'video' ? (
             videoUrl ? (
               <video
@@ -742,15 +800,15 @@ function DetailModal({
                 poster={item.thumbnailDataUrl}
                 controls
                 playsInline
-                className="w-full max-h-[28rem] rounded-lg bg-black"
+                className="w-full max-h-[28rem] rounded-xl bg-black shadow-md"
               />
             ) : videoError ? (
               <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                 {videoError}
               </div>
             ) : (
-              <div className="w-full aspect-video flex items-center justify-center rounded-lg bg-slate-100 text-slate-400 text-sm">
-                Loading video…
+              <div className="w-full aspect-video flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 text-sm">
+                Loading video{'\u2026'}
               </div>
             )
           ) : (
@@ -758,7 +816,7 @@ function DetailModal({
               <img
                 src={item.thumbnailDataUrl}
                 alt=""
-                className="w-full max-h-72 object-contain rounded-lg bg-slate-100"
+                className="w-full max-h-72 object-contain rounded-xl bg-slate-100"
               />
             )
           )}
@@ -772,30 +830,41 @@ function DetailModal({
           {item.status === 'ready' && (
             <>
               {item.summary && (
-                <Section title="Why this works">{item.summary}</Section>
+                <Section title="Why this works" icon={'\uD83D\uDCA1'} accent="amber">
+                  <p>{item.summary}</p>
+                </Section>
               )}
               {item.learnings.length > 0 && (
-                <Section title="What to apply">
-                  <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700">
+                <Section title="What to apply" icon={'\u2728'} accent="emerald">
+                  <ul className="space-y-2">
                     {item.learnings.map((l, i) => (
-                      <li key={i}>{l}</li>
+                      <li key={i} className="flex gap-2">
+                        <span className="text-emerald-500 font-bold mt-0.5">{'\u2192'}</span>
+                        <span>{l}</span>
+                      </li>
                     ))}
                   </ul>
                 </Section>
               )}
               {item.styleNotes && (
-                <Section title="Style notes">{item.styleNotes}</Section>
+                <Section title="Style notes" icon={'\uD83C\uDFA8'} accent="violet">
+                  <p>{item.styleNotes}</p>
+                </Section>
               )}
               {item.hookBreakdown && (
-                <Section title="Hook breakdown">{item.hookBreakdown}</Section>
+                <Section title="Hook breakdown" icon={'\uD83C\uDFAF'} accent="blue">
+                  <p>{item.hookBreakdown}</p>
+                </Section>
               )}
               {item.narrativeArc && (
-                <Section title="Narrative arc">{item.narrativeArc}</Section>
+                <Section title="Narrative arc" icon={'\uD83D\uDCD6'} accent="slate">
+                  <p>{item.narrativeArc}</p>
+                </Section>
               )}
             </>
           )}
 
-          <Section title="Tags (you can override the agent)">
+          <Section title="Tags (you can override the agent)" icon={'\uD83C\uDFF7\uFE0F'} accent="slate">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <TagSelect
                 label="Ad Type"
@@ -826,17 +895,20 @@ function DetailModal({
             </div>
 
             <div className="mt-4">
-              <div className="text-xs font-medium text-slate-500 uppercase mb-2">Custom Tags</div>
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                Custom Tags
+              </div>
               <div className="flex flex-wrap gap-1 mb-2">
                 {(overrides.customTags ?? tags.customTags).map((t) => (
                   <span
                     key={t}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full border border-blue-200"
                   >
                     {t}
                     <button
                       onClick={() => removeCustomTag(t)}
                       className="text-blue-500 hover:text-blue-900"
+                      aria-label={`Remove ${t}`}
                     >
                       {'\u2715'}
                     </button>
@@ -849,12 +921,13 @@ function DetailModal({
                   value={customTagInput}
                   onChange={(e) => setCustomTagInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addCustomTag()}
-                  placeholder="Add custom tag…"
+                  placeholder={'Add custom tag\u2026'}
                   className="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   onClick={addCustomTag}
-                  className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm hover:bg-slate-200"
+                  className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-lg text-sm hover:bg-slate-300 transition-colors"
+                  type="button"
                 >
                   Add
                 </button>
@@ -862,35 +935,61 @@ function DetailModal({
             </div>
           </Section>
 
-          <Section title="Notes">
+          <Section title="Notes" icon={'\uD83D\uDCDD'} accent="slate">
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               onBlur={() => onNotesChange(notes)}
               rows={3}
-              placeholder="Your private notes…"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={'Your private notes\u2026'}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             />
           </Section>
+        </div>
 
-          <div className="pt-4 border-t border-slate-200 flex justify-end">
-            <button
-              onClick={onDelete}
-              className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
-            >
-              Delete from bank
-            </button>
+        {/* Fixed footer with destructive action */}
+        <div className="bg-white border-t border-slate-200 px-6 py-3 flex justify-between items-center flex-shrink-0">
+          <div className="text-[11px] text-slate-400">
+            Press <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono">Esc</kbd> to close
           </div>
+          <button
+            onClick={onDelete}
+            className="px-4 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            type="button"
+          >
+            Delete from bank
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  icon,
+  children,
+  accent = 'slate',
+}: {
+  title: string;
+  icon?: string;
+  children: React.ReactNode;
+  accent?: 'slate' | 'blue' | 'emerald' | 'amber' | 'violet';
+}) {
+  const accents: Record<string, { card: string; title: string }> = {
+    slate: { card: 'bg-white border-slate-200', title: 'text-slate-700' },
+    blue: { card: 'bg-blue-50/60 border-blue-200', title: 'text-blue-800' },
+    emerald: { card: 'bg-emerald-50/60 border-emerald-200', title: 'text-emerald-800' },
+    amber: { card: 'bg-amber-50/60 border-amber-200', title: 'text-amber-800' },
+    violet: { card: 'bg-violet-50/60 border-violet-200', title: 'text-violet-800' },
+  };
+  const a = accents[accent];
   return (
-    <div>
-      <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{title}</div>
+    <div className={`rounded-xl border ${a.card} p-4 shadow-sm`}>
+      <div className="flex items-center gap-2 mb-2">
+        {icon && <span className="text-base leading-none">{icon}</span>}
+        <div className={`text-[10px] font-bold uppercase tracking-wider ${a.title}`}>{title}</div>
+      </div>
       <div className="text-sm text-slate-700 leading-relaxed">{children}</div>
     </div>
   );
