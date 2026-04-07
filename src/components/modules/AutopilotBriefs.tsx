@@ -11,6 +11,8 @@ import {
   redoSingleTask,
   loadPinnedInspirationForTask,
   buildPinnedVisionContent,
+  loadDeepInspirationForTask,
+  buildDeepInspirationVisionContent,
 } from '../../autopilot/pipelineEngine';
 import { loadMemory } from '../../autopilot/memoryStore';
 import { runMemoryCurator } from '../../autopilot/memoryCurator';
@@ -260,18 +262,23 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
       ts.conceptOptions = undefined;
       setPipelineState({ ...state });
 
-      // Honor any pinned inspiration on this task — load frames + rich context
-      // and switch to vision call when frames are present.
+      // Honor any pinned inspiration on this task. If unpinned, fall back to a
+      // deep load of the bank — primary pick gets frames + the rich context
+      // includes reference scripts + strong mirroring directives.
       const pinned = await loadPinnedInspirationForTask(
         ts.task.parsed.name,
         directionRef.current.pinnedInspirations,
       );
+      const deep = pinned ? null : await loadDeepInspirationForTask(ts.task);
+      const inspirationCtx = pinned
+        ? pinned.richContext
+        : (deep && deep.hasContent ? deep.richContext : undefined);
 
       const anglesPrompt = buildAnglesPrompt(
         ts.task.anglesParams,
         analysis,
         memoryBriefingRef.current || undefined,
-        pinned ? pinned.richContext : undefined,
+        inspirationCtx,
       );
       const fullSystem =
         anglesPrompt.system +
@@ -282,6 +289,16 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
       let conceptsRaw: string;
       if (pinned && pinned.frames.length > 0) {
         const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+        conceptsRaw = await sendVisionMessage(
+          fullSystem,
+          visionContent,
+          apiKey,
+          24000,
+          'claude-opus-4-6',
+          controller.signal,
+        );
+      } else if (deep && deep.primaryFrames.length > 0) {
+        const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
         conceptsRaw = await sendVisionMessage(
           fullSystem,
           visionContent,
@@ -314,7 +331,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         ts.task.duration,
         strategyBrief,
         [],
-        pinned ? (pinned.richContext) : undefined,
+        inspirationCtx,
         pinned?.framework ?? null,
         pinned?.hookStyle ?? null,
       );

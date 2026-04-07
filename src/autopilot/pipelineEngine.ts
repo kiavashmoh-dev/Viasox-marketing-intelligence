@@ -38,7 +38,8 @@ import { getAngleLanguageBank } from '../prompts/manifestoReference';
 import { getAngleDirectives } from '../utils/customOptionsRegistry';
 import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator';
 import { saveCompletedBatchToMemory } from './memoryExtractor';
-import { getInspirationContextBlock } from '../inspiration/inspirationInjection';
+import { getDeepInspirationContextBlock } from '../inspiration/inspirationInjection';
+import type { ScoredInspiration } from '../inspiration/inspirationSelector';
 import { getItem as getInspirationItem, getFrames as getInspirationFrames } from '../inspiration/inspirationStore';
 
 // ─── All creative agents use Opus ────────────────────────────────────────────
@@ -86,13 +87,45 @@ function delay(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+// ─── Deep Inspiration Bank Loader (unpinned tasks) ──────────────────────────
+
 /**
- * Pull the most relevant Inspiration Bank context block for an autopilot task.
- * Never throws — if the bank is empty, unavailable, or errors, returns empty string.
+ * What the autopilot pipeline needs to mirror the bank with the same depth as
+ * a pinned reference: a rich text block + (when the top pick is a video) up
+ * to N frames from the highest-scoring item to drive vision generation.
+ *
+ * Top pick is treated as the PRIMARY reference. Its frames are loaded so the
+ * model literally sees the look. Secondary picks contribute via text only.
  */
-async function getInspirationForTask(task: AutopilotTask): Promise<string> {
+interface DeepInspirationContext {
+  picks: ScoredInspiration[];
+  primaryFrames: string[];           // base64 jpeg data URLs (with prefix)
+  primaryItemId: string | null;
+  richContext: string;
+  hasContent: boolean;
+}
+
+const DEEP_PRIMARY_FRAME_CAP = 4;    // smaller than the pin path (8) — token cost
+
+/**
+ * Load the deep inspiration bank context for a task. Used when no pin is set
+ * and the user still wants the generators to deeply mirror proven references.
+ *
+ * Returns an empty/zero-content struct if the bank has no relevant matches.
+ */
+export async function loadDeepInspirationForTask(
+  task: AutopilotTask,
+): Promise<DeepInspirationContext> {
+  const empty: DeepInspirationContext = {
+    picks: [],
+    primaryFrames: [],
+    primaryItemId: null,
+    richContext: '',
+    hasContent: false,
+  };
+
   try {
-    const { block } = await getInspirationContextBlock({
+    const { block, picks } = await getDeepInspirationContextBlock({
       adType: task.scriptParamsBase.adType,
       angleType: task.anglesParams.angleType,
       productCategory: task.product,
@@ -103,11 +136,66 @@ async function getInspirationForTask(task: AutopilotTask): Promise<string> {
       framework: undefined,
       maxResults: 5,
     });
-    return block;
+
+    if (!picks.length) return empty;
+
+    // Load frames for the top (PRIMARY) pick if it's a video. Cap aggressively
+    // to keep vision call cost in check — 4 frames are enough to convey the
+    // visual blueprint for an unpinned task.
+    let primaryFrames: string[] = [];
+    let primaryItemId: string | null = null;
+    const primary = picks[0]?.item;
+    if (primary && primary.kind === 'video') {
+      primaryItemId = primary.id;
+      try {
+        const allFrames = await getInspirationFrames(primary.id);
+        // Pick evenly-spaced frames from the available set
+        if (allFrames.length <= DEEP_PRIMARY_FRAME_CAP) {
+          primaryFrames = allFrames;
+        } else {
+          const step = allFrames.length / DEEP_PRIMARY_FRAME_CAP;
+          primaryFrames = Array.from({ length: DEEP_PRIMARY_FRAME_CAP }, (_, i) =>
+            allFrames[Math.min(allFrames.length - 1, Math.floor(i * step))],
+          );
+        }
+      } catch (frameErr) {
+        console.warn('[deep-inspiration] failed to load primary frames', frameErr);
+      }
+    }
+
+    return {
+      picks,
+      primaryFrames,
+      primaryItemId,
+      richContext: block,
+      hasContent: true,
+    };
   } catch (e) {
-    console.warn('[inspiration] failed to load context for task', e);
-    return '';
+    console.warn('[deep-inspiration] failed to load context for task', e);
+    return empty;
   }
+}
+
+/**
+ * Build vision content blocks for a deep inspiration context. Mirrors the
+ * pin path's frame-attaching but with the smaller frame cap.
+ */
+export function buildDeepInspirationVisionContent(
+  deep: DeepInspirationContext,
+  userText: string,
+): ContentBlock[] {
+  const blocks: ContentBlock[] = [];
+  const frames = deep.primaryFrames.slice(0, DEEP_PRIMARY_FRAME_CAP);
+  for (const dataUrl of frames) {
+    const match = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    if (!match) continue;
+    blocks.push({
+      type: 'image',
+      source: { type: 'base64', media_type: match[1], data: match[2] },
+    });
+  }
+  blocks.push({ type: 'text', text: userText });
+  return blocks;
 }
 
 /**
@@ -443,9 +531,15 @@ export async function runConceptPhase(
       ts.step = 'generating-concepts';
       onProgress({ ...state });
 
-      // Load pinned inspiration if any (overrides general bank matches)
+      // Load pinned inspiration if any (overrides general bank matches).
+      // If no pin, fall back to a DEEP load of the bank — top pick gets frames
+      // for vision, all picks get rich text with reference scripts + strong
+      // mirroring directives. This gives unpinned tasks the same depth.
       const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
-      const inspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(task);
+      const deep = pinned ? null : await loadDeepInspirationForTask(task);
+      const inspirationCtx = pinned
+        ? pinned.richContext
+        : (deep && deep.hasContent ? deep.richContext : '');
       const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing, inspirationCtx);
 
       // Inject the SPECIFIC angle from Asana as the primary creative directive.
@@ -484,10 +578,22 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
 
       const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
 
-      // When pinned, switch to vision call so the model can see the actual frames
+      // Vision call when either:
+      //   - a pin exists with frames, OR
+      //   - the deep bank fallback found a primary video reference with frames
       let conceptsRaw: string;
       if (pinned && pinned.frames.length > 0) {
         const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+        conceptsRaw = await sendVisionMessageWithRetry(
+          conceptSystem,
+          visionContent,
+          apiKey,
+          24000,
+          OPUS,
+          signal,
+        );
+      } else if (deep && deep.primaryFrames.length > 0) {
+        const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
         conceptsRaw = await sendVisionMessageWithRetry(
           conceptSystem,
           visionContent,
@@ -591,7 +697,10 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         onProgress({ ...state });
 
         const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
-        const inspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(task);
+        const deep = pinned ? null : await loadDeepInspirationForTask(task);
+        const inspirationCtx = pinned
+          ? pinned.richContext
+          : (deep && deep.hasContent ? deep.richContext : '');
         const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing, inspirationCtx);
         const customDirectives = getAngleDirectives()
           .filter((d) => d.angle.toLowerCase() === task.parsed.angle.toLowerCase() ||
@@ -610,6 +719,16 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
         let conceptsRaw: string;
         if (pinned && pinned.frames.length > 0) {
           const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+          conceptsRaw = await sendVisionMessageWithRetry(
+            conceptSystem,
+            visionContent,
+            apiKey,
+            24000,
+            OPUS,
+            signal,
+          );
+        } else if (deep && deep.primaryFrames.length > 0) {
+          const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
           conceptsRaw = await sendVisionMessageWithRetry(
             conceptSystem,
             visionContent,
@@ -741,6 +860,9 @@ export async function runScriptPhase(
       // This guarantees the script body, persuasion arc, and "How X Was Applied" section
       // all use the pin's framework — not whatever the text-only evaluator picked.
       const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
+      // For unpinned tasks, fall back to a deep load of the bank so the script
+      // generator gets the same depth (top pick frames + rich text + reference scripts).
+      const deep = pinned ? null : await loadDeepInspirationForTask(ts.task);
       const lockedFramework = pinned?.framework
         ? pinned.framework
         : matchFramework(ts.recommendedFramework || 'PAS');
@@ -755,7 +877,9 @@ export async function runScriptPhase(
         conceptAngleContext: ts.selectedConceptText,
       };
 
-      const scriptInspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(ts.task);
+      const scriptInspirationCtx = pinned
+        ? pinned.richContext
+        : (deep && deep.hasContent ? deep.richContext : '');
       const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, scriptInspirationCtx);
 
       // Inject angle-specific and format-specific directives into script generation
@@ -785,6 +909,16 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
       let scriptResult: string;
       if (pinned && pinned.frames.length > 0) {
         const visionContent = buildPinnedVisionContent(pinned, scriptPrompt.user);
+        scriptResult = await sendVisionMessageWithRetry(
+          scriptSystem,
+          visionContent,
+          apiKey,
+          scriptTokens,
+          OPUS,
+          signal,
+        );
+      } else if (deep && deep.primaryFrames.length > 0) {
+        const visionContent = buildDeepInspirationVisionContent(deep, scriptPrompt.user);
         scriptResult = await sendVisionMessageWithRetry(
           scriptSystem,
           visionContent,
@@ -840,6 +974,7 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
         onProgress({ ...state });
 
         const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
+        const deep = pinned ? null : await loadDeepInspirationForTask(ts.task);
         const lockedFramework = pinned?.framework
           ? pinned.framework
           : matchFramework(ts.recommendedFramework || 'PAS');
@@ -853,7 +988,9 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
           conceptAngleContext: ts.selectedConceptText!,
         };
 
-        const retryScriptInspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(ts.task);
+        const retryScriptInspirationCtx = pinned
+          ? pinned.richContext
+          : (deep && deep.hasContent ? deep.richContext : '');
         const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, retryScriptInspirationCtx);
         const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
 This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleLanguageBank(ts.task.parsed.angle)}\n`;
@@ -864,6 +1001,16 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
         let scriptResult: string;
         if (pinned && pinned.frames.length > 0) {
           const visionContent = buildPinnedVisionContent(pinned, scriptPrompt.user);
+          scriptResult = await sendVisionMessageWithRetry(
+            retryScriptSystem,
+            visionContent,
+            apiKey,
+            retryScriptTokens,
+            OPUS,
+            signal,
+          );
+        } else if (deep && deep.primaryFrames.length > 0) {
+          const visionContent = buildDeepInspirationVisionContent(deep, scriptPrompt.user);
           scriptResult = await sendVisionMessageWithRetry(
             retryScriptSystem,
             visionContent,
@@ -1008,7 +1155,10 @@ ${ts.scriptResult || '[no previous brief]'}
     onProgress({ ...state });
 
     const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
-    const regenInspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(task);
+    const deep = pinned ? null : await loadDeepInspirationForTask(task);
+    const regenInspirationCtx = pinned
+      ? pinned.richContext
+      : (deep && deep.hasContent ? deep.richContext : '');
     const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined, regenInspirationCtx);
     const regenAngleCtx = `\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
 
@@ -1016,6 +1166,16 @@ ${ts.scriptResult || '[no previous brief]'}
     let conceptsRaw: string;
     if (pinned && pinned.frames.length > 0) {
       const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+      conceptsRaw = await sendVisionMessageWithRetry(
+        regenConceptSystem,
+        visionContent,
+        apiKey,
+        24000,
+        OPUS,
+        signal,
+      );
+    } else if (deep && deep.primaryFrames.length > 0) {
+      const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
       conceptsRaw = await sendVisionMessageWithRetry(
         regenConceptSystem,
         visionContent,
@@ -1117,6 +1277,16 @@ ${ts.scriptResult || '[no previous brief]'}
     let scriptResult: string;
     if (pinned && pinned.frames.length > 0) {
       const visionContent = buildPinnedVisionContent(pinned, scriptPrompt.user);
+      scriptResult = await sendVisionMessageWithRetry(
+        regenScriptSystem,
+        visionContent,
+        apiKey,
+        regenScriptTokens,
+        OPUS,
+        signal,
+      );
+    } else if (deep && deep.primaryFrames.length > 0) {
+      const visionContent = buildDeepInspirationVisionContent(deep, scriptPrompt.user);
       scriptResult = await sendVisionMessageWithRetry(
         regenScriptSystem,
         visionContent,
