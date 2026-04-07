@@ -581,6 +581,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         {phase === 'complete' && pipelineState && (
           <BatchResultsView
             state={pipelineState}
+            apiKey={apiKey}
             onReset={handleReset}
             onRedoTask={handleRedoTask}
             redoingIndex={redoingIndex}

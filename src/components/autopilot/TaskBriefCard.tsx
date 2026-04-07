@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { TaskPipelineState } from '../../engine/autopilotTypes';
 import { downloadEcomBriefDoc, parseKvTable, parseScriptTable } from '../../utils/downloadUtils';
+import { buildBriefMeta } from '../../autopilot/briefMeta';
 
 interface Props {
   taskState: TaskPipelineState;
@@ -111,6 +112,11 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
   const isFailed = step === 'error';
   const isProcessing = step === 'generating-concepts' || step === 'selecting-concept' || step === 'generating-script';
 
+  // Derived metadata for the header badges (ad type, VO/no VO).
+  // Only meaningful once the brief is complete — but still useful to know
+  // the configured ad type even mid-pipeline.
+  const meta = buildBriefMeta(taskState);
+
   // Parse brief sections for formatted preview
   const briefInfo = isComplete ? parseKvTable(scriptResult, 'BRIEF INFO') : {};
   const strategy = isComplete ? parseKvTable(scriptResult, 'STRATEGY') : {};
@@ -146,7 +152,32 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Ad type pill — visible at every stage so the user can see the
+              configured ad type even before the brief is complete. */}
+          <span
+            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${
+              meta.isFullAi
+                ? 'bg-purple-100 text-purple-700'
+                : 'bg-slate-100 text-slate-600'
+            }`}
+            title={meta.adType}
+          >
+            {meta.adTypeShort}
+          </span>
+          {/* VO / No VO pill — only meaningful once the brief is complete */}
+          {isComplete && (
+            <span
+              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                meta.hasVoiceover
+                  ? 'bg-indigo-100 text-indigo-700'
+                  : 'bg-amber-100 text-amber-700'
+              }`}
+              title={meta.hasVoiceover ? meta.voTone || 'Voiceover present' : 'No voiceover'}
+            >
+              {meta.hasVoiceover ? '\uD83C\uDFA4 VO' : 'No VO'}
+            </span>
+          )}
           {isComplete && selectedConceptIndex && (
             <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
               Concept {selectedConceptIndex} | {recommendedFramework?.split(' ')[0]}

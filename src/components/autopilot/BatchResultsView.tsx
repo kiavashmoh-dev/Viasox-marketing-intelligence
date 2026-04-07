@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import type { AutopilotState } from '../../engine/autopilotTypes';
 import type { AngleDirectiveProposal } from '../../autopilot/memoryTypes';
 import TaskBriefCard from './TaskBriefCard';
+import BatchChatPanel from './BatchChatPanel';
 import { downloadEcomBriefDoc } from '../../utils/downloadUtils';
 import {
   addFeedback,
@@ -12,12 +13,13 @@ import { addAngleDirective } from '../../utils/customOptionsRegistry';
 
 interface Props {
   state: AutopilotState;
+  apiKey: string;
   onReset: () => void;
   onRedoTask?: (taskIndex: number, feedback: string) => void;
   redoingIndex?: number | null;
 }
 
-export default function BatchResultsView({ state, onReset, onRedoTask, redoingIndex }: Props) {
+export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, redoingIndex }: Props) {
   const [reviewExpanded, setReviewExpanded] = useState(false);
   const [briefingExpanded, setBriefingExpanded] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
@@ -260,6 +262,12 @@ export default function BatchResultsView({ state, onReset, onRedoTask, redoingIn
           </button>
         </div>
       )}
+
+      {/* Floating chat assistant — has full visibility into the batch
+          (briefs, concepts, scripts, QC review, memory briefing) and can
+          answer ad-hoc questions like "how many are non-VO?", "what are
+          the CTAs?", "recap the angles for me", etc. */}
+      <BatchChatPanel state={state} apiKey={apiKey} />
 
       {/* Post-Batch Feedback */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
