@@ -37,6 +37,13 @@ export function buildBatchReviewerPrompt(
   creativeDirectionInstructions: string,
   memoryBriefing?: string,
   pastFailures?: Array<{ check: string; count: number }>,
+  /**
+   * Pre-formatted rolling-bar calibration block produced by
+   * formatCalibrationForReviewer(getScoreCalibration()). Empty string when
+   * there isn't enough history yet — the reviewer falls back to the static
+   * 1-10 rubric.
+   */
+  calibrationBlock?: string,
 ): { system: string; user: string } {
 
   const system = `${buildSystemBase()}
@@ -248,6 +255,13 @@ If any of these checks fail again in THIS batch, flag it explicitly and note tha
 ${memoryBriefing}
 
 Use this context to evaluate batch-level diversity not just within THIS batch, but across the historical creative library. If the curator notes that question hooks are overused across all batches, flag any brief in this batch that also defaults to question hooks.`;
+  }
+
+  // Rising-bar calibration: when present, this block re-anchors the
+  // 1-10 scale against the rolling history median/p25/p75 so the
+  // reviewer keeps raising its standards as the system matures.
+  if (calibrationBlock && calibrationBlock.trim()) {
+    memorySection += `\n${calibrationBlock}`;
   }
 
   return { system: system + memorySection, user };

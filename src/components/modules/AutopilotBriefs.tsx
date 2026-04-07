@@ -14,7 +14,8 @@ import {
   loadDeepInspirationForTask,
   buildDeepInspirationVisionContent,
 } from '../../autopilot/pipelineEngine';
-import { loadMemory } from '../../autopilot/memoryStore';
+import { loadMemory, addRedoEvent, getAnglePatternsFor } from '../../autopilot/memoryStore';
+import { formatAnglePatternsForEvaluator } from '../../autopilot/anglePatternMiner';
 import { runMemoryCurator } from '../../autopilot/memoryCurator';
 import { buildAnglesPrompt } from '../../prompts/anglesPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
@@ -270,6 +271,31 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         directionRef.current.pinnedInspirations,
       );
       const deep = pinned ? null : await loadDeepInspirationForTask(ts.task);
+
+      // Capture which inspiration items are feeding this regen so the
+      // post-batch performance loop credits / blames them based on the
+      // resulting brief's review score.
+      const newIds: string[] = [];
+      if (pinned?.item?.id) newIds.push(pinned.item.id);
+      if (deep) for (const p of deep.picks) newIds.push(p.item.id);
+      ts.inspirationIdsUsed = Array.from(new Set([...(ts.inspirationIdsUsed ?? []), ...newIds]));
+
+      // Capture the regeneration feedback as a learning signal for the
+      // angle-directive proposer.
+      if (feedback && feedback.trim()) {
+        try {
+          addRedoEvent({
+            date: new Date().toISOString(),
+            batchId: ts.task.parsed.name,
+            taskName: ts.task.parsed.name,
+            angle: ts.task.parsed.angle,
+            product: ts.task.parsed.product,
+            scope: 'concept',
+            instructions: feedback.trim(),
+          });
+        } catch { /* non-fatal */ }
+      }
+
       const inspirationCtx = pinned
         ? pinned.richContext
         : (deep && deep.hasContent ? deep.richContext : undefined);
@@ -322,6 +348,12 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
       ts.step = 'selecting-concept';
       setPipelineState({ ...state });
 
+      const anglePatternTable = formatAnglePatternsForEvaluator(
+        ts.task.parsed.angle,
+        ts.task.parsed.product,
+        getAnglePatternsFor(ts.task.parsed.angle, ts.task.parsed.product),
+      );
+
       const evalPrompt = buildConceptEvaluatorPrompt(
         conceptsRaw,
         ts.task.parsed.name,
@@ -334,6 +366,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         inspirationCtx,
         pinned?.framework ?? null,
         pinned?.hookStyle ?? null,
+        anglePatternTable,
       );
 
       const evalResponse = await sendMessage(

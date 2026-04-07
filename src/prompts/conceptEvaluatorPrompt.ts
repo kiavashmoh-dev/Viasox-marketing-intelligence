@@ -20,6 +20,13 @@ export function buildConceptEvaluatorPrompt(
   inspirationContext?: string,
   pinnedFramework?: string | null,
   pinnedHookStyle?: string | null,
+  /**
+   * Pre-formatted angle×framework×hookStyle pattern table mined from past
+   * brief history. When present, the evaluator uses it as hard data on
+   * "what has worked before" for this exact angle+product combo.
+   * Built via formatAnglePatternsForEvaluator(angle, product, getAnglePatternsFor(angle, product)).
+   */
+  anglePatternTable?: string,
 ): { system: string; user: string } {
   const system = `You are a Senior Creative Strategist evaluating advertising concepts for Viasox, a premium DTC compression sock brand. You have deep expertise in direct response advertising, performance creative, and DTC marketing strategy.
 
@@ -48,6 +55,8 @@ The creative director has pinned a reference ad that uses **${pinnedFramework}**
 3. Score concepts LOWER if they would feel forced or broken inside ${pinnedFramework}.
 4. Batch diversity rules DO NOT apply to this task — the pinned framework overrides diversity.\n` : ''}${pinnedHookStyle ? `\n**🔒 PINNED HOOK STYLE LOCK FOR THIS TASK: ${pinnedHookStyle}**
 The pinned reference uses a **${pinnedHookStyle}** hook. Score concepts higher if they open with the same hook archetype.\n` : ''}
+
+${anglePatternTable ? `\n**📊 DERIVED PERFORMANCE TABLE — HARD DATA FROM PAST BRIEFS:**\nThe table below was mined from the rolling brief history. Each row is a (framework × hook-style combo) that has actually been used for **${angle} / ${product}** before — with the average reviewer score and the sample size. Use this as load-bearing evidence when rating concepts and recommending frameworks:\n- ✅ PROVEN STRONG rows (high avg score, multiple samples) — recommending these is the safe high-EV play. Score concepts that fit them HIGHER.\n- 🔴 UNDERPERFORMER rows — these combos have repeatedly under-delivered for this angle. Score concepts that map to them LOWER and avoid recommending the framework unless the concept is doing something demonstrably fresh.\n- 🟡 Mixed / 🟢 Solid — neutral, judge on concept merit.\n- If a row has no samples (the table is empty), this angle×product is fresh — judge concepts on first principles.\nDo NOT name the table or scores in your reasoning. Use the data silently to inform your verdict.\n\n${anglePatternTable}\n` : ''}
 
 ${inspirationContext ? `\n**INSPIRATION BANK PROVEN-PATTERN BIAS:**\nThe inspiration block below contains real reference ads/briefs that have already been judged worth learning from for this exact ad type, angle, and product context. Use them as a proven-pattern lens when rating concepts:\n- Concepts whose hook style, structure, narrative arc, or emotional entry CLOSELY mirror the patterns in these references should score higher (these are the patterns we know work).\n- Concepts that ignore the proven patterns or contradict them should score lower, UNLESS the concept is doing something genuinely fresh that the strategy brief or angle warrants.\n- If a starred reference exists, treat its patterns as especially load-bearing.\n- If a PINNED reference is included, its patterns OVERRIDE the others — the pin is the locked north star for this task.\nDo NOT name the references in your reasoning. Speak about the *patterns*, not the *examples*.\n${inspirationContext}\n` : ''}`;
 

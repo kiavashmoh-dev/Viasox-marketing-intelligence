@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { AutopilotState } from '../../engine/autopilotTypes';
+import type { AngleDirectiveProposal } from '../../autopilot/memoryTypes';
 import TaskBriefCard from './TaskBriefCard';
 import { downloadEcomBriefDoc } from '../../utils/downloadUtils';
-import { addFeedback } from '../../autopilot/memoryStore';
+import {
+  addFeedback,
+  getPendingDirectiveProposals,
+  dismissDirectiveProposal,
+} from '../../autopilot/memoryStore';
+import { addAngleDirective } from '../../utils/customOptionsRegistry';
 
 interface Props {
   state: AutopilotState;
@@ -17,8 +23,34 @@ export default function BatchResultsView({ state, onReset, onRedoTask, redoingIn
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSaved, setFeedbackSaved] = useState(false);
 
+  // Pending angle-directive proposals from the proposer agent.
+  // Re-read from the memory store whenever the batch phase changes (so a
+  // freshly-completed batch picks up newly-generated proposals) and also
+  // after any accept / dismiss action via the bumpable refreshTick.
+  // state.phase + refreshTick are intentional cache-invalidation keys —
+  // they don't appear in the body but they MUST trigger a re-read.
+  const [editedDirectives, setEditedDirectives] = useState<Record<string, string>>({});
+  const [refreshTick, setRefreshTick] = useState(0);
+  const proposals = useMemo<AngleDirectiveProposal[]>(
+    () => getPendingDirectiveProposals(),
+    [state.phase, refreshTick], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
   const completed = state.tasks.filter((t) => t.step === 'complete');
   const failed = state.tasks.filter((t) => t.step === 'error');
+
+  const handleAcceptProposal = (proposal: AngleDirectiveProposal) => {
+    const directive = editedDirectives[proposal.id] ?? proposal.directiveText;
+    if (!directive.trim()) return;
+    addAngleDirective(proposal.angle, proposal.product, directive.trim());
+    dismissDirectiveProposal(proposal.id);
+    setRefreshTick((t) => t + 1);
+  };
+
+  const handleDismissProposal = (proposal: AngleDirectiveProposal) => {
+    dismissDirectiveProposal(proposal.id);
+    setRefreshTick((t) => t + 1);
+  };
 
   const handleExportAll = () => {
     completed.forEach((ts) => {
@@ -78,6 +110,80 @@ export default function BatchResultsView({ state, onReset, onRedoTask, redoingIn
           </button>
         )}
       </div>
+
+      {/* Angle Directive Proposals — surfaced from the angle-directive proposer
+          when the system has detected a repeating user revision pattern.
+          Accepting writes the directive into customOptionsRegistry, so every
+          future brief on that angle inherits it permanently. */}
+      {proposals.length > 0 && (
+        <div className="bg-white rounded-xl border border-amber-200 overflow-hidden">
+          <div className="bg-amber-50 px-5 py-3 border-b border-amber-200 flex items-center gap-2">
+            <span className="text-lg">{'\u2728'}</span>
+            <div className="flex-1">
+              <div className="text-sm font-semibold text-amber-900">
+                Pattern Detected — {proposals.length} Angle Directive Proposal{proposals.length !== 1 ? 's' : ''}
+              </div>
+              <div className="text-[11px] text-amber-700">
+                The system noticed you keep asking for the same change. Lock it in as a permanent rule for the angle so you never have to ask again.
+              </div>
+            </div>
+          </div>
+          <div className="divide-y divide-amber-100">
+            {proposals.map((p) => {
+              const value = editedDirectives[p.id] ?? p.directiveText;
+              return (
+                <div key={p.id} className="p-5 space-y-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                      {p.angle}
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+                      {p.product}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      from {p.evidence.length} redo event{p.evidence.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-slate-500">
+                    <span className="font-semibold text-slate-600">Detected pattern:</span> {p.pattern}
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-600 block mb-1">
+                      Permanent directive (edit before accepting)
+                    </label>
+                    <textarea
+                      value={value}
+                      onChange={(e) =>
+                        setEditedDirectives((prev) => ({ ...prev, [p.id]: e.target.value }))
+                      }
+                      className="w-full border border-slate-200 rounded-lg p-3 text-xs text-slate-700 resize-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleAcceptProposal(p)}
+                      disabled={!value.trim()}
+                      className="text-xs bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Accept &amp; Lock In
+                    </button>
+                    <button
+                      onClick={() => handleDismissProposal(p)}
+                      className="text-xs text-slate-500 hover:text-slate-700 px-3 py-2"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Creative Intelligence Used */}
       {state.memoryBriefing && (

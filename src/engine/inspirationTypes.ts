@@ -92,9 +92,29 @@ export interface InspirationItem {
 
   // User state
   starred: boolean;
+  /** True when starred automatically by the auto-star pass (vs. manual user star). */
+  autoStarred?: boolean;
   userNotes: string;
   status: InspirationStatus;
   analysisError?: string;
+
+  // ── Performance tracking (closed feedback loop) ─────────────────────────
+  /**
+   * Total number of times this item has been injected into a generated brief
+   * (concept and/or script phase). Updated post-batch by recordInspirationUsage.
+   */
+  usageCount?: number;
+  /**
+   * Average review score (1-10) of all completed briefs that used this item
+   * as inspiration. null until the item has been used at least once.
+   */
+  derivedScore?: number | null;
+  /** Number of scored uses contributing to derivedScore. */
+  derivedScoreSampleSize?: number;
+  /** ISO timestamp of the most recent batch that used this item. */
+  lastUsedAt?: string | null;
+  /** Most recent batch IDs that used this item (capped to last 20). */
+  lastUsedInBatchIds?: string[];
 }
 
 /** Aggregated stats over the bank. */

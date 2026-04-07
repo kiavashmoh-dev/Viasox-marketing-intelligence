@@ -33,7 +33,7 @@ import { parseConceptBlocks } from '../utils/conceptParser';
 import type { FullAnalysis, ScriptParams, ScriptFramework } from '../engine/types';
 import type { AutopilotTask, AutopilotState, CreativeDirection, StrategySession } from '../engine/autopilotTypes';
 import type { InspirationItem } from '../engine/inspirationTypes';
-import { loadMemory, getHistoryForAngle, getReviewerFailurePatterns } from './memoryStore';
+import { loadMemory, getHistoryForAngle, getReviewerFailurePatterns, addRedoEvent } from './memoryStore';
 import { getAngleLanguageBank } from '../prompts/manifestoReference';
 import { getAngleDirectives } from '../utils/customOptionsRegistry';
 import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator';
@@ -41,6 +41,10 @@ import { saveCompletedBatchToMemory } from './memoryExtractor';
 import { getDeepInspirationContextBlock } from '../inspiration/inspirationInjection';
 import type { ScoredInspiration } from '../inspiration/inspirationSelector';
 import { getItem as getInspirationItem, getFrames as getInspirationFrames } from '../inspiration/inspirationStore';
+import { runAngleDirectiveProposer } from './angleDirectiveProposer';
+import { formatAnglePatternsForEvaluator } from './anglePatternMiner';
+import { getAnglePatternsFor, getScoreCalibration } from './memoryStore';
+import { formatCalibrationForReviewer } from './scoreCalibration';
 
 // ─── All creative agents use Opus ────────────────────────────────────────────
 
@@ -174,6 +178,29 @@ export async function loadDeepInspirationForTask(
     console.warn('[deep-inspiration] failed to load context for task', e);
     return empty;
   }
+}
+
+/**
+ * Collect the inspiration item IDs that were injected for a single task by
+ * either a pin or the deep loader. Returns an empty array if neither path
+ * had any items. Used by the post-batch performance loop so each item gets
+ * its derivedScore updated based on the brief's review score.
+ */
+function collectInspirationIds(
+  pinned: PinnedInspirationContext | null,
+  deep: DeepInspirationContext | null,
+): string[] {
+  const ids: string[] = [];
+  if (pinned?.item?.id) ids.push(pinned.item.id);
+  if (deep && deep.picks.length > 0) {
+    for (const p of deep.picks) ids.push(p.item.id);
+  }
+  return ids;
+}
+
+/** Merge new IDs into a previously captured list, deduplicated. */
+function mergeInspirationIds(prev: string[] | undefined, next: string[]): string[] {
+  return Array.from(new Set([...(prev ?? []), ...next]));
 }
 
 /**
@@ -537,6 +564,12 @@ export async function runConceptPhase(
       // mirroring directives. This gives unpinned tasks the same depth.
       const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
       const deep = pinned ? null : await loadDeepInspirationForTask(task);
+      // Capture which bank items are feeding this task — used post-batch to
+      // update each item's derivedScore via recordInspirationUsage.
+      ts.inspirationIdsUsed = mergeInspirationIds(
+        ts.inspirationIdsUsed,
+        collectInspirationIds(pinned, deep),
+      );
       const inspirationCtx = pinned
         ? pinned.richContext
         : (deep && deep.hasContent ? deep.richContext : '');
@@ -621,6 +654,12 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
       ts.step = 'selecting-concept';
       onProgress({ ...state });
 
+      const anglePatternTable = formatAnglePatternsForEvaluator(
+        task.parsed.angle,
+        task.parsed.product,
+        getAnglePatternsFor(task.parsed.angle, task.parsed.product),
+      );
+
       const evalPrompt = buildConceptEvaluatorPrompt(
         conceptsRaw,
         task.parsed.name,
@@ -633,6 +672,7 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         inspirationCtx,
         pinned?.framework ?? null,
         pinned?.hookStyle ?? null,
+        anglePatternTable,
       );
 
       const evalResponse = await sendMessageWithRetry(
@@ -698,6 +738,10 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
 
         const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
         const deep = pinned ? null : await loadDeepInspirationForTask(task);
+        ts.inspirationIdsUsed = mergeInspirationIds(
+          ts.inspirationIdsUsed,
+          collectInspirationIds(pinned, deep),
+        );
         const inspirationCtx = pinned
           ? pinned.richContext
           : (deep && deep.hasContent ? deep.richContext : '');
@@ -755,6 +799,12 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
         ts.step = 'selecting-concept';
         onProgress({ ...state });
 
+        const anglePatternTableRetry = formatAnglePatternsForEvaluator(
+          task.parsed.angle,
+          task.parsed.product,
+          getAnglePatternsFor(task.parsed.angle, task.parsed.product),
+        );
+
         const evalPrompt = buildConceptEvaluatorPrompt(
           conceptsRaw,
           task.parsed.name,
@@ -767,6 +817,7 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
           inspirationCtx,
           pinned?.framework ?? null,
           pinned?.hookStyle ?? null,
+          anglePatternTableRetry,
         );
 
         const evalResponse = await sendMessageWithRetry(
@@ -863,6 +914,10 @@ export async function runScriptPhase(
       // For unpinned tasks, fall back to a deep load of the bank so the script
       // generator gets the same depth (top pick frames + rich text + reference scripts).
       const deep = pinned ? null : await loadDeepInspirationForTask(ts.task);
+      ts.inspirationIdsUsed = mergeInspirationIds(
+        ts.inspirationIdsUsed,
+        collectInspirationIds(pinned, deep),
+      );
       const lockedFramework = pinned?.framework
         ? pinned.framework
         : matchFramework(ts.recommendedFramework || 'PAS');
@@ -975,6 +1030,10 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
 
         const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
         const deep = pinned ? null : await loadDeepInspirationForTask(ts.task);
+        ts.inspirationIdsUsed = mergeInspirationIds(
+          ts.inspirationIdsUsed,
+          collectInspirationIds(pinned, deep),
+        );
         const lockedFramework = pinned?.framework
           ? pinned.framework
           : matchFramework(ts.recommendedFramework || 'PAS');
@@ -1053,6 +1112,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
 
     try {
       const pastFailures = getReviewerFailurePatterns();
+      const calibrationBlock = formatCalibrationForReviewer(getScoreCalibration());
       const reviewPrompt = buildBatchReviewerPrompt(
         completedTasks.map((t) => ({
           taskName: t.task.parsed.name,
@@ -1066,6 +1126,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
         direction.instructions,
         memoryBriefing,
         pastFailures.length > 0 ? pastFailures : undefined,
+        calibrationBlock,
       );
 
       state.reviewResult = await sendMessageWithRetry(
@@ -1081,11 +1142,27 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
     }
   }
 
-  // ── Save to memory ──────────────────────────────────────────────────────
+  // ── Save to memory + run post-batch learning loop ───────────────────────
+  // saveCompletedBatchToMemory is now async because it walks each used
+  // inspiration item to update its derivedScore, then recomputes the
+  // angle pattern table, the rolling-bar calibration, and the auto-star
+  // pass. We await it so the next batch sees the freshest derived facts.
 
   try {
-    saveCompletedBatchToMemory(state, direction);
-  } catch { /* non-fatal */ }
+    await saveCompletedBatchToMemory(state, direction);
+  } catch (err) {
+    console.warn('[pipelineEngine] saveCompletedBatchToMemory failed', err);
+  }
+
+  // ── Run the angle-directive proposer on the rolling redo log ────────────
+  // Sonnet inspects clusters of repeated user revisions and surfaces
+  // candidate permanent directives the user can approve. Failures are
+  // non-fatal — proposals just don't appear in the next BatchResultsView.
+  try {
+    await runAngleDirectiveProposer(apiKey, signal);
+  } catch (err) {
+    console.warn('[pipelineEngine] runAngleDirectiveProposer failed', err);
+  }
 
   state.phase = 'complete';
   onProgress({ ...state });
@@ -1113,6 +1190,23 @@ export async function redoSingleTask(
   const { task } = ts;
   const resourceCtx = buildResourceContext(resourceContext);
   const memory = loadMemory();
+
+  // Capture this redo as a learning signal — the angle-directive proposer will
+  // analyze recurring patterns in redo instructions to propose permanent
+  // directives the next time the user kicks off a batch.
+  if (feedback && feedback.trim()) {
+    try {
+      addRedoEvent({
+        date: new Date().toISOString(),
+        batchId: task.parsed.name,
+        taskName: task.parsed.name,
+        angle: task.parsed.angle,
+        product: task.parsed.product,
+        scope: 'script',
+        instructions: feedback.trim(),
+      });
+    } catch { /* non-fatal */ }
+  }
 
   const feedbackDirective = `## REDO FEEDBACK — THIS IS THE #1 PRIORITY FOR THIS BRIEF
 
@@ -1156,6 +1250,10 @@ ${ts.scriptResult || '[no previous brief]'}
 
     const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
     const deep = pinned ? null : await loadDeepInspirationForTask(task);
+    ts.inspirationIdsUsed = mergeInspirationIds(
+      ts.inspirationIdsUsed,
+      collectInspirationIds(pinned, deep),
+    );
     const regenInspirationCtx = pinned
       ? pinned.richContext
       : (deep && deep.hasContent ? deep.richContext : '');

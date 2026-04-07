@@ -12,10 +12,14 @@ import type {
   FeedbackRecord,
   CreativeIntelligenceBriefing,
   MemoryStats,
+  AnglePatternRecord,
+  RedoEvent,
+  ScoreCalibration,
+  AngleDirectiveProposal,
 } from './memoryTypes';
 
 const STORAGE_KEY = 'viasox_creative_memory';
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 2;
 
 // ─── Core Read/Write ────────────────────────────────────────────────────────
 
@@ -25,7 +29,30 @@ function createEmptyStore(): CreativeMemoryStore {
     batches: [],
     feedback: [],
     lastCuratorBriefing: null,
+    anglePatterns: [],
+    redoEvents: [],
+    scoreCalibration: null,
+    pendingDirectiveProposals: [],
   };
+}
+
+/** Backfill optional fields added in v2 so the rest of the code can rely on them. */
+function migrateStore(parsed: CreativeMemoryStore): CreativeMemoryStore {
+  const next: CreativeMemoryStore = {
+    ...parsed,
+    anglePatterns: parsed.anglePatterns ?? [],
+    redoEvents: parsed.redoEvents ?? [],
+    scoreCalibration: parsed.scoreCalibration ?? null,
+    pendingDirectiveProposals: parsed.pendingDirectiveProposals ?? [],
+  };
+  // Backfill inspirationIdsUsed on legacy brief records
+  for (const batch of next.batches) {
+    for (const brief of batch.briefs) {
+      if (brief.inspirationIdsUsed === undefined) brief.inspirationIdsUsed = [];
+    }
+  }
+  next.version = CURRENT_VERSION;
+  return next;
 }
 
 export function loadMemory(): CreativeMemoryStore {
@@ -36,8 +63,7 @@ export function loadMemory(): CreativeMemoryStore {
     if (!parsed.version || !Array.isArray(parsed.batches)) {
       return createEmptyStore();
     }
-    // Future: run migrations if parsed.version < CURRENT_VERSION
-    return parsed;
+    return migrateStore(parsed);
   } catch {
     return createEmptyStore();
   }
@@ -230,4 +256,97 @@ export function getMemoryStats(): MemoryStats {
     oldestBatch: dates.length > 0 ? dates[0] : null,
     newestBatch: dates.length > 0 ? dates[dates.length - 1] : null,
   };
+}
+
+// ─── All Briefs (across all batches) ────────────────────────────────────────
+
+export function getAllBriefs(): BriefMemoryRecord[] {
+  const store = loadMemory();
+  return store.batches.flatMap((b) => b.briefs);
+}
+
+// ─── Angle Pattern Records ──────────────────────────────────────────────────
+
+export function getAnglePatterns(): AnglePatternRecord[] {
+  return loadMemory().anglePatterns ?? [];
+}
+
+export function saveAnglePatterns(patterns: AnglePatternRecord[]): void {
+  const store = loadMemory();
+  store.anglePatterns = patterns;
+  saveMemory(store);
+}
+
+export function getAnglePatternsFor(angle: string, product: string): AnglePatternRecord[] {
+  const all = getAnglePatterns();
+  const a = angle.toLowerCase();
+  const p = product.toLowerCase();
+  return all
+    .filter((r) => r.angle.toLowerCase() === a && r.product.toLowerCase() === p)
+    .sort((x, y) => y.avgScore - x.avgScore);
+}
+
+// ─── Redo Events ────────────────────────────────────────────────────────────
+
+const MAX_REDO_EVENTS = 200;
+
+export function addRedoEvent(event: RedoEvent): void {
+  const store = loadMemory();
+  const events = store.redoEvents ?? [];
+  events.push(event);
+  store.redoEvents = events.slice(-MAX_REDO_EVENTS);
+  saveMemory(store);
+}
+
+export function getRedoEvents(): RedoEvent[] {
+  return loadMemory().redoEvents ?? [];
+}
+
+export function getRedoEventsForAngle(angle: string): RedoEvent[] {
+  const a = angle.toLowerCase();
+  return getRedoEvents().filter((r) => r.angle.toLowerCase() === a);
+}
+
+// ─── Score Calibration ──────────────────────────────────────────────────────
+
+export function saveScoreCalibration(calibration: ScoreCalibration): void {
+  const store = loadMemory();
+  store.scoreCalibration = calibration;
+  saveMemory(store);
+}
+
+export function getScoreCalibration(): ScoreCalibration | null {
+  return loadMemory().scoreCalibration ?? null;
+}
+
+// ─── Angle Directive Proposals ──────────────────────────────────────────────
+
+export function addDirectiveProposal(proposal: AngleDirectiveProposal): void {
+  const store = loadMemory();
+  const proposals = store.pendingDirectiveProposals ?? [];
+  // De-dupe: same angle+product+pattern within last 7 days replaces the old one
+  const now = Date.now();
+  const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+  const filtered = proposals.filter((p) => {
+    const sameAnglePattern =
+      p.angle.toLowerCase() === proposal.angle.toLowerCase() &&
+      p.product.toLowerCase() === proposal.product.toLowerCase() &&
+      p.pattern === proposal.pattern;
+    if (!sameAnglePattern) return true;
+    return now - Date.parse(p.proposedAt) > SEVEN_DAYS;
+  });
+  filtered.push(proposal);
+  store.pendingDirectiveProposals = filtered;
+  saveMemory(store);
+}
+
+export function getPendingDirectiveProposals(): AngleDirectiveProposal[] {
+  return loadMemory().pendingDirectiveProposals ?? [];
+}
+
+export function dismissDirectiveProposal(id: string): void {
+  const store = loadMemory();
+  const proposals = store.pendingDirectiveProposals ?? [];
+  store.pendingDirectiveProposals = proposals.filter((p) => p.id !== id);
+  saveMemory(store);
 }

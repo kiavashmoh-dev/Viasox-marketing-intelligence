@@ -107,13 +107,28 @@ export async function getItem(id: string): Promise<InspirationItem | undefined> 
 
 /** Normalize legacy data: any item persisted before the schema collapse with
  *  `kind: 'script'` is now treated as a `'brief'`. Briefs and scripts are the
- *  same thing in the bank — briefs include scripts inside them. */
+ *  same thing in the bank — briefs include scripts inside them.
+ *
+ *  Also backfills the performance-tracking fields added in the learning loop
+ *  upgrade so older items behave normally inside the selector + auto-star.
+ */
 function normalizeKind(item: InspirationItem): InspirationItem {
+  let normalized = item;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((item.kind as any) === 'script') {
-    return { ...item, kind: 'brief' };
+    normalized = { ...normalized, kind: 'brief' };
   }
-  return item;
+  // Backfill performance fields if missing
+  if (normalized.usageCount === undefined) normalized = { ...normalized, usageCount: 0 };
+  if (normalized.derivedScore === undefined) normalized = { ...normalized, derivedScore: null };
+  if (normalized.derivedScoreSampleSize === undefined) {
+    normalized = { ...normalized, derivedScoreSampleSize: 0 };
+  }
+  if (normalized.lastUsedAt === undefined) normalized = { ...normalized, lastUsedAt: null };
+  if (normalized.lastUsedInBatchIds === undefined) {
+    normalized = { ...normalized, lastUsedInBatchIds: [] };
+  }
+  return normalized;
 }
 
 export async function getAllItems(): Promise<InspirationItem[]> {
@@ -243,4 +258,96 @@ export async function exportMetadata(): Promise<string> {
 
 export function generateId(): string {
   return `insp_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// ─── Performance Tracking (closed feedback loop) ────────────────────────────
+
+const MAX_BATCH_HISTORY = 20;
+
+/**
+ * Record a single usage of an inspiration item by a brief that has been
+ * scored by the batch reviewer. Updates the rolling average derivedScore
+ * and bumps usageCount + lastUsedAt + lastUsedInBatchIds. No-op when the
+ * item doesn't exist (it may have been deleted between batches).
+ */
+export async function recordInspirationUsage(
+  itemId: string,
+  reviewScore: number,
+  batchId: string,
+): Promise<void> {
+  if (!Number.isFinite(reviewScore)) return;
+  const item = await getItem(itemId);
+  if (!item) return;
+
+  const prevSample = item.derivedScoreSampleSize ?? 0;
+  const prevScore = item.derivedScore ?? null;
+  const nextSample = prevSample + 1;
+  const nextScore =
+    prevScore === null
+      ? reviewScore
+      : (prevScore * prevSample + reviewScore) / nextSample;
+
+  const prevBatches = item.lastUsedInBatchIds ?? [];
+  const nextBatches = [batchId, ...prevBatches.filter((b) => b !== batchId)].slice(0, MAX_BATCH_HISTORY);
+
+  const updated: InspirationItem = {
+    ...item,
+    usageCount: (item.usageCount ?? 0) + 1,
+    derivedScore: Math.round(nextScore * 10) / 10,
+    derivedScoreSampleSize: nextSample,
+    lastUsedAt: new Date().toISOString(),
+    lastUsedInBatchIds: nextBatches,
+  };
+
+  await updateItem(updated);
+}
+
+/**
+ * Auto-star pass — promotes items whose derivedScore meets the threshold and
+ * have at least the required sample size to "starred" so the selector boosts
+ * them. Manual stars by the user are preserved (we never unstar). Items that
+ * the auto-pass starred get marked autoStarred=true so the UI can show
+ * provenance, and so we can later unstar if their derived score collapses.
+ */
+export async function autoStarHighPerformingItems(opts?: {
+  scoreThreshold?: number;     // default 8.0
+  minSampleSize?: number;      // default 3
+  unstarThreshold?: number;    // default 6.5 — only auto-unstars items previously auto-starred
+}): Promise<{ starred: string[]; unstarred: string[] }> {
+  const scoreThreshold = opts?.scoreThreshold ?? 8.0;
+  const minSampleSize = opts?.minSampleSize ?? 3;
+  const unstarThreshold = opts?.unstarThreshold ?? 6.5;
+
+  const items = await getAllItems();
+  const starred: string[] = [];
+  const unstarred: string[] = [];
+
+  for (const item of items) {
+    const score = item.derivedScore ?? null;
+    const sample = item.derivedScoreSampleSize ?? 0;
+
+    // Promotion: cross the bar going up
+    if (score !== null && sample >= minSampleSize && score >= scoreThreshold && !item.starred) {
+      const updated: InspirationItem = { ...item, starred: true, autoStarred: true };
+      await updateItem(updated);
+      starred.push(item.id);
+      continue;
+    }
+
+    // Demotion: cross the bar going down — but ONLY if we previously auto-starred it.
+    // Manual stars are sacred.
+    if (
+      item.starred &&
+      item.autoStarred === true &&
+      score !== null &&
+      sample >= minSampleSize &&
+      score < unstarThreshold
+    ) {
+      const updated: InspirationItem = { ...item, starred: false, autoStarred: false };
+      await updateItem(updated);
+      unstarred.push(item.id);
+    }
+  }
+
+  return { starred, unstarred };
 }

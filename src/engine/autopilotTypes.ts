@@ -67,6 +67,12 @@ export interface TaskPipelineState {
   scriptResult?: string;
   /** Error message if step failed */
   error?: string;
+  /**
+   * Inspiration Bank item IDs that were injected into this task's concept and/or
+   * script generation. Captured by the pipeline so post-batch we can update each
+   * item's derivedScore via recordInspirationUsage.
+   */
+  inspirationIdsUsed?: string[];
 }
 
 // ─── Creative Direction ──────────────────────────────────────────────────

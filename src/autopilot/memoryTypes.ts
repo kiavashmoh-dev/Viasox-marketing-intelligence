@@ -26,6 +26,52 @@ export interface BriefMemoryRecord {
   reviewFlags: string[];         // Which of the 10 checks got FLAG/FAIL
   reviewStrengths: string[];     // Bullet points from reviewer
   reviewWeaknesses: string[];    // Bullet points from reviewer
+  /**
+   * Inspiration Bank item IDs that were injected into this brief's concept
+   * and/or script generation. Used post-batch to update each item's
+   * derivedScore via recordInspirationUsage. Empty array when no bank items
+   * were active for this task.
+   */
+  inspirationIdsUsed?: string[];
+}
+
+// ─── Angle × Framework × Hook Pattern Record ────────────────────────────────
+//
+// Stable, structured "what works" facts derived from BriefMemoryRecord history.
+// These persist between batches so the evaluator gets hard data instead of
+// relying on the curator's narrative each time.
+//
+// Identity = (angle, product, framework, hookStyleKey). hookStyleKey is the
+// sorted-joined hookStyles list, so the same combo of styles maps to one row.
+
+export interface AnglePatternRecord {
+  angle: string;
+  product: string;
+  framework: string;
+  hookStyles: string[];          // sorted, deduplicated
+  avgScore: number;              // 1-10 average review score across uses
+  sampleSize: number;            // number of briefs contributing
+  bestExampleBriefId: string;    // brief id of the highest scoring instance
+  worstExampleBriefId: string;
+  lastUpdated: string;           // ISO timestamp
+}
+
+// ─── Redo Event (for angle directive proposer) ──────────────────────────────
+//
+// Captured when the user redoes a concept or script regen with redo
+// instructions. Used by the angle-directive proposer to detect repeated
+// patterns ("the user keeps removing 'Look,' as an opener") and surface
+// candidate directives.
+
+export interface RedoEvent {
+  date: string;                  // ISO timestamp
+  batchId: string;
+  taskName: string;              // e.g., "VIASOX-77"
+  angle: string;
+  product: string;
+  scope: 'concept' | 'script';
+  /** Free-text redo instructions provided by the user. */
+  instructions: string;
 }
 
 // ─── Batch Memory ───────────────────────────────────────────────────────────
@@ -65,6 +111,24 @@ export interface CreativeIntelligenceBriefing {
   briefingText: string;          // Curator's synthesized narrative (500-800 words)
 }
 
+// ─── Score Calibration Snapshot ────────────────────────────────────────────
+//
+// Cached rolling-window calibration of recent review scores. Used by the
+// batch reviewer to keep raising its bar as the system matures.
+
+export interface ScoreCalibration {
+  /** Window size used to compute these stats (e.g., 30 most recent briefs). */
+  windowSize: number;
+  /** Number of briefs actually included in the window. */
+  sampleSize: number;
+  median: number;        // 50th percentile
+  p25: number;           // 25th percentile
+  p75: number;           // 75th percentile
+  mean: number;
+  /** ISO timestamp the snapshot was computed. */
+  computedAt: string;
+}
+
 // ─── Root Memory Store ──────────────────────────────────────────────────────
 
 export interface CreativeMemoryStore {
@@ -72,6 +136,32 @@ export interface CreativeMemoryStore {
   batches: BatchMemoryRecord[];
   feedback: FeedbackRecord[];
   lastCuratorBriefing: CreativeIntelligenceBriefing | null;
+  /** Derived structured patterns. Recomputed after every batch. */
+  anglePatterns?: AnglePatternRecord[];
+  /** Captured user redo events for the angle-directive proposer. */
+  redoEvents?: RedoEvent[];
+  /** Cached rolling calibration for the reviewer's rising-bar logic. */
+  scoreCalibration?: ScoreCalibration | null;
+  /** Outstanding angle-directive proposals awaiting user approval. */
+  pendingDirectiveProposals?: AngleDirectiveProposal[];
+}
+
+// ─── Angle Directive Proposal ──────────────────────────────────────────────
+//
+// When the proposer detects 3+ similar redo events for the same angle, it
+// drafts a candidate directive and stores it here for the user to approve.
+
+export interface AngleDirectiveProposal {
+  id: string;
+  proposedAt: string;            // ISO timestamp
+  angle: string;
+  product: string;
+  /** AI-drafted directive text the user can edit and accept. */
+  directiveText: string;
+  /** Recurring pattern detected — what triggered the proposal. */
+  pattern: string;
+  /** Redo event ids (or timestamps) backing the proposal. */
+  evidence: string[];
 }
 
 // ─── Memory Stats (for UI display) ──────────────────────────────────────────

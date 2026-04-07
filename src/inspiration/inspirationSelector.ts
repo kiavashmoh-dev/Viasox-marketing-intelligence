@@ -23,6 +23,13 @@
  *   +2  starred bonus
  *   +1  recency bonus (uploaded in last 30 days)
  *
+ * Performance feedback loop (closed-loop learning):
+ *   +N  derivedScore boost — items whose past briefs scored well rise faster.
+ *       Computed as: round((derivedScore - 5) * 0.8 * confidenceWeight) where
+ *       confidenceWeight ramps from 0 (sample=0) to 1 (sample>=4). Caps at +6.
+ *       Items with derivedScore < 5 (worse than middling) get a small *negative*
+ *       boost down to -3 — winners auto-rise, losers auto-sink.
+ *
  * Items must score >= 3 to be included. We always cap at maxResults.
  */
 
@@ -127,12 +134,32 @@ export async function selectInspiration(
 
     if (item.starred) {
       score += 2;
-      reasons.push('starred');
+      reasons.push(item.autoStarred ? 'auto-starred' : 'starred');
     }
     const uploaded = Date.parse(item.uploadedAt);
     if (!isNaN(uploaded) && uploaded >= recencyCutoff) {
       score += 1;
       reasons.push('recent');
+    }
+
+    // ── Performance boost from derived score (closed feedback loop) ──
+    // Items whose past briefs scored well are surfaced more aggressively.
+    // Items whose past briefs scored poorly are pushed down. Confidence
+    // ramps with sample size so a single 9/10 doesn't dominate, but a
+    // proven 9/10 across 4 uses absolutely should.
+    const derivedScore = item.derivedScore ?? null;
+    const sample = item.derivedScoreSampleSize ?? 0;
+    if (derivedScore !== null && sample > 0) {
+      const confidence = Math.min(1, sample / 4);
+      const rawDelta = (derivedScore - 5) * 0.8 * confidence;
+      const cappedDelta = Math.max(-3, Math.min(6, rawDelta));
+      const rounded = Math.round(cappedDelta * 10) / 10;
+      if (Math.abs(rounded) >= 0.1) {
+        score += rounded;
+        reasons.push(
+          `derivedScore: ${derivedScore.toFixed(1)}/10 (×${sample}) → ${rounded > 0 ? '+' : ''}${rounded}`,
+        );
+      }
     }
 
     return { item, score, matchReasons: reasons };

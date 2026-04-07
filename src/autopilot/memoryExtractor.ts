@@ -9,6 +9,9 @@ import type { AutopilotState, CreativeDirection } from '../engine/autopilotTypes
 import type { BatchMemoryRecord, BriefMemoryRecord } from './memoryTypes';
 import { parseReviewResult } from './reviewParser';
 import { saveBatchToMemory } from './memoryStore';
+import { recordInspirationUsage, autoStarHighPerformingItems } from '../inspiration/inspirationStore';
+import { recomputeAndSaveAnglePatterns } from './anglePatternMiner';
+import { recomputeAndSaveCalibration } from './scoreCalibration';
 
 // ─── Hook Style Classification ──────────────────────────────────────────────
 
@@ -102,10 +105,10 @@ function extractConceptSummary(conceptText: string): string {
 
 // ─── Main Extractor ─────────────────────────────────────────────────────────
 
-export function saveCompletedBatchToMemory(
+export async function saveCompletedBatchToMemory(
   state: AutopilotState,
   direction: CreativeDirection,
-): void {
+): Promise<void> {
   const batchId = new Date().toISOString();
   const date = new Date().toISOString().split('T')[0];
 
@@ -149,6 +152,7 @@ export function saveCompletedBatchToMemory(
         .map((c) => c.name) ?? [],
       reviewStrengths: reviewMatch?.strengths ?? [],
       reviewWeaknesses: reviewMatch?.weaknesses ?? [],
+      inspirationIdsUsed: Array.from(new Set(ts.inspirationIdsUsed ?? [])),
     });
   }
 
@@ -167,4 +171,53 @@ export function saveCompletedBatchToMemory(
 
   // Save to memory
   saveBatchToMemory(batchRecord);
+
+  // ── Post-batch learning loop ────────────────────────────────────────────
+  // Each completed brief now writes back into the inspiration bank,
+  // refreshes the derived pattern table, recomputes the rolling-bar
+  // calibration, and runs the auto-star pass. This is the single
+  // commit point that turns each batch into smarter future batches.
+  try {
+    // 1. Credit / blame each inspiration item that fed a brief in this batch
+    //    with the brief's review score. Sequential to avoid racing the IDB
+    //    transactions on the same item.
+    for (const brief of briefRecords) {
+      const ids = brief.inspirationIdsUsed ?? [];
+      if (ids.length === 0) continue;
+      for (const id of ids) {
+        try {
+          await recordInspirationUsage(id, brief.reviewScore, batchId);
+        } catch (err) {
+          console.warn('[memoryExtractor] recordInspirationUsage failed', id, err);
+        }
+      }
+    }
+
+    // 2. Recompute the (angle, product, framework, hookStyleKey) pattern
+    //    table from the full brief history. The evaluator reads this on
+    //    the next batch to make framework + hook decisions on hard data.
+    try {
+      recomputeAndSaveAnglePatterns();
+    } catch (err) {
+      console.warn('[memoryExtractor] recomputeAndSaveAnglePatterns failed', err);
+    }
+
+    // 3. Recompute the rolling-bar calibration (median / p25 / p75 / mean)
+    //    so the batch reviewer raises its standards as the system matures.
+    try {
+      recomputeAndSaveCalibration();
+    } catch (err) {
+      console.warn('[memoryExtractor] recomputeAndSaveCalibration failed', err);
+    }
+
+    // 4. Auto-star high-performing items (and demote previously
+    //    auto-starred items whose derivedScore has collapsed).
+    try {
+      await autoStarHighPerformingItems();
+    } catch (err) {
+      console.warn('[memoryExtractor] autoStarHighPerformingItems failed', err);
+    }
+  } catch (err) {
+    console.warn('[memoryExtractor] post-batch learning loop failed', err);
+  }
 }
