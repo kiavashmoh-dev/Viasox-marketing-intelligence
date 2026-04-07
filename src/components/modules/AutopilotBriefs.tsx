@@ -9,12 +9,14 @@ import {
   runConceptPhase,
   runScriptPhase,
   redoSingleTask,
+  loadPinnedInspirationForTask,
+  buildPinnedVisionContent,
 } from '../../autopilot/pipelineEngine';
 import { loadMemory } from '../../autopilot/memoryStore';
 import { runMemoryCurator } from '../../autopilot/memoryCurator';
 import { buildAnglesPrompt } from '../../prompts/anglesPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
-import { sendMessage } from '../../api/claude';
+import { sendMessage, sendVisionMessage } from '../../api/claude';
 import { buildConceptEvaluatorPrompt, parseConceptEvaluations } from '../../prompts/conceptEvaluatorPrompt';
 import PlannerView from '../autopilot/PlannerView';
 import PipelineProgress from '../autopilot/PipelineProgress';
@@ -258,15 +260,46 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
       ts.conceptOptions = undefined;
       setPipelineState({ ...state });
 
-      const anglesPrompt = buildAnglesPrompt(ts.task.anglesParams, analysis, memoryBriefingRef.current || undefined);
-      const conceptsRaw = await sendMessage(
-        anglesPrompt.system + resourceCtx + directionBlock + (strategyBrief ? `\n\nSTRATEGY BRIEF:\n${strategyBrief}` : ''),
-        anglesPrompt.user,
-        apiKey,
-        22000,
-        'claude-opus-4-6',
-        controller.signal,
+      // Honor any pinned inspiration on this task — load frames + rich context
+      // and switch to vision call when frames are present.
+      const pinned = await loadPinnedInspirationForTask(
+        ts.task.parsed.name,
+        directionRef.current.pinnedInspirations,
       );
+
+      const anglesPrompt = buildAnglesPrompt(
+        ts.task.anglesParams,
+        analysis,
+        memoryBriefingRef.current || undefined,
+        pinned ? pinned.richContext : undefined,
+      );
+      const fullSystem =
+        anglesPrompt.system +
+        resourceCtx +
+        directionBlock +
+        (strategyBrief ? `\n\nSTRATEGY BRIEF:\n${strategyBrief}` : '');
+
+      let conceptsRaw: string;
+      if (pinned && pinned.frames.length > 0) {
+        const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+        conceptsRaw = await sendVisionMessage(
+          fullSystem,
+          visionContent,
+          apiKey,
+          24000,
+          'claude-opus-4-6',
+          controller.signal,
+        );
+      } else {
+        conceptsRaw = await sendMessage(
+          fullSystem,
+          anglesPrompt.user,
+          apiKey,
+          22000,
+          'claude-opus-4-6',
+          controller.signal,
+        );
+      }
       ts.conceptsRaw = conceptsRaw;
 
       ts.step = 'selecting-concept';
@@ -281,6 +314,9 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         ts.task.duration,
         strategyBrief,
         [],
+        pinned ? (pinned.richContext) : undefined,
+        pinned?.framework ?? null,
+        pinned?.hookStyle ?? null,
       );
 
       const evalResponse = await sendMessage(
@@ -292,7 +328,15 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         controller.signal,
       );
 
-      ts.conceptOptions = parseConceptEvaluations(evalResponse, conceptsRaw);
+      const options = parseConceptEvaluations(evalResponse, conceptsRaw);
+      // Force the pin's framework onto every option so the locked framework flows
+      // into the script phase regardless of which concept the user picks.
+      if (pinned?.framework) {
+        for (const opt of options) {
+          opt.recommendedFramework = pinned.framework;
+        }
+      }
+      ts.conceptOptions = options;
       ts.step = 'awaiting-concept-approval';
       setPipelineState({ ...state });
     } catch (err) {

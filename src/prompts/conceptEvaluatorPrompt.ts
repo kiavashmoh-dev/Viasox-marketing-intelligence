@@ -18,6 +18,8 @@ export function buildConceptEvaluatorPrompt(
   strategyBrief: string | undefined,
   usedFrameworks: string[],
   inspirationContext?: string,
+  pinnedFramework?: string | null,
+  pinnedHookStyle?: string | null,
 ): { system: string; user: string } {
   const system = `You are a Senior Creative Strategist evaluating advertising concepts for Viasox, a premium DTC compression sock brand. You have deep expertise in direct response advertising, performance creative, and DTC marketing strategy.
 
@@ -39,7 +41,15 @@ ${strategyBrief ? `\nWEEKLY STRATEGY BRIEF (this is the north star for all creat
 
 ${usedFrameworks.length > 0 ? `\nFRAMEWORKS ALREADY USED IN THIS BATCH (for diversity — avoid recommending these unless the concept demands it):\n${usedFrameworks.join(', ')}\n` : ''}
 
-${inspirationContext ? `\n**INSPIRATION BANK PROVEN-PATTERN BIAS:**\nThe inspiration block below contains real reference ads/briefs that have already been judged worth learning from for this exact ad type, angle, and product context. Use them as a proven-pattern lens when rating concepts:\n- Concepts whose hook style, structure, narrative arc, or emotional entry CLOSELY mirror the patterns in these references should score higher (these are the patterns we know work).\n- Concepts that ignore the proven patterns or contradict them should score lower, UNLESS the concept is doing something genuinely fresh that the strategy brief or angle warrants.\n- If a starred reference exists, treat its patterns as especially load-bearing.\nDo NOT name the references in your reasoning. Speak about the *patterns*, not the *examples*.\n${inspirationContext}\n` : ''}`;
+${pinnedFramework ? `\n**🔒 PINNED FRAMEWORK LOCK — NON-NEGOTIABLE FOR THIS TASK: ${pinnedFramework}**
+The creative director has pinned a reference ad that uses **${pinnedFramework}**. The downstream script phase WILL force this framework regardless of what you recommend. Your job is to:
+1. Recommend **${pinnedFramework}** in the <framework> tag for the chosen concept (do not recommend a different framework — it will be overridden anyway).
+2. Score concepts HIGHER if they naturally fit ${pinnedFramework} (because the chosen concept has to actually work inside ${pinnedFramework}).
+3. Score concepts LOWER if they would feel forced or broken inside ${pinnedFramework}.
+4. Batch diversity rules DO NOT apply to this task — the pinned framework overrides diversity.\n` : ''}${pinnedHookStyle ? `\n**🔒 PINNED HOOK STYLE LOCK FOR THIS TASK: ${pinnedHookStyle}**
+The pinned reference uses a **${pinnedHookStyle}** hook. Score concepts higher if they open with the same hook archetype.\n` : ''}
+
+${inspirationContext ? `\n**INSPIRATION BANK PROVEN-PATTERN BIAS:**\nThe inspiration block below contains real reference ads/briefs that have already been judged worth learning from for this exact ad type, angle, and product context. Use them as a proven-pattern lens when rating concepts:\n- Concepts whose hook style, structure, narrative arc, or emotional entry CLOSELY mirror the patterns in these references should score higher (these are the patterns we know work).\n- Concepts that ignore the proven patterns or contradict them should score lower, UNLESS the concept is doing something genuinely fresh that the strategy brief or angle warrants.\n- If a starred reference exists, treat its patterns as especially load-bearing.\n- If a PINNED reference is included, its patterns OVERRIDE the others — the pin is the locked north star for this task.\nDo NOT name the references in your reasoning. Speak about the *patterns*, not the *examples*.\n${inspirationContext}\n` : ''}`;
 
   const user = `Evaluate the following concepts generated for task **${taskName}** (${product} / ${angle} / ${medium} / ${duration}).
 

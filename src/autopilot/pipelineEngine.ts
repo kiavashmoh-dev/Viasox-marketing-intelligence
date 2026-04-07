@@ -180,13 +180,17 @@ interface PinnedInspirationContext {
   item: InspirationItem;
   frames: string[];          // base64 jpeg data URLs (with `data:image/...;base64,` prefix)
   richContext: string;       // formatted text block describing the pin
+  framework: ScriptFramework | null;  // pin's tagged framework matched to a valid framework, or null
+  hookStyle: string | null;
+  narrativeArc: string | null;
+  hookBreakdown: string | null;
 }
 
 /**
  * Load a pinned inspiration item (full frames + tags + summary + learnings + script)
  * for the given task. Returns null if no pin, item not found, or item not ready.
  */
-async function loadPinnedInspirationForTask(
+export async function loadPinnedInspirationForTask(
   taskName: string,
   pinnedInspirations: Record<string, string>,
 ): Promise<PinnedInspirationContext | null> {
@@ -200,13 +204,21 @@ async function loadPinnedInspirationForTask(
     const frames = item.kind === 'video' ? await getInspirationFrames(itemId) : [];
 
     const tags = item.tags;
+    // Resolve the pin's framework against the valid framework list. If the pin has a
+    // tagged framework, this becomes the locked framework for the generated script.
+    const framework: ScriptFramework | null =
+      tags.framework && tags.framework !== 'unknown'
+        ? matchFramework(tags.framework)
+        : null;
+    const hookStyle = tags.hookStyle && tags.hookStyle !== 'unknown' ? tags.hookStyle : null;
+
     const tagPills = [
       tags.adType !== 'unknown' ? tags.adType : null,
       tags.angleType !== 'unknown' ? tags.angleType : null,
-      tags.framework && tags.framework !== 'unknown' ? tags.framework : null,
+      framework,
       tags.duration !== 'unknown' ? tags.duration : null,
       tags.productCategory && tags.productCategory !== 'unknown' ? tags.productCategory : null,
-      tags.hookStyle && tags.hookStyle !== 'unknown' ? tags.hookStyle : null,
+      hookStyle,
       tags.emotionalEntry || null,
       tags.isFullAi ? 'Full AI' : null,
       tags.fullAiSpecification && tags.fullAiSpecification !== 'unknown' ? tags.fullAiSpecification : null,
@@ -217,12 +229,27 @@ async function loadPinnedInspirationForTask(
     const learnings = (item.learnings || []).map((l, i) => `${i + 1}. ${l}`).join('\n');
     const scriptText = item.attachedScriptText || item.textContent || '';
 
+    // Build a loud, framework-locked directive when the pin has a tagged framework.
+    const frameworkLock = framework
+      ? `
+
+**🔒 PINNED FRAMEWORK LOCK — NON-NEGOTIABLE: ${framework}**
+The reference ad is built on **${framework}**. The new brief MUST be built on the same framework — same persuasion arc, same beats in the same order, same payoff structure. Do NOT switch frameworks. Every concept you generate must work cleanly inside ${framework}, and the final script body must explicitly walk through ${framework}'s phases. This overrides any other framework recommendation, batch diversity rule, or default behavior.`
+      : '';
+
+    const hookLock = hookStyle
+      ? `
+
+**🔒 PINNED HOOK STYLE LOCK: ${hookStyle}**
+The reference ad opens with a **${hookStyle}** hook. The new brief's first 3 seconds MUST use the same hook style. Do not invent a different hook archetype.`
+      : '';
+
     const richContext = `## PINNED REFERENCE AD — FOLLOW THIS EXAMPLE CLOSELY
 
-The creative director has pinned the following ad from the Inspiration Bank as the primary reference for THIS specific brief. You must study every detail and let it shape this brief's style, structure, hook approach, narrative arc, and visual treatment. This pin OVERRIDES general inspiration matches — when it conflicts with other examples, follow the pin.
+The creative director has pinned the following ad from the Inspiration Bank as the primary reference for THIS specific brief. You must study every detail and let it shape this brief's style, structure, hook approach, narrative arc, and visual treatment. This pin OVERRIDES general inspiration matches and default behaviors — when it conflicts with other examples or rules, follow the pin.
 
 **Pin Title:** ${item.title}
-**Tags:** ${tagPills || '(none)'}
+**Tags:** ${tagPills || '(none)'}${frameworkLock}${hookLock}
 
 **Summary (why this ad works):**
 ${item.summary}
@@ -232,21 +259,31 @@ ${learnings}
 
 **Style Notes:**
 ${item.styleNotes}
-${item.hookBreakdown ? `\n**Hook Breakdown (first 3 seconds):**\n${item.hookBreakdown}` : ''}
-${item.narrativeArc ? `\n**Narrative Arc:**\n${item.narrativeArc}` : ''}
-${scriptText ? `\n**Reference Script / Voiceover:**\n${scriptText}` : ''}
+${item.hookBreakdown ? `\n**Hook Breakdown (first 3 seconds) — REPLICATE THIS APPROACH:**\n${item.hookBreakdown}` : ''}
+${item.narrativeArc ? `\n**Narrative Arc — MATCH THIS STRUCTURE BEAT FOR BEAT:**\n${item.narrativeArc}` : ''}
+${scriptText ? `\n**Reference Script / Voiceover (study the rhythm, pacing, and beat structure — do not copy lines):**\n${scriptText}` : ''}
 ${frames.length > 0 ? `\n**Visual Frames:** ${frames.length} frames from the reference ad are attached as images. Study them carefully — they show the actual look, framing, pacing, and visual language to emulate.` : ''}
 
-**HOW TO USE THIS PIN:**
-1. The new brief should feel like a sibling of this pin — same DNA, fresh execution
-2. Match the hook style and opening approach
-3. Match the narrative pacing and structure
-4. Match the visual language and tone
-5. Apply the listed learnings as creative principles
-6. Do NOT copy lines verbatim — adapt the approach to this brief's specific angle and product
-7. The pin's product/angle may differ from this brief's — translate the STYLE, not the content`;
+**HOW TO USE THIS PIN — IN-DEPTH MIRRORING (NOT LIGHT INSPIRATION):**
+1. The new brief should feel like a **direct sibling** of this pin — same creative DNA, fresh execution for this brief's angle/product
+2. **Concept level:** every concept you generate must structurally mirror the pin's approach — same hook archetype, same emotional entry, same narrative shape
+3. **Visual level:** the visual treatment, framing, color palette, and pacing must match what is shown in the attached frames
+4. **Script level:** the script body must walk the same beats as the pin's narrative arc${framework ? ` and explicitly apply **${framework}**` : ''}
+5. **Hook level:** the first 3 seconds must use the same hook style and emotional pattern as the pin${hookStyle ? ` (${hookStyle})` : ''}
+6. **Tone:** voice, register, sentence length, and rhythm must echo the pin's reference script
+7. Apply every listed learning as a creative principle that shapes decisions
+8. Do NOT copy lines verbatim — adapt the approach to this brief's specific angle and product
+9. The pin's product/angle may differ from this brief's — translate the STYLE, STRUCTURE, FRAMEWORK, and PACING, not the literal content`;
 
-    return { item, frames, richContext };
+    return {
+      item,
+      frames,
+      richContext,
+      framework,
+      hookStyle,
+      narrativeArc: item.narrativeArc || null,
+      hookBreakdown: item.hookBreakdown || null,
+    };
   } catch (e) {
     console.warn('[pinned-inspiration] failed to load', e);
     return null;
@@ -257,7 +294,7 @@ ${frames.length > 0 ? `\n**Visual Frames:** ${frames.length} frames from the ref
  * Build vision content blocks from a pinned inspiration's frames + a final text prompt.
  * Strips the `data:image/...;base64,` prefix that frame extractor stores.
  */
-function buildPinnedVisionContent(
+export function buildPinnedVisionContent(
   pin: PinnedInspirationContext,
   userText: string,
 ): ContentBlock[] {
@@ -488,6 +525,8 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         strategyBrief,
         usedFrameworks,
         inspirationCtx,
+        pinned?.framework ?? null,
+        pinned?.hookStyle ?? null,
       );
 
       const evalResponse = await sendMessageWithRetry(
@@ -500,10 +539,18 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
       );
 
       const options = parseConceptEvaluations(evalResponse, conceptsRaw);
+      // Pin framework override — force every option's recommendedFramework to the pin's
+      // framework so the downstream script phase locks to it regardless of which option
+      // the user picks.
+      if (pinned?.framework) {
+        for (const opt of options) {
+          opt.recommendedFramework = pinned.framework;
+        }
+      }
       ts.conceptOptions = options;
 
-      // Track top framework for diversity
-      if (options.length > 0) {
+      // Track top framework for diversity (skip pinned tasks — they're locked, not free)
+      if (options.length > 0 && !pinned?.framework) {
         const sorted = [...options].sort((a, b) => b.strengthRating - a.strengthRating);
         usedFrameworks.push(sorted[0].recommendedFramework);
       }
@@ -599,6 +646,8 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
           strategyBrief,
           usedFrameworks,
           inspirationCtx,
+          pinned?.framework ?? null,
+          pinned?.hookStyle ?? null,
         );
 
         const evalResponse = await sendMessageWithRetry(
@@ -611,8 +660,13 @@ ${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed 
         );
 
         const options = parseConceptEvaluations(evalResponse, conceptsRaw);
+        if (pinned?.framework) {
+          for (const opt of options) {
+            opt.recommendedFramework = pinned.framework;
+          }
+        }
         ts.conceptOptions = options;
-        if (options.length > 0) {
+        if (options.length > 0 && !pinned?.framework) {
           const sorted = [...options].sort((a, b) => b.strengthRating - a.strengthRating);
           usedFrameworks.push(sorted[0].recommendedFramework);
         }
@@ -683,14 +737,24 @@ export async function runScriptPhase(
       ts.step = 'generating-script';
       onProgress({ ...state });
 
-      const framework = matchFramework(ts.recommendedFramework || 'PAS');
+      // Load the pin FIRST so its framework can override the evaluator's recommendation.
+      // This guarantees the script body, persuasion arc, and "How X Was Applied" section
+      // all use the pin's framework — not whatever the text-only evaluator picked.
+      const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
+      const lockedFramework = pinned?.framework
+        ? pinned.framework
+        : matchFramework(ts.recommendedFramework || 'PAS');
+      // Reflect the override on the task state so the UI / batch reviewer see the truth.
+      if (pinned?.framework) {
+        ts.recommendedFramework = pinned.framework;
+      }
+
       const scriptParams: ScriptParams = {
         ...ts.task.scriptParamsBase,
-        framework,
+        framework: lockedFramework,
         conceptAngleContext: ts.selectedConceptText,
       };
 
-      const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
       const scriptInspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(ts.task);
       const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, scriptInspirationCtx);
 
@@ -775,14 +839,20 @@ Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
         ts.error = undefined;
         onProgress({ ...state });
 
-        const framework = matchFramework(ts.recommendedFramework || 'PAS');
+        const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
+        const lockedFramework = pinned?.framework
+          ? pinned.framework
+          : matchFramework(ts.recommendedFramework || 'PAS');
+        if (pinned?.framework) {
+          ts.recommendedFramework = pinned.framework;
+        }
+
         const scriptParams: ScriptParams = {
           ...ts.task.scriptParamsBase,
-          framework,
+          framework: lockedFramework,
           conceptAngleContext: ts.selectedConceptText!,
         };
 
-        const pinned = await loadPinnedInspirationForTask(ts.task.parsed.name, direction.pinnedInspirations);
         const retryScriptInspirationCtx = pinned ? pinned.richContext : await getInspirationForTask(ts.task);
         const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, retryScriptInspirationCtx);
         const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
@@ -1016,9 +1086,12 @@ ${ts.scriptResult || '[no previous brief]'}
     const selection = parseSelectorResponse(selectorResponse);
     ts.selectedConceptIndex = selection.selectedIndex;
     ts.selectionReasoning = selection.reasoning;
-    ts.recommendedFramework = selection.framework;
+    // Pin framework lock — overrides the selector's pick when present.
+    const lockedFramework = pinned?.framework
+      ? pinned.framework
+      : matchFramework(selection.framework);
+    ts.recommendedFramework = pinned?.framework ? pinned.framework : selection.framework;
 
-    const framework = matchFramework(selection.framework);
     const conceptBlocks = parseConceptBlocks(conceptsRaw);
     const blockIndex = Math.max(0, Math.min(selection.selectedIndex - 1, conceptBlocks.length - 1));
     ts.selectedConceptText = conceptBlocks[blockIndex] ?? conceptsRaw;
@@ -1031,7 +1104,7 @@ ${ts.scriptResult || '[no previous brief]'}
 
     const scriptParams: ScriptParams = {
       ...task.scriptParamsBase,
-      framework,
+      framework: lockedFramework,
       conceptAngleContext: ts.selectedConceptText,
     };
 
