@@ -3,6 +3,7 @@ import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideCompact } from './adTypeGuides';
 import { getAwarenessScriptGuide } from './awarenessGuide';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
+import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
 import {
   buildBuildingBlocksReference,
   buildShotTypesReference,
@@ -478,11 +479,11 @@ export function buildScriptPrompt(
     FRAMEWORK_DETAILS[params.framework] ??
     `Framework: ${params.framework}`;
 
-  const durationGuide: Record<string, string> = {
-    '15s': 'Very tight. Every word counts. Max 40 words. Hook must be instant.',
-    '30s': 'Standard social ad. Hook in first 3 seconds. 60-80 words total.',
-    '60s': 'Room for story. Hook + problem + solution + proof + CTA. 120-160 words.',
-  };
+  // Duration-specific target (sweet spot + hard ceiling + VO requirement)
+  // sourced from the centralized creativeConstraints module so every creative
+  // module stays in sync on length calibration and VO-by-length enforcement.
+  const durationTarget = getDurationTarget(params.duration);
+  const briefConstraints = buildBriefConstraintsBlock(params.duration);
 
   const system = `${buildSystemBase()}
 
@@ -490,7 +491,10 @@ export function buildScriptPrompt(
 ${frameworkDetail}
 
 ## DURATION GUIDE: ${params.duration}
-${durationGuide[params.duration]}
+${durationTarget.description}
+**Sweet spot:** ${durationTarget.sweetSpot} — **Hard ceiling:** ${durationTarget.hardCeiling} words
+
+${briefConstraints}
 
 ## AD TYPE: ${params.adType}
 ${buildAdTypeGuideCompact(params.adType)}
@@ -815,9 +819,10 @@ The main script body. Each row = ONE thought, ONE breath. The number of rows dep
 | 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
 
 **CRITICAL BODY RULES:**
-- EVERY row MUST have spoken words in the Lines column — NO silent rows. Even BROLL cutaway rows must have voiceover continuing.
+- ${isShortFormDuration(params.duration) ? `This is a ${params.duration} short-form ad. You MAY choose text-only/no-VO (on-screen text over b-roll, no spoken words in Lines) OR include VO on every row — both are valid. If you choose no-VO, the Lines column should contain the on-screen text line the viewer reads. If you choose VO, Lines should contain spoken words. Be consistent within the brief.` : `EVERY row MUST have spoken words in the Lines column — NO silent rows. Even BROLL cutaway rows must have voiceover continuing. This is a ${params.duration} ad and VO is MANDATORY.`}
 - Each row = ONE thought, ONE breath. If you would pause mid-sentence, SPLIT into two rows.
 - Every row MUST have a Building Block label that explains its strategic purpose in the persuasion arc.
+- **Total word budget:** ${durationTarget.sweetSpot} across all body rows combined. Hard ceiling: ${durationTarget.hardCeiling} words. Count before finalizing.
 
 ### 4. FRAMEWORK BREAKDOWN
 ## How ${params.framework} Was Applied
@@ -943,13 +948,14 @@ The product data includes two layers of customer segments:
 4. Include visual direction for each section — be specific about what the camera sees
 5. Include a clear, specific CTA — not "learn more" but "try your first pair risk-free"
 6. Include at least one real customer quote with the data frequency backing it
-7. Keep within word count for duration (15s=40 words, 30s=60-80 words, 60s=120-160 words)
-8. Hook must work in first 3 seconds — this is where 80% of viewers drop
-9. Do NOT use generic claims — ground EVERYTHING in data
-10. Apply Hopkins' specificity principle throughout — numbers, percentages, quotes
-11. Apply the detailed awareness level architecture above — it dictates the ENTIRE script structure, timing, product placement, proof density, and CTA approach. The awareness level is NOT a surface adjustment; it changes everything.
-12. Every script must work on all three of Schwartz's dimensions: Desire + Identification + Belief — but the EMPHASIS shifts by awareness level (see the guide above)
-13. Name the specific motivation + identity segment intersection being targeted in the Strategy Summary
+7. Keep within the sweet spot (${durationTarget.sweetSpot}) and NEVER exceed the hard ceiling (${durationTarget.hardCeiling} words). Count your words before finalizing. See the LENGTH TARGET and LENGTH CALIBRATION blocks above — the tool has historically overshot length by 20-30%, so your default assumption must be "my first draft is too long."
+8. ${durationTarget.voRequired ? `VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY for this ${durationTarget.duration} brief. Every Body row must have spoken words. See the VO REQUIREMENT block above.` : `VO is OPTIONAL for this short-form brief. You may choose text-only / no-VO OR include a VO. Both are valid.`}
+9. Hook must work in first 3 seconds — this is where 80% of viewers drop
+10. Do NOT use generic claims — ground EVERYTHING in data
+11. Apply Hopkins' specificity principle throughout — numbers, percentages, quotes
+12. Apply the detailed awareness level architecture above — it dictates the ENTIRE script structure, timing, product placement, proof density, and CTA approach. The awareness level is NOT a surface adjustment; it changes everything.
+13. Every script must work on all three of Schwartz's dimensions: Desire + Identification + Belief — but the EMPHASIS shifts by awareness level (see the guide above)
+14. Name the specific motivation + identity segment intersection being targeted in the Strategy Summary
 
 ## PRODUCT DATA
 ${getProductAnalysis(analysis, params.product)}`;
@@ -1013,6 +1019,10 @@ The pre-loaded concept must deeply shape EVERY section of the AGC production bri
     : '';
 
   const user = `Write a ${params.duration} ${params.adType} ad script for ${params.product} using the ${params.framework} framework.
+
+**LENGTH TARGET:** ${durationTarget.sweetSpot} (sweet spot) — NEVER exceed ${durationTarget.hardCeiling} words hard ceiling. ⚠️ The tool has historically overshot ${params.duration} targets by 20-30%. Count every spoken word before finalizing, and CUT rather than ADD if unsure.
+
+**VO REQUIREMENT:** ${durationTarget.voRequired ? `MANDATORY — this ${params.duration} brief must have VO or spoken dialogue in every body row. Text-only silent b-roll is FORBIDDEN at this length.` : `OPTIONAL — you may choose text-only/no-VO OR include VO. Both are valid for ${params.duration} short-form.`}
 
 Funnel Stage: ${params.funnelStage} (${params.funnelStage === 'TOF' ? 'Top of Funnel — cold audience' : params.funnelStage === 'MOF' ? 'Middle of Funnel — considering' : 'Bottom of Funnel — ready to buy'})
 Awareness Level: **${params.awarenessLevel}**
@@ -1172,8 +1182,9 @@ The script should:
 3. Match the ${params.funnelStage} funnel stage — appropriate hook intensity, CTA directness
 4. Use real customer language pulled directly from the review data
 5. End with a clear, specific CTA appropriate for ${params.funnelStage}
-6. Be within the word count for ${params.duration}
-7. Heavily apply the principles from ${params.bookReference} throughout
+6. Stay within the ${durationTarget.sweetSpot} sweet spot and NEVER exceed ${durationTarget.hardCeiling} words total spoken word count for ${params.duration}. Count your words before outputting.
+7. ${durationTarget.voRequired ? `MUST include VO or spoken dialogue in every body row (mandatory for ${params.duration})` : `May be text-only/no-VO OR include VO — both valid for ${params.duration} short-form`}
+8. Heavily apply the principles from ${params.bookReference} throughout
 
 CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : `OUTPUT STRUCTURE — VIDEO PRODUCTION BRIEF (follow this exact order):
 
@@ -1207,11 +1218,12 @@ The brief should:
 3. Match the ${params.funnelStage} funnel stage and ${params.awarenessLevel} awareness level
 4. Include a Building Block label on EVERY row (hooks and body)
 5. Follow the Short Lines Rule — one thought, one breath per row
-6. EVERY row must have spoken words in the Lines column — NO silent rows
-7. Use real customer language pulled directly from the review data
-8. End with a clear, specific CTA appropriate for ${params.funnelStage}
-9. Heavily apply the principles from ${params.bookReference} throughout
-10. The FIRST line of the body must NEVER repeat or paraphrase ANY hook — hooks are entry points into the body, the body advances from where any hook leaves off
+6. ${durationTarget.voRequired ? 'EVERY row must have spoken words in the Lines column — NO silent rows (VO is MANDATORY at ' + params.duration + ')' : 'For this short-form ' + params.duration + ' brief, you may use text-only/no-VO (on-screen text + b-roll with no spoken words) OR include VO — both are valid'}
+7. Stay within the ${durationTarget.sweetSpot} sweet spot and NEVER exceed ${durationTarget.hardCeiling} words total
+8. Use real customer language pulled directly from the review data
+9. End with a clear, specific CTA appropriate for ${params.funnelStage}
+10. Heavily apply the principles from ${params.bookReference} throughout
+11. The FIRST line of the body must NEVER repeat or paraphrase ANY hook — hooks are entry points into the body, the body advances from where any hook leaves off
 
 CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.`}`;
 

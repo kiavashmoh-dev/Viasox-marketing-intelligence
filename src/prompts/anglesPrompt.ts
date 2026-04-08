@@ -3,6 +3,7 @@ import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideFull } from './adTypeGuides';
 import { getAwarenessConceptGuide } from './awarenessGuide';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
+import { buildBriefConstraintsBlock, getDurationTarget } from './creativeConstraints';
 import {
   getProductPurchaseTriggers,
   getProductStrategicInsights,
@@ -481,7 +482,16 @@ export function buildAnglesPrompt(
   memoryBriefing?: string,
   inspirationContext?: string,
 ): { system: string; user: string } {
+  // Duration-specific constraints (VO-by-length + length calibration).
+  // Concepts must respect the same rules so downstream scripts don't
+  // inherit an impossible starting point (e.g., a concept pitched as
+  // "silent text-only montage" for a 60s brief).
+  const durationTarget = getDurationTarget(params.duration);
+  const briefConstraints = buildBriefConstraintsBlock(params.duration);
+
   const system = `${buildSystemBase()}
+
+${briefConstraints}
 
 ## CREATIVE CONCEPTS & ANGLES FRAMEWORK
 
@@ -717,6 +727,12 @@ ${buildFullAiSkillContext({
     : '';
 
   const user = `Generate exactly 5 creative ${params.angleType} concepts & angles for ${params.product}${params.primaryTalkingPoint ? ` focused on "${params.primaryTalkingPoint}"` : ''} at the **${params.awarenessLevel}** awareness level, optimized for ${params.funnelStage} (${params.funnelStage === 'TOF' ? 'Top of Funnel' : params.funnelStage === 'MOF' ? 'Middle of Funnel' : 'Bottom of Funnel'}) using ${params.adType} format.${talkingPointNote}${fullAiDirective}
+
+**BRIEF LENGTH: ${params.duration ?? '30s'}** — Target ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words). Every concept must fit comfortably in this time budget.
+
+**VO REQUIREMENT FOR CONCEPTS:** ${durationTarget.voRequired
+  ? `This is a ${params.duration} brief — VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY. Do NOT pitch concepts built around text-only/silent b-roll or pure visual montage with no spoken words. Every concept MUST include a voiceover, on-camera dialogue, founder monologue, podcast conversation, or spokesperson delivery. A concept for ${params.duration} without a spoken track is a creative failure and will be rejected.`
+  : `This is a ${params.duration} short-form brief. You MAY pitch concepts that are text-only/no-VO (pure visual grammar with on-screen text over b-roll) OR concepts with VO — both are valid. Mix both styles across the 5 concepts if it serves the angle variety.`}
 
 **CRITICAL — AWARENESS LEVEL IS ${params.awarenessLevel.toUpperCase()}:**
 ${params.awarenessLevel === 'Unaware' ? 'These concepts CANNOT mention the product, problem, or solution in the first 50% of the concept. Lead with pure identification, story, or curiosity. The concept structure must be: Identification → Disruption → Discovery → Curiosity. The product appears LAST. CTA is soft ("learn more," "discover"). This must read like CONTENT, not an ad.' : ''}${params.awarenessLevel === 'Problem Aware' ? 'These concepts must lead with SPECIFIC, VIVID pain that the viewer recognizes instantly. Use exact customer language from the reviews. Spend 60-70% of the concept on the PAIN (naming it, intensifying it) before bridging to the solution. CTA is medium-soft ("try your first pair," "see how it works").' : ''}${params.awarenessLevel === 'Solution Aware' ? 'These concepts must lead with DIFFERENTIATION — what makes Viasox fundamentally different from what they have tried. Do NOT belabor the problem (they know it). Spend 60-70% on the NEW MECHANISM, proof, and why this solution succeeds where others failed. CTA is medium-direct ("see why X switched," "compare for yourself").' : ''}${params.awarenessLevel === 'Product Aware' ? 'These concepts must assume the viewer ALREADY KNOWS Viasox. Lead with the brand name, deepened proof, or what is NEW. Go deep on a single powerful proof point rather than wide on many benefits. CTA is direct ("shop now," "get your pair").' : ''}${params.awarenessLevel === 'Most Aware' ? 'These concepts must be the MOST DIRECT and OFFER-FOCUSED. Lead with the product name + offer/news. Keep concepts tight — recognition → offer/urgency → CTA. No education, no problem agitation. The deal IS the concept. CTA is maximally direct ("buy now," "claim your pair," "add to cart").' : ''}

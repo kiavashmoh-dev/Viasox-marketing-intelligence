@@ -119,6 +119,24 @@ Short form briefs should NOT read like compressed long-form ads. Check that:
 - There is NO full story arc (problem → agitate → solution → proof → CTA is a 30-60s structure, not 15s)
 - If a short form brief reads like a 30s brief with words cut out = FAIL
 
+**3d. VO-by-Length Rule (NON-NEGOTIABLE)**
+Cross-check the brief's Medium/Duration against its Voiceover field and Script Body rows:
+- **Short-form (15s or less):** Text-only/no-VO is ALLOWED. The brief may say "No VO — text overlays only" in the Voiceover field and use on-screen text rows instead of spoken lines. This is a valid creative choice at 15s. PASS.
+- **30s, 60s, 90s+ briefs:** VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY. If the Voiceover field says "No VO", "Silent", "Text only", or is blank/missing, AND the Script Body rows don't have spoken words — **AUTOMATIC FAIL**. Medium and expanded ads MUST have a spoken track (VO narrator, UGC creator talking, founder on camera, podcast hosts, or spokesperson). A 30s+ ad with silent b-roll and on-screen text only is a creative failure per the VO-by-length rule.
+- Also verify: the Script Body rows (not just hooks) contain spoken words for 30s+ briefs. Every body row should have voice content.
+
+**3e. Length Calibration (THE TOOL WRITES LONG)**
+The tool has a measured tendency to overshoot target duration by 20-30%. Count the total spoken word count across the Script Body rows (hooks are separate, count body only) and compare to the target:
+- **10s target:** sweet spot 18-25 words, hard ceiling 28 words
+- **15s target:** sweet spot 30-35 words, hard ceiling 38 words
+- **30s target:** sweet spot 65-75 words, hard ceiling 80 words
+- **60s target:** sweet spot 135-150 words, hard ceiling 160 words
+- **90s target:** sweet spot 200-225 words, hard ceiling 240 words
+
+If the brief's body word count is within the sweet spot = PASS. If it's between sweet spot and hard ceiling = FLAG (note the overshoot with exact word count). If it exceeds the hard ceiling = FAIL (note the overshoot with exact word count — e.g., "15s brief with 52 words in body, 37% over hard ceiling").
+
+Mentally read the body script at a natural conversational pace. If it feels rushed to fit the target, it's too long — FLAG even if it's under the hard ceiling.
+
 **4. Data Grounding**
 At least 2 SPECIFIC data points from review analysis (percentages, frequencies, customer quotes with context)? "Customers love them" = FAIL. "89% reported reduced sock marks within the first week" = PASS. Check that cited data points are plausible against the review data provided.
 
@@ -212,6 +230,8 @@ For each brief, output:
 | 1. Hook Differentiation | PASS/FLAG/FAIL | [specific note — name the hooks and explain] |
 | 2. Problem Specificity | PASS/FLAG/FAIL | [quote the specific language used] |
 | 3. Angle Alignment | PASS/FLAG/FAIL | [how deeply does the angle permeate?] |
+| 3d. VO-by-Length Rule | PASS/FLAG/FAIL | [duration, VO field value, body VO present? 30s+ must have VO] |
+| 3e. Length Calibration | PASS/FLAG/FAIL | [count body words, compare to target, note overshoot %] |
 | 4. Data Grounding | PASS/FLAG/FAIL | [list the data points found] |
 | 5. Product Accuracy | PASS/FLAG/FAIL | [any product messaging errors?] |
 | 6. Offer Integration | PASS/FLAG/FAIL | [where and how is B2G3 mentioned?] |

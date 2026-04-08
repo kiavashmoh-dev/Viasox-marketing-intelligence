@@ -1,5 +1,6 @@
 import type { FullAnalysis, ProductCategory, ProductAnalysis } from '../engine/types';
 import { IDENTITY_SEGMENT_PATTERNS, MOTIVATION_SEGMENT_PATTERNS } from '../engine/patterns';
+import { buildCreativeConstraintsBlock } from './creativeConstraints';
 
 /** Segment keys that belong to the identity layer */
 const IDENTITY_KEYS = new Set(Object.keys(IDENTITY_SEGMENT_PATTERNS));
@@ -102,7 +103,9 @@ The frameworks, examples, and manifesto content provided in these instructions a
 2. **Think from the data outward.** Start with the real patterns, frequencies, and customer quotes from the uploaded reviews. Let the data surface the insight. Then use the strategic frameworks (Schwartz, Hopkins, Bly, Neumeier) to SHAPE that insight into powerful creative output.
 3. **Go beyond what the manifesto already says.** The manifesto represents what we already know. Your value is finding what we haven't seen yet — unexpected data patterns, fresh emotional angles, untapped customer language, new ways to frame known truths.
 4. **Never default to safe or obvious.** If an angle, hook, or script could have been written without the review data, it's not good enough. Every output must contain specifics that could ONLY come from analyzing these reviews.
-5. **Challenge and extend.** If the data reveals something that contradicts or adds nuance to the manifesto's existing assumptions, surface it. The tool's value is in discovering new insights, not confirming old ones.`;
+5. **Challenge and extend.** If the data reveals something that contradicts or adds nuance to the manifesto's existing assumptions, surface it. The tool's value is in discovering new insights, not confirming old ones.
+
+${buildCreativeConstraintsBlock()}`;
 }
 
 export function buildAnalysisSummary(analysis: FullAnalysis): string {

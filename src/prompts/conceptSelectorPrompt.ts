@@ -10,6 +10,7 @@ import type { FullAnalysis, ProductCategory, AdType, FullAiSpecification, FullAi
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideCompact } from './adTypeGuides';
 import { buildFullAiSkillContext, type FullAiDuration } from './fullAiSkillContext';
+import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
 import {
   getProductPurchaseTriggers,
   getProductStrategicInsights,
@@ -46,7 +47,16 @@ export function buildConceptSelectorPrompt(
       })}`
     : '';
 
+  // Duration-specific constraints — enforces the VO-by-length rule and the
+  // length calibration warning at selection time so we never lock in a
+  // concept that sets the downstream script writer up to fail.
+  const durationTarget = getDurationTarget(duration);
+  const shortForm = isShortFormDuration(duration);
+  const briefConstraints = buildBriefConstraintsBlock(duration);
+
   const system = `${buildSystemBase()}
+
+${briefConstraints}
 
 ## YOUR ROLE: SENIOR CREATIVE STRATEGIST — CONCEPT EVALUATOR
 
@@ -98,6 +108,22 @@ ${usedFrameworks.length > 0 ? `The following frameworks have ALREADY been used f
 
 ## ALL AVAILABLE FRAMEWORKS
 ${getScriptFrameworks()}
+
+## FORMAT & LENGTH GATE — HARD REJECTION FILTER
+
+Before scoring any concept on the weighted criteria below, apply this hard filter first:
+
+${shortForm
+  ? `**SHORT-FORM (${duration}) RULES:**
+- VO is OPTIONAL at ${duration}. Concepts with VO AND concepts with pure text-only/silent b-roll are both valid. Do not penalize either.
+- LENGTH GATE: any concept that pitches more than ${durationTarget.hardCeiling} words of implied spoken content or more than 3-4 distinct story beats is TOO BIG for ${duration}. Do NOT select it — it will force the script writer to overshoot length. Only select concepts that fit tightly within the ${durationTarget.sweetSpot} budget.
+- Remember: the tool has historically overshot length by 20-30%. Pick the tightest, sharpest concept, not the most ambitious.`
+  : `**MEDIUM/EXPANDED (${duration}) RULES — VO IS MANDATORY:**
+- This is a ${duration} brief. VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY per the VO-by-length rule. Any concept that relies on text-only/silent b-roll, pure visual montage with no spoken words, or on-screen text as the sole verbal channel must be REJECTED — do not select it.
+- If a concept's description does not clearly indicate a voice (VO narrator, UGC creator talking, founder on camera, podcast hosts, spokesperson), treat it as a format violation and do not select it. Select a different concept from the pool.
+- If ALL concepts in the pool have this problem, pick the one CLOSEST to having a clear voice and in your reasoning explicitly note that the script writer must add VO to make it shippable at ${duration}.
+- LENGTH GATE: any concept that pitches more spoken content than ${durationTarget.hardCeiling} words will break the length budget. Downrate and prefer concepts that fit ${durationTarget.sweetSpot}.
+- Remember: the tool has historically overshot length by 20-30%. Do not select sprawling concepts.`}
 
 ## EVALUATION CRITERIA (weighted):
 

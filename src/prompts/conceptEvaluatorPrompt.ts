@@ -7,6 +7,7 @@
  */
 
 import type { ConceptOption } from '../engine/autopilotTypes';
+import { getDurationTarget, isShortFormDuration } from './creativeConstraints';
 
 export function buildConceptEvaluatorPrompt(
   conceptsRaw: string,
@@ -28,6 +29,12 @@ export function buildConceptEvaluatorPrompt(
    */
   anglePatternTable?: string,
 ): { system: string; user: string } {
+  // Duration-aware constraints for the evaluator. Used to downrate concepts
+  // that break the VO-by-length rule (30s+ without VO) or the length
+  // calibration rule (concepts that pitch too much story for a 15s slot).
+  const durationTarget = getDurationTarget(duration);
+  const shortForm = isShortFormDuration(duration);
+
   const system = `You are a Senior Creative Strategist evaluating advertising concepts for Viasox, a premium DTC compression sock brand. You have deep expertise in direct response advertising, performance creative, and DTC marketing strategy.
 
 Your job is to evaluate EACH concept and provide:
@@ -42,7 +49,20 @@ You are opinionated and specific. You don't rate everything 4/5. You differentia
 The most important evaluation criterion is whether the concept is SPECIFICALLY about the assigned angle. If the task says "Neuropathy" and the concept is generic "foot discomfort" without mentioning neuropathy, nerve pain, or diabetic neuropathy — that concept gets a 1/5 regardless of how well-written it is. The angle must be the SOUL of the concept, not a backdrop.
 
 **FORMAT APPROPRIATENESS:**
-For short form (<15s), reject concepts that try to tell full stories compressed into 15 seconds. A good 15s concept is a single powerful moment, a direct address, a visual before/after, or a bold statement — NOT a mini-movie. Rate any concept that reads like a compressed 30s ad as 2/5 max.
+This brief is **${duration}** — target length ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words). Concept evaluations must enforce the length budget and the VO-by-length rule.
+
+${shortForm
+  ? `**SHORT-FORM (${duration}) RULES:**
+- Reject concepts that try to tell full stories compressed into ${duration}. A good ${duration} concept is a single powerful moment, a direct address, a visual before/after, or a bold statement — NOT a mini-movie. Rate any concept that reads like a compressed 30s ad as **2/5 max**.
+- VO is OPTIONAL at ${duration}. You may rate text-only/silent concepts fairly if they use the format well. Concepts with VO are also fine.
+- Watch for LENGTH OVERSHOOT: if a concept pitches 4+ distinct beats, voiceover lines, or story turns, it will not fit in ${duration}. Downrate to 2/5 max.`
+  : `**MEDIUM/EXPANDED (${duration}) RULES:**
+- VO/SPOKEN DIALOGUE IS MANDATORY. Any concept that relies on text-only/silent b-roll, pure visual montage with no voiceover, or on-screen text as the sole verbal channel must be rated **1/5** — it is a format violation. A ${duration} ad without a spoken track is not shippable.
+- The concept must explicitly describe the voice: a voiceover narrator, a UGC creator talking to camera, a founder monologue, a podcast host conversation, or a spokesperson delivery. If the concept description never mentions who is speaking, downrate it significantly and flag the missing voice in your reasoning.
+- Length: the concept should fit in ${durationTarget.sweetSpot} of spoken content. If a concept pitches more story than can be voiced in ${duration}, downrate to 2/5 max.`}
+
+**LENGTH CALIBRATION — KNOWN FAILURE MODE:**
+The downstream script writer has historically produced scripts 20-30% longer than their target. Your job as evaluator is to FRONT-LOAD discipline: if a concept is clearly too ambitious for ${duration}, downrate it NOW so the script writer is not handed an impossible brief. Favor concepts with a tight focused payload over concepts with sprawling arcs.
 
 ${strategyBrief ? `\nWEEKLY STRATEGY BRIEF (this is the north star for all creative decisions):\n${strategyBrief}\n\nYour evaluations MUST align with this strategy brief. Concepts that match the strategy direction score higher.` : ''}
 
