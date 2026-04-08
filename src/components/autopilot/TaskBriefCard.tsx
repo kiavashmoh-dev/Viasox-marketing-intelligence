@@ -153,6 +153,14 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
         </div>
 
         <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Length pill — visible at every stage; the configured runtime
+              is locked from the parsed Asana task and never changes. */}
+          <span
+            className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide bg-teal-100 text-teal-700"
+            title={`Brief length: ${meta.duration}`}
+          >
+            {'\u23F1\uFE0F'} {meta.duration}
+          </span>
           {/* Ad type pill — visible at every stage so the user can see the
               configured ad type even before the brief is complete. */}
           <span
