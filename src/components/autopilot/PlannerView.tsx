@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { AutopilotTask, CreativeDirection } from '../../engine/autopilotTypes';
 import type { InspirationItem } from '../../engine/inspirationTypes';
+import type { AdType } from '../../engine/types';
 import { getMemoryStats } from '../../autopilot/memoryStore';
 import { getAllItems } from '../../inspiration/inspirationStore';
+import { mapAsanaTask, AD_TYPE_OPTIONS } from '../../autopilot/asanaMapper';
 import MemoryPanel from './MemoryPanel';
 
 interface Props {
@@ -11,12 +13,37 @@ interface Props {
   onCancel: () => void;
 }
 
+/**
+ * Short, human-friendly label for each AdType — used only in the Planner
+ * dropdown so the column stays compact. The canonical enum value is
+ * preserved under the hood.
+ */
+const AD_TYPE_LABELS: Record<AdType, string> = {
+  'Ecom Style': 'Ecom Style',
+  'AGC (Actor Generated Content)': 'AGC',
+  'UGC (User Generated Content)': 'UGC',
+  'Static': 'Static',
+  'Founder Style': 'Founder',
+  'Fake Podcast Ads': 'Fake Podcast',
+  'Spokesperson': 'Spokesperson',
+  'Packaging/Employee': 'Packaging/Emp.',
+  'Full AI (Documentary, story, education, etc)': 'Full AI',
+};
+
 export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
   const [included, setIncluded] = useState<boolean[]>(tasks.map(() => true));
   const [instructions, setInstructions] = useState('');
   const [showMemory, setShowMemory] = useState(false);
   const [inspirationItems, setInspirationItems] = useState<InspirationItem[]>([]);
   const [pinnedByIndex, setPinnedByIndex] = useState<Record<number, string>>({});
+  // Per-task ad type override. Initialized from each task's existing mapped
+  // adType (which may have come from the screenshot extraction or the
+  // heuristic fallback). Changing the dropdown re-maps that task so
+  // anglesParams + scriptParamsBase (including Full AI specification/visual
+  // style) all stay in sync with the selected ad type.
+  const [adTypeByIndex, setAdTypeByIndex] = useState<AdType[]>(() =>
+    tasks.map((t) => t.scriptParamsBase.adType),
+  );
   const memStats = getMemoryStats();
 
   // Load inspiration bank items on mount so we can offer them as pin options
@@ -57,11 +84,42 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
     });
   };
 
-  const selectedTasks = tasks.filter((_, i) => included[i]);
+  const setAdType = (taskIndex: number, adType: AdType) => {
+    setAdTypeByIndex((prev) => {
+      const next = [...prev];
+      next[taskIndex] = adType;
+      return next;
+    });
+  };
+
+  /**
+   * The tasks we actually pass to the pipeline. Each task is re-mapped
+   * via `mapAsanaTask` with the user-selected ad type injected into
+   * `parsed.adType` — this guarantees anglesParams.adType,
+   * scriptParamsBase.adType, fullAiSpecification, and fullAiVisualStyle
+   * all stay consistent with the dropdown selection.
+   */
+  const remappedTasks = useMemo(
+    () =>
+      tasks.map((task, i) => {
+        const overrideAdType = adTypeByIndex[i];
+        if (overrideAdType === task.scriptParamsBase.adType) {
+          // No change — return original to preserve reference equality
+          return task;
+        }
+        return mapAsanaTask({
+          ...task.parsed,
+          adType: overrideAdType,
+        });
+      }),
+    [tasks, adTypeByIndex],
+  );
+
+  const selectedTasks = remappedTasks.filter((_, i) => included[i]);
 
   // Build the pinnedInspirations map keyed by task name (matching pipelineEngine lookup)
   const pinnedInspirations: Record<string, string> = {};
-  tasks.forEach((task, i) => {
+  remappedTasks.forEach((task, i) => {
     if (included[i] && pinnedByIndex[i]) {
       pinnedInspirations[task.parsed.name] = pinnedByIndex[i];
     }
@@ -73,6 +131,10 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
   };
 
   const pinnedCount = Object.keys(pinnedInspirations).length;
+  const nonEcomCount = remappedTasks.reduce((acc, task, i) => {
+    if (!included[i]) return acc;
+    return task.scriptParamsBase.adType !== 'Ecom Style' ? acc + 1 : acc;
+  }, 0);
 
   return (
     <div className="space-y-5">
@@ -81,6 +143,8 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
         <h3 className="text-lg font-bold text-slate-800 mb-1">Task Queue</h3>
         <p className="text-sm text-slate-500 mb-4">
           Parsed {tasks.length} tasks from your Asana screenshot. Uncheck any you want to skip.
+          Ad Type defaults to <strong>Ecom Style</strong> for every brief unless you change it here — pick{' '}
+          <strong>Full AI</strong> or any other style to reroute that task to a different creative format.
           Optionally pin a specific Inspiration Bank ad to follow for any task.
         </p>
 
@@ -94,11 +158,12 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
                 <th className="py-2 px-2 text-slate-600 font-semibold">Angle</th>
                 <th className="py-2 px-2 text-slate-600 font-semibold">Medium</th>
                 <th className="py-2 px-2 text-slate-600 font-semibold">Duration</th>
+                <th className="py-2 px-2 text-slate-600 font-semibold">Ad Type</th>
                 <th className="py-2 px-2 text-slate-600 font-semibold">Pinned Inspiration (optional)</th>
               </tr>
             </thead>
             <tbody>
-              {tasks.map((task, i) => (
+              {remappedTasks.map((task, i) => (
                 <tr
                   key={i}
                   className={`border-b border-slate-100 ${!included[i] ? 'opacity-40' : ''}`}
@@ -120,6 +185,25 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
                   </td>
                   <td className="py-2 px-2 text-slate-600">{task.parsed.medium}</td>
                   <td className="py-2 px-2 text-slate-600">{task.duration}</td>
+                  <td className="py-2 px-2">
+                    <select
+                      value={adTypeByIndex[i]}
+                      onChange={(e) => setAdType(i, e.target.value as AdType)}
+                      disabled={!included[i]}
+                      className={`text-xs border rounded px-2 py-1 bg-white max-w-[150px] focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                        adTypeByIndex[i] === 'Ecom Style'
+                          ? 'border-slate-200 text-slate-700'
+                          : 'border-indigo-300 text-indigo-700 bg-indigo-50 font-medium'
+                      }`}
+                      title={adTypeByIndex[i]}
+                    >
+                      {AD_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {AD_TYPE_LABELS[opt]}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="py-2 px-2">
                     {inspirationItems.length === 0 ? (
                       <span className="text-[10px] text-slate-400 italic">Bank empty</span>
@@ -144,6 +228,11 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
             </tbody>
           </table>
         </div>
+        {nonEcomCount > 0 && (
+          <div className="mt-3 text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 rounded px-3 py-2">
+            <strong>{nonEcomCount}</strong> task{nonEcomCount !== 1 ? 's have' : ' has'} a non-Ecom ad type selected. Concepts and scripts for those tasks will follow the rules of their selected ad type (e.g., Full AI ads use cinematic voiceover-driven scripts) while still being delivered in the standard Ecom brief template for consistency.
+          </div>
+        )}
         {pinnedCount > 0 && (
           <div className="mt-3 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded px-3 py-2">
             <strong>{pinnedCount}</strong> task{pinnedCount !== 1 ? 's have' : ' has'} a pinned inspiration. The full frames, tags, summary, learnings, and script of {pinnedCount !== 1 ? 'each pin' : 'that pin'} will guide concept and script generation for those tasks specifically.

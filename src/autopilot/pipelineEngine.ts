@@ -946,7 +946,13 @@ export async function runScriptPhase(
       const scriptInspirationCtx = pinned
         ? pinned.richContext
         : (deep && deep.hasContent ? deep.richContext : '');
-      const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, scriptInspirationCtx);
+      // Autopilot always renders the brief in the unified Ecom template
+      // (except AGC and Static, which keep their own output shapes — the
+      // buildScriptPrompt flag is auto-ignored for those). This lets Full
+      // AI, UGC, Founder Style, etc. all ship in the same navy/gray Ecom
+      // brief template the user delivers to editors, while still being
+      // generated with ad-type-specific creative content.
+      const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, scriptInspirationCtx, true);
 
       // Inject angle-specific and format-specific directives into script generation
       const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
@@ -1077,7 +1083,9 @@ This is the long-form slot — full documentary/narrative arc possible:
         const retryScriptInspirationCtx = pinned
           ? pinned.richContext
           : (deep && deep.hasContent ? deep.richContext : '');
-        const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, retryScriptInspirationCtx);
+        // forceEcomTemplate=true — same unified-template rationale as the
+        // primary script call above. Retries must use the same template.
+        const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing, retryScriptInspirationCtx, true);
         const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
 This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleLanguageBank(ts.task.parsed.angle)}\n`;
 
@@ -1396,7 +1404,10 @@ ${ts.scriptResult || '[no previous brief]'}
       conceptAngleContext: ts.selectedConceptText,
     };
 
-    const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined, regenInspirationCtx);
+    // forceEcomTemplate=true — regen (redo) path also ships the unified
+    // Ecom template so every task in the autopilot batch delivers
+    // consistently (only AGC and Static keep their own formats).
+    const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined, regenInspirationCtx, true);
     const regenScriptAngleCtx = `\n\n## ANGLE ENFORCEMENT: "${task.parsed.angle}"\nThis script MUST be specifically about "${task.parsed.angle}".\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
 
     const regenScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + regenScriptAngleCtx;

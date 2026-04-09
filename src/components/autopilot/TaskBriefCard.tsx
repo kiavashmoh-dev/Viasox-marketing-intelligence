@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { TaskPipelineState } from '../../engine/autopilotTypes';
-import { downloadEcomBriefDoc, parseKvTable, parseScriptTable } from '../../utils/downloadUtils';
+import { downloadEcomBriefDoc, downloadProductionBriefCsv, parseKvTable, parseScriptTable } from '../../utils/downloadUtils';
 import { buildBriefMeta } from '../../autopilot/briefMeta';
 
 interface Props {
@@ -116,6 +116,22 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
   // Only meaningful once the brief is complete — but still useful to know
   // the configured ad type even mid-pipeline.
   const meta = buildBriefMeta(taskState);
+
+  // AGC briefs export as a production CSV template (editors rely on that
+  // shape). Every other ad type — Ecom, Full AI, UGC, Founder, Fake
+  // Podcast, Spokesperson, Packaging/Employee, Static — exports as the
+  // standard Ecom DOC template because the autopilot forces the Ecom
+  // output format for all of them.
+  const briefAdType = task.scriptParamsBase.adType;
+  const isAgcExport = briefAdType === 'AGC (Actor Generated Content)';
+  const handleExport = () => {
+    if (!scriptResult) return;
+    if (isAgcExport) {
+      downloadProductionBriefCsv(scriptResult, task.product, briefAdType);
+    } else {
+      downloadEcomBriefDoc(scriptResult, task.parsed.name);
+    }
+  };
 
   // Parse brief sections for formatted preview
   const briefInfo = isComplete ? parseKvTable(scriptResult, 'BRIEF INFO') : {};
@@ -263,10 +279,10 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
               {/* Actions */}
               <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100">
                 <button
-                  onClick={() => downloadEcomBriefDoc(scriptResult, task.parsed.name)}
+                  onClick={handleExport}
                   className="text-xs bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-900 transition-colors"
                 >
-                  Export .doc
+                  {isAgcExport ? 'Export .csv' : 'Export .doc'}
                 </button>
                 {onRedo && (
                   <button

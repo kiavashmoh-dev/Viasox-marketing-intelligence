@@ -9,11 +9,18 @@ const EXTRACTION_PROMPT = `Extract all visible tasks from this Asana board scree
 - product: The Product column value — must be one of: EasyStretch, Compression, Ankle Compression
 - angle: The Angle column value — e.g., Neuropathy, Swelling, Diabetes, Varicose Veins
 - medium: The Medium column value — must be one of: Shortform, Midform, Expanded
+- adType: (OPTIONAL) The Ad Type column value IF visible. Recognized values include:
+    "Ecom Style", "AGC", "UGC", "Static", "Founder Style", "Fake Podcast", "Spokesperson",
+    "Packaging", "Employee", "Full AI", "Documentary", "Fully AI", "AI".
+    If the board does not have an Ad Type column, or the value is not visible for a row,
+    OMIT this field entirely (or set it to an empty string). Do NOT guess — only include
+    an adType value when it is explicitly written in the screenshot.
 
 Return ONLY a JSON array. No markdown code fences. No explanation.
-Example: [{"name":"VIASOX-77","product":"EasyStretch","angle":"Neuropathy","medium":"Shortform"}]
+Example: [{"name":"VIASOX-77","product":"EasyStretch","angle":"Neuropathy","medium":"Shortform","adType":"Ecom Style"}]
+Example without ad type: [{"name":"VIASOX-78","product":"Compression","angle":"Swelling","medium":"Midform"}]
 
-If a column value is not clearly visible, use your best interpretation of what's shown.`;
+If a standard column value (name/product/angle/medium) is not clearly visible, use your best interpretation of what's shown.`;
 
 /**
  * Parse an Asana board screenshot into structured task data using Claude Vision.
@@ -46,12 +53,20 @@ export async function parseAsanaScreenshot(
     const parsed = JSON.parse(cleaned);
     if (!Array.isArray(parsed)) throw new Error('Expected JSON array');
 
-    return parsed.map((task: Record<string, unknown>) => ({
-      name: String(task.name ?? 'Unknown'),
-      product: String(task.product ?? 'EasyStretch'),
-      angle: String(task.angle ?? 'Neuropathy'),
-      medium: String(task.medium ?? 'Midform'),
-    }));
+    return parsed.map((task: Record<string, unknown>) => {
+      const rawAdType = task.adType;
+      const adType =
+        typeof rawAdType === 'string' && rawAdType.trim().length > 0
+          ? rawAdType.trim()
+          : undefined;
+      return {
+        name: String(task.name ?? 'Unknown'),
+        product: String(task.product ?? 'EasyStretch'),
+        angle: String(task.angle ?? 'Neuropathy'),
+        medium: String(task.medium ?? 'Midform'),
+        ...(adType ? { adType } : {}),
+      };
+    });
   } catch (e) {
     throw new Error(`Failed to parse screenshot data: ${e instanceof Error ? e.message : String(e)}\n\nRaw response: ${result.slice(0, 500)}`);
   }

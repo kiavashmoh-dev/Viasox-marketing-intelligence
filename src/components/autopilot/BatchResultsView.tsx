@@ -3,7 +3,7 @@ import type { AutopilotState } from '../../engine/autopilotTypes';
 import type { AngleDirectiveProposal } from '../../autopilot/memoryTypes';
 import TaskBriefCard from './TaskBriefCard';
 import BatchChatPanel from './BatchChatPanel';
-import { downloadEcomBriefDoc } from '../../utils/downloadUtils';
+import { downloadEcomBriefDoc, downloadProductionBriefCsv } from '../../utils/downloadUtils';
 import {
   addFeedback,
   getPendingDirectiveProposals,
@@ -54,10 +54,33 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
     setRefreshTick((t) => t + 1);
   };
 
-  const handleExportAll = () => {
-    completed.forEach((ts) => {
+  // AGC briefs export as a production CSV (the editor pipeline depends
+  // on that shape). Every other ad type exports as the standard Ecom
+  // DOC template because the autopilot forces that output for all of
+  // them. Split the "Download All" into two actions so the user gets a
+  // single button per file kind when the batch is mixed.
+  const agcCompleted = completed.filter(
+    (ts) => ts.task.scriptParamsBase.adType === 'AGC (Actor Generated Content)',
+  );
+  const docCompleted = completed.filter(
+    (ts) => ts.task.scriptParamsBase.adType !== 'AGC (Actor Generated Content)',
+  );
+
+  const handleExportAllDocs = () => {
+    docCompleted.forEach((ts) => {
       if (ts.scriptResult) {
         downloadEcomBriefDoc(ts.scriptResult, ts.task.parsed.name);
+      }
+    });
+  };
+  const handleExportAllAgcCsvs = () => {
+    agcCompleted.forEach((ts) => {
+      if (ts.scriptResult) {
+        downloadProductionBriefCsv(
+          ts.scriptResult,
+          ts.task.product,
+          ts.task.scriptParamsBase.adType,
+        );
       }
     });
   };
@@ -104,12 +127,24 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
         </div>
 
         {completed.length > 0 && (
-          <button
-            onClick={handleExportAll}
-            className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors"
-          >
-            Download All Briefs (.doc) — {completed.length} file{completed.length !== 1 ? 's' : ''}
-          </button>
+          <div className="space-y-2">
+            {docCompleted.length > 0 && (
+              <button
+                onClick={handleExportAllDocs}
+                className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors"
+              >
+                Download All Ecom Briefs (.doc) — {docCompleted.length} file{docCompleted.length !== 1 ? 's' : ''}
+              </button>
+            )}
+            {agcCompleted.length > 0 && (
+              <button
+                onClick={handleExportAllAgcCsvs}
+                className="w-full py-2.5 bg-indigo-700 text-white rounded-lg text-sm font-medium hover:bg-indigo-800 transition-colors"
+              >
+                Download All AGC Briefs (.csv) — {agcCompleted.length} file{agcCompleted.length !== 1 ? 's' : ''}
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -252,14 +287,25 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
 
       {/* Download All (bottom) */}
       {completed.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <button
-            onClick={handleExportAll}
-            className="w-full py-3 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
-          >
-            <span>{'\uD83D\uDCE5'}</span>
-            Download All Briefs (.doc) — {completed.length} file{completed.length !== 1 ? 's' : ''}
-          </button>
+        <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-2">
+          {docCompleted.length > 0 && (
+            <button
+              onClick={handleExportAllDocs}
+              className="w-full py-3 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
+            >
+              <span>{'\uD83D\uDCE5'}</span>
+              Download All Ecom Briefs (.doc) — {docCompleted.length} file{docCompleted.length !== 1 ? 's' : ''}
+            </button>
+          )}
+          {agcCompleted.length > 0 && (
+            <button
+              onClick={handleExportAllAgcCsvs}
+              className="w-full py-3 bg-indigo-700 text-white rounded-lg text-sm font-medium hover:bg-indigo-800 transition-colors flex items-center justify-center gap-2"
+            >
+              <span>{'\uD83D\uDCE5'}</span>
+              Download All AGC Briefs (.csv) — {agcCompleted.length} file{agcCompleted.length !== 1 ? 's' : ''}
+            </button>
+          )}
         </div>
       )}
 

@@ -7,6 +7,13 @@ export interface ParsedAsanaTask {
   product: string;    // e.g., "EasyStretch"
   angle: string;      // e.g., "Neuropathy"
   medium: string;     // e.g., "Shortform"
+  /**
+   * Optional explicit ad type. When present (either extracted from the Asana board's
+   * Ad Type column, or manually overridden by the user in the Planner dropdown), this
+   * value is normalized and used directly instead of the medium/angle heuristic.
+   * When absent, the mapper falls back to the heuristic which defaults to Ecom Style.
+   */
+  adType?: string;
 }
 
 // ─── Mapped Task ─────────────────────────────────────────────────────────────

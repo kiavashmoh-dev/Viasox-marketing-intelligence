@@ -249,27 +249,109 @@ function mapDuration(medium: string): '1-15 sec' | '16-59 sec' | '60-90 sec' {
 }
 
 /**
- * Map the Asana medium/format field to an AdType.
+ * The full canonical AdType enum — mirrored from `src/engine/types.ts`.
  *
- * Defaults to "Ecom Style" (the workhorse editing brief format), but
- * recognizes Full AI hints in the medium field — e.g., "Full AI",
- * "AI Documentary", "Documentary", "AI Story", "AI Educational",
- * "AI Aspirational", or anything with "ai" + a Full AI specification keyword.
+ * Any change to the AdType union there must be reflected here so the
+ * Planner dropdown, the screenshot parser's explicit adType extraction,
+ * and the normalizer all stay in sync.
  */
-function mapAdType(medium: string, angle: string): AdType {
-  const lower = `${medium} ${angle}`.toLowerCase();
+export const AD_TYPE_OPTIONS: readonly AdType[] = [
+  'Ecom Style',
+  'AGC (Actor Generated Content)',
+  'UGC (User Generated Content)',
+  'Static',
+  'Founder Style',
+  'Fake Podcast Ads',
+  'Spokesperson',
+  'Packaging/Employee',
+  'Full AI (Documentary, story, education, etc)',
+] as const;
 
-  // Explicit Full AI signals
-  if (lower.includes('full ai') || lower.includes('fullai')) return 'Full AI (Documentary, story, education, etc)';
-  if (lower.includes('ai documentary') || lower.includes('ai doc')) return 'Full AI (Documentary, story, education, etc)';
-  if (lower.includes('ai story') || lower.includes('ai narrative')) return 'Full AI (Documentary, story, education, etc)';
-  if (lower.includes('ai educational') || lower.includes('ai education')) return 'Full AI (Documentary, story, education, etc)';
-  if (lower.includes('ai aspirational')) return 'Full AI (Documentary, story, education, etc)';
-  if (lower.includes('ai historical')) return 'Full AI (Documentary, story, education, etc)';
-  if (lower.includes('ai emotional')) return 'Full AI (Documentary, story, education, etc)';
+/**
+ * Normalize a free-text ad type string (from the screenshot parser or a
+ * Planner dropdown value) into a strict AdType enum value. Returns
+ * `undefined` when the input cannot be confidently resolved — callers
+ * should then fall back to the medium/angle heuristic.
+ *
+ * Matching rules:
+ *  1. Exact canonical match (case-insensitive) on the AdType enum.
+ *  2. Keyword-based fuzzy match (e.g., "AGC" → "AGC (Actor Generated Content)",
+ *     "Full AI" → "Full AI (Documentary, story, education, etc)").
+ */
+export function normalizeAdType(raw: string | undefined | null): AdType | undefined {
+  if (!raw || typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
 
-  // Default workhorse format
-  return 'Ecom Style';
+  // 1. Exact canonical match
+  const exact = AD_TYPE_OPTIONS.find(
+    (opt) => opt.toLowerCase() === trimmed.toLowerCase(),
+  );
+  if (exact) return exact;
+
+  const lower = trimmed.toLowerCase();
+
+  // 2. Full AI — any "full ai"/"fully ai"/"ai documentary"/etc hint
+  if (
+    lower.includes('full ai') ||
+    lower.includes('fullai') ||
+    lower.includes('fully ai') ||
+    lower === 'ai' ||
+    lower.includes('ai documentary') ||
+    lower.includes('ai doc') ||
+    lower.includes('ai story') ||
+    lower.includes('ai narrative') ||
+    lower.includes('ai educational') ||
+    lower.includes('ai education') ||
+    lower.includes('ai aspirational') ||
+    lower.includes('ai historical') ||
+    lower.includes('ai emotional') ||
+    lower === 'documentary'
+  ) {
+    return 'Full AI (Documentary, story, education, etc)';
+  }
+
+  // 3. AGC
+  if (lower === 'agc' || lower.includes('actor generated')) {
+    return 'AGC (Actor Generated Content)';
+  }
+
+  // 4. UGC
+  if (lower === 'ugc' || lower.includes('user generated')) {
+    return 'UGC (User Generated Content)';
+  }
+
+  // 5. Static
+  if (lower === 'static' || lower.includes('static')) {
+    return 'Static';
+  }
+
+  // 6. Founder Style
+  if (lower.includes('founder')) {
+    return 'Founder Style';
+  }
+
+  // 7. Fake Podcast
+  if (lower.includes('podcast') || lower.includes('fake pod')) {
+    return 'Fake Podcast Ads';
+  }
+
+  // 8. Spokesperson
+  if (lower.includes('spokesperson') || lower.includes('spokes person')) {
+    return 'Spokesperson';
+  }
+
+  // 9. Packaging / Employee
+  if (lower.includes('packag') || lower.includes('employee')) {
+    return 'Packaging/Employee';
+  }
+
+  // 10. Ecom Style variants
+  if (lower.includes('ecom') || lower.includes('e-com')) {
+    return 'Ecom Style';
+  }
+
+  return undefined;
 }
 
 /**
@@ -307,6 +389,18 @@ function mapFullAiVisualStyle(medium: string, angle: string): FullAiVisualStyle 
  * preserved verbatim (passed through as `parsed.angle`) for the concept
  * generator and script writer to use. The AngleType is the structural
  * approach, not a replacement for the specific angle content.
+ *
+ * Ad type resolution priority:
+ *  1. If `parsed.adType` is present and normalizes to a valid AdType, use it.
+ *     (This is either an explicit Ad Type column from the Asana screenshot,
+ *     or the user's choice in the Planner dropdown.)
+ *  2. Otherwise, default to "Ecom Style" — the workhorse format. Per the
+ *     user's explicit request: "all tasks will be Ecom style unless
+ *     otherwise selected by the user." The medium-column heuristic is
+ *     preserved in `mapAdType()` for edge cases (e.g., the Asana medium
+ *     column literally says "Full AI Documentary") but is NOT used here by
+ *     default — the user always gets Ecom Style and changes the Ad Type
+ *     dropdown in the Planner if they want something else.
  */
 export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
   const product = mapProduct(parsed.product);
@@ -314,7 +408,11 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
   const angleType = mapAngleType(parsed.angle);
   const awarenessLevel = mapAwarenessLevel(parsed.angle, parsed.medium);
   const persona = mapPersona(parsed.angle, product, awarenessLevel);
-  const adType = mapAdType(parsed.medium, parsed.angle);
+
+  // Explicit ad type override takes precedence; otherwise default to Ecom.
+  const explicitAdType = normalizeAdType(parsed.adType);
+  const adType: AdType = explicitAdType ?? 'Ecom Style';
+
   const isFullAi = adType === 'Full AI (Documentary, story, education, etc)';
   const fullAiSpecification = isFullAi ? mapFullAiSpecification(parsed.medium, parsed.angle) : undefined;
   const fullAiVisualStyle = isFullAi ? mapFullAiVisualStyle(parsed.medium, parsed.angle) : undefined;
