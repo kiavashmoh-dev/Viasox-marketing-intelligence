@@ -621,15 +621,15 @@ The Primary Talking Point defines WHAT the ad is about. The Angle Type (${params
 - Primary Talking Point "${params.primaryTalkingPoint}" = the SUBJECT MATTER (the condition, topic, or focus that every concept must center on)
 
 **MANDATORY REQUIREMENTS:**
-1. The word "${params.primaryTalkingPoint}" (or its direct medical/common synonym) MUST appear in every concept
+1. The word "${params.primaryTalkingPoint}" (or its direct medical/common synonym) MUST appear in every concept — but for Unaware concepts, it only appears in Beat 3 (Mechanism) or later, NEVER in Beat 1 (Identification). For Problem-Aware and later, it appears in the hook.
 2. Every concept must describe scenarios, symptoms, or experiences SPECIFICALLY related to "${params.primaryTalkingPoint}"
-3. The viewer must understand within the first 3 seconds that this ad is about "${params.primaryTalkingPoint}" (for Problem Aware+) or recognize the EXPERIENCE of "${params.primaryTalkingPoint}" visually (for Unaware)
+3. The viewer must understand within the first 3 seconds that this ad is about "${params.primaryTalkingPoint}" (for Problem Aware+) or recognize the SENSORY EXPERIENCE of "${params.primaryTalkingPoint}" visually (for Unaware — shown, not labeled)
 4. Generic "comfortable socks" concepts are BANNED. If a concept could work without mentioning "${params.primaryTalkingPoint}", it's too generic — rewrite it
-5. Use the specific customer language, pain descriptions, and emotional triggers from the Angle Language Bank for "${params.primaryTalkingPoint}" if available
+5. Use the specific customer language, pain descriptions, and emotional triggers from the Angle Language Bank for "${params.primaryTalkingPoint}" if available — but for Unaware concepts, use the language ONLY for the Reframe/Mechanism beats, NOT the opening (review language is post-education vocabulary)
 
 **HOW AWARENESS LEVEL CHANGES THE TALKING POINT TREATMENT:**
-- **Unaware:** The talking point's REALITY is shown visually and through life moments — the viewer RECOGNIZES the experience of ${params.primaryTalkingPoint} without it being named in the first half. The word "${params.primaryTalkingPoint}" appears in the second half after the awareness shift.
-- **Problem Aware:** "${params.primaryTalkingPoint}" is named in the HOOK. Lead with the specific pain. The viewer should think "that's EXACTLY my ${params.primaryTalkingPoint} experience."
+- **Unaware:** The talking point's REALITY is shown visually and through life moments — the viewer RECOGNIZES the experience of ${params.primaryTalkingPoint} without it being named in the first half. The word "${params.primaryTalkingPoint}" (and any medical synonym) does NOT appear in Beats 1-2 of the 5-beat structure. It may enter in Beat 3 (Mechanism) if naturally woven in, but often the Mechanism describes the sensation without using the clinical label at all. The VISUAL WORLD shows ${params.primaryTalkingPoint} (red marks on calves, swollen ankles, nerve-pain wincing) but the VOICEOVER never labels it in Beats 1-2. Pick one of the three Unaware sub-personas (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer) who experiences ${params.primaryTalkingPoint} in their specific life context.
+- **Problem Aware (Upper-MOF):** "${params.primaryTalkingPoint}" is named in the HOOK. Lead with the specific pain. The viewer should think "that's EXACTLY my ${params.primaryTalkingPoint} experience."
 - **Solution Aware:** "${params.primaryTalkingPoint}" is assumed known. Lead with why Viasox solves it DIFFERENTLY than what they've tried.
 - **Product Aware / Most Aware:** "${params.primaryTalkingPoint}" is referenced as the reason they already know Viasox. Deepen the proof.
 
@@ -735,7 +735,28 @@ ${buildFullAiSkillContext({
   : `This is a ${params.duration} short-form brief. You MAY pitch concepts that are text-only/no-VO (pure visual grammar with on-screen text over b-roll) OR concepts with VO — both are valid. Mix both styles across the 5 concepts if it serves the angle variety.`}
 
 **CRITICAL — AWARENESS LEVEL IS ${params.awarenessLevel.toUpperCase()}:**
-${params.awarenessLevel === 'Unaware' ? 'These concepts CANNOT mention the product, problem, or solution in the first 50% of the concept. Lead with pure identification, story, or curiosity. The concept structure must be: Identification → Disruption → Discovery → Curiosity. The product appears LAST. CTA is soft ("learn more," "discover"). This must read like CONTENT, not an ad.' : ''}${params.awarenessLevel === 'Problem Aware' ? 'These concepts must lead with SPECIFIC, VIVID pain that the viewer recognizes instantly. Use exact customer language from the reviews. Spend 60-70% of the concept on the PAIN (naming it, intensifying it) before bridging to the solution. CTA is medium-soft ("try your first pair," "see how it works").' : ''}${params.awarenessLevel === 'Solution Aware' ? 'These concepts must lead with DIFFERENTIATION — what makes Viasox fundamentally different from what they have tried. Do NOT belabor the problem (they know it). Spend 60-70% on the NEW MECHANISM, proof, and why this solution succeeds where others failed. CTA is medium-direct ("see why X switched," "compare for yourself").' : ''}${params.awarenessLevel === 'Product Aware' ? 'These concepts must assume the viewer ALREADY KNOWS Viasox. Lead with the brand name, deepened proof, or what is NEW. Go deep on a single powerful proof point rather than wide on many benefits. CTA is direct ("shop now," "get your pair").' : ''}${params.awarenessLevel === 'Most Aware' ? 'These concepts must be the MOST DIRECT and OFFER-FOCUSED. Lead with the product name + offer/news. Keep concepts tight — recognition → offer/urgency → CTA. No education, no problem agitation. The deal IS the concept. CTA is maximally direct ("buy now," "claim your pair," "add to cart").' : ''}
+${params.awarenessLevel === 'Unaware' ? `⚠️ UNAWARE IS THE DEFAULT TOF AWARENESS LEVEL (April 2026 Manifesto). Every concept must honor Schwartz's Three Elimination Rules in the opening: NO price, NO product name, NO direct problem/solution statement.
+
+MANDATORY STRUCTURE — every Unaware concept must map to the 5-beat body:
+1. IDENTIFICATION (Beat 1, ~0-25%) — uses Scene Identification, Mundane Reframe, or False Cause Flip. Zero product, zero category, zero symptom label.
+2. REFRAME (Beat 2, ~25-45%) — the "wait..." moment. The normalized experience is named as NOT normal.
+3. MECHANISM (Beat 3, ~45-65%) — short plain-English explanation of WHY. Not a medical lecture.
+4. CATEGORY REVEAL (Beat 4, ~65-85%) — reveal that a different CATEGORY of sock exists. Not Viasox yet.
+5. PRODUCT REVEAL + SOFT CTA (Beat 5, ~85-100%) — Viasox is finally named with a curiosity CTA ("Learn more," "See what 107K people found"). No price, no offer, no direct buy.
+
+TARGET ONE SUB-PERSONA per concept (label it in the Primary Persona field):
+- The Normalizer — attributes discomfort to age/weather/shoes
+- The Diagnosed Non-Searcher — has the condition, owns pharmacy compression, never connected it to a better category
+- The Incidental Sufferer — job/lifestyle produces the pain, writes it off as "part of the job"
+
+PICK ONE TECHNIQUE per concept and name it in the concept description:
+- Scene Identification — specific sensory scene from the viewer's day
+- Mundane Reframe — micro-behavior they do without thinking, revealed as coping behavior
+- False Cause Flip — name the wrong attribution they've made, then flip it
+
+HARD BANS in the opening of any Unaware concept: "compression," "diabetic," "neuropathy," "circulation," "swelling," "edema," "varicose," "Viasox," "sock marks," "sock line," "relief," "solution," "finally," any price, any offer, any "Tired of...", "Struggling with...", "Did you know...", "Dealing with...", "If you have...".
+
+DO NOT pull hook language verbatim from review data — reviews are post-education vocabulary. Use reviews to understand the REALITY of the experience, then describe that reality in language the viewer uses BEFORE they find us.` : ''}${params.awarenessLevel === 'Problem Aware' ? 'These concepts must lead with SPECIFIC, VIVID pain that the viewer recognizes instantly. Use exact customer language from the reviews. Spend 60-70% of the concept on the PAIN (naming it, intensifying it) before bridging to the solution. CTA is medium-soft ("try your first pair," "see how it works"). Note: Problem-Aware is classified as Upper-MOF in the April 2026 manifesto — use it when the audience has already recognized they have a problem but hasn\'t committed to a solution.' : ''}${params.awarenessLevel === 'Solution Aware' ? 'These concepts must lead with DIFFERENTIATION — what makes Viasox fundamentally different from what they have tried. Do NOT belabor the problem (they know it). Spend 60-70% on the NEW MECHANISM, proof, and why this solution succeeds where others failed. CTA is medium-direct ("see why X switched," "compare for yourself").' : ''}${params.awarenessLevel === 'Product Aware' ? 'These concepts must assume the viewer ALREADY KNOWS Viasox. Lead with the brand name, deepened proof, or what is NEW. Go deep on a single powerful proof point rather than wide on many benefits. CTA is direct ("shop now," "get your pair").' : ''}${params.awarenessLevel === 'Most Aware' ? 'These concepts must be the MOST DIRECT and OFFER-FOCUSED. Lead with the product name + offer/news. Keep concepts tight — recognition → offer/urgency → CTA. No education, no problem agitation. The deal IS the concept. CTA is maximally direct ("buy now," "claim your pair," "add to cart").' : ''}
 
 The awareness level must FUNDAMENTALLY change the concept structure, not just adjust a few words. An Unaware concept and a Most Aware concept for the same persona and ad type should look like completely different ads.
 
@@ -771,23 +792,23 @@ For each of the 5 concepts, use this EXACT structure with the numbered header fo
 
 **Ad Type:** ${params.adType}${isStatic ? ' (Static Image)' : ' (Video)'}
 
-**Primary Persona:** The specific customer segment this concept targets (e.g., "Healthcare workers doing 10+ hour shifts", "Daughters buying for aging mothers")
+**Primary Persona:** ${params.awarenessLevel === 'Unaware' ? 'The specific Unaware SUB-PERSONA this concept targets — MUST be one of: "The Normalizer", "The Diagnosed Non-Searcher", or "The Incidental Sufferer". Add a short descriptor (e.g., "The Incidental Sufferer — a 52-year-old ICU nurse who writes off her end-of-shift foot pain as part of the job").' : 'The specific customer segment this concept targets (e.g., "Healthcare workers doing 10+ hour shifts", "Daughters buying for aging mothers")'}
 
-**Awareness Level:** ${params.awarenessLevel}
+**Awareness Level:** ${params.awarenessLevel}${params.awarenessLevel === 'Unaware' ? '\n\n**Unaware Technique:** MUST be one of: "Scene Identification", "Mundane Reframe", or "False Cause Flip". Name the technique and briefly explain why it fits this sub-persona.\n\n**5-Beat Breakdown:** Provide a 1-line description for each beat:\n- Beat 1 — IDENTIFICATION (0-25%): [what we see/hear, no product/problem/solution language]\n- Beat 2 — REFRAME (25-45%): [the "wait..." moment]\n- Beat 3 — MECHANISM (45-65%): [plain-English explanation of why]\n- Beat 4 — CATEGORY REVEAL (65-85%): [the category — not Viasox yet]\n- Beat 5 — PRODUCT REVEAL + SOFT CTA (85-100%): [Viasox named + curiosity CTA, no price/offer]' : ''}
 
 **The Concept:** A vivid, detailed description of the creative execution. ${isStatic ? 'Describe the image composition, visual elements, talent (if any), setting, mood, headline placement, and overall art direction.' : 'Describe who we see on screen, the setting/location, what happens, the tone, the visual style, any unique production elements. Paint a picture of the ad the viewer will experience.'} This should be specific to ${params.adType} — not generic. Make it something a creative team could immediately visualize and produce.
 
 **The Angle:** The strategic messaging approach within this concept. What emotional or logical frame are we using? What desire are we channeling? What belief are we challenging or reinforcing? This is the "why" behind the creative.
 
-**Core Insight:** The customer truth this is built on, with a specific data point or frequency from the review analysis.
+**Core Insight:** The customer truth this is built on, with a specific data point or frequency from the review analysis.${params.awarenessLevel === 'Unaware' ? ' Remember: review data informs Beats 2-5; Beat 1 (Identification) must describe the experience in pre-education vocabulary the Unaware viewer recognizes.' : ''}
 
-**Hook Line:** A sample opening line (${isStatic ? 'headline' : 'first 3 seconds of the video'}) that brings this concept to life, following the awareness level rules.
+**Hook Line:** A sample opening line (${isStatic ? 'headline' : 'first 3 seconds of the video'}) that brings this concept to life, following the awareness level rules.${params.awarenessLevel === 'Unaware' ? ' For Unaware: this hook MUST honor Schwartz\'s Three Elimination Rules (no price, no product name, no direct problem/solution statement). No "Tired of...", "Struggling with...", "Did you know...", "Dealing with...", or "If you have..." openers.' : ''}
 
 **Key Proof Point:** The specific data, quote, or pattern from the reviews that makes this concept credible.
 
 **Customer Quote Anchor:** A real quote from the review data that embodies this concept.
 
-**Headline Variations:** 3 different headline approaches for this concept (applying Schwartz's awareness-level headline rules).
+**Headline Variations:** 3 different headline approaches for this concept (applying Schwartz's awareness-level headline rules).${params.awarenessLevel === 'Unaware' ? ' All three Unaware headlines must honor the Three Elimination Rules.' : ''}
 
 **Why It Works:** The psychological principle behind this concept (cite Schwartz, Hopkins, Bly, or Neumeier).
 

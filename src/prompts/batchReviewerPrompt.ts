@@ -22,6 +22,7 @@ import {
   getVoiceToneExamples,
   getSegmentProductMatrix,
   getWinningAdReferenceBank,
+  getAwarenessMessagingTechniques,
 } from './manifestoReference';
 
 export function buildBatchReviewerPrompt(
@@ -32,6 +33,7 @@ export function buildBatchReviewerPrompt(
     medium: string;
     framework: string;
     briefContent: string;
+    awarenessLevel?: string;
   }>,
   analysis: FullAnalysis,
   creativeDirectionInstructions: string,
@@ -82,6 +84,8 @@ ${getScriptFrameworks()}
 
 ${getHookDonts()}
 
+${getAwarenessMessagingTechniques()}
+
 ## ECOM PRODUCTION CONSTRAINTS
 Ecom ads are built entirely in post-production:
 - AI voiceover (female, conversational) — scripts must sound natural when spoken aloud
@@ -103,14 +107,52 @@ Does the brief name a SPECIFIC pain point with SENSORY detail? "Foot discomfort"
 Does the brief's ENTIRE narrative orbit the assigned angle, or does it just mention it once and default to generic comfort messaging? The angle should be STRUCTURAL — it shapes the hook, the body, the visuals, and the CTA context. A brief assigned "Neuropathy" that mostly talks about soft socks = FAIL.
 **CRITICAL:** The specific angle word/phrase MUST appear in the script at least once. If the angle is "Neuropathy" and the words "neuropathy," "nerve pain," or "nerve damage" never appear — AUTOMATIC FAIL. If the angle is "Swelling" and the words "swell," "swollen," "puffy," or "edema" never appear — AUTOMATIC FAIL. Generic comfort language does NOT count as angle alignment.
 
-**3b. Awareness Level Correctness**
-Check that the brief follows the CORRECT awareness level principles:
-- UNAWARE briefs: Product does NOT appear in the first 50% of the script. No mention of socks, compression, marks, or Viasox until the second half. The first half is pure identification/story/lifestyle content. CTA is SOFT (learn more, discover, see why). If the script leads with a problem statement or pain point in the first line, it's Problem Aware structure disguised as Unaware = FAIL.
-  HOWEVER: Unaware does NOT mean vague or abstract. The viewer must still understand the ad's WORLD within 3 seconds (a woman, a morning, a struggle, legs). The condition should be VISIBLE through sensory details (red marks shown, swollen ankles shown, wincing) even if not named. If an Unaware brief is so vague that a viewer wouldn't know what it's about until the last 3 seconds = FLAG. The angle's reality must be SHOWN visually even when not SAID verbally.
-  Also check: Does the product reveal feel earned? Is there a clear "awareness shift" moment bridging the story to the product? If the product appears out of nowhere with no bridge = FLAG.
-  Also check: Is the audience correct? ALL Viasox briefs target women 50+. If the Unaware brief describes or implies a younger demographic (gym-goers, young professionals, athletes, anyone under 40) = FAIL.
-- PROBLEM AWARE briefs: Lead with specific vivid pain. Product appears in the second half. CTA is medium-soft.
-- If the awareness level doesn't match the brief's actual structure = FAIL.
+**3b. Awareness Level Correctness — SCHWARTZ'S THREE ELIMINATION RULES**
+
+Check that the brief follows the CORRECT awareness level principles per Schwartz's Breakthrough Advertising (pp. 36-38) and the Viasox April 2026 Manifesto Update:
+
+**IF THE BRIEF IS UNAWARE** — apply Schwartz's Three Elimination Rules as HARD GATES. Any violation = FAIL.
+
+- **RULE 1 — NO PRICE.** Does the brief mention price, offers, "B2G3", "5 pairs for $60", discounts, or money language in ANY of the first 4 body beats? If yes = **FAIL** (Schwartz Rule 1 violation). Offer appears only in the final CTA beat.
+
+- **RULE 2 — NO PRODUCT NAME IN BEATS 1-2.** Does the hook, the first body line, or the identification beat name "Viasox," "our socks," "these socks," "compression socks," or visually show a branded product close-up? If yes = **FAIL** (Schwartz Rule 2 violation). Product should appear ONLY in Beat 5 (Product Reveal), near the end.
+
+- **RULE 3 — NO DIRECT PROBLEM/SOLUTION STATEMENT IN OPENING.** Does the hook or first body line directly name a medical condition ("neuropathy," "diabetic neuropathy," "edema," "varicose veins"), directly tell the viewer they have a problem ("Do you suffer from X?", "If you have Y..."), or promise a solution in Beat 1? If yes = **FAIL** (Schwartz Rule 3 violation). The opening must feel like a SCENE the viewer sees themselves in, not a pitch.
+
+**RULE 4 — 5-BEAT BODY STRUCTURE CHECK.** Does the Unaware brief's body map cleanly to the 5-Beat Unaware Structure?
+  1. **Identification** — a specific sensory moment the Unaware viewer recognizes as "me" (sock marks, ankles tight by 3pm, morning numbness, line across the calf). MUST exist — no "you have neuropathy" shortcut.
+  2. **Reframe** — reveal that the normalized moment isn't normal, or isn't caused by what they think. The "wait, what?" beat.
+  3. **Mechanism** — the invisible physiological cause (circulation, elastic compression, nerve pressure). Brief, credible, curiosity-building.
+  4. **Category Reveal** — "There's a type of sock built to prevent this" — the CATEGORY appears, not the brand.
+  5. **Product Reveal** — Viasox appears ONLY here, at the end. Soft CTA.
+
+  If any beat is missing OR if the beats are compressed/reordered = **FLAG** (or **FAIL** if Identification or Reframe are absent).
+
+**RULE 5 — SUB-PERSONA IDENTIFIED.** Does the brief clearly target ONE of the 3 Unaware sub-personas?
+  - The Normalizer ("my ankles have always been like that")
+  - The Diagnosed Non-Searcher (has diabetes/pregnancy but doesn't connect it to sock choice)
+  - The Incidental Sufferer (has symptoms but blames wrong cause — age, weather, long days)
+
+  If the brief's persona description doesn't map to one of these three = **FLAG**. If the brief feels like it's for an already-Problem-Aware viewer = **FAIL**.
+
+**RULE 6 — BANNED UNAWARE VOCABULARY IN HOOK / BEAT 1.** Scan the hook and first body line for these banned words/phrases:
+  "neuropathy", "diabetic neuropathy", "edema", "varicose veins", "compression sock", "Viasox", "our socks", "these socks", "buy", "offer", "discount", "shop now", "B2G3", "sale", "solution", "treatment", "cure", "symptoms", "condition", "suffer from", "if you have"
+
+  Any of these words in the opening = **FAIL**.
+
+**RULE 7 — REVIEW LANGUAGE NOT PULLED VERBATIM.** Reviews are POST-education — they're written by customers who already understand the problem and solution. Check that the hook hasn't lifted resolved/educated review language like "finally no sock marks!" directly. A hook like that reads as Problem Aware / Solution Aware, not Unaware. If the hook sounds like a resolved customer testimonial = **FLAG**.
+
+**UNAWARE STILL NEEDS TO BE CLEAR, NOT VAGUE.** Unaware does NOT mean abstract. The viewer must still understand the ad's WORLD within 3 seconds (a woman, a morning, a struggle, legs). The condition should be VISIBLE through sensory details (red marks shown, swollen ankles shown, wincing) even if not NAMED. If an Unaware brief is so vague that a viewer wouldn't know what it's about by Beat 3 = **FLAG**.
+
+**PRODUCT REVEAL MUST BE EARNED.** Does the product reveal feel bridged by the Category Reveal beat, or does it appear out of nowhere? Missing bridge = **FLAG**.
+
+**AUDIENCE CHECK.** ALL Viasox briefs target women 50+. If the Unaware brief describes or implies a younger demographic (gym-goers, young professionals, athletes, anyone under 40) = **FAIL**.
+
+**PREFERRED UNAWARE FRAMEWORK:** "The Gradualization (Schwartz)" framework maps 1:1 to the 5-beat Unaware structure and is the native choice for Unaware briefs. If the brief is Unaware and uses "PAS" or "Before-After-Bridge" instead, check whether those frameworks have been adapted to 5-beat structure — if they're executing as standard PAS with the problem statement up front = **FLAG**.
+
+**IF THE BRIEF IS PROBLEM AWARE**: Lead with specific vivid pain. Product appears in the second half. CTA is medium-soft. Medical vocabulary and condition naming is allowed in Beat 1.
+
+**IF THE AWARENESS LEVEL DOESN'T MATCH THE BRIEF'S ACTUAL STRUCTURE** — e.g., a brief labeled "Unaware" that opens with "Do you suffer from neuropathy?" — **FAIL**.
 
 **3c. Short Form Format Check (for 1-15 sec / short form briefs)**
 Short form briefs (1-15 sec) should NOT read like compressed long-form ads. Check that:
@@ -206,8 +248,9 @@ ${getAllProductData(analysis)}
 ## BATCH OF ${briefs.length} BRIEFS FOR REVIEW
 
 ${briefs.map((b, i) => `### Brief ${i + 1}: ${b.taskName}
-- Assigned Angle: ${b.angle} | Product: ${b.product} | Medium: ${b.medium}
+- Assigned Angle: ${b.angle} | Product: ${b.product} | Medium: ${b.medium}${b.awarenessLevel ? ` | Awareness: **${b.awarenessLevel}**` : ''}
 - Framework: ${b.framework}
+${b.awarenessLevel === 'Unaware' ? `- **THIS IS AN UNAWARE BRIEF — apply Schwartz's Three Elimination Rules (no price, no product name in Beats 1-2, no direct problem/solution in opening). Check for 5-beat structure (Identification → Reframe → Mechanism → Category Reveal → Product Reveal). Scan the hook for banned words. Verify sub-persona (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer).**` : ''}
 
 ${b.briefContent}
 
@@ -229,7 +272,8 @@ For each brief, output:
 | 1. Hook Differentiation | PASS/FLAG/FAIL | [specific note — name the hooks and explain] |
 | 2. Problem Specificity | PASS/FLAG/FAIL | [quote the specific language used] |
 | 3. Angle Alignment | PASS/FLAG/FAIL | [how deeply does the angle permeate?] |
-| 3d. VO-by-Length Rule | PASS/FLAG/FAIL | [duration, VO field value, body VO present? 30s+ must have VO] |
+| 3b. Awareness Correctness (Schwartz) | PASS/FLAG/FAIL | [for Unaware: Rule 1/2/3 compliance, 5-beat mapping, sub-persona, banned-word scan] |
+| 3d. VO-by-Length Rule | PASS/FLAG/FAIL | [duration, VO field value, body VO present? 16-59 sec+ must have VO] |
 | 3e. Length Calibration | PASS/FLAG/FAIL | [count body words, compare to target, note overshoot %] |
 | 4. Data Grounding | PASS/FLAG/FAIL | [list the data points found] |
 | 5. Product Accuracy | PASS/FLAG/FAIL | [any product messaging errors?] |

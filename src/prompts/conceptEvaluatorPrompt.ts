@@ -7,6 +7,7 @@
  */
 
 import type { ConceptOption } from '../engine/autopilotTypes';
+import type { AwarenessLevel } from '../engine/types';
 import { getDurationTarget, isShortFormDuration } from './creativeConstraints';
 
 export function buildConceptEvaluatorPrompt(
@@ -28,7 +29,9 @@ export function buildConceptEvaluatorPrompt(
    * Built via formatAnglePatternsForEvaluator(angle, product, getAnglePatternsFor(angle, product)).
    */
   anglePatternTable?: string,
+  awarenessLevel: AwarenessLevel = 'Problem Aware',
 ): { system: string; user: string } {
+  const isUnaware = awarenessLevel === 'Unaware';
   // Duration-aware constraints for the evaluator. Used to downrate concepts
   // that break the VO-by-length rule (16-59 sec / 60-90 sec without VO) or
   // the length calibration rule (concepts that pitch too much story for a
@@ -48,6 +51,42 @@ You are opinionated and specific. You don't rate everything 4/5. You differentia
 
 **CRITICAL EVALUATION CRITERIA — ANGLE SPECIFICITY:**
 The most important evaluation criterion is whether the concept is SPECIFICALLY about the assigned angle. If the task says "Neuropathy" and the concept is generic "foot discomfort" without mentioning neuropathy, nerve pain, or diabetic neuropathy — that concept gets a 1/5 regardless of how well-written it is. The angle must be the SOUL of the concept, not a backdrop.
+${isUnaware ? `
+
+**AWARENESS LEVEL: UNAWARE — SCHWARTZ'S THREE ELIMINATION RULES (HARD RATING CAPS):**
+
+This brief targets Unaware viewers — people who have NOT yet recognized that they have a problem. They've normalized sock marks, puffy ankles, tingling feet, and circulation issues as "just life." You must evaluate each concept through Schwartz's Breakthrough Advertising Unaware framework (pp. 36-38). Apply these HARD CAPS:
+
+**RULE 1 — NO PRICE.** If a concept references price, offers, discounts, "B2G3", or money language in Beats 1–4, **rate it 1/5** and flag the violation in reasoning.
+
+**RULE 2 — NO PRODUCT NAME.** If a concept opens with "Viasox," "our socks," "these socks," "compression socks," or describes a branded sock product visually in the hook (Beat 1) or identification (Beat 2) beats, **rate it 1/5**. The product may appear ONLY in Beat 5 (Product Reveal) at the very end.
+
+**RULE 3 — NO DIRECT PROBLEM OR SOLUTION STATEMENT IN OPENING.** If a concept's hook names a medical condition ("neuropathy," "edema," "swelling," "varicose veins," "diabetic neuropathy"), directly tells the viewer they have a problem ("Do you suffer from X?", "If you have Y..."), or promises a solution in Beat 1, **rate it 1/5**. The opening must feel like a SCENE the viewer sees themselves in, not a pitch.
+
+**RULE 4 — MUST MAP TO THE 5-BEAT UNAWARE BODY STRUCTURE** (Identification → Reframe → Mechanism → Category Reveal → Product Reveal). Concepts that compress identification into "you have neuropathy" or skip the Reframe or Mechanism beats should be rated **2/5 max**.
+
+**RULE 5 — MUST TARGET ONE OF THE 3 UNAWARE SUB-PERSONAS:**
+- The Normalizer — "my ankles have always been like that"
+- The Diagnosed Non-Searcher — has a condition but doesn't connect it to sock choice
+- The Incidental Sufferer — has symptoms but blames wrong cause (age, the weather, long days)
+
+Concepts that target no sub-persona or lump them together score **2/5 max**.
+
+**RULE 6 — REVIEWS ARE POST-EDUCATION.** Review quotes are written by customers who already understand the problem and solution. A concept that lifts "finally no sock marks!" as a hook reads as RESOLVED — that's a Solution Aware ad. Downrate concepts that paste review language verbatim. Concepts must TRANSFORM review data into pre-recognition framing (scene-first, mundane moments).
+
+**RULE 7 — BANNED WORDS IN HOOK / BEAT 1:** "neuropathy", "diabetic neuropathy", "edema", "varicose veins", "compression sock", "Viasox", "our socks", "these socks", "buy", "offer", "discount", "shop now", "B2G3", "sale", "solution", "treatment", "cure", "symptoms", "condition", "suffer from", "if you have". Any of these in the opening = **rate 1/5**.
+
+**PREFERRED UNAWARE FRAMEWORKS:** "The Gradualization (Schwartz)" framework maps natively to the 5-beat Unaware structure. Strongly prefer it. Also strong: "Contrast Framework" (if it builds to the reveal) and "Discovery Narrative" style story openings.
+
+**PREFERRED UNAWARE HOOK STYLES (from Manifesto 4.1 April 2026 update):**
+- Scene Identification ("the line across your calf after taking off your socks")
+- Mundane Reframe ("you thought that sock-mark was just tight elastic. it isn't.")
+- False Cause Flip ("you've been blaming your long days for this. look again.")
+- "Doctor Said Watch Your Feet" (medical authority triggers curiosity, not pitch)
+- Micro-Behavior (tiny unconscious action the viewer recognizes as their own)
+- Hidden Math ("your sock elastic is pressing on ~4 lbs of tissue per square inch")
+
+Concepts using these hook styles = rate HIGHER. Concepts using "Pain Agitation," "Bold Claim," or "Direct Address" in Unaware context = rate LOWER (those are Problem Aware / Solution Aware hooks).` : ''}
 
 **FORMAT APPROPRIATENESS:**
 This brief is **${duration}** — target length ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words). Concept evaluations must enforce the length budget and the VO-by-length rule.
@@ -83,8 +122,10 @@ ${anglePatternTable ? `\n**📊 DERIVED PERFORMANCE TABLE — HARD DATA FROM PAS
 
 ${inspirationContext ? `\n**INSPIRATION BANK PROVEN-PATTERN BIAS:**\nThe inspiration block below contains real reference ads/briefs that have already been judged worth learning from for this exact ad type, angle, and product context. Use them as a proven-pattern lens when rating concepts:\n- Concepts whose hook style, structure, narrative arc, or emotional entry CLOSELY mirror the patterns in these references should score higher (these are the patterns we know work).\n- Concepts that ignore the proven patterns or contradict them should score lower, UNLESS the concept is doing something genuinely fresh that the strategy brief or angle warrants.\n- If a starred reference exists, treat its patterns as especially load-bearing.\n- If a PINNED reference is included, its patterns OVERRIDE the others — the pin is the locked north star for this task.\nDo NOT name the references in your reasoning. Speak about the *patterns*, not the *examples*.\n${inspirationContext}\n` : ''}`;
 
-  const user = `Evaluate the following concepts generated for task **${taskName}** (${product} / ${angle} / ${medium} / ${duration}).
-
+  const user = `Evaluate the following concepts generated for task **${taskName}** (${product} / ${angle} / ${medium} / ${duration} / **Awareness: ${awarenessLevel}**).
+${isUnaware ? `
+**REMINDER: THIS IS AN UNAWARE BRIEF.** The viewer does NOT know they have a problem worth solving. Apply Schwartz's Three Elimination Rules as hard rating caps. Any concept that violates Rule 1/2/3 = 1/5. Any concept that skips the 5-beat structure = 2/5 max. Reviews are post-education — do NOT reward concepts that lift customer-quote language into the hook.
+` : ''}
 <concepts>
 ${conceptsRaw}
 </concepts>
@@ -95,16 +136,16 @@ For EACH concept (typically 3-5), provide your evaluation in this exact format:
 <concept index="1">
 <title>[Short descriptive title, 3-6 words]</title>
 <summary>[2-3 sentence summary of the concept's approach, hook, and emotional territory]</summary>
-<framework>[Best script framework for this concept, e.g., "PAS (Problem-Agitate-Solution)"]</framework>
+<framework>[Best script framework for this concept${isUnaware ? ' — strongly prefer "The Gradualization (Schwartz)" for Unaware' : ', e.g., "PAS (Problem-Agitate-Solution)"'}]</framework>
 <rating>[1-5 integer]</rating>
-<reasoning>[2-3 sentences: why this rating? What makes it strong/weak for this specific task? How does it align with the strategy brief?]</reasoning>
+<reasoning>[2-3 sentences: why this rating? What makes it strong/weak for this specific task?${isUnaware ? ' For Unaware briefs, explicitly state whether the concept passes Schwartz\'s Three Elimination Rules and whether it maps cleanly to the 5-beat structure.' : ' How does it align with the strategy brief?'}]</reasoning>
 </concept>
 <concept index="2">
 ...
 </concept>
 </evaluation>
 
-Be honest and differentiated in your ratings. Not every concept is a 4. Identify the clear winner(s) and explain why.`;
+Be honest and differentiated in your ratings. Not every concept is a 4. Identify the clear winner(s) and explain why.${isUnaware ? ' For Unaware briefs, err on the side of HARSHER ratings — if the concept smells even slightly like a Problem Aware pitch, rate it lower.' : ''}`;
 
   return { system, user };
 }

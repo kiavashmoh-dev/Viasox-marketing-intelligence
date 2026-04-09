@@ -367,6 +367,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         pinned?.framework ?? null,
         pinned?.hookStyle ?? null,
         anglePatternTable,
+        ts.task.scriptParamsBase.awarenessLevel,
       );
 
       const evalResponse = await sendMessage(

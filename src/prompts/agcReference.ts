@@ -117,7 +117,8 @@ Examples of Verbal differentiation:
 | Visual C + Verbal 1 | Visual C + Verbal 2 | Visual C + Verbal 3 |
 
 ### HOOK RULES
-- Every hook must match the awareness level. Unaware hooks CANNOT mention the product, the problem name, or the product category.
+- Every hook must match the awareness level. **Unaware hooks obey Schwartz's Three Elimination Rules: NO PRICE, NO PRODUCT NAME, NO DIRECT PROBLEM OR SOLUTION STATEMENT.** No mention of "Viasox," "socks," "compression," "neuropathy," "swelling," "edema," "varicose veins," offers, or money. The product category itself does not appear until Beat 4.
+- Unaware hooks must use one of the 6 Approved Unaware Hook Styles: Scene Identification, Mundane Reframe, False Cause Flip, Doctor Said Watch Your Feet, Micro-Behavior, or Hidden Math.
 - Every hook must feel natural in its visual context. A ground-level sock shot with a confession about morning routines feels wrong — the visual and verbal must belong together.
 - Hooks should use different Building Block types across the 3 Verbals (e.g., Problem + Curiosity + Benefits, not Problem + Problem + Problem).
 - Each hook row gets ALL columns filled: Building Block, Shot Type, Shot Angle, Talent Notes, Shot Notes, Shot Visual, Lines, Editing Notes, Caption.`;
@@ -162,11 +163,27 @@ Choose ONE body format and NEVER mix within the body section:
 
 ### 4. AWARENESS-LEVEL BODY STRUCTURE
 
-**Unaware (TOF):**
-- Product does NOT appear in the first 50% of the body
-- No product name, no "socks," no "compression," no problem label until midpoint
-- Body arc: Life experience → Pattern recognition → Education → Solution hint → Product reveal → Benefit → Soft CTA
-- The viewer should not realize this is an ad until the second half
+**Unaware (TOF) — SCHWARTZ'S 5-BEAT STRUCTURE (April 2026 Manifesto Update):**
+Obey Schwartz's Three Elimination Rules as HARD BANS on the opening:
+- **RULE 1: NO PRICE** in Beats 1–4. Offer appears only in the final CTA.
+- **RULE 2: NO PRODUCT NAME** in Beats 1–2. No "Viasox", no "our socks", no "compression socks" visible or spoken until Beat 5.
+- **RULE 3: NO DIRECT PROBLEM OR SOLUTION STATEMENT** in the opening. No "Do you suffer from neuropathy?" No "If you have swollen ankles...". No medical vocabulary in Beat 1.
+
+Map the Unaware body to this **5-beat structure**:
+1. **Beat 1 — Identification** — A specific sensory moment the Unaware viewer recognizes as "me" (the line across the calf when socks come off, the 3pm ankle ache, morning numbness). SENSORY, not diagnostic. NO condition name.
+2. **Beat 2 — Reframe** — Reveal the normalized thing isn't normal, or isn't caused by what they think. The "wait, what?" beat. Overturn a belief.
+3. **Beat 3 — Mechanism** — The invisible physiological cause (circulation, elastic compression pressure, nerve compression). Brief, credible, curiosity-building — NOT a lecture.
+4. **Beat 4 — Category Reveal** — "There's a type of sock built to prevent this" — the CATEGORY appears, not the brand yet. Bridges from education to product.
+5. **Beat 5 — Product Reveal + Soft CTA** — Viasox name + product visual appears ONLY HERE, at the end. Soft CTA ("learn more", "see how", "discover why") — no hard sell, no urgency at Unaware.
+
+**The 3 Unaware sub-personas** every Unaware AGC brief must target one of:
+- **The Normalizer** ("my ankles have always been like that")
+- **The Diagnosed Non-Searcher** (has diabetes/pregnancy but doesn't connect it to sock choice)
+- **The Incidental Sufferer** (has symptoms but blames wrong cause — age, weather, long days)
+
+**Remember: reviews are POST-education.** Review quotes are written by customers who already understand the problem AND the solution. Do NOT paste review language verbatim into Beat 1 — a hook like "finally no sock marks!" reads as resolved, which is Problem Aware / Solution Aware. TRANSFORM the review insight into a pre-recognition scene.
+
+**The viewer should not realize this is an ad** until Beat 4 at the earliest.
 
 **Problem Aware:**
 - Lead with pain. 60-70% of body dedicated to naming and intensifying the problem BEFORE revealing the solution

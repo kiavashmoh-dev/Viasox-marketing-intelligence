@@ -20,74 +20,173 @@ import type { AwarenessLevel } from '../engine/types';
 const CONCEPT_GUIDES: Record<AwarenessLevel, string> = {
   'Unaware': `## AWARENESS LEVEL: UNAWARE — CONCEPT & ANGLE RULES
 
-**WHO THEY ARE:**
-These people do NOT know they have a problem worth solving. They may have sock marks, swelling, or discomfort — but they've normalized it. "That's just what happens." They are NOT searching for solutions. They are NOT thinking about socks. Your ad must reach into their world and create a moment of recognition WITHOUT ever feeling like an ad.
+**⚠️ STRATEGIC CONTEXT (April 2026 Manifesto Update):**
+This is the DEFAULT awareness level for virtually every Viasox TOF ad. The 89,042 reviews we've analyzed are post-education — by the time customers write them, they're Most Aware. That rich review language describes what customers say AFTER they already know they need compression socks. It does NOT describe how unaware prospects think. **DO NOT pull Unaware hooks verbatim from review data.** Reviews guide the reframe and mechanism sections (beats 2-5), not the opening identification (beat 1). What the Unaware viewer hears about their experience is fundamentally different from what a review-writer remembers about it.
 
-**SCHWARTZ'S RULE FOR UNAWARE:**
-"Your headline — your first 50 words — has the most difficult job of all. It must literally CREATE awareness where none existed. It cannot mention the product. It cannot mention the problem. It MUST connect with an existing desire, identification, or belief that is already in their mind — and redirect it."
+**WHO THEY ARE — THREE SUB-PERSONAS:**
 
-**THE CREATIVE MANDATE — WHAT MAKES UNAWARE CONCEPTS DIFFERENT:**
+Every Unaware ad must resonate with at least ONE of these three sub-personas. Pick the one your concept targets and write to them specifically. Do not try to serve all three in one ad.
 
-1. **NEVER lead with the product, the problem, or the solution.** Not in the hook, not in the first 30% of the ad. The viewer doesn't know they should care about socks, marks, swelling, or compression. If you open with any of these, you've already lost them — they'll scroll past because it doesn't feel relevant to their life.
+**1. The Normalizer**
+They have real discomfort — swelling, achy legs, sock marks, fatigue — and they've attributed it to something other than socks:
+- "My legs just do that now."
+- "I'm on my feet all day, what do you expect?"
+- "Everyone my age has this."
+- "It's just the weather / my shoes / getting older."
+They are NOT looking for compression socks. They don't think socks are the problem. The ad must first break the attribution — then show the real cause.
 
-2. **Lead with IDENTIFICATION or STORY.** The concept must open in the viewer's world — their morning routine, their work day, their relationship, their identity. The viewer must see THEMSELVES before they see a product.
-   - Hopkins: "The best advertising doesn't look like advertising. It looks like news, a story, or useful information."
-   - Neumeier: "We notice only what's DIFFERENT from our expectation." The concept must break their scroll with something that feels like content, not commerce.
+**2. The Diagnosed Non-Searcher**
+They have a medical condition (diabetes, neuropathy, varicose veins, lymphedema) and may even own compression socks from a pharmacy or doctor — but they've never connected their daily frustrations to a BETTER category of sock. They think their discomfort is part of the condition, not something fixable. The ad must reframe the daily friction as solvable and introduce Viasox as a category upgrade — not as "compression socks" (they've already written that category off).
 
-3. **The Problem Reveal must feel like a DISCOVERY, not a pitch.** The concept should guide the viewer from their daily reality to a moment of "wait... that ISN'T normal?" This is the awareness shift — the instant where a normalized discomfort becomes a recognized problem. This moment is the entire purpose of an Unaware ad.
+**3. The Incidental Sufferer**
+Their job or lifestyle produces the symptoms and they've written it off as part of the territory:
+- Nurses, teachers, warehouse workers, hairstylists, servers, factory workers, retail staff
+- "It's just part of the job."
+- "Everyone at my work deals with this."
+The ad must reframe the job pain as NOT inevitable — and position a specific, non-clinical solution that fits their work identity.
 
-4. **Product appears LAST — if at all.** In a 30s ad, the product should not appear until after 0:20. In a 60s ad, not until after 0:40. Some Unaware concepts may end with a curiosity-driving CTA ("see what [X] people discovered") without even naming the product — driving to a landing page where the education continues.
+---
 
-5. **Concept structure must be: Identification → Disruption → Discovery → Curiosity.**
-   - Identification: "This is MY world" (the viewer recognizes themselves)
-   - Disruption: "Wait, that's not right" (a moment of cognitive dissonance)
-   - Discovery: "I never thought about it that way" (the awareness shift)
-   - Curiosity: "I need to know more" (the soft pull)
+**SCHWARTZ'S THREE ELIMINATION RULES FOR UNAWARE (Breakthrough Advertising, pp. 36-38) — ALL THREE MUST BE HONORED IN THE HOOK:**
 
-**VIASOX-SPECIFIC UNAWARE MESSAGING (from Manifesto):**
-- Lead with life moments, NOT product benefits: "The morning routine that takes longer than it used to" → the viewer recognizes themselves → then the subtle reframe: "But what if the struggle ISN'T your body? What if it's what you're putting ON your body?"
-- Identity-first concepts: Show a PERSON the viewer relates to living their life. The sock problem surfaces organically through the story, not through a sales pitch.
-- The "normalization disruption": Most unaware prospects have ACCEPTED their discomfort. The concept must BREAK that acceptance. "You've been blaming your legs. Have you tried blaming your socks?"
-- Social proof as curiosity, not evidence: "Why are 107,000+ people doing [X]?" — not as a product claim, but as a genuine question that creates a curiosity gap.
+Eugene Schwartz spells out three things your headline/hook to an Unaware audience CANNOT DO. We enforce all three as hard rules:
+
+**Rule 1 — NO PRICE:**
+"You cannot mention the price, because your prospect does not yet see the value of that product."
+The moment a price or offer appears, the ad dies. An Unaware viewer has no frame for what the thing is worth, so any price feels like an interruption — "why are they asking me for money?"
+
+**Rule 2 — NO PRODUCT NAME:**
+"You cannot mention the product, because your prospect does not yet know the product exists."
+The brand name (Viasox), category name (compression socks, diabetic socks, non-binding socks), and specific mechanism (graduated compression, wide-mouth tops) are all forbidden in the opening. Mentioning them forces the viewer into "this is an ad for X" mode — and they scroll.
+
+**Rule 3 — NO DIRECT PROBLEM OR SOLUTION STATEMENT:**
+"You cannot even mention the need or desire it satisfies, because your prospect is not yet aware of that need or desire."
+This is the rule most commonly broken by AI. "Tired of sock marks?" / "Dealing with swelling?" / "Your legs don't have to feel this way" — all three are DEAD on arrival with an Unaware audience. The viewer has not classified their experience as a problem yet, so any problem language rings hollow.
+
+**What you CAN do instead:** Enter through an existing state the viewer ALREADY recognizes — a scene, a time of day, a mundane moment, a micro-behavior, a confusing piece of data, a casual observation. The awareness must be CREATED, not referenced.
+
+---
+
+**THE THREE UNAWARE TECHNIQUES (use one per concept):**
+
+**Technique 1 — Scene Identification**
+Open with a specific, sensory-rich scene from the viewer's daily life that has NO product context. The scene IS the hook. The viewer recognizes themselves because the scene is THEIR scene.
+
+- Normalizer example: "It's 6:47 AM. You're sitting on the edge of the bed looking at your feet. Same as every morning. You've been doing this for two years and you don't even think about why anymore."
+- Incidental Sufferer example: "The last hour of your shift you stop standing with both feet on the ground. You shift weight. You lean on the counter. Nobody's watching — but your body's already made the decision."
+- Diagnosed Non-Searcher example: "You have three pairs of socks you like. Not because they're comfortable. Because they're the ones that leave the least marks."
+
+The scene should feel like a documentary or a short story opening — never like a sock ad. No sock is named. No symptom is labeled. The viewer SEES themselves and stays.
+
+**Technique 2 — The Mundane Reframe**
+Take something the viewer does every day without thinking and reveal that it's a coping behavior for a problem they haven't named. The reveal IS the awareness shift.
+
+- "The reason you take your shoes off the minute you get home isn't just because it feels good. Your feet have been trying to tell you something for the last four hours."
+- "You cross and uncross your ankles without noticing. It's a signal your nervous system is sending your body. You're responding to it — you just never thought about why."
+- "Every morning you roll your socks instead of pulling them. You've been doing it for a decade. When did you start? And why?"
+
+The power of this technique: you bypass the viewer's defensive "this doesn't apply to me" reflex because you're describing something they're physically doing RIGHT NOW.
+
+**Technique 3 — The False Cause Flip**
+The viewer has already explained their symptom with a wrong cause. The hook names the wrong cause to earn recognition, then flips it to the real cause.
+
+- "You think it's your shoes. You've bought three pairs in the last year trying to fix it. It's not your shoes."
+- "You think you just have bad circulation. Your mom had it. Your aunt had it. You assumed it was in your genes. Turns out the thing you put on your legs every morning has more to do with it than your DNA."
+- "You blame your age. You blame the weather. You blame how long you're on your feet. You've never blamed the thing touching your skin for 16 hours a day."
+
+This technique is devastating for Normalizers and Incidental Sufferers specifically, because it speaks directly to attributions they've already made.
+
+---
+
+**THE 5-BEAT UNAWARE BODY STRUCTURE (Required skeleton for every Unaware script/concept):**
+
+Every Unaware concept must be buildable into this 5-beat structure in the script:
+
+1. **IDENTIFICATION (the hook + first ~25% of runtime)** — One of the three techniques above. Zero product, zero category, zero symptom label. Pure scene, mundane reframe, or false-cause flip. The viewer sees themselves.
+
+2. **REFRAME (~25-45% of runtime)** — The "wait..." moment. The normalized experience is named as NOT normal. "That isn't just getting older. That isn't just your shoes." This is Schwartz's gradualization — the gentle shift from "I don't have a problem" to "wait... do I?"
+
+3. **MECHANISM (~45-65% of runtime)** — A SHORT, plain-English explanation of WHY the thing they're doing/feeling is happening. Not a medical lecture. A 1-2 sentence "here's what's actually going on." (Example: "What you're putting on your legs every morning is cutting off circulation slightly. Not enough to alarm you. Just enough to make every hour of your day a little harder.")
+
+4. **CATEGORY REVEAL (~65-85% of runtime)** — Only NOW do we reveal that there is a category of sock designed differently. Not Viasox yet. The category. "Socks that don't do that exist. They've been around for years. Most people don't know they're out there."
+
+5. **PRODUCT REVEAL (~85-100% of runtime)** — Only NOW do we name Viasox. And only with a soft, curiosity-driving CTA. Never a direct "buy now." Never a price. Never an offer. The CTA is about DISCOVERY: "See what 107K people found." / "Learn more." / "See if it's for you."
+
+**This 5-beat structure is NON-NEGOTIABLE.** If a concept cannot be mapped to these 5 beats, it is not a proper Unaware concept — it's mislabeled and should be rejected.
+
+---
+
+**VIASOX-SPECIFIC UNAWARE MESSAGING FRAMEWORK BY SUB-PERSONA:**
+
+| Sub-Persona | Opening Scene Examples | Reframe Examples | Mechanism Hook |
+|---|---|---|---|
+| **The Normalizer** | Morning sock routine, evening foot-rub, couch leg-prop | "That isn't your age. That's a coping behavior." | "Your legs have been sending you the same signal all day." |
+| **Diagnosed Non-Searcher** | Same pharmacy sock for years, drawer of 'failed' socks, doctor visit | "You've been told compression is compression. It isn't." | "There's a category of sock that doesn't exist in your pharmacy." |
+| **Incidental Sufferer** | Last hour of shift, parking lot walk to car, taking shoes off in car | "That isn't 'part of the job.' That's a fixable daily tax." | "Nurses who wear the right sock clock out feeling like they clocked in." |
+
+---
+
+**THE UNAWARE POWER WORDS (use these naturally):**
+"you," "your," "every night," "at 3pm," "on your feet," "started," "stopped," "notice," "noticed," "just," "always," "never," "something," "that feeling when," "you know that moment when"
+
+**THE UNAWARE AVOID WORDS (banned in the first half of any Unaware concept — these are the words that kill the ad instantly):**
+"compression," "diabetic," "neuropathy," "circulation," "swelling," "edema," "varicose," "Viasox," "sock marks," "sock line," "relief," "solution," "finally," "sale," "offer," "discount," "buy," "shop," "cart," "only \$X," "limited time"
+
+---
 
 **CONCEPT FORMAT REQUIREMENTS (Unaware):**
-- Every concept must describe the first 50% of the ad WITHOUT mentioning socks, compression, marks, swelling, Viasox, or any product feature.
-- The "awareness shift" moment must be clearly identified in each concept.
+- Every concept must name its SUB-PERSONA (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer) in the "Persona" field.
+- Every concept must name which of the three techniques it uses (Scene Identification / Mundane Reframe / False Cause Flip).
+- Every concept must describe the IDENTIFICATION beat WITHOUT mentioning socks, compression, marks, swelling, Viasox, or any product feature.
+- Every concept must identify the "awareness shift" moment clearly — the exact beat where the normalized experience is reframed.
+- Every concept must be mappable to the 5-beat structure (Identification → Reframe → Mechanism → Category Reveal → Product Reveal).
 - The CTA must be SOFT: "learn more," "see why," "discover" — never "buy now" or "shop."
-- Each concept must specify exactly WHEN the product/problem first appears and WHY that timing creates maximum curiosity.
+- No price, no offer, no Viasox brand name, and no symptom label in the first 50% of any concept.
+
+---
 
 **ANGLE TYPE ADJUSTMENTS FOR UNAWARE:**
-- Problem-Based → must lead with LIFE IMPACT, not the problem itself. Don't say "sock marks." Say "those red lines your daughter noticed on your legs last Sunday."
-- Emotion-Based → the emotion must be one they ALREADY feel (fatigue, frustration, resignation) — not one about a problem they don't know they have.
-- Identity-Based → STRONGEST angle type for Unaware. Lead entirely with WHO they are. The problem surfaces through their identity story.
-- Education-Based → frame as "things you didn't know" content, not product education. Teach something genuinely useful that creates the awareness shift.
+- Problem-Based → must lead with LIFE IMPACT via Scene Identification or False Cause Flip — never name the symptom. Don't say "sock marks." Say "those red lines your daughter noticed on your legs last Sunday" — then DON'T call them sock marks until beat 3.
+- Emotion-Based → the emotion must be one they ALREADY feel (fatigue, frustration, resignation) — not one about a problem they don't know they have. Pair with Scene Identification.
+- Identity-Based → STRONGEST angle type for Unaware. Lead entirely with WHO they are. The problem surfaces through their identity story. Perfect for Incidental Sufferer.
+- Education-Based → frame as "things you didn't know" content, not product education. Teach something genuinely useful that creates the awareness shift. Pair with False Cause Flip.
 - Comparison-Based → compare LIFE states ("your mornings now vs. 5 years ago"), not products.
-- Testimonial-Based → the testimonial must start with LIFE context, not product experience. "I'm a nurse, and I used to think..." not "I bought these socks and..."
-- Fear-Based → VERY gentle. Not product fear. Life fear: "What does it mean when your legs look different at the end of the day?"
+- Testimonial-Based → the testimonial must start with LIFE context, not product experience. "I'm a nurse, and for 12 years I thought my feet just hurt because of the job..." Note: testimonial opens with the WRONG attribution, then flips.
+- Fear-Based → VERY gentle. Not product fear. Life fear: "What does it mean when your legs look different at the end of the day?" Use sparingly.
 - Aspiration-Based → show the AFTER state without explaining HOW. Pure visualization of the life they want — then the bridge to discovery.
 - Seasonal/Situational → tie to a LIFE moment (holiday travel, new job, retirement) where the latent problem becomes activated.
-- Solution-Based → DO NOT USE for Unaware. They don't know they have a problem yet. A solution concept will not resonate.
+- **Solution-Based → DO NOT USE for Unaware.** They don't know they have a problem yet. A solution concept will not resonate. Rejected.
 
-**SCHWARTZ HEADLINE RULES FOR UNAWARE:**
-- Cannot mention the product name
-- Cannot mention the problem directly
-- Must connect to an existing mass desire (comfort, independence, confidence, health)
-- Must create curiosity or identification strong enough to earn 3+ seconds of attention
-- The headline/hook IS the awareness creation mechanism — it must shift them from "I don't have a problem" to "Wait... do I?"
+---
+
+**SCHWARTZ HEADLINE RULES FOR UNAWARE (all three rules enforced):**
+- Cannot mention the PRODUCT name, category, or mechanism
+- Cannot mention the PROBLEM, condition, symptom, or pain
+- Cannot mention any PRICE, offer, or CTA-to-purchase
+- MUST connect to an existing scene, behavior, attribution, or identity the viewer already holds
+- The hook IS the awareness creation mechanism — it must shift them from "I don't have a problem" to "wait... do I?"
+
+---
 
 **⚠️ COMMON MISTAKES WITH UNAWARE — DO NOT DO THESE:**
 
-1. **Being so vague the ad is about nothing.** Unaware does NOT mean "never mention anything related to the condition." It means the HOOK and first half don't lead with the product or name the condition as a diagnosis. But the ad MUST still be ABOUT something specific and recognizable. A viewer should understand the ad's WORLD within 3 seconds — she should see a woman's morning, see her legs, see the routine. She just shouldn't hear "neuropathy" or "compression socks" yet. SHOW the condition's reality without NAMING it.
+1. **Pulling hooks verbatim from review data.** Reviews are POST-education — customers writing them already know compression socks helped them. Review language like "no more sock marks!" or "my swelling went away!" is Most-Aware vocabulary. An Unaware viewer doesn't recognize themselves in that language. Use reviews to understand the REALITY of the experience, then write a NEW hook that describes the experience BEFORE the customer had the vocabulary for it.
+
+2. **Being so vague the ad is about nothing.** Unaware does NOT mean "never mention anything related to the condition." It means the HOOK and first half don't lead with the product or name the condition as a diagnosis. The ad MUST still be ABOUT something specific and recognizable. A viewer should understand the ad's WORLD within 3 seconds — she should see a woman's morning, see her legs, see the routine. She just shouldn't hear "neuropathy" or "compression socks" yet. SHOW the condition's reality without NAMING it.
    - WRONG: A vague ad about "comfort" and "feeling good" that could be about anything — mattresses, shoes, lotion.
-   - RIGHT: A woman sitting on the edge of her bed, looking at the red marks on her calves. She doesn't say "sock marks" — but the viewer SEES the problem.
+   - RIGHT: A woman sitting on the edge of her bed, looking at the red marks on her calves. She doesn't say "sock marks" — but the viewer SEES it.
 
-2. **Making the ad so abstract the viewer doesn't know what it's for.** By the END of an Unaware ad, the viewer MUST understand this is about socks/leg comfort. The first half builds identification; the second half reveals the category and product. If someone watches the full ad and still doesn't know what's being sold, the ad fails.
+3. **Making the ad so abstract the viewer doesn't know what it's for by the end.** By the END of an Unaware ad, the viewer MUST understand this is about socks/leg comfort. The first half builds identification; beats 3-5 reveal the category and product. If someone watches the full ad and still doesn't know what's being sold, the ad fails.
 
-3. **Confusing "Unaware" with "content that has no commercial intent."** Unaware ads ARE still ads. They have a strategic structure: Identification → Disruption → Discovery → Curiosity. Every second serves a purpose. They are just DISGUISED as content in the first half.
+4. **Confusing "Unaware" with "content that has no commercial intent."** Unaware ads ARE still ads. They have a strategic structure: 5-beat Identification → Reframe → Mechanism → Category Reveal → Product Reveal. Every second serves a purpose. They are just DISGUISED as content in the first half.
 
-4. **Interpreting "don't mention the problem" as "avoid all specificity."** You CAN and SHOULD show specific sensory moments (looking at legs, rubbing ankles, struggling with footwear, wincing). You just don't LABEL them with medical or product terms in the first half. Specificity creates recognition. Vagueness creates nothing.
+5. **Interpreting "don't mention the problem" as "avoid all specificity."** You CAN and SHOULD show specific sensory moments (looking at legs, rubbing ankles, struggling with footwear, wincing). You just don't LABEL them with medical or product terms in the first half. Specificity creates recognition. Vagueness creates nothing.
 
-5. **Making the product reveal feel like a random jump.** The product must feel EARNED — like a natural discovery that emerges from the story. If the first half is about a woman's morning and the second half suddenly pivots to "Buy Viasox!" with no bridge, the ad is structurally broken. The bridge is the awareness shift moment: "Wait — what if the problem isn't my legs? What if it's what I'm putting ON my legs?"`,
+6. **Making the product reveal feel like a random jump.** The product must feel EARNED through the Reframe → Mechanism → Category Reveal bridge. If the first half is about a woman's morning and beat 5 suddenly pivots to "Buy Viasox!" with no bridge, the ad is structurally broken.
+
+7. **Opening with any variant of "Tired of X?" / "Struggling with Y?" / "If you have Z..."** These are problem-aware openers dressed up as Unaware. They all presume the viewer has classified their experience as a problem. Banned.
+
+8. **Using numbers / research stats / "Did you know..." as the opener.** These feel like advertorials and fail the identification test. A Normalizer scrolls past "68% of adults over 50..." instantly. Start with THEM, not with a statistic.`,
 
   'Problem Aware': `## AWARENESS LEVEL: PROBLEM AWARE — CONCEPT & ANGLE RULES
 
@@ -363,35 +462,112 @@ Most Aware is the CONVERSION stage. Every other stage builds toward this moment.
 const HOOK_GUIDES: Record<AwarenessLevel, string> = {
   'Unaware': `## AWARENESS LEVEL: UNAWARE — HOOK RULES
 
+**⚠️ FOUNDATIONAL CONSTRAINT (April 2026 Manifesto Update):**
+Unaware hooks are the hardest hooks we write. They must honor Schwartz's Three Elimination Rules (no price, no product name, no direct problem/solution statement) AND create enough magnetism to stop a viewer who does not know they have a problem. **Do not pull these hooks from review data** — reviews are post-education and describe the experience with vocabulary the Unaware viewer has not yet developed.
+
 **THE FUNDAMENTAL HOOK CHALLENGE FOR UNAWARE:**
-You must stop the scroll of someone who DOES NOT KNOW THEY HAVE A PROBLEM. You cannot use problem language, product language, or solution language. You must enter through a DIFFERENT door — curiosity, identity, story, or emotion they already feel.
+You must stop the scroll of someone who DOES NOT KNOW THEY HAVE A PROBLEM. You cannot use problem language, product language, solution language, or any price/offer. You must enter through a DIFFERENT door — a scene, a behavior, a wrong attribution, a piece of identity, or a mundane action the viewer is physically doing right now.
 
 **WHAT UNAWARE HOOKS MUST DO:**
 1. Create curiosity or identification in the first 1-2 seconds WITHOUT referencing socks, compression, marks, swelling, or any product benefit
-2. Select the right audience through identity or situation, not through problem naming
-3. Feel like content (a story, an interesting fact, a relatable moment) — NOT like an ad
+2. Select the right audience through identity, scene, or situation — never through problem naming
+3. Feel like content (a story, an observation, a mundane moment) — NOT like an ad
 4. Create an information gap that can ONLY be closed by watching more
+5. Target ONE of the three Unaware sub-personas: Normalizer, Diagnosed Non-Searcher, or Incidental Sufferer
 
-**HOOK FRAMEWORK FOR UNAWARE (Schwartz + Hopkins):**
-- Schwartz: "For Unaware audiences, the headline must be so compelling on its own that the prospect is drawn in purely by curiosity or identification — before they know what you're selling."
-- Hopkins: "Select your audience, but do it through their WORLD, not your product."
-- Neumeier: "We notice what's DIFFERENT. Your hook must break the pattern of every other ad."
-- Bly: "The sole purpose of the first line is to get them to read the second line. For Unaware, that means pure magnetism."
+---
 
-**UNAWARE HOOK PATTERNS:**
-- **Identity opener:** "You know that thing nurses do at 6 PM that nobody talks about?" (identity + curiosity)
-- **Disrupted normality:** "I used to think [normalized behavior] was just part of getting older." (reframe)
-- **Observation hook:** "I noticed something weird about my legs last Tuesday." (curiosity + story)
-- **Social curiosity:** "Why are 107,000 people obsessed with [category hint, not product]?" (mass behavior curiosity)
-- **Counter-intuitive:** "The thing you put on first every morning might be the thing hurting you most." (disruption without naming)
+**THE SIX APPROVED UNAWARE HOOK STYLES (pick one per hook):**
 
-**FORBIDDEN IN UNAWARE HOOKS:**
-- Product name (Viasox)
-- Category words (compression, diabetic, non-binding)
-- Problem words (sock marks, swelling, edema, neuropathy)
-- Solution words (support, graduated compression, wide-mouth)
-- Price, offers, or CTAs
-- Any language that assumes the viewer knows they have a problem`,
+These are the only Unaware hook styles that survive Schwartz's Three Elimination Rules. Every Unaware hook must be one of these six patterns.
+
+**1. Scene Identification Hook**
+Open with a specific, sensory-rich scene from the viewer's day. The scene IS the hook. No product, no symptom label, no diagnosis.
+- "It's 6:47 AM. You're sitting on the edge of the bed. Same as every morning."
+- "The last hour of your shift you stopped standing with both feet on the ground."
+- "She's been rearranging her morning around one thing for two years and she doesn't even know she's doing it anymore."
+- Best for: Normalizer, Incidental Sufferer
+
+**2. Mundane Reframe Hook**
+Name a small daily behavior the viewer does without thinking — then imply it's a coping behavior for something they haven't named.
+- "The reason you take your shoes off the second you get home isn't just because it feels good."
+- "You cross and uncross your ankles without noticing. Your body's been trying to tell you something."
+- "You roll your socks instead of pulling them on. When did that start?"
+- Best for: Normalizer, Incidental Sufferer
+
+**3. False Cause Flip Hook**
+Name the attribution the viewer has ALREADY MADE (wrong cause) — then flip it.
+- "You think it's your shoes. You've bought three pairs in the last year trying to fix it. It's not your shoes."
+- "You blame your age. You blame the weather. You've never blamed the thing touching your skin for 16 hours a day."
+- "You assumed it was your circulation. It's what's on top of your circulation."
+- Best for: Normalizer, Diagnosed Non-Searcher
+
+**4. "Doctor Said Watch Your Feet" Hook**
+A medical-adjacent opening that reframes daily frustrations as things their doctor would notice — without naming a condition.
+- "Your doctor told you to watch your feet. She didn't tell you what for."
+- "At your last check-up, she looked at your ankles longer than normal."
+- "There's a reason every doctor asks you to take off your socks."
+- Best for: Diagnosed Non-Searcher, Normalizer over 55
+
+**5. Micro-Behavior Hook**
+Call out a specific small action — the kind of thing only someone who has the issue actually does — and name it with precision.
+- "By 3pm you've already adjusted how you're sitting three times."
+- "You have a pair of shoes you only wear before noon."
+- "You don't wear ankle socks anymore. You haven't for years. You don't remember deciding to stop."
+- Best for: All three sub-personas
+
+**6. Hidden Math Hook**
+Introduce a number the viewer can check against their own life — without leading with a statistic or "did you know..."
+- "16 hours. That's how long most people wear the same thing against their skin every day. It isn't your shirt."
+- "You spend more time in these than in your bed. And you've never thought about them."
+- "Three minutes in the morning. Three minutes at night. 36 hours a year fighting with one piece of clothing."
+- Best for: Normalizer, Incidental Sufferer
+
+---
+
+**UNAWARE HOOK COPY FORMULAS:**
+
+**Formula A — The Identification Echo:**
+"[SPECIFIC TIME or PLACE]. [SPECIFIC BEHAVIOR viewer recognizes]. [EMOTIONAL TRUTH they haven't articulated]."
+- Example: "6 PM. You're in the car. You kick your shoes off before you've even pulled out of the parking lot."
+
+**Formula B — The Mundane Reframe:**
+"[BEHAVIOR you do without thinking] isn't [COMMON EXPLANATION they've given themselves]. It's [UNNAMED REAL REASON]."
+- Example: "Rolling your socks off at the end of the day isn't just habit. It's the only way they come off clean anymore."
+
+**Formula C — The False Cause Flip:**
+"You think it's [WRONG CAUSE they've settled on]. It's not [WRONG CAUSE]. It's [CATEGORY HINT — still no product name]."
+- Example: "You think it's your shoes. You've replaced them twice this year. It's not your shoes. It's what's underneath them."
+
+---
+
+**UNAWARE HOOK DOs:**
+- DO enter through a specific SCENE, BEHAVIOR, or ATTRIBUTION the viewer already holds
+- DO use the word "you" / "your" — direct address to pull the viewer in
+- DO use specific times ("6 AM," "3pm," "by lunchtime"), specific places ("parking lot," "edge of the bed"), specific micro-actions
+- DO target one sub-persona per hook (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer)
+- DO make the viewer feel recognized BEFORE they know what's being advertised
+- DO let the hook run 2-5 seconds on visual before the voiceover even starts — let them SEE themselves
+
+**UNAWARE HOOK DON'Ts (HARD BANS — any of these kills the ad):**
+- ❌ Product name (Viasox) — Rule 2
+- ❌ Category words (compression, diabetic, non-binding, graduated compression, wide-mouth) — Rule 2
+- ❌ Problem words (sock marks, sock lines, swelling, edema, neuropathy, varicose, circulation, plantar fasciitis) — Rule 3
+- ❌ Solution words (support, relief, solution, finally, fix, cure) — Rule 3
+- ❌ Any price, any offer, any percentage discount, "sale," "deal" — Rule 1
+- ❌ Any direct CTA ("Shop now," "Buy today," "Order yours") — Rule 1
+- ❌ "Tired of..." / "Struggling with..." / "If you have..." / "Dealing with..." — all assume the viewer has classified this as a problem
+- ❌ "Did you know..." / "Studies show..." / "68% of adults..." — statistical openers fail identification
+- ❌ Review language lifted verbatim (review language is post-education vocabulary)
+- ❌ Medical diagnosis words (neuropathy, edema, plantar fasciitis, varicose veins, diabetic)
+- ❌ Generic emotional openers ("Life is hard..." / "You deserve comfort...") — no scene, no specificity, no recognition
+- ❌ Brand-voice comedy openers ("Ever feel like your socks hate you?") — quippy but does not create identification
+
+**HOOK FRAMEWORK BACKING (Schwartz + Hopkins + Neumeier + Bly):**
+- Schwartz: "For Unaware audiences, the headline cannot mention price, product, or desire. It must create awareness where none existed — through identification, curiosity, or story alone."
+- Hopkins: "Select your audience through their WORLD, not your product."
+- Neumeier: "We notice what's DIFFERENT. Your hook must break the pattern of every ad they've scrolled past today."
+- Bly: "The sole purpose of the first line is to get them to read the second line. For Unaware, that means pure magnetism — no ask, no pitch, no problem."`,
 
   'Problem Aware': `## AWARENESS LEVEL: PROBLEM AWARE — HOOK RULES
 
@@ -551,47 +727,115 @@ These people need the DEAL, the NUDGE, or the REMINDER. The hook is the shortest
 const SCRIPT_GUIDES: Record<AwarenessLevel, string> = {
   'Unaware': `## AWARENESS LEVEL: UNAWARE — SCRIPT ARCHITECTURE
 
-**SCRIPT STRUCTURE RULES (Unaware):**
-The entire script architecture changes for Unaware. You are not writing a product ad. You are writing a piece of CONTENT that happens to lead to a product.
+**⚠️ FOUNDATIONAL RULES (April 2026 Manifesto Update):**
+Unaware is the DEFAULT awareness level for Viasox TOF ads. Every Unaware script must:
+1. Target one of three sub-personas: Normalizer, Diagnosed Non-Searcher, Incidental Sufferer
+2. Honor Schwartz's Three Elimination Rules in the first beat: NO price, NO product name, NO direct problem/solution statement
+3. Follow the 5-beat body structure: Identification → Reframe → Mechanism → Category Reveal → Product Reveal
+4. Use one of the approved techniques: Scene Identification, Mundane Reframe, or False Cause Flip
+5. Never lift hooks verbatim from review data (reviews are post-education vocabulary)
+
+---
+
+**THE 5-BEAT UNAWARE BODY STRUCTURE (MANDATORY for every Unaware script):**
+
+**BEAT 1 — IDENTIFICATION (first ~25% of runtime)**
+The opening. Uses one of: Scene Identification / Mundane Reframe / False Cause Flip. Zero product, zero category, zero symptom label. Pure scene, behavior, or attribution. The viewer sees themselves.
+- Honors Schwartz's Three Elimination Rules (no price, no product name, no problem/solution statement)
+- Targets ONE sub-persona and writes to them specifically
+- 2-5 seconds of visual before voiceover often maximizes identification
+
+**BEAT 2 — REFRAME (~25-45% of runtime)**
+The "wait..." moment. The normalized experience is named as NOT normal. The viewer's wrong attribution is gently overturned.
+- "That isn't just getting older."
+- "That isn't 'part of the job.'"
+- "You've been blaming the wrong thing."
+- Schwartz's gradualization in action — from "I don't have a problem" to "wait... do I?"
+
+**BEAT 3 — MECHANISM (~45-65% of runtime)**
+A SHORT, plain-English explanation of WHY the thing they're feeling is happening. Not a medical lecture. 1-3 sentences. This is where the ad earns the right to sell.
+- "What you're putting on your legs every morning is cutting off circulation slightly. Not enough to alarm you. Just enough to make every hour of your day a little harder."
+- "Most socks have an elastic band at the top that wasn't designed for legs that change shape through the day. Yours do."
+- Now the viewer can say the word "sock" — because you just EARNED it.
+
+**BEAT 4 — CATEGORY REVEAL (~65-85% of runtime)**
+Only NOW do we reveal that there is a different CATEGORY of sock. Not Viasox yet — the category.
+- "Socks built differently exist. They've been around for years. Most people don't know they're out there."
+- "There's a type of sock for people whose legs aren't the same size at 8 AM and 5 PM."
+- The viewer now understands the ad's world and is leaning in.
+
+**BEAT 5 — PRODUCT REVEAL + SOFT CTA (~85-100% of runtime)**
+Only NOW do we name Viasox. And only with a curiosity-driving, soft CTA.
+- No direct "Buy now." No price. No offer. No discount.
+- Approved CTAs: "See what 107K people found." / "Learn more." / "See if it's for you." / "Watch what happens next." / "Discover it."
+- The CTA moves them from Unaware to Problem-Aware — not from scroll to checkout.
+
+**⚠️ This 5-beat structure is NON-NEGOTIABLE.** If a script cannot be mapped to these 5 beats, it is not a proper Unaware script.
+
+---
 
 **TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
-- 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:10 identification/story → 0:10-0:13 awareness shift → 0:13-0:15 curiosity CTA
-- 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:30 deep identification/story → 0:30-0:40 awareness shift → 0:40-0:52 solution reveal → 0:52-0:58 soft CTA
-- 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:45 deep identification/story → 0:45-0:60 awareness shift → 0:60-0:78 solution reveal → 0:78-0:90 soft CTA
+- 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:04 Identification → 0:04-0:07 Reframe → 0:07-0:10 Mechanism → 0:10-0:12 Category Reveal → 0:12-0:15 Product Reveal + soft CTA
+- 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:15 deep Identification → 0:15-0:25 Reframe → 0:25-0:38 Mechanism → 0:38-0:48 Category Reveal → 0:48-0:58 Product Reveal + soft CTA
+- 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:22 deep Identification → 0:22-0:38 Reframe → 0:38-0:58 Mechanism → 0:58-0:75 Category Reveal → 0:75-0:90 Product Reveal + soft CTA
 
-**KEY RULES:**
-1. The product name does NOT appear in the first 50% of the script. Period.
-2. "Socks," "compression," "marks," "swelling" do NOT appear in the first 40%.
-3. The script reads like a STORY or CONTENT piece — never like an ad — until the final section.
-4. The hook must pull in through curiosity, identity, or emotion — never through the product.
-5. The "awareness shift" is the climax — the moment the viewer goes from "I don't have a problem" to "Wait..."
-6. CTA is SOFT: "Learn more," "See what [X] people found," "Discover," "Watch this."
-7. NO offers, NO prices, NO deals in Unaware scripts. The CTA is about CURIOSITY, not commerce.
+---
 
-**FRAMEWORK ADJUSTMENTS FOR UNAWARE:**
-- PAS → Problem phase must be framed as LIFE REALITY, not product-related pain. "This is what your morning looks like" not "your socks leave marks."
-- AIDA-R → Attention phase uses pure curiosity/identity. Interest is about the STORY, not the product.
-- Before-After-Bridge → Before is a LIFE state. After is a LIFE state. Bridge is the discovery, not the product.
-- Hook-Story-Offer → Story is 80% of the script. "Offer" is just "discover" / "learn more."
-- All frameworks shift heavily toward story/identification and away from product.
+**KEY RULES (enforced):**
+1. The product name "Viasox" does NOT appear until Beat 5 (Product Reveal). Period.
+2. "Socks," "compression," "sock marks," "swelling," "circulation," "diabetic," "neuropathy" do NOT appear in Beat 1 (Identification). They can enter gradually starting in Beat 3 (Mechanism).
+3. No price, no offer, no discount, no percentage off — ever. Unaware scripts are curiosity vehicles, not conversion vehicles.
+4. The script reads like a STORY or a piece of content — never like an ad — until the Category Reveal (Beat 4).
+5. The hook pulls in through Scene Identification, Mundane Reframe, or False Cause Flip — never through the product.
+6. CTA is SOFT: "Learn more," "See what [X] people found," "Discover." Never "Shop now," "Buy," "Get yours."
+7. Target ONE sub-persona per script (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer) and write to them specifically.
+8. Do NOT pull hook language verbatim from review data. Reviews describe the experience in post-education vocabulary that an Unaware viewer does not yet recognize.
+
+---
+
+**POWER WORDS (use naturally throughout):**
+"you," "your," "every night," "at 3pm," "on your feet," "started," "stopped," "notice," "noticed," "just," "always," "never," "something"
+
+**AVOID WORDS (banned in Beats 1 & 2, restricted in Beat 3):**
+"compression," "diabetic," "neuropathy," "circulation," "swelling," "edema," "varicose," "Viasox," "sock marks," "sock line," "relief," "solution," "finally," "sale," "offer," "discount," "buy," "shop," "cart"
+
+---
+
+**FRAMEWORK ADJUSTMENTS FOR UNAWARE (the framework is always SECONDARY to the 5-beat structure):**
+- **The Gradualization (Schwartz)** → NATIVE framework for Unaware. Maps 1:1 to the 5-beat structure.
+- **PAS** → Problem phase is framed as LIFE REALITY (Beat 1 Scene Identification). Agitation is the Reframe (Beat 2). Solution is split across Mechanism → Category → Product (Beats 3-5).
+- **AIDA-R** → Attention = Identification (Beat 1). Interest = Reframe (Beat 2). Desire = Mechanism + Category (Beats 3-4). Action = soft CTA (Beat 5).
+- **Before-After-Bridge** → Before = current life state (Identification). After = hint of life without the normalized struggle (Reframe). Bridge = the Category Reveal.
+- **Hook-Story-Offer** → Hook = Identification. Story = Reframe + Mechanism. "Offer" is just "discover" / "learn more" (Beat 5).
+- **The Discovery Narrative** → Ideal for Unaware. Narrator discovers the category themselves through the 5 beats.
+- ⚠️ **Problem-Promise-Proof-Push** → RISKY for Unaware unless the Problem is reframed as a Mundane Behavior or Scene. Direct problem language violates Schwartz Rule 3.
+
+---
 
 **SCHWARTZ'S THREE DIMENSIONS AT UNAWARE:**
-- DESIRE: Tap into desires they ALREADY have (comfort, independence, health, looking good) — don't create new ones
-- IDENTIFICATION: This is the primary dimension. Show THEIR world. THEIR morning. THEIR struggle. THEIR identity.
-- BELIEF: Not relevant yet. They don't need to believe in the product. They need to believe they have a problem worth solving.
+- **DESIRE:** Tap into desires they ALREADY have (comfort, independence, feeling normal, making it through the day) — don't create new ones.
+- **IDENTIFICATION:** This is the PRIMARY dimension for Unaware. Show THEIR scene. THEIR morning. THEIR micro-behavior. THEIR wrong attribution.
+- **BELIEF:** Not relevant yet. They don't need to believe in the product. They need to believe they HAVE a problem worth solving. The Reframe (Beat 2) starts building this — not the product.
+
+---
 
 **TONE:**
-- Conversational, warm, relatable
-- NEVER clinical, technical, or salesy
-- The viewer should think "this isn't an ad" for at least the first half
-- Mirror their actual self-talk and daily internal monologue
+- Conversational, observational, documentary-like
+- Warm but never saccharine. Intimate but never preachy.
+- NEVER clinical, technical, or salesy (even in Beat 3 Mechanism — keep it plain-English)
+- The viewer should think "this isn't an ad" through Beats 1-3
+- Mirror the viewer's actual self-talk and daily internal monologue
+- Avoid "you deserve" / "you're worth it" / "finally" / "imagine a world where" — all brand-ad clichés
+
+---
 
 **⚠️ CRITICAL: WHAT UNAWARE DOES NOT MEAN:**
-- Unaware does NOT mean the ad is vague, abstract, or about nothing. The viewer must still understand the AD'S WORLD within the first 3 seconds (she sees a woman, a morning, a routine, legs, a struggle). She just doesn't hear medical terms or product names yet.
-- Unaware does NOT mean avoiding all specificity. SHOW the condition visually (red marks on calves, swollen ankles, struggling to bend down). Just don't LABEL it as "neuropathy" or "edema" in the first half.
-- Unaware does NOT mean the product reveal comes out of nowhere. The reveal must feel EARNED — a natural bridge from the story. "What if the problem isn't your legs? What if it's what you're putting ON your legs?"
+- Unaware does NOT mean the ad is vague, abstract, or about nothing. The viewer must still understand the AD'S WORLD within 3 seconds (she sees a woman, a morning, a routine, legs, a struggle). She just doesn't hear medical terms or product names yet.
+- Unaware does NOT mean avoiding all specificity. SHOW the condition visually (red marks on calves, swollen ankles, struggling to bend down). Just don't LABEL it as "neuropathy" or "edema" in Beats 1-2.
+- Unaware does NOT mean the product reveal comes out of nowhere. The reveal must feel EARNED — the Reframe → Mechanism → Category Reveal bridge is what earns it. "What if the problem isn't your legs? What if it's what you're putting ON your legs?"
 - By the END of an Unaware ad, the viewer MUST know this is about socks/leg comfort. If they watched the whole thing and still don't know what's being sold, the ad fails.
-- The assigned angle (e.g., Neuropathy, Swelling) still drives the VISUAL WORLD and sensory details — the viewer should recognize the physical experience even if no one says the word.`,
+- The assigned angle (e.g., Neuropathy, Swelling) still drives the VISUAL WORLD and sensory details — the viewer should recognize the physical experience even if no one says the word. But the WORD "neuropathy" or "swelling" does not appear until Beat 3 at the earliest (and often not at all — the Mechanism can describe what's happening without the medical label).
+- Unaware does NOT mean pulling review language verbatim. Reviews are written by Most-Aware customers — their vocabulary describes the AFTER state, not the BEFORE state an Unaware viewer lives in.`,
 
   'Problem Aware': `## AWARENESS LEVEL: PROBLEM AWARE — SCRIPT ARCHITECTURE
 

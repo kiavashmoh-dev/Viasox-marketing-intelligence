@@ -350,7 +350,27 @@ function buildStandaloneModeUser(params: HooksParams): string {
   return `Generate ${params.count} hooks for ${params.product} at the **${params.awarenessLevel}** awareness level, optimized for ${params.format} format.
 
 **CRITICAL — AWARENESS LEVEL IS ${params.awarenessLevel.toUpperCase()}:**
-${params.awarenessLevel === 'Unaware' ? 'Hooks CANNOT mention the product, problem, category, or solution. Lead with pure curiosity, identity, or story. These hooks must feel like content, not ads. FORBIDDEN: Viasox, socks, compression, marks, swelling, support, pain — none of these words can appear.' : ''}${params.awarenessLevel === 'Problem Aware' ? 'Hooks must lead with SPECIFIC, VIVID pain the viewer recognizes instantly. Use exact customer language from reviews. The hook is the "squeeze" — intensify the problem to make the solution feel urgent.' : ''}${params.awarenessLevel === 'Solution Aware' ? 'Hooks must lead with DIFFERENTIATION — what makes this solution different from what they have tried. Brief problem acknowledgment only. Focus on the new mechanism, the new proof, the new approach.' : ''}${params.awarenessLevel === 'Product Aware' ? 'Hooks must assume the viewer KNOWS Viasox. Lead with new proof, deeper data, fresh testimonials, or product news. Brand name CAN lead. Go deep on one proof point.' : ''}${params.awarenessLevel === 'Most Aware' ? 'Hooks must be the SHORTEST and MOST DIRECT. Lead with offer, deal, urgency, or what is new. Brand name + offer is a valid hook. No education needed. Get to the point.' : ''}
+${params.awarenessLevel === 'Unaware' ? `**UNAWARE RULES (Schwartz's Three Elimination Rules, April 2026 Manifesto Update):**
+
+You are writing hooks for people who do NOT know they have a problem. Apply Schwartz's Three Elimination Rules as HARD BANS:
+
+1. **NO PRICE** — no offers, no "B2G3", no "5 pairs for $60", no money language.
+2. **NO PRODUCT NAME** — no "Viasox," no "our socks," no "these socks," no "compression socks." The product does not exist yet for this viewer.
+3. **NO DIRECT PROBLEM OR SOLUTION STATEMENT** — no "neuropathy," no "edema," no "swelling," no "varicose veins," no "Do you suffer from X?", no "If you have Y...", no "the solution to...", no promises of relief.
+
+**BANNED WORDS IN EVERY UNAWARE HOOK** — do not write any of: neuropathy, diabetic neuropathy, edema, varicose veins, compression sock, Viasox, our socks, these socks, buy, offer, discount, shop now, B2G3, sale, solution, treatment, cure, symptoms, condition, suffer from, if you have, marks, swelling, pain, support, relief.
+
+**THE 6 APPROVED UNAWARE HOOK STYLES (Manifesto 4.1 update):**
+- **Scene Identification** — describe a specific sensory moment the viewer recognizes as their own: "The line across your calf when you peel off your socks at night."
+- **Mundane Reframe** — overturn a normalized assumption: "You thought that was just tight elastic. It isn't."
+- **False Cause Flip** — redirect misattributed blame: "You've been blaming your long days for this. Look at your ankles again."
+- **Doctor Said Watch Your Feet** — medical-authority curiosity trigger (not a pitch): "My doctor told me to check my feet every day. She didn't tell me why."
+- **Micro-Behavior** — name a tiny unconscious action the viewer recognizes: "You press your thumb into your ankle and the dent stays for a second too long."
+- **Hidden Math** — surprising invisible quantity: "Your sock elastic presses on about 4 pounds of tissue per square inch. Every minute you're wearing them."
+
+**REMEMBER: REVIEWS ARE POST-EDUCATION.** Review quotes are written by customers who already understand the problem and solution. A hook that says "finally no sock marks!" reads as resolved — that's Problem Aware / Solution Aware language, NOT Unaware. Do NOT lift review language verbatim. Instead, TRANSFORM the review insight into a pre-recognition scene.
+
+**THE TARGET SUB-PERSONA:** Every hook should plausibly land for one of the 3 Unaware sub-personas — The Normalizer, The Diagnosed Non-Searcher, or The Incidental Sufferer. Name the sub-persona in your reasoning for each hook.` : ''}${params.awarenessLevel === 'Problem Aware' ? 'Hooks must lead with SPECIFIC, VIVID pain the viewer recognizes instantly. Use exact customer language from reviews. The hook is the "squeeze" — intensify the problem to make the solution feel urgent.' : ''}${params.awarenessLevel === 'Solution Aware' ? 'Hooks must lead with DIFFERENTIATION — what makes this solution different from what they have tried. Brief problem acknowledgment only. Focus on the new mechanism, the new proof, the new approach.' : ''}${params.awarenessLevel === 'Product Aware' ? 'Hooks must assume the viewer KNOWS Viasox. Lead with new proof, deeper data, fresh testimonials, or product news. Brand name CAN lead. Go deep on one proof point.' : ''}${params.awarenessLevel === 'Most Aware' ? 'Hooks must be the SHORTEST and MOST DIRECT. Lead with offer, deal, urgency, or what is new. Brand name + offer is a valid hook. No education needed. Get to the point.' : ''}
 
 Every hook must be fundamentally shaped by this awareness level. An Unaware hook and a Most Aware hook should look like they belong to completely different ad campaigns.
 
@@ -358,13 +378,17 @@ Hook styles to use: ${styleNames}
 
 For each hook provide:
 1. **The Hook** — The actual copy${params.format === 'Video' ? ' (include a brief visual direction in parentheses)' : ''}
-2. **Style** — Which hook style it uses
-3. **Awareness Compliance** — Confirm how this hook follows the ${params.awarenessLevel} awareness rules (what it includes/excludes)
+2. **Style** — Which hook style it uses${params.awarenessLevel === 'Unaware' ? ' (must be one of the 6 Approved Unaware Hook Styles: Scene Identification / Mundane Reframe / False Cause Flip / Doctor Said Watch Your Feet / Micro-Behavior / Hidden Math)' : ''}
+3. **Awareness Compliance** — Confirm how this hook follows the ${params.awarenessLevel} awareness rules (what it includes/excludes)${params.awarenessLevel === 'Unaware' ? '. Explicitly state: (a) does the hook obey Schwartz\'s Three Elimination Rules? (b) does it avoid all banned words?' : ''}${params.awarenessLevel === 'Unaware' ? `
+4. **Sub-Persona** — Which of the 3 Unaware sub-personas is this hook targeting? (The Normalizer / The Diagnosed Non-Searcher / The Incidental Sufferer)
+5. **Formula** — The specific marketing principle behind it (cite Hopkins, Schwartz, Bly, or Neumeier)
+6. **Data Anchor (Transformed, NOT Verbatim)** — The review data point this hook is built from AND how you transformed it from post-education review language into pre-recognition scene framing
+7. **Why It Works** — Brief explanation of the psychology and why it will land for an Unaware viewer` : `
 4. **Formula** — The specific marketing principle behind it (cite Hopkins, Schwartz, Bly, or Neumeier)
 5. **Data Anchor** — The specific data point, frequency, or customer quote that supports it
-6. **Why It Works** — Brief explanation of the psychology
+6. **Why It Works** — Brief explanation of the psychology`}
 
-CRITICAL: Do NOT reuse example hooks from the instructions. Apply the formulas to the ACTUAL review data and write entirely original hooks. Each hook must reference a specific data point, frequency, or customer phrase from THIS dataset.
+CRITICAL: Do NOT reuse example hooks from the instructions. Apply the formulas to the ACTUAL review data and write entirely original hooks. Each hook must reference a specific data point, frequency, or customer phrase from THIS dataset.${params.awarenessLevel === 'Unaware' ? ' BUT for Unaware hooks, do NOT paste review language verbatim — TRANSFORM it into a pre-recognition scene.' : ''}
 
 Distribute across the selected styles. Use different data points, emotional angles, and customer segments. Every hook must be grounded in actual review data.`;
 }

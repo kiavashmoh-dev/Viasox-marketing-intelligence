@@ -682,6 +682,7 @@ ${task.duration === '1-15 sec' ? `This is a SHORT FORM ad. Do NOT write a compre
         pinned?.framework ?? null,
         pinned?.hookStyle ?? null,
         anglePatternTable,
+        task.scriptParamsBase.awarenessLevel,
       );
 
       const evalResponse = await sendMessageWithRetry(
@@ -827,6 +828,7 @@ ${task.duration === '1-15 sec' ? 'This is a SHORT FORM ad (≤15s). Do NOT write
           pinned?.framework ?? null,
           pinned?.hookStyle ?? null,
           anglePatternTableRetry,
+          task.scriptParamsBase.awarenessLevel,
         );
 
         const evalResponse = await sendMessageWithRetry(
@@ -1146,6 +1148,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
           medium: t.task.parsed.medium,
           framework: t.recommendedFramework ?? 'PAS',
           briefContent: t.scriptResult!,
+          awarenessLevel: t.task.scriptParamsBase.awarenessLevel,
         })),
         analysis,
         direction.instructions,
@@ -1355,6 +1358,8 @@ ${ts.scriptResult || '[no previous brief]'}
       task.scriptParamsBase.fullAiSpecification,
       task.scriptParamsBase.fullAiVisualStyle,
       regenInspirationCtx,
+      task.scriptParamsBase.awarenessLevel,
+      task.scriptParamsBase.funnelStage,
     );
 
     const selectorResponse = await sendMessageWithRetry(

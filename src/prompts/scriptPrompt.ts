@@ -397,15 +397,15 @@ Execution:
 - CTA: Logical conclusion: "That's why 107K people switched" or "Now you know why. Try them."
 Best for: Solution-Aware and Product-Aware. MOF and BOF. Data-rich content.`,
 
-  'The Gradualization (Schwartz)': `**The Gradualization** — Schwartz (awareness progression for Unaware audiences)
-Structure: Relatable scenario (0-30%) → Gradual awareness shift (30-50%) → Connection to problem (50-70%) → Gentle solution intro (70-85%) → Soft CTA (85-100%)
+  'The Gradualization (Schwartz)': `**The Gradualization** — Schwartz (awareness progression for Unaware audiences — the NATIVE framework for Unaware, maps 1:1 to the 5-beat body structure)
+Structure: Beat 1 IDENTIFICATION (0-25%) → Beat 2 REFRAME (25-45%) → Beat 3 MECHANISM (45-65%) → Beat 4 CATEGORY REVEAL (65-85%) → Beat 5 PRODUCT REVEAL + soft CTA (85-100%)
 Execution:
-- SCENARIO: NO mention of socks, compression, marks, swelling, or ANY product language. Start with a situation they recognize but haven't connected to your category. "You know that feeling when you can't quite get comfortable?"
-- SHIFT: The critical moment — "wait, this IS a problem I have." Must feel like THEIR realization, not your pitch. Use the Hidden Suffering pattern — acknowledge what they've never put into words.
-- CONNECTION: Bridge dawning awareness to the solution category WITHOUT naming the product. "What if the problem isn't you — it's what you're wearing?"
-- INTRODUCTION: Gently introduce Viasox as INFORMATION, not a pitch. "107,000 people discovered the same thing."
-- CTA: Maximum softness: "Learn more," "See what they found." Schwartz: NEVER push a sale on Unaware. Goal is moving them to Problem-Aware.
-Best for: SPECIFICALLY Unaware audiences. TOF only. The hardest audience needs the most patient framework.`,
+- BEAT 1 IDENTIFICATION: Honor Schwartz's Three Elimination Rules — NO price, NO product name, NO direct problem/solution statement. Use ONE of the three techniques: Scene Identification ("It's 6:47 AM. You're sitting on the edge of the bed looking at your feet."), Mundane Reframe ("The reason you take your shoes off the minute you get home isn't just because it feels good."), or False Cause Flip ("You think it's your shoes. It's not your shoes."). Target ONE sub-persona: Normalizer, Diagnosed Non-Searcher, or Incidental Sufferer.
+- BEAT 2 REFRAME: The "wait..." moment. The normalized experience is named as NOT normal. "That isn't just getting older." "That isn't 'part of the job.'" "You've been blaming the wrong thing." Schwartz's gradualization in action — moving the viewer from "I don't have a problem" to "wait... do I?"
+- BEAT 3 MECHANISM: Short plain-English explanation of WHY (not a medical lecture). "What you're putting on your legs every morning is cutting off circulation slightly. Not enough to alarm you. Just enough to make every hour of your day a little harder." This is where the ad EARNS the right to sell. Symptom/condition word may enter here at the earliest.
+- BEAT 4 CATEGORY REVEAL: Reveal the CATEGORY of sock that's different. NOT Viasox yet. "Socks designed for legs that change shape through the day exist. They've been around for years. Most people don't know they're out there."
+- BEAT 5 PRODUCT REVEAL + SOFT CTA: Viasox is finally named. Soft, curiosity-driving CTA only. NEVER "Buy now," "Shop," or offers/prices. Use: "See what 107K people found," "Learn more," "Discover it," "See if it's for you." Goal is moving them from Unaware → Problem-Aware, not from scroll → checkout.
+Best for: SPECIFICALLY Unaware audiences. TOF only. This is the NATIVE framework for every Unaware script. Every Unaware script should essentially be a Gradualization execution regardless of which framework is named — the 5-beat structure is non-negotiable.`,
 };
 
 /**
@@ -544,7 +544,7 @@ ${params.primaryTalkingPoint ? `## ⚠️ PRIMARY TALKING POINT: "${params.prima
 5. If the script could work without mentioning "${params.primaryTalkingPoint}", it is too generic — rewrite it
 
 **AWARENESS LEVEL TREATMENT (${params.awarenessLevel}):**
-${params.awarenessLevel === 'Unaware' ? `For Unaware: SHOW the reality of ${params.primaryTalkingPoint} through visual scenes and life moments in the first half. The word "${params.primaryTalkingPoint}" appears AFTER the awareness shift in the second half. The viewer recognizes the EXPERIENCE before hearing the name.` : `For ${params.awarenessLevel}: "${params.primaryTalkingPoint}" can be named directly. Use it early and build the narrative around it.`}` : ''}
+${params.awarenessLevel === 'Unaware' ? `For Unaware: SHOW the sensory reality of ${params.primaryTalkingPoint} through Scene Identification, Mundane Reframe, or False Cause Flip in Beats 1-2. The WORD "${params.primaryTalkingPoint}" (and its medical synonyms) does NOT appear in Beats 1-2. It may appear in Beat 3 (Mechanism) at the earliest, but often the Mechanism describes the sensation without using the clinical label. The viewer recognizes the EXPERIENCE visually/sensorially in Beat 1 — hearing the name "${params.primaryTalkingPoint}" only happens after the Reframe earns it.` : `For ${params.awarenessLevel}: "${params.primaryTalkingPoint}" can be named directly. Use it early and build the narrative around it.`}` : ''}
 
 ## MARKETING BOOK FOCUS
 ${buildBookFocus(params.bookReference)}
@@ -1030,12 +1030,37 @@ Target Persona: ${params.persona}${offerLine}${promoLine}
 Primary Book Reference: ${params.bookReference}${conceptLine}${fullAiDirective}
 
 **CRITICAL — AWARENESS LEVEL IS ${params.awarenessLevel.toUpperCase()}:**
-${params.awarenessLevel === 'Unaware' ? `Follow the Unaware script architecture EXACTLY:
-- Product name does NOT appear in the first 50%. "Socks," "compression," "marks," "swelling" do NOT appear in the first 40%.
-- The script reads like CONTENT/STORY, not an ad, until the final section.
-- Time allocation for ${params.duration} (targeting the MAX of the range): ${params.duration === '1-15 sec' ? '0:00-0:10 identification/story → 0:10-0:13 awareness shift → 0:13-0:15 curiosity CTA' : params.duration === '16-59 sec' ? '0:00-0:25 deep identification/story → 0:25-0:35 awareness shift → 0:35-0:50 solution reveal → 0:50-0:55 soft CTA (final cut MUST be ≤ 59s)' : '0:00-0:40 deep identification/story arc → 0:40-0:55 awareness shift moment → 0:55-1:15 solution reveal + mechanism → 1:15-1:30 soft CTA with emotional callback (final cut MUST be ≤ 90s)'}
-- CTA is SOFT: "Learn more," "Discover," "See what people found." NO offers, NO prices.
-- The "awareness shift" moment (viewer goes from "I don't have a problem" to "Wait...") must be clearly identifiable in the script.` : ''}${params.awarenessLevel === 'Problem Aware' ? `Follow the Problem Aware script architecture EXACTLY:
+${params.awarenessLevel === 'Unaware' ? `⚠️ UNAWARE IS THE DEFAULT TOF LEVEL (April 2026 Manifesto Update). Follow the Unaware script architecture EXACTLY.
+
+SCHWARTZ'S THREE ELIMINATION RULES (enforced in Beat 1):
+1. NO PRICE — no dollar signs, no % off, no "sale," no offer language in Beats 1-2.
+2. NO PRODUCT NAME — "Viasox," "compression socks," "diabetic socks," "non-binding," "graduated compression" all banned in Beat 1. "Viasox" appears only in Beat 5.
+3. NO DIRECT PROBLEM OR SOLUTION STATEMENT — banned in Beat 1: "sock marks," "swelling," "edema," "neuropathy," "circulation," "varicose," "relief," "solution," "finally," "Tired of...", "Struggling with...", "Dealing with...", "If you have..."
+
+MANDATORY 5-BEAT BODY STRUCTURE — every Unaware script MUST map to these 5 beats:
+1. IDENTIFICATION (Beat 1, ~0-25%) — uses ONE of: Scene Identification, Mundane Reframe, or False Cause Flip. Zero product, zero category, zero symptom label.
+2. REFRAME (Beat 2, ~25-45%) — the "wait..." moment. The normalized experience is named as NOT normal.
+3. MECHANISM (Beat 3, ~45-65%) — short plain-English explanation of WHY. Not a medical lecture. The symptom/condition word may enter here at the earliest (often still omitted).
+4. CATEGORY REVEAL (Beat 4, ~65-85%) — reveal that a different CATEGORY of sock exists. Not Viasox yet.
+5. PRODUCT REVEAL + SOFT CTA (Beat 5, ~85-100%) — Viasox is finally named with a curiosity CTA.
+
+TARGET ONE SUB-PERSONA (pick the one that best fits the assigned persona):
+- The Normalizer — attributes discomfort to age/weather/shoes/genetics
+- The Diagnosed Non-Searcher — has the condition, owns pharmacy compression, hasn't connected daily friction to a better category
+- The Incidental Sufferer — job/lifestyle produces the pain, writes it off as "part of the job"
+
+TIME ALLOCATION for ${params.duration} (targeting the MAX of the range):
+${params.duration === '1-15 sec' ? '0:00-0:04 Beat 1 Identification → 0:04-0:07 Beat 2 Reframe → 0:07-0:10 Beat 3 Mechanism → 0:10-0:12 Beat 4 Category Reveal → 0:12-0:15 Beat 5 Product Reveal + soft CTA (final cut MUST be ≤ 15s)' : params.duration === '16-59 sec' ? '0:00-0:15 Beat 1 deep Identification → 0:15-0:25 Beat 2 Reframe → 0:25-0:38 Beat 3 Mechanism → 0:38-0:48 Beat 4 Category Reveal → 0:48-0:58 Beat 5 Product Reveal + soft CTA (final cut MUST be ≤ 59s)' : '0:00-0:22 Beat 1 deep Identification → 0:22-0:38 Beat 2 Reframe → 0:38-0:58 Beat 3 Mechanism → 0:58-0:75 Beat 4 Category Reveal → 0:75-0:90 Beat 5 Product Reveal + soft CTA (final cut MUST be ≤ 90s)'}
+
+CTA RULES: SOFT ONLY — "Learn more," "Discover," "See what 107K people found," "See if it's for you." NEVER "Shop now," "Buy," "Get yours," "Add to cart." NO offers, NO prices, NO discounts.
+
+POWER WORDS (use naturally): "you," "your," "every night," "at 3pm," "on your feet," "started," "stopped," "notice," "just," "always," "never," "something," "that feeling when"
+
+AVOID WORDS (banned in Beats 1-2, restricted in Beat 3): "compression," "diabetic," "neuropathy," "circulation," "swelling," "edema," "varicose," "Viasox," "sock marks," "sock line," "relief," "solution," "finally," "sale," "offer," "discount," "buy," "shop," "cart"
+
+DO NOT pull hook/Beat 1 language verbatim from review data — reviews are post-education vocabulary written by Most-Aware customers. Use reviews to understand the REALITY of the experience, then describe it in language the viewer uses BEFORE they find us.
+
+The script must read like CONTENT/STORY/DOCUMENTARY through Beats 1-3, not like an ad. The viewer should not realize they're watching an ad until at least Beat 4.` : ''}${params.awarenessLevel === 'Problem Aware' ? `Follow the Problem Aware script architecture EXACTLY:
 - Lead with SPECIFIC, VIVID pain from the review data. Use customer language VERBATIM.
 - Spend 60-70% of the script on pain naming and intensification BEFORE revealing the solution.
 - Time allocation for ${params.duration} (targeting the MAX of the range): ${params.duration === '1-15 sec' ? '0:00-0:03 pain hook → 0:03-0:08 agitate → 0:08-0:12 solution bridge → 0:12-0:15 CTA' : params.duration === '16-59 sec' ? '0:00-0:05 pain hook → 0:05-0:20 deep agitation → 0:20-0:35 solution reveal + mechanism → 0:35-0:50 proof cascade → 0:50-0:55 CTA (final cut MUST be ≤ 59s)' : '0:00-0:08 pain hook + recognition → 0:08-0:30 deep agitation + cause/mechanism → 0:30-0:50 solution reveal + new mechanism → 0:50-1:15 proof cascade + transformation story → 1:15-1:30 offer + CTA (final cut MUST be ≤ 90s)'}
