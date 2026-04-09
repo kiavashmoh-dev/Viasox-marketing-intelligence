@@ -4,7 +4,7 @@
  * This module encodes the institutional knowledge of the AI Documentary brief
  * methodology in a parameterized form so it can adapt to:
  *
- *   - DURATION       — 15s / 30s / 60s / 90s (selected by user or autopilot)
+ *   - DURATION       — 1-15 sec / 16-59 sec / 60-90 sec (matches Asana Medium column)
  *   - SPECIFICATION  — Documentary / Historical / Educational / Emotional Story / Aspirational
  *   - VISUAL STYLE   — 5 Full AI visual treatments
  *   - MODE           — 'compact' (concept generation, selection) or 'full' (script writing)
@@ -12,7 +12,7 @@
  * The skill was originally written for 2-3 minute documentary ads, but the
  * Viasox autopilot pipeline produces a wider range of formats. This module
  * scales the methodology up and down so the same body of expertise applies
- * whether the brief is 15 seconds or 90.
+ * whether the brief is 1 second or 90.
  *
  * USAGE:
  *   import { buildFullAiSkillContext } from './fullAiSkillContext';
@@ -20,7 +20,7 @@
  *   const skillContext = buildFullAiSkillContext({
  *     specification: 'Documentary',
  *     visualStyle: 'Story with cohesive characters',
- *     duration: '60s',
+ *     duration: '60-90 sec',
  *     mode: 'full',
  *   });
  *
@@ -30,7 +30,7 @@
 import type { FullAiSpecification, FullAiVisualStyle } from '../engine/types';
 
 export type FullAiSkillMode = 'compact' | 'full';
-export type FullAiDuration = '15s' | '30s' | '60s' | '90s';
+export type FullAiDuration = '1-15 sec' | '16-59 sec' | '60-90 sec';
 
 export interface FullAiSkillContextParams {
   /** Selected specification (narrative mode). Defaults to 'Documentary'. */
@@ -513,10 +513,10 @@ Historical visuals: period costumes, aged film grain, archival-style footage, ol
 function getDurationPacing(duration: FullAiDuration, spec: FullAiSpecification, mode: FullAiSkillMode): string {
   const intro = `### DURATION-ADAPTED PACING — ${duration.toUpperCase()}`;
 
-  if (duration === '15s') {
+  if (duration === '1-15 sec') {
     return `${intro}
 
-**This is a SUPER-SHORT Full AI ad (15 seconds).** The full 8-stage documentary arc cannot fit. Compress to the absolute essentials.
+**This is a SUPER-SHORT Full AI ad (1-15 seconds — MAX runtime 15 seconds).** The full 8-stage documentary arc cannot fit. Compress to the absolute essentials. The final edit MUST run at 15 seconds or less.
 
 **Compressed structure (3-4 beats max):**
 1. **Hook with established cause** (3-4 sec) — One sentence that names the cause/condition AND the implicit promise of a story. "Your nerves need blood. Diabetes is starving them."
@@ -525,60 +525,43 @@ function getDurationPacing(duration: FullAiDuration, spec: FullAiSpecification, 
 4. **The CTA** (2-3 sec) — Brand + offer. "Viasox. Buy two, get three free."
 
 **Body line count:** 3-5 lines max. Every word earns its place.
+**Word budget:** 30-35 words (hard ceiling 37).
 
 **The "establish before describe" rule still applies** — even at 15 seconds, you cannot lead with a symptom without first naming the cause. If you can't fit both, lead with the cause and skip the symptom entirely.
 
-${spec === 'Documentary' ? '**For Documentary at 15s:** Compress stages 1, 5, 7, 8. Skip the wonder/history/science stages. The cause is the entire educational arc.' : ''}${spec === 'Historical' ? '**For Historical at 15s:** Pick ONE historical anchor and ONE present-day connection. No time for a journey through eras.' : ''}${spec === 'Educational' ? '**For Educational at 15s:** Teach ONE micro-fact, then apply it. No time for a full lesson.' : ''}${spec === 'Emotional Story' ? '**For Emotional Story at 15s:** ONE silent moment. ONE visual gesture. ONE moment of relief. No room for setup — drop the viewer directly into the moment.' : ''}${spec === 'Aspirational' ? '**For Aspirational at 15s:** Open with the vision, close with the vision realized. No time for the contrast.' : ''}
+${spec === 'Documentary' ? '**For Documentary at 1-15 sec:** Compress stages 1, 5, 7, 8. Skip the wonder/history/science stages. The cause is the entire educational arc.' : ''}${spec === 'Historical' ? '**For Historical at 1-15 sec:** Pick ONE historical anchor and ONE present-day connection. No time for a journey through eras.' : ''}${spec === 'Educational' ? '**For Educational at 1-15 sec:** Teach ONE micro-fact, then apply it. No time for a full lesson.' : ''}${spec === 'Emotional Story' ? '**For Emotional Story at 1-15 sec:** ONE silent moment. ONE visual gesture. ONE moment of relief. No room for setup — drop the viewer directly into the moment.' : ''}${spec === 'Aspirational' ? '**For Aspirational at 1-15 sec:** Open with the vision, close with the vision realized. No time for the contrast.' : ''}
 
 **This duration is a constraint exercise.** Don't try to do a long-form story compressed — pick ONE moment, ONE insight, ONE image, and let it carry the ad.${mode === 'full' ? '\n\nWrite the body as a 3-5 row table. NO more.' : ''}`;
   }
 
-  if (duration === '30s') {
+  if (duration === '16-59 sec') {
     return `${intro}
 
-**This is a SHORT Full AI ad (30 seconds).** A compressed version of the documentary arc — most stages exist but each is 1-2 lines max.
+**This is a MEDIUM-FORM Full AI ad (16-59 seconds — MAX runtime 59 seconds).** A compressed version of the documentary arc — most stages exist but each is 1-2 lines max. The final edit MUST run at 59 seconds or less. Do NOT cross the 1-minute barrier.
 
-**Compressed structure (5-6 beats):**
-1. **Hook with established cause** (4-5 sec) — Cause-led, story-promising.
-2. **The wonder OR the science** (5-6 sec) — Pick ONE. Either set up the body part as amazing, OR explain how it works. Not both.
-3. **The cause + symptom** (6-8 sec) — The mechanism + the daily reality, in TWO connected lines. The "establish before describe" rule.
-4. **The bridge** (5-6 sec) — Product as the natural answer.
-5. **Proof + CTA** (4-5 sec) — Quick proof beat + offer.
+**Compressed structure (6-7 beats):**
+1. **Hook with established cause** (4-6 sec) — Cause-led, story-promising.
+2. **The wonder** (5-7 sec) — Set up the body part/function as amazing OR briefly explain how it works.
+3. **The science / cause** (8-10 sec) — The mechanism in 1-2 connected lines. The "establish before describe" rule.
+4. **The problem / recognition** (8-10 sec) — The daily reality, ending with "that's me" recognition.
+5. **The bridge** (8-10 sec) — Product as the natural answer.
+6. **Proof beat** (4-6 sec) — One concrete proof point.
+7. **Brand + CTA** (4-6 sec) — Brand + offer + emotional callback.
 
-**Body line count:** 6-9 lines.
+**Body line count:** 8-14 lines (scale with runtime within the range).
+**Word budget:** 115-135 words (hard ceiling 145).
 
-${spec === 'Documentary' ? '**For Documentary at 30s:** Stages 2, 5, 6, 7, 8 (drop history and science as separate beats — fold them into the wonder line and the cause line).' : ''}${spec === 'Historical' ? '**For Historical at 30s:** Anchor moment (1 line), historical insight (2 lines), present-day connection (2 lines), bridge to product (2 lines), CTA (1 line).' : ''}${spec === 'Educational' ? '**For Educational at 30s:** Setup (1 line), explanation (2-3 lines), insight (1 line), application/product (2 lines), CTA (1 line).' : ''}${spec === 'Emotional Story' ? '**For Emotional Story at 30s:** Opening image (1 line), establishing detail + struggle (2-3 lines), turn + relief (2-3 lines), callback + CTA (1-2 lines).' : ''}${spec === 'Aspirational' ? '**For Aspirational at 30s:** Vision (1-2 lines), gentle contrast (1 line), promise + product (2-3 lines), new vision + CTA (2 lines).' : ''}
+${spec === 'Documentary' ? '**For Documentary at 16-59 sec:** Compress the 8-stage arc into 6-7 beats. Drop history and science as separate beats — fold them into the wonder line and the cause line.' : ''}${spec === 'Historical' ? '**For Historical at 16-59 sec:** Anchor era (2-3 lines), historical insight (2-3 lines), present-day connection (2-3 lines), bridge to product (2-3 lines), CTA (1-2 lines).' : ''}${spec === 'Educational' ? '**For Educational at 16-59 sec:** Hook (1 line), lesson setup (1-2 lines), explanation (3-4 lines), insight (1-2 lines), application + product (3-4 lines), CTA (1-2 lines).' : ''}${spec === 'Emotional Story' ? '**For Emotional Story at 16-59 sec:** Opening image (1-2 lines), establishing detail (1-2 lines), silent struggle (2-3 lines), the turn (2-3 lines), release (2-3 lines), callback + CTA (1-2 lines).' : ''}${spec === 'Aspirational' ? '**For Aspirational at 16-59 sec:** Vision (1-2 lines), gentle contrast (1-2 lines), promise (1-2 lines), why-it\'s-possible (2-3 lines), bridge to product (2-3 lines), new vision + CTA (1-2 lines).' : ''}
 
-**Education-to-product ratio at 30s:** Roughly 60-70% educational/story / 30-40% product reveal. The shorter the ad, the higher the product proportion can be (but never above 40%).${mode === 'full' ? '\n\nWrite the body as a 6-9 row table.' : ''}`;
+**Education-to-product ratio at 16-59 sec:** 60-70% educational/story / 30-40% product reveal. The product should not appear before the midpoint of the body.
+
+**Runtime discipline:** The tool has historically overshot duration targets. The final cut MUST fit in 59 seconds — so write for 45-55 seconds of spoken content and leave pauses/pacing the natural room to breathe.${mode === 'full' ? '\n\nWrite the body as an 8-14 row table.' : ''}`;
   }
 
-  if (duration === '60s') {
-    return `${intro}
-
-**This is a STANDARD Full AI ad (60 seconds).** Most of the documentary arc fits, but each stage is tighter than the long-form 90s+ version.
-
-**Structure: Compressed 8-Stage Arc.**
-
-1. **Hook** — 4-6 sec (handled by the hook variations + optional first body line)
-2. **Wonder** — 6-8 sec (1-2 body lines)
-3. **History** — 6-8 sec (1-2 body lines, OR fold into wonder)
-4. **Science** — 6-8 sec (1-2 body lines)
-5. **Cause** — 8-10 sec (2 body lines, don't shortchange this)
-6. **Problem** — 8-10 sec (2 body lines, end with "that's me" recognition)
-7. **Bridge** — 8-10 sec (2-3 body lines, product as natural answer)
-8. **Proof + CTA** — 6-8 sec (1-2 body lines, callback to opening)
-
-**Body line count:** 12-16 lines.
-
-**Education-to-product ratio at 60s:** 65-70% educational / 30-35% product reveal. The product should not appear before line 8 of a 14-line body.
-
-${spec === 'Documentary' ? '**For Documentary at 60s:** All 8 stages exist but each is compressed. Don\'t skip stages — compress them.' : ''}${spec === 'Historical' ? '**For Historical at 60s:** Anchor era (2 lines), historical world + insight (3-4 lines), what was lost (2 lines), present connection + product (3-4 lines), CTA (1-2 lines).' : ''}${spec === 'Educational' ? '**For Educational at 60s:** Hook (1 line), lesson setup (1 line), explanation (4-5 lines), insight (1-2 lines), application + product (3-4 lines), CTA (1-2 lines).' : ''}${spec === 'Emotional Story' ? '**For Emotional Story at 60s:** Opening image (1-2 lines), establishing detail (1-2 lines), silent struggle (3-4 lines), the turn (2-3 lines), release (2-3 lines), callback + CTA (1-2 lines).' : ''}${spec === 'Aspirational' ? '**For Aspirational at 60s:** Vision (2 lines), gentle contrast (1-2 lines), promise (2 lines), why-it\'s-possible (2-3 lines), bridge to product (2-3 lines), new vision + CTA (2 lines).' : ''}${mode === 'full' ? '\n\nWrite the body as a 12-16 row table.' : ''}`;
-  }
-
-  // 90s
+  // 60-90 sec
   return `${intro}
 
-**This is a LONG-FORM Full AI ad (90 seconds).** This is the closest the autopilot pipeline gets to the source skill's native 2-3 minute format. The full 8-stage arc has room to breathe. This is where the format does its best work.
+**This is a LONG-FORM Full AI ad (60-90 seconds — MAX runtime 90 seconds).** This is the closest the autopilot pipeline gets to the source skill's native 2-3 minute format. The full 8-stage arc has room to breathe. This is where the format does its best work. The final edit MUST run at 90 seconds or less.
 
 **Structure: Full 8-Stage Documentary Arc.**
 
@@ -591,11 +574,12 @@ ${spec === 'Documentary' ? '**For Documentary at 60s:** All 8 stages exist but e
 7. **Bridge** — 12-16 sec (3-4 body lines, product as natural answer)
 8. **Proof + CTA** — 8-12 sec (2-3 body lines, proof + offer + emotional callback)
 
-**Body line count:** 18-22 lines.
+**Body line count:** 16-22 lines.
+**Word budget:** 190-215 words (hard ceiling 225).
 
-**Education-to-product ratio at 90s:** 65-75% educational / 25-35% product reveal. The product should not appear before line 12 of a 20-line body.
+**Education-to-product ratio at 60-90 sec:** 65-75% educational / 25-35% product reveal. The product should not appear before line 12 of a 20-line body.
 
-${spec === 'Documentary' ? '**For Documentary at 90s:** This is the format the skill was designed for. Use the full 8-stage arc with no compression. Each stage gets the breathing room it needs. The transition from AI-generated educational visuals to the product reveal is the signature beat — don\'t rush it.' : ''}${spec === 'Historical' ? '**For Historical at 90s:** Build an immersive historical world. Spend lines 2-8 inhabiting the era — costumes, settings, light, daily life. Earn the present-day connection with that depth.' : ''}${spec === 'Educational' ? '**For Educational at 90s:** This is room for a real lesson. Pick a single concept and teach it deeply. Use multiple AI-rendered scientific visualizations. The viewer should leave smarter even if they don\'t buy.' : ''}${spec === 'Emotional Story' ? '**For Emotional Story at 90s:** Build the world. Establish the small moment with care. Let silence carry weight. The longer runtime is your friend — DON\'T fill it with extra narration. Trust the visuals.' : ''}${spec === 'Aspirational' ? '**For Aspirational at 90s:** Build the vision in detail. Earn the transformation. The 90-second runtime is enough to take the viewer through a real arc from longing to possibility. Use the time.' : ''}
+${spec === 'Documentary' ? '**For Documentary at 60-90 sec:** This is the format the skill was designed for. Use the full 8-stage arc with no compression. Each stage gets the breathing room it needs. The transition from AI-generated educational visuals to the product reveal is the signature beat — don\'t rush it.' : ''}${spec === 'Historical' ? '**For Historical at 60-90 sec:** Build an immersive historical world. Spend lines 2-8 inhabiting the era — costumes, settings, light, daily life. Earn the present-day connection with that depth.' : ''}${spec === 'Educational' ? '**For Educational at 60-90 sec:** This is room for a real lesson. Pick a single concept and teach it deeply. Use multiple AI-rendered scientific visualizations. The viewer should leave smarter even if they don\'t buy.' : ''}${spec === 'Emotional Story' ? '**For Emotional Story at 60-90 sec:** Build the world. Establish the small moment with care. Let silence carry weight. The longer runtime is your friend — DON\'T fill it with extra narration. Trust the visuals.' : ''}${spec === 'Aspirational' ? '**For Aspirational at 60-90 sec:** Build the vision in detail. Earn the transformation. The 90-second runtime is enough to take the viewer through a real arc from longing to possibility. Use the time.' : ''}
 
 **Pacing reference (from the source skill):**
 - Stage 1 (Hook): hook variations + 0-1 body line
@@ -607,9 +591,11 @@ ${spec === 'Documentary' ? '**For Documentary at 90s:** This is the format the s
 - Stage 7 (Bridge): 3-4 body lines
 - Stage 8 (Proof + CTA): 2-3 body lines
 
-Total: ~18-22 lines.
+Total: ~16-22 lines.
 
-**This is the duration where the format truly shines.** Use it.${mode === 'full' ? '\n\nWrite the body as an 18-22 row table.' : ''}`;
+**Runtime discipline:** The final cut MUST fit in 90 seconds. Write for 75-85 seconds of spoken content so pacing and breathing have room.
+
+**This is the duration where the format truly shines.** Use it.${mode === 'full' ? '\n\nWrite the body as a 16-22 row table.' : ''}`;
 }
 
 // ─── Quality Bar (full mode only) ────────────────────────────────────────────

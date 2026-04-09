@@ -485,7 +485,7 @@ export function buildAnglesPrompt(
   // Duration-specific constraints (VO-by-length + length calibration).
   // Concepts must respect the same rules so downstream scripts don't
   // inherit an impossible starting point (e.g., a concept pitched as
-  // "silent text-only montage" for a 60s brief).
+  // "silent text-only montage" for a 16-59 sec or 60-90 sec brief).
   const durationTarget = getDurationTarget(params.duration);
   const briefConstraints = buildBriefConstraintsBlock(params.duration);
 
@@ -716,7 +716,7 @@ ${params.fullAiVisualStyle === 'Story with cohesive characters' ? 'A cohesive ch
 ${buildFullAiSkillContext({
   specification: params.fullAiSpecification,
   visualStyle: params.fullAiVisualStyle,
-  duration: params.duration ?? '60s',
+  duration: params.duration ?? '60-90 sec',
   mode: 'compact',
 })}
 `
@@ -728,7 +728,7 @@ ${buildFullAiSkillContext({
 
   const user = `Generate exactly 5 creative ${params.angleType} concepts & angles for ${params.product}${params.primaryTalkingPoint ? ` focused on "${params.primaryTalkingPoint}"` : ''} at the **${params.awarenessLevel}** awareness level, optimized for ${params.funnelStage} (${params.funnelStage === 'TOF' ? 'Top of Funnel' : params.funnelStage === 'MOF' ? 'Middle of Funnel' : 'Bottom of Funnel'}) using ${params.adType} format.${talkingPointNote}${fullAiDirective}
 
-**BRIEF LENGTH: ${params.duration ?? '30s'}** — Target ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words). Every concept must fit comfortably in this time budget.
+**BRIEF LENGTH: ${params.duration ?? '16-59 sec'}** (final cut MUST be ≤ ${durationTarget.maxSeconds}s) — Target ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words). Every concept must fit comfortably in this time budget. Recommended frameworks for this length: ${durationTarget.recommendedFrameworks.join(', ')}.
 
 **VO REQUIREMENT FOR CONCEPTS:** ${durationTarget.voRequired
   ? `This is a ${params.duration} brief — VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY. Do NOT pitch concepts built around text-only/silent b-roll or pure visual montage with no spoken words. Every concept MUST include a voiceover, on-camera dialogue, founder monologue, podcast conversation, or spokesperson delivery. A concept for ${params.duration} without a spoken track is a creative failure and will be rejected.`

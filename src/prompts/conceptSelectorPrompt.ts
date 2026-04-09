@@ -38,11 +38,16 @@ export function buildConceptSelectorPrompt(
   inspirationContext?: string,
 ): { system: string; user: string } {
   const isFullAi = adType === 'Full AI (Documentary, story, education, etc)';
+  const normalizedFullAiDuration: FullAiDuration = (['1-15 sec', '16-59 sec', '60-90 sec'] as const).includes(
+    duration as FullAiDuration,
+  )
+    ? (duration as FullAiDuration)
+    : '60-90 sec';
   const fullAiSkillBlock = isFullAi
     ? `\n\n${buildFullAiSkillContext({
         specification: fullAiSpecification,
         visualStyle: fullAiVisualStyle,
-        duration: (['15s', '30s', '60s', '90s'].includes(duration) ? duration : '60s') as FullAiDuration,
+        duration: normalizedFullAiDuration,
         mode: 'compact',
       })}`
     : '';

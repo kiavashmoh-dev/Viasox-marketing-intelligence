@@ -16,8 +16,8 @@ export interface AutopilotTask {
   parsed: ParsedAsanaTask;
   /** Mapped product category */
   product: ProductCategory;
-  /** Mapped duration from medium */
-  duration: '15s' | '30s' | '60s' | '90s';
+  /** Mapped duration from medium column */
+  duration: '1-15 sec' | '16-59 sec' | '60-90 sec';
   /** Params for the Angles Generator */
   anglesParams: AnglesParams;
   /** Partial ScriptParams — framework filled by concept selector */

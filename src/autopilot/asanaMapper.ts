@@ -223,25 +223,29 @@ function mapPersona(angle: string, product: ProductCategory, _awarenessLevel: Aw
   }
 }
 
-function mapDuration(medium: string): '15s' | '30s' | '60s' | '90s' {
-  const lower = medium.toLowerCase();
+function mapDuration(medium: string): '1-15 sec' | '16-59 sec' | '60-90 sec' {
+  const lower = medium.toLowerCase().trim();
 
-  // Long-form 90s — documentary, AI doc, extended formats
-  if (lower.includes('90') || lower.includes('extra long') || lower.includes('extra-long') ||
+  // Direct match on canonical Asana medium column values
+  if (lower === '1-15 sec' || lower === '1-15 seconds') return '1-15 sec';
+  if (lower === '16-59 sec' || lower === '16-59 seconds') return '16-59 sec';
+  if (lower === '60-90 sec' || lower === '60-90 seconds') return '60-90 sec';
+
+  // Expanded / 60-90 sec — documentary, AI doc, extended formats, long-form
+  if (lower.includes('60-90') ||
+      lower.includes('90') || lower.includes('extra long') || lower.includes('extra-long') ||
       lower.includes('longform') || lower.includes('long form') ||
+      lower.includes('expand') || lower.includes('long') || lower.includes('60') ||
       lower.includes('documentary') || lower.includes(' doc ') || lower.endsWith(' doc') ||
       lower.includes('ai doc') || lower.includes('full ai'))
-    return '90s';
+    return '60-90 sec';
 
-  // Standard 60s — expanded / long
-  if (lower.includes('expand') || lower.includes('long') || lower.includes('60'))
-    return '60s';
+  // Short 1-15 sec — shortform / micro
+  if (lower.includes('1-15') || lower.includes('short') || lower.includes('15') || lower.includes('micro'))
+    return '1-15 sec';
 
-  // Short 15s — shortform / micro
-  if (lower.includes('short') || lower.includes('15'))
-    return '15s';
-
-  return '30s'; // Midform default
+  // Midform default — 16-59 sec
+  return '16-59 sec';
 }
 
 /**

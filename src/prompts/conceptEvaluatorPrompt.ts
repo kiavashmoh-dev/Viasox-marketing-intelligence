@@ -30,8 +30,9 @@ export function buildConceptEvaluatorPrompt(
   anglePatternTable?: string,
 ): { system: string; user: string } {
   // Duration-aware constraints for the evaluator. Used to downrate concepts
-  // that break the VO-by-length rule (30s+ without VO) or the length
-  // calibration rule (concepts that pitch too much story for a 15s slot).
+  // that break the VO-by-length rule (16-59 sec / 60-90 sec without VO) or
+  // the length calibration rule (concepts that pitch too much story for a
+  // 1-15 sec slot).
   const durationTarget = getDurationTarget(duration);
   const shortForm = isShortFormDuration(duration);
 
@@ -52,14 +53,16 @@ The most important evaluation criterion is whether the concept is SPECIFICALLY a
 This brief is **${duration}** — target length ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words). Concept evaluations must enforce the length budget and the VO-by-length rule.
 
 ${shortForm
-  ? `**SHORT-FORM (${duration}) RULES:**
-- Reject concepts that try to tell full stories compressed into ${duration}. A good ${duration} concept is a single powerful moment, a direct address, a visual before/after, or a bold statement — NOT a mini-movie. Rate any concept that reads like a compressed 30s ad as **2/5 max**.
+  ? `**SHORT-FORM (${duration}, final cut MUST be ≤ ${durationTarget.maxSeconds}s) RULES:**
+- Reject concepts that try to tell full stories compressed into ${duration}. A good ${duration} concept is a single powerful moment, a direct address, a visual before/after, or a bold statement — NOT a mini-movie. Rate any concept that reads like a compressed mid-form ad as **2/5 max**.
 - VO is OPTIONAL at ${duration}. You may rate text-only/silent concepts fairly if they use the format well. Concepts with VO are also fine.
-- Watch for LENGTH OVERSHOOT: if a concept pitches 4+ distinct beats, voiceover lines, or story turns, it will not fit in ${duration}. Downrate to 2/5 max.`
-  : `**MEDIUM/EXPANDED (${duration}) RULES:**
+- Watch for LENGTH OVERSHOOT: if a concept pitches 4+ distinct beats, voiceover lines, or story turns, it will not fit in ${duration}. Downrate to 2/5 max.
+- Recommended frameworks for this length: ${durationTarget.recommendedFrameworks.join(', ')}.`
+  : `**MEDIUM/EXPANDED (${duration}, final cut MUST be ≤ ${durationTarget.maxSeconds}s) RULES:**
 - VO/SPOKEN DIALOGUE IS MANDATORY. Any concept that relies on text-only/silent b-roll, pure visual montage with no voiceover, or on-screen text as the sole verbal channel must be rated **1/5** — it is a format violation. A ${duration} ad without a spoken track is not shippable.
 - The concept must explicitly describe the voice: a voiceover narrator, a UGC creator talking to camera, a founder monologue, a podcast host conversation, or a spokesperson delivery. If the concept description never mentions who is speaking, downrate it significantly and flag the missing voice in your reasoning.
-- Length: the concept should fit in ${durationTarget.sweetSpot} of spoken content. If a concept pitches more story than can be voiced in ${duration}, downrate to 2/5 max.`}
+- Length: the concept should fit in ${durationTarget.sweetSpot} of spoken content. If a concept pitches more story than can be voiced in ${duration}, downrate to 2/5 max.
+- Recommended frameworks for this length: ${durationTarget.recommendedFrameworks.join(', ')}. Concepts that lean into these frameworks are more likely to land inside the ${durationTarget.maxSeconds}s runtime cap.`}
 
 **LENGTH CALIBRATION — KNOWN FAILURE MODE:**
 The downstream script writer has historically produced scripts 20-30% longer than their target. Your job as evaluator is to FRONT-LOAD discipline: if a concept is clearly too ambitious for ${duration}, downrate it NOW so the script writer is not handed an impossible brief. Favor concepts with a tight focused payload over concepts with sprawling arcs.

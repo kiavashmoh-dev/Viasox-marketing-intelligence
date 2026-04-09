@@ -21,7 +21,12 @@ interface Props {
   conceptAngleContext?: ConceptContext | null;
 }
 
-const DURATIONS = ['15s', '30s', '60s', '90s'] as const;
+const DURATIONS = ['1-15 sec', '16-59 sec', '60-90 sec'] as const;
+const DURATION_LABELS: Record<typeof DURATIONS[number], string> = {
+  '1-15 sec': '1-15 sec (Short-form — VO optional)',
+  '16-59 sec': '16-59 sec (Medium-form — VO required)',
+  '60-90 sec': '60-90 sec (Expanded — VO required)',
+};
 const AWARENESS: AwarenessLevel[] = ['Unaware', 'Problem Aware', 'Solution Aware', 'Product Aware', 'Most Aware'];
 const FUNNEL_STAGES: { value: FunnelStage; label: string; description: string }[] = [
   { value: 'TOF', label: 'TOF (Top of Funnel)', description: 'Cold audiences' },
@@ -70,7 +75,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
   const [product, setProduct] = useState<ProductCategory>(conceptAngleContext?.product ?? 'EasyStretch');
   const [persona, setPersona] = useState('');
   const [framework, setFramework] = useState<ScriptFramework>(FRAMEWORKS[0]);
-  const [duration, setDuration] = useState<(typeof DURATIONS)[number]>('30s');
+  const [duration, setDuration] = useState<(typeof DURATIONS)[number]>('16-59 sec');
   const [funnelStage, setFunnelStage] = useState<FunnelStage>(conceptAngleContext?.funnelStage ?? 'TOF');
   const [awareness, setAwareness] = useState<AwarenessLevel>(conceptAngleContext?.awarenessLevel ?? 'Problem Aware');
   const [adType, setAdType] = useState<AdType>(conceptAngleContext?.adType ?? 'UGC (User Generated Content)');
@@ -162,15 +167,15 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
       maxTokens = Math.min(16000 + contextBonus + feedbackBonus, 24000);
     } else if (isVideoProductionBrief) {
       // Video production briefs use 10-column tables — more output than old 5-column format
-      const durationTokens = duration === '90s' ? 12000 : duration === '60s' ? 9000 : duration === '30s' ? 7000 : 5000;
+      const durationTokens = duration === '60-90 sec' ? 12000 : duration === '16-59 sec' ? 8000 : 5000;
       const hookTokens = hookVariations * 600;
       maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 12000), 24000);
     } else if (isEcom) {
       // Ecom briefs: full template with 8 sections (Brief Info, Strategy, Offer, Editing Instructions, 3 hooks, body, data points, framework)
-      const durationTokens = duration === '90s' ? 11000 : duration === '60s' ? 8000 : duration === '30s' ? 6000 : 4500;
+      const durationTokens = duration === '60-90 sec' ? 11000 : duration === '16-59 sec' ? 7500 : 4500;
       maxTokens = Math.min(Math.max(durationTokens + contextBonus + feedbackBonus, 12000), 24000);
     } else {
-      const durationTokens = duration === '90s' ? 9000 : duration === '60s' ? 6500 : duration === '30s' ? 4500 : 3000;
+      const durationTokens = duration === '60-90 sec' ? 9000 : duration === '16-59 sec' ? 5500 : 3000;
       const hookTokens = hookVariations * 500;
       maxTokens = Math.min(Math.max(durationTokens + hookTokens + contextBonus + feedbackBonus, 10000), 24000);
     }
@@ -477,8 +482,9 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Duration</label>
+              <p className="text-xs text-slate-400 mb-2">Matches Asana Medium column. VO is optional for 1-15 sec, mandatory for 16+ sec.</p>
               <select value={duration} onChange={(e) => setDuration(e.target.value as typeof duration)} className={selectClass}>
-                {DURATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+                {DURATIONS.map((d) => <option key={d} value={d}>{DURATION_LABELS[d]}</option>)}
               </select>
             </div>
 

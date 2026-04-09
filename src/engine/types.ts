@@ -240,8 +240,8 @@ export interface AnglesParams {
   adType: AdType;
   /** Primary talking point — the specific condition, topic, or focus (e.g., "Diabetes", "Neuropathy", "Swelling", "Sock Marks") */
   primaryTalkingPoint?: string;
-  /** Optional duration hint — used by Full AI skill context to scope the concept's runtime ambition (15s/30s/60s/90s) */
-  duration?: '15s' | '30s' | '60s' | '90s';
+  /** Optional duration hint — used by Full AI skill context to scope the concept's runtime ambition. Matches Asana medium column. */
+  duration?: '1-15 sec' | '16-59 sec' | '60-90 sec';
   /** Full AI-specific: narrative specification (only relevant when adType is 'Full AI') */
   fullAiSpecification?: FullAiSpecification;
   /** Full AI-specific: visual style (only relevant when adType is 'Full AI') */
@@ -320,7 +320,7 @@ export interface ScriptParams {
   product: ProductCategory;
   persona: string;
   framework: ScriptFramework;
-  duration: '15s' | '30s' | '60s' | '90s';
+  duration: '1-15 sec' | '16-59 sec' | '60-90 sec';
   funnelStage: FunnelStage;
   awarenessLevel: AwarenessLevel;
   adType: AdType;

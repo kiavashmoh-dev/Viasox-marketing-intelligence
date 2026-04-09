@@ -26,7 +26,7 @@ You MUST output strict JSON only. No prose, no markdown fences.`;
 
 const TAG_TAXONOMY = `# TAG TAXONOMY (use these EXACT strings — never invent new values)
 
-duration: one of "15s" | "30s" | "60s" | "90s" | "unknown"
+duration: one of "1-15 sec" | "16-59 sec" | "60-90 sec" | "unknown"
 
 adType: one of
   - "AGC (Actor Generated Content)"

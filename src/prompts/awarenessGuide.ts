@@ -554,10 +554,10 @@ const SCRIPT_GUIDES: Record<AwarenessLevel, string> = {
 **SCRIPT STRUCTURE RULES (Unaware):**
 The entire script architecture changes for Unaware. You are not writing a product ad. You are writing a piece of CONTENT that happens to lead to a product.
 
-**TIME ALLOCATION:**
-- 15s: 0:00-0:10 identification/story → 0:10-0:13 awareness shift → 0:13-0:15 curiosity CTA
-- 30s: 0:00-0:15 identification/story → 0:15-0:22 awareness shift → 0:22-0:27 solution hint → 0:27-0:30 soft CTA
-- 60s: 0:00-0:30 deep identification/story → 0:30-0:40 awareness shift → 0:40-0:52 solution reveal → 0:52-0:60 soft CTA
+**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+- 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:10 identification/story → 0:10-0:13 awareness shift → 0:13-0:15 curiosity CTA
+- 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:30 deep identification/story → 0:30-0:40 awareness shift → 0:40-0:52 solution reveal → 0:52-0:58 soft CTA
+- 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:45 deep identification/story → 0:45-0:60 awareness shift → 0:60-0:78 solution reveal → 0:78-0:90 soft CTA
 
 **KEY RULES:**
 1. The product name does NOT appear in the first 50% of the script. Period.
@@ -598,10 +598,10 @@ The entire script architecture changes for Unaware. You are not writing a produc
 **SCRIPT STRUCTURE RULES (Problem Aware):**
 Problem Aware scripts are the AGITATION scripts. The viewer knows their pain — your job is to make it feel MORE URGENT, then reveal the path to relief. This is Schwartz's "intensification" in full force.
 
-**TIME ALLOCATION:**
-- 15s: 0:00-0:03 pain hook → 0:03-0:08 agitate → 0:08-0:12 solution bridge → 0:12-0:15 CTA
-- 30s: 0:00-0:05 pain hook → 0:05-0:15 agitate/intensify → 0:15-0:22 solution reveal → 0:22-0:27 proof → 0:27-0:30 CTA
-- 60s: 0:00-0:05 pain hook → 0:05-0:20 deep agitation → 0:20-0:35 solution reveal + mechanism → 0:35-0:50 proof cascade → 0:50-0:60 CTA
+**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+- 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 pain hook → 0:03-0:08 agitate → 0:08-0:12 solution bridge → 0:12-0:15 CTA
+- 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 pain hook → 0:05-0:20 deep agitation → 0:20-0:35 solution reveal + mechanism → 0:35-0:50 proof cascade → 0:50-0:58 CTA
+- 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:06 pain hook → 0:06-0:28 deep agitation → 0:28-0:52 solution reveal + mechanism → 0:52-0:78 proof cascade → 0:78-0:90 CTA
 
 **KEY RULES:**
 1. The PAIN is the hero of the first half. Name it with extreme specificity.
@@ -634,10 +634,10 @@ Problem Aware scripts are the AGITATION scripts. The viewer knows their pain —
 **SCRIPT STRUCTURE RULES (Solution Aware):**
 Solution Aware scripts are DIFFERENTIATION scripts. They already know the problem AND that solutions exist. Your script must answer ONE question: "Why THIS solution and not the others?"
 
-**TIME ALLOCATION:**
-- 15s: 0:00-0:03 differentiation hook → 0:03-0:08 mechanism → 0:08-0:12 proof → 0:12-0:15 CTA
-- 30s: 0:00-0:05 differentiation hook → 0:05-0:12 mechanism/what's different → 0:12-0:20 proof + testimonial → 0:20-0:27 deeper benefit → 0:27-0:30 CTA
-- 60s: 0:00-0:05 differentiation hook → 0:05-0:10 failed-solution acknowledgment → 0:10-0:25 new mechanism deep-dive → 0:25-0:40 proof cascade → 0:40-0:52 transformation story → 0:52-0:60 CTA
+**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+- 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 differentiation hook → 0:03-0:08 mechanism → 0:08-0:12 proof → 0:12-0:15 CTA
+- 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 differentiation hook → 0:05-0:10 failed-solution acknowledgment → 0:10-0:25 new mechanism deep-dive → 0:25-0:40 proof cascade → 0:40-0:52 transformation story → 0:52-0:58 CTA
+- 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:06 differentiation hook → 0:06-0:14 failed-solution acknowledgment → 0:14-0:36 new mechanism deep-dive → 0:36-0:58 proof cascade → 0:58-0:78 transformation story → 0:78-0:90 CTA
 
 **KEY RULES:**
 1. Do NOT spend significant time on the problem. A brief acknowledgment (2-3 seconds max) is enough.
@@ -670,10 +670,10 @@ Solution Aware scripts are DIFFERENTIATION scripts. They already know the proble
 **SCRIPT STRUCTURE RULES (Product Aware):**
 Product Aware scripts are PROOF INTENSIFICATION scripts. They know Viasox. They need ONE MORE THING to tip them over the edge. Your script provides that thing — deeper proof, a fresh angle, or an irresistible demonstration.
 
-**TIME ALLOCATION:**
-- 15s: 0:00-0:03 brand recognition + new info hook → 0:03-0:10 deep proof point → 0:10-0:15 CTA
-- 30s: 0:00-0:05 brand recognition + new info hook → 0:05-0:15 deep proof/story → 0:15-0:22 intensified desire → 0:22-0:27 offer/urgency → 0:27-0:30 CTA
-- 60s: 0:00-0:05 brand recognition + new info hook → 0:05-0:20 deep customer story → 0:20-0:35 proof cascade → 0:35-0:47 mechanism deep-dive → 0:47-0:55 offer → 0:55-0:60 CTA
+**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+- 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 brand recognition + new info hook → 0:03-0:10 deep proof point → 0:10-0:15 CTA
+- 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 brand recognition + new info hook → 0:05-0:20 deep customer story → 0:20-0:35 proof cascade → 0:35-0:47 mechanism deep-dive → 0:47-0:54 offer → 0:54-0:58 CTA
+- 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:07 brand recognition + new info hook → 0:07-0:28 deep customer story → 0:28-0:50 proof cascade → 0:50-0:70 mechanism deep-dive → 0:70-0:82 offer → 0:82-0:90 CTA
 
 **KEY RULES:**
 1. Brand name/product appears in the FIRST 3 SECONDS. They know you. Use recognition as the hook.
@@ -704,10 +704,10 @@ Product Aware scripts are PROOF INTENSIFICATION scripts. They know Viasox. They 
 **SCRIPT STRUCTURE RULES (Most Aware):**
 Most Aware scripts are the SHORTEST, MOST DIRECT scripts. No education, no proof cascade, no awareness building. Just: recognition → offer/news → CTA. Get out of the way and let them buy.
 
-**TIME ALLOCATION:**
-- 15s: 0:00-0:03 product + offer → 0:03-0:10 urgency/details → 0:10-0:15 CTA
-- 30s: 0:00-0:05 product + offer/news → 0:05-0:15 quick proof/urgency → 0:15-0:22 details → 0:22-0:27 risk reversal → 0:27-0:30 CTA
-- 60s: 0:00-0:05 product + offer → 0:05-0:15 quick proof/social → 0:15-0:25 offer details → 0:25-0:35 urgency → 0:35-0:50 product showcase → 0:50-0:60 CTA
+**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+- 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 product + offer → 0:03-0:10 urgency/details → 0:10-0:15 CTA
+- 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 product + offer → 0:05-0:15 quick proof/social → 0:15-0:25 offer details → 0:25-0:35 urgency → 0:35-0:50 product showcase → 0:50-0:58 CTA
+- 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:06 product + offer → 0:06-0:20 quick proof/social → 0:20-0:36 offer details → 0:36-0:50 urgency → 0:50-0:78 product showcase → 0:78-0:90 CTA
 
 **KEY RULES:**
 1. Product name and offer in the FIRST sentence. No warm-up.

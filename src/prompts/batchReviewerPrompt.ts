@@ -112,28 +112,27 @@ Check that the brief follows the CORRECT awareness level principles:
 - PROBLEM AWARE briefs: Lead with specific vivid pain. Product appears in the second half. CTA is medium-soft.
 - If the awareness level doesn't match the brief's actual structure = FAIL.
 
-**3c. Short Form Format Check (for <15s / short form briefs)**
-Short form briefs should NOT read like compressed long-form ads. Check that:
-- The script table has 2-4 rows MAX (not 6-8 squeezed in)
+**3c. Short Form Format Check (for 1-15 sec / short form briefs)**
+Short form briefs (1-15 sec) should NOT read like compressed long-form ads. Check that:
+- The script table has 3-5 rows MAX (not 6-8 squeezed in)
 - The ad uses ONE creative approach (POV, direct address, before/after, VO over B-roll, text-on-screen, reaction), not a mini-movie
-- There is NO full story arc (problem → agitate → solution → proof → CTA is a 30-60s structure, not 15s)
-- If a short form brief reads like a 30s brief with words cut out = FAIL
+- There is NO full story arc (problem → agitate → solution → proof → CTA is a 16-59 sec / 60-90 sec structure, not 15s)
+- If a short form brief reads like a mid-form brief with words cut out = FAIL
 
 **3d. VO-by-Length Rule (NON-NEGOTIABLE)**
 Cross-check the brief's Medium/Duration against its Voiceover field and Script Body rows:
-- **Short-form (15s or less):** Text-only/no-VO is ALLOWED. The brief may say "No VO — text overlays only" in the Voiceover field and use on-screen text rows instead of spoken lines. This is a valid creative choice at 15s. PASS.
-- **30s, 60s, 90s+ briefs:** VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY. If the Voiceover field says "No VO", "Silent", "Text only", or is blank/missing, AND the Script Body rows don't have spoken words — **AUTOMATIC FAIL**. Medium and expanded ads MUST have a spoken track (VO narrator, UGC creator talking, founder on camera, podcast hosts, or spokesperson). A 30s+ ad with silent b-roll and on-screen text only is a creative failure per the VO-by-length rule.
-- Also verify: the Script Body rows (not just hooks) contain spoken words for 30s+ briefs. Every body row should have voice content.
+- **Short-form (1-15 sec):** Text-only/no-VO is ALLOWED. The brief may say "No VO — text overlays only" in the Voiceover field and use on-screen text rows instead of spoken lines. This is a valid creative choice at this length. PASS.
+- **Mid-form (16-59 sec) and Expanded (60-90 sec) briefs:** VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY. If the Voiceover field says "No VO", "Silent", "Text only", or is blank/missing, AND the Script Body rows don't have spoken words — **AUTOMATIC FAIL**. Mid and expanded ads MUST have a spoken track (VO narrator, UGC creator talking, founder on camera, podcast hosts, or spokesperson). A 16-59 sec or 60-90 sec ad with silent b-roll and on-screen text only is a creative failure per the VO-by-length rule.
+- Also verify: the Script Body rows (not just hooks) contain spoken words for 16-59 sec and 60-90 sec briefs. Every body row should have voice content.
 
-**3e. Length Calibration (THE TOOL WRITES LONG)**
-The tool has a measured tendency to overshoot target duration by 20-30%. Count the total spoken word count across the Script Body rows (hooks are separate, count body only) and compare to the target:
-- **10s target:** sweet spot 18-25 words, hard ceiling 28 words
-- **15s target:** sweet spot 30-35 words, hard ceiling 38 words
-- **30s target:** sweet spot 65-75 words, hard ceiling 80 words
-- **60s target:** sweet spot 135-150 words, hard ceiling 160 words
-- **90s target:** sweet spot 200-225 words, hard ceiling 240 words
+**3e. Length Calibration (THE TOOL WRITES LONG — HARD RUNTIME CEILINGS)**
+All word counts below are calibrated for a 150 WPM voiceover pace and anchored to the MAXIMUM of each range so the final cut NEVER exceeds the stated runtime. The tool has a measured tendency to overshoot target duration by 20-30% — be strict. Count the total spoken word count across the Script Body rows (hooks are separate, count body only) and compare to the target:
 
-If the brief's body word count is within the sweet spot = PASS. If it's between sweet spot and hard ceiling = FLAG (note the overshoot with exact word count). If it exceeds the hard ceiling = FAIL (note the overshoot with exact word count — e.g., "15s brief with 52 words in body, 37% over hard ceiling").
+- **1-15 sec target (final cut MUST be ≤ 15s):** sweet spot 30-35 words, hard ceiling 37 words.
+- **16-59 sec target (final cut MUST be ≤ 59s):** sweet spot 115-135 words, hard ceiling 145 words.
+- **60-90 sec target (final cut MUST be ≤ 90s):** sweet spot 190-215 words, hard ceiling 225 words.
+
+If the brief's body word count is within the sweet spot = PASS. If it's between sweet spot and hard ceiling = FLAG (note the overshoot with exact word count). If it exceeds the hard ceiling = **AUTOMATIC FAIL** (note the overshoot with exact word count — e.g., "1-15 sec brief with 52 words in body, 41% over 37-word hard ceiling"). Exceeding the ceiling means the final cut will exceed the Asana Medium column runtime — this is non-negotiable.
 
 Mentally read the body script at a natural conversational pace. If it feels rushed to fit the target, it's too long — FLAG even if it's under the hard ceiling.
 

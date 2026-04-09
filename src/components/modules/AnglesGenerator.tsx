@@ -41,6 +41,13 @@ const FULL_AI_VISUAL_STYLES: FullAiVisualStyle[] = [
 
 const FULL_AI_AD_TYPE: AdType = 'Full AI (Documentary, story, education, etc)';
 
+const DURATIONS = ['1-15 sec', '16-59 sec', '60-90 sec'] as const;
+const DURATION_LABELS: Record<typeof DURATIONS[number], string> = {
+  '1-15 sec': '1-15 sec (Short-form — VO optional)',
+  '16-59 sec': '16-59 sec (Medium-form — VO required)',
+  '60-90 sec': '60-90 sec (Expanded — VO required)',
+};
+
 export default function AnglesGenerator({ analysis, apiKey, resourceContext, onBack, onWriteScript }: Props) {
   // Dynamic option lists from registry (built-in + custom)
   const PRODUCTS = useMemo(() => getAllProducts() as ProductCategory[], []);
@@ -55,6 +62,7 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
   const [fullAiSpecification, setFullAiSpecification] = useState<FullAiSpecification>('Documentary');
   const [fullAiVisualStyle, setFullAiVisualStyle] = useState<FullAiVisualStyle>('Story with cohesive characters');
   const [primaryTalkingPoint, setPrimaryTalkingPoint] = useState('');
+  const [duration, setDuration] = useState<(typeof DURATIONS)[number]>('16-59 sec');
   const isFullAi = adType === FULL_AI_AD_TYPE;
   const { result, loading, error, generate, reset } = useClaudeApi(apiKey);
 
@@ -80,6 +88,7 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
         adType,
         angleType,
         productCategory: product,
+        duration,
         isFullAi,
         fullAiSpec: isFullAi ? fullAiSpecification : undefined,
         fullAiVisualStyle: isFullAi ? fullAiVisualStyle : undefined,
@@ -98,6 +107,7 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
         funnelStage,
         adType,
         primaryTalkingPoint: primaryTalkingPoint.trim() || undefined,
+        duration,
         fullAiSpecification: isFullAi ? fullAiSpecification : undefined,
         fullAiVisualStyle: isFullAi ? fullAiVisualStyle : undefined,
       },
@@ -214,6 +224,14 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
               <label className="block text-sm font-medium text-slate-700 mb-2">Angle Type</label>
               <select value={angleType} onChange={(e) => setAngleType(e.target.value as AngleType)} className={selectClass}>
                 {ANGLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Duration</label>
+              <p className="text-xs text-slate-400 mb-2">Matches Asana Medium column. Concepts are shaped by runtime — shorter = tighter focus.</p>
+              <select value={duration} onChange={(e) => setDuration(e.target.value as typeof duration)} className={selectClass}>
+                {DURATIONS.map((d) => <option key={d} value={d}>{DURATION_LABELS[d]}</option>)}
               </select>
             </div>
 

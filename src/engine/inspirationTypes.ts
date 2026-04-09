@@ -21,7 +21,7 @@ export type InspirationKind = 'video' | 'brief';
 
 export type InspirationStatus = 'analyzing' | 'ready' | 'failed';
 
-export type InspirationDuration = '15s' | '30s' | '60s' | '90s' | 'unknown';
+export type InspirationDuration = '1-15 sec' | '16-59 sec' | '60-90 sec' | 'unknown';
 
 /** Tag schema — mirrors the existing dropdowns used elsewhere in the app. */
 export interface InspirationTags {

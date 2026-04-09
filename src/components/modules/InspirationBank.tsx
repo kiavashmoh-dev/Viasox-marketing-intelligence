@@ -889,7 +889,7 @@ function DetailModal({
               <TagSelect
                 label="Duration"
                 value={tags.duration}
-                options={['15s', '30s', '60s', '90s']}
+                options={['1-15 sec', '16-59 sec', '60-90 sec']}
                 onChange={(v) => updateOverride('duration', v as InspirationTags['duration'])}
               />
             </div>

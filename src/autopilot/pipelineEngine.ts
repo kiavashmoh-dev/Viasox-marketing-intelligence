@@ -256,9 +256,9 @@ async function sendMessageWithRetry(
 
 function getMaxTokensForDuration(duration: string): number {
   switch (duration) {
-    case '15s': return 16000;
-    case '30s': return 20000;
-    case '60s': return 24000;
+    case '1-15 sec': return 16000;
+    case '16-59 sec': return 20000;
+    case '60-90 sec': return 24000;
     default: return 20000;
   }
 }
@@ -599,15 +599,24 @@ DO NOT create generic "comfortable socks" concepts. The angle "${task.parsed.ang
 
 ${getAngleLanguageBank(task.parsed.angle)}
 
-**FORMAT: ${task.parsed.medium} (${task.duration})**
-${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed long-form story. Short form means:
+**FORMAT: ${task.parsed.medium} (${task.duration}${task.duration === '1-15 sec' ? ', final cut ≤ 15s' : task.duration === '16-59 sec' ? ', final cut ≤ 59s' : ', final cut ≤ 90s'})**
+${task.duration === '1-15 sec' ? `This is a SHORT FORM ad. Do NOT write a compressed long-form story. Short form means:
 - Experiment with VO and no-VO styles
 - Consider POV-only (viewer sees through the character's eyes)
 - First person, third person, or talking directly to viewer
 - A single powerful moment or image, not a full narrative arc
 - Creative visual treatments: split screen, text overlay, rapid cuts, reaction format
 - The hook IS the ad — there's no "body." Every second is hook.
-- Think TikTok/Reels native, not a TV spot cut short.` : ''}`;
+- Think TikTok/Reels native, not a TV spot cut short.
+- Word budget: 30-35 words, hard ceiling 37 words.` : task.duration === '16-59 sec' ? `This is a MID FORM ad (16-59 seconds). VO REQUIRED. Structure:
+- Full hook → body → close arc that lands inside 59 seconds
+- 6-7 narrative beats, compact scene count (8-14 storyboard rows)
+- Word budget: 115-135 words, hard ceiling 145 words.
+- Every line must earn its place — cut anything that doesn't drive the arc.` : `This is an EXPANDED ad (60-90 seconds). VO REQUIRED. Structure:
+- Full documentary-style arc with setup, intensification, turn, resolution
+- 8-stage narrative possible, 16-22 storyboard rows
+- Word budget: 190-215 words, hard ceiling 225 words.
+- Pacing matters — every 15-second block must earn attention to keep the viewer through 90s.`}`;
 
       const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
 
@@ -755,8 +764,8 @@ ${task.duration === '15s' ? `This is a SHORT FORM ad. Do NOT write a compressed 
         const angleDirective = `\n\n## PRIMARY CREATIVE DIRECTIVE — SPECIFIC ANGLE: "${task.parsed.angle}"
 ${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customDirectives}\n` : ''}
 **CRITICAL:** This brief MUST be specifically, unmistakably about "${task.parsed.angle}".
-**FORMAT: ${task.parsed.medium} (${task.duration})**
-${task.duration === '15s' ? 'This is a SHORT FORM ad. Do NOT write a compressed long-form story.' : ''}`;
+**FORMAT: ${task.parsed.medium} (${task.duration}${task.duration === '1-15 sec' ? ', final cut ≤ 15s' : task.duration === '16-59 sec' ? ', final cut ≤ 59s' : ', final cut ≤ 90s'})**
+${task.duration === '1-15 sec' ? 'This is a SHORT FORM ad (≤15s). Do NOT write a compressed long-form story. Word budget: 30-35 words, hard ceiling 37.' : task.duration === '16-59 sec' ? 'This is a MID FORM ad (≤59s). VO required. Word budget: 115-135 words, hard ceiling 145.' : 'This is an EXPANDED ad (≤90s). VO required. Word budget: 190-215 words, hard ceiling 225.'}`;
 
         const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
 
@@ -943,7 +952,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}". The word "${ts
 
 ${getAngleLanguageBank(ts.task.parsed.angle)}
 
-${ts.task.duration === '15s' ? `## SHORT FORM CREATIVE PRINCIPLES (<15 seconds)
+${ts.task.duration === '1-15 sec' ? `## SHORT FORM CREATIVE PRINCIPLES (≤15 seconds)
 This is NOT a compressed long-form ad. Short form is its own creative discipline:
 - DO NOT try to tell a full story with problem → agitate → solution → proof → CTA. That's 30-60s thinking forced into 15s.
 - Instead, pick ONE of these short-form approaches:
@@ -955,8 +964,24 @@ This is NOT a compressed long-form ad. Short form is its own creative discipline
   6. **Reaction Format** — Show someone reacting to the product/result. Authentic surprise > scripted lines.
   7. **Single Stat** — One powerful number (107,347 reviews, 65% repeat buyers) + product shot. That's the ad.
 
-The script table should have 2-4 rows MAX. Not 6-8 rows squeezed into 15 seconds.
-Every second matters. If a word doesn't earn its place, cut it.` : ''}\n`;
+The script table should have 3-5 rows MAX. Not 6-8 rows squeezed into 15 seconds.
+Word budget: 30-35 words, hard ceiling 37 words. Every second matters. If a word doesn't earn its place, cut it.` : ts.task.duration === '16-59 sec' ? `## MID FORM CREATIVE PRINCIPLES (16-59 seconds)
+This is a mid-form ad built around a VO arc that lands inside 59 seconds:
+- VO IS MANDATORY — no silent scripts at this length
+- 6-7 narrative beats in a tight hook → escalation → proof → close arc
+- Storyboard rows: 8-14. Every row earns its place.
+- Word budget: 115-135 words, hard ceiling 145 words (calibrated for 150 WPM)
+- The final cut MUST be ≤ 59 seconds — pick frameworks that fit (PAS, Myth Buster, Observation Arc, Contrast/Split, Confession Arc)
+- Avoid sprawling 8-stage documentaries — those belong in 60-90 sec briefs
+- If you're tempted to write a 10th beat, you're overshooting. Tighten the arc.` : `## EXPANDED CREATIVE PRINCIPLES (60-90 seconds)
+This is the long-form slot — full documentary/narrative arc possible:
+- VO IS MANDATORY — no silent scripts at this length
+- Full 8-stage arc: setup → tension → escalation → turn → proof → resolution → CTA
+- Storyboard rows: 16-22. Pacing matters — every 15-second block must earn continued attention.
+- Word budget: 190-215 words, hard ceiling 225 words (calibrated for 150 WPM)
+- The final cut MUST be ≤ 90 seconds — this is the ceiling, not a suggestion
+- Frameworks that work here: Documentary, Narrative Arc, Confession Arc, Observation Arc, Contrast/Split, PAS extended
+- Avoid filler — the extra runtime is earned by depth, not padding.`}\n`;
 
       const scriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective;
       const scriptTokens = getMaxTokensForDuration(ts.task.duration);

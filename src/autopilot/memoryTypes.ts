@@ -13,7 +13,7 @@ export interface BriefMemoryRecord {
   angle: string;                 // "Neuropathy", "Swelling", etc.
   product: string;               // "EasyStretch", "Compression", etc.
   medium: string;                // "Shortform", "Midform", "Expanded"
-  duration: string;              // "15s", "30s", "60s"
+  duration: string;              // "1-15 sec", "16-59 sec", "60-90 sec" (Asana Medium column)
   framework: string;             // e.g., "PAS (Problem-Agitate-Solution)"
   hookStyles: string[];          // e.g., ["Question", "Bold Statement", "Relatable Moment"]
   hookSummaries: string[];       // First 80 chars of each of the 3 hooks

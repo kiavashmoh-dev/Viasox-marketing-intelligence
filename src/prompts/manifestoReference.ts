@@ -326,7 +326,7 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 ### 4. Star-Story-Solution
 **Book Origin:** Hopkins (psychology of service) + Schwartz (identification technique)
 **Structure:** Star/relatable character (0-15%) → Story/their journey (15-65%) → Solution (65-90%) → CTA (90-100%)
-**Best for:** Storytelling formats, longer durations (30s-60s), emotional connection. TOF and MOF.
+**Best for:** Storytelling formats, longer durations (16-59 sec and 60-90 sec), emotional connection. TOF and MOF.
 **How to Execute:**
 - STAR: Introduce a specific, relatable character. Hopkins: select your audience by making the star THEM. Not "a woman" but "a retired nurse whose legs haven't stopped aching since her last shift 5 years ago." Schwartz: the viewer must IDENTIFY with this character instantly.
 - STORY: The narrative arc must follow the Cycle of False Hope from the manifesto — the Star has tried and failed before. Include specific details from review data: the brands they tried, the pharmacy visits, the moment they gave up. The story must feel REAL — Hopkins insists on truth in advertising. Use actual customer journeys.
