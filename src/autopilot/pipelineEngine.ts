@@ -605,18 +605,18 @@ export async function runConceptPhase(
         .map((d) => `**Custom Directive (${d.angle} / ${d.product}):** ${d.directive}`)
         .join('\n');
 
-      const angleDirective = `\n\n## PRIMARY CREATIVE DIRECTIVE — SPECIFIC ANGLE: "${task.parsed.angle}"
+      const angleDirective = `\n\n## ⚠️ PRIMARY CREATIVE DIRECTIVE — TALKING POINT: "${task.parsed.angle}"
 ${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customDirectives}\n` : ''}
 
-**CRITICAL:** This brief MUST be specifically, unmistakably about "${task.parsed.angle}". Every concept must:
-1. Name "${task.parsed.angle}" explicitly — use the actual word/condition in the script
-2. Show scenarios, symptoms, or experiences directly related to "${task.parsed.angle}"
-3. Reference real customer quotes and review data specifically about "${task.parsed.angle}"
-4. The viewer should understand within the first 3 seconds that this ad is about "${task.parsed.angle}"
+**THIS OVERRIDES ALL OTHER INSPIRATION.** The manifesto examples (sock graveyard, shoe swapping, 30-inch truth, etc.), winning ad bank, emotional patterns, and customer voice bank are BACKGROUND CONTEXT — they inform tone and strategy, but they do NOT set the topic. The topic is "${task.parsed.angle}" and ONLY "${task.parsed.angle}".
 
-If the angle is a medical condition (neuropathy, diabetes, varicose veins, swelling), the concepts must use medically accurate but accessible language about that specific condition. If the angle is a lifestyle (standing all day, travel, gift), the concepts must center on that specific life situation.
+Every concept must:
+1. Be unmistakably, specifically about "${task.parsed.angle}" — not about comfort in general, not about gifting, not about working all day, not about any other condition or lifestyle unless it directly connects to "${task.parsed.angle}"
+2. Name "${task.parsed.angle}" explicitly (or its direct synonym) in the concept description
+3. Describe scenarios, symptoms, or experiences that someone with/experiencing "${task.parsed.angle}" would immediately recognize as THEIR reality
+4. Use customer language specifically from the "${task.parsed.angle}" angle language bank below — not generic Viasox quotes about other conditions
 
-DO NOT create generic "comfortable socks" concepts. The angle "${task.parsed.angle}" must be the SOUL of every concept.
+**REJECTION TEST:** If you could swap out "${task.parsed.angle}" for a different talking point and the concept would still work unchanged, the concept is TOO GENERIC and must be rewritten. Each concept must be so tightly bound to "${task.parsed.angle}" that removing it would break the concept.
 
 ${getAngleLanguageBank(task.parsed.angle)}
 
@@ -783,9 +783,14 @@ ${task.duration === '1-15 sec' ? `This is a SHORT FORM ad. Do NOT write a compre
           .map((d) => `**Custom Directive (${d.angle} / ${d.product}):** ${d.directive}`)
           .join('\n');
 
-        const angleDirective = `\n\n## PRIMARY CREATIVE DIRECTIVE — SPECIFIC ANGLE: "${task.parsed.angle}"
+        const angleDirective = `\n\n## ⚠️ PRIMARY CREATIVE DIRECTIVE — TALKING POINT: "${task.parsed.angle}"
 ${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customDirectives}\n` : ''}
-**CRITICAL:** This brief MUST be specifically, unmistakably about "${task.parsed.angle}".
+**THIS OVERRIDES ALL OTHER INSPIRATION.** The manifesto examples, winning ad bank, and emotional patterns are BACKGROUND CONTEXT — they do NOT set the topic. The topic is "${task.parsed.angle}" and ONLY "${task.parsed.angle}".
+
+Every concept must be unmistakably about "${task.parsed.angle}". If a concept could work with a different talking point swapped in, it is too generic — rewrite it.
+
+${getAngleLanguageBank(task.parsed.angle)}
+
 **FORMAT: ${task.parsed.medium} (${task.duration}${task.duration === '1-15 sec' ? ', final cut ≤ 15s' : task.duration === '16-59 sec' ? ', final cut ≤ 59s' : ', final cut ≤ 90s'})**
 ${task.duration === '1-15 sec' ? 'This is a SHORT FORM ad (≤15s). Do NOT write a compressed long-form story. Word budget: 30-35 words, hard ceiling 37.' : task.duration === '16-59 sec' ? 'This is a MID FORM ad (≤59s). VO required. Word budget: 115-135 words, hard ceiling 145.' : 'This is an EXPANDED ad (≤90s). VO required. Word budget: 190-215 words, hard ceiling 225.'}`;
 
@@ -1317,7 +1322,13 @@ ${ts.scriptResult || '[no previous brief]'}
       ? pinned.richContext
       : (deep && deep.hasContent ? deep.richContext : '');
     const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing || undefined, regenInspirationCtx);
-    const regenAngleCtx = `\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
+    const regenAngleCtx = `\n\n## ⚠️ PRIMARY CREATIVE DIRECTIVE — TALKING POINT: "${task.parsed.angle}"
+
+**THIS OVERRIDES ALL OTHER INSPIRATION.** The manifesto examples, winning ad bank, and emotional patterns are BACKGROUND CONTEXT — they do NOT set the topic. The topic is "${task.parsed.angle}" and ONLY "${task.parsed.angle}".
+
+Every concept must be unmistakably about "${task.parsed.angle}". If a concept could work with a different talking point swapped in, it is too generic — rewrite it.
+
+${getAngleLanguageBank(task.parsed.angle)}\n`;
 
     const regenConceptSystem = anglesPrompt.system + resourceCtx + directionBlock + regenAngleCtx;
     let conceptsRaw: string;

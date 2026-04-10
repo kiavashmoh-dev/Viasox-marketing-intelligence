@@ -816,7 +816,15 @@ For each of the 5 concepts, use this EXACT structure with the numbered header fo
 
 CRITICAL: Do NOT recycle the example angle frames listed in the instructions (e.g., "The Sock Mark Problem", "Compression Without Compromise", "For Nurses Who Never Sit"). Those are reference examples showing the STRATEGIC LOGIC of each angle type. Your job is to mine the actual review data for fresh insights and build entirely original concepts and angles. Every concept must contain a specific data point or customer quote that proves it was born from THIS dataset, not copied from a template.
 
-Generate EXACTLY 5 concepts. Ground every one in real review data. These should feel fresh, strategically deep, and immediately executable.`;
+Generate EXACTLY 5 concepts. Ground every one in real review data. These should feel fresh, strategically deep, and immediately executable.${params.primaryTalkingPoint ? `
+
+## ⚠️ FINAL VALIDATION — READ THIS LAST
+
+Before writing ANY concept, ask yourself: "Is this concept SPECIFICALLY about ${params.primaryTalkingPoint}?" If the answer is no — if the concept is about sock marks in general, shoe-swapping, gifting, working all day, or any topic OTHER than ${params.primaryTalkingPoint} — DELETE IT and write one that IS about ${params.primaryTalkingPoint}. Every single concept must be unmistakably, specifically, laser-focused on ${params.primaryTalkingPoint}. A concept about "comfortable socks" or "long shifts" that never connects to ${params.primaryTalkingPoint} is a REJECTED concept. The talking point is not a suggestion — it is the assignment.` : ''}${inspirationContext ? `
+
+## ⚠️ REFERENCE AD CONSTRAINT
+
+A reference ad has been provided in the system instructions (look for "PINNED REFERENCE AD" or "INSPIRATION BANK REFERENCES"). Your concepts MUST structurally mirror that reference — same hook archetype, same emotional entry point, same narrative shape, same pacing rhythm. Do NOT ignore the reference and generate unrelated concepts. The reference ad defines the creative DNA; your job is to adapt its approach to this brief's specific talking point and product. If a concept does not visibly echo the reference ad's structure and style, it will be rejected.` : ''}`;
 
   // Inject memory briefing if available
   const memorySection = memoryBriefing
