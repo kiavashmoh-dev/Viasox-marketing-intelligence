@@ -263,6 +263,27 @@ function getMaxTokensForDuration(duration: string): number {
   }
 }
 
+// ─── Script Result Validation ───────────────────────────────────────────────
+
+/**
+ * Validate that a script result contains meaningful brief content.
+ * The model occasionally returns a near-empty or preamble-only response
+ * (especially under load). Without this check, the task would be marked
+ * 'complete' with an empty brief card that can't be exported or used.
+ *
+ * Checks:
+ *  1. Minimum length (300 chars — even a minimal 15s brief exceeds this)
+ *  2. Contains at least one markdown table row (pipe-delimited)
+ */
+function validateScriptResult(result: string): void {
+  if (result.trim().length < 300) {
+    throw new Error('Brief generation returned insufficient content. Retrying...');
+  }
+  if (!result.includes('|')) {
+    throw new Error('Brief generation returned no table content. Retrying...');
+  }
+}
+
 // ─── Creative Direction Block ────────────────────────────────────────────────
 
 function buildDirectionBlock(direction: CreativeDirection, strategyBrief?: string): string {
@@ -1026,6 +1047,7 @@ This is the long-form slot — full documentary/narrative arc possible:
         );
       }
 
+      validateScriptResult(scriptResult);
       ts.scriptResult = scriptResult;
       ts.step = 'complete';
       onProgress({ ...state });
@@ -1124,6 +1146,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
           );
         }
 
+        validateScriptResult(scriptResult);
         ts.scriptResult = scriptResult;
         ts.step = 'complete';
         onProgress({ ...state });
@@ -1445,6 +1468,7 @@ ${ts.scriptResult || '[no previous brief]'}
       );
     }
 
+    validateScriptResult(scriptResult);
     ts.scriptResult = scriptResult;
     ts.step = 'complete';
     onProgress({ ...state });
