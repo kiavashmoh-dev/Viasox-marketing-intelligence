@@ -6,6 +6,7 @@ import {
   exportMemory,
   importMemory,
   clearMemory,
+  deleteBatch,
 } from '../../autopilot/memoryStore';
 
 interface Props {
@@ -19,8 +20,15 @@ export default function MemoryPanel({ onClose }: Props) {
   const [importError, setImportError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const batches = getBatchHistory();
+  const [batchList, setBatchList] = useState(() => getBatchHistory());
   const lastBriefing = getLastCuratorBriefing();
+
+  const handleDeleteBatch = (batchId: string, date: string) => {
+    if (!window.confirm(`Delete batch from ${date}? This removes the batch, its briefs, and any associated feedback/redo events from memory.`)) return;
+    deleteBatch(batchId);
+    setBatchList(getBatchHistory());
+    setStats(getMemoryStats());
+  };
 
   const handleExport = () => {
     const json = exportMemory();
@@ -109,21 +117,30 @@ export default function MemoryPanel({ onClose }: Props) {
           )}
 
           {/* Batch History */}
-          {batches.length > 0 && (
+          {batchList.length > 0 && (
             <div>
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className="text-sm font-semibold text-slate-600 hover:text-slate-800 flex items-center gap-1"
               >
-                {showHistory ? '\u25BC' : '\u25B6'} Batch History ({batches.length})
+                {showHistory ? '\u25BC' : '\u25B6'} Batch History ({batchList.length})
               </button>
               {showHistory && (
                 <div className="mt-2 space-y-2 max-h-64 overflow-y-auto">
-                  {batches.map((batch) => (
+                  {batchList.map((batch) => (
                     <div key={batch.batchId} className="bg-slate-50 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold text-slate-700">{batch.date}</span>
-                        <span className="text-[10px] text-slate-400">{batch.taskCount} tasks</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400">{batch.taskCount} tasks</span>
+                          <button
+                            onClick={() => handleDeleteBatch(batch.batchId, batch.date)}
+                            className="text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50 px-1.5 py-0.5 rounded transition-colors"
+                            title="Delete this batch from memory"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                       <div className="space-y-0.5">
                         {batch.briefs.map((b) => (

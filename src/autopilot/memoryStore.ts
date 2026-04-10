@@ -102,6 +102,21 @@ export function getBatchHistory(): BatchMemoryRecord[] {
   return [...store.batches].reverse(); // Newest first
 }
 
+/**
+ * Delete a single batch by batchId. Also removes any feedback records,
+ * redo events, and angle patterns that reference this batch so the
+ * memory stays consistent.
+ */
+export function deleteBatch(batchId: string): void {
+  const store = loadMemory();
+  store.batches = store.batches.filter((b) => b.batchId !== batchId);
+  store.feedback = store.feedback.filter((f) => f.batchId !== batchId);
+  if (store.redoEvents) {
+    store.redoEvents = store.redoEvents.filter((r) => r.batchId !== batchId);
+  }
+  saveMemory(store);
+}
+
 // ─── Query Functions (pure in-memory, no API calls) ─────────────────────────
 
 export function getHistoryForAngle(angle: string): BriefMemoryRecord[] {
