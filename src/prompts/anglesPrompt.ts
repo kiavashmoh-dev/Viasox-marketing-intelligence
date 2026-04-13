@@ -784,6 +784,22 @@ All five selectors (awareness level, ad type, angle type, product line, funnel s
 - Most Aware + AGC + Aspiration-Based + Compression + BOF = A polished, cinematic 15-second spot opening with "Viasox Compression — 20% off this week" showing a nurse confidently walking out of the hospital at shift end
 These should feel like COMPLETELY DIFFERENT ADS because every selector changes the output.
 
+## STEP 0 — STRATEGIC TERRITORY MAP (MANDATORY — PRODUCE BEFORE THE CONCEPTS)
+
+Before writing any concepts, you MUST produce a brief territory map that commits you to 5 DISTINCT creative territories for ${params.primaryTalkingPoint ? `"${params.primaryTalkingPoint}"` : `${params.product}`}. This prevents concept drift, repetition, and generic output. Output this map ABOVE the 5 concepts:
+
+### TERRITORY MAP FOR ${params.primaryTalkingPoint ? `"${params.primaryTalkingPoint.toUpperCase()}"` : `${params.product.toUpperCase()}`}
+For each of the 5 concept slots, declare:
+1. **Territory:** The specific facet of ${params.primaryTalkingPoint ? `"${params.primaryTalkingPoint}"` : `${params.product}`} this concept will explore (e.g., for Diabetes: "the morning blood sugar ritual," "the feet your doctor warned you about," "the invisible neuropathy no one sees," etc.). Each territory must be DIFFERENT — if two territories could describe the same ad, merge them and find a new one.
+2. **Emotional Entry:** The specific emotion the viewer feels in the first 3 seconds (frustration, fear, recognition, curiosity, hope, etc.). No two concepts should share the same emotional entry.
+3. **Proof Anchor:** The specific data point or customer quote from the review data that this concept is built on. Each concept MUST have a unique proof anchor.
+4. **Hook Archetype:** question / statement / revelation / action / statistic / scene. Distribute across the 5 concepts — no archetype may appear more than twice.
+5. **Framework Lean:** Which script framework this concept naturally lends itself to. Spread across at least 3 different frameworks.
+
+**SELF-CHECK:** After mapping, verify: (1) all 5 territories are genuinely distinct facets of ${params.primaryTalkingPoint ? `"${params.primaryTalkingPoint}"` : `the assigned angle`}, not generic comfort/lifestyle topics, (2) no two concepts share the same emotional entry, (3) hook archetypes are distributed, (4) every proof anchor is unique. If any check fails, revise the map before writing concepts.
+
+Then write the 5 concepts below the territory map, executing each territory as planned.
+
 For each of the 5 concepts, use this EXACT structure with the numbered header format "## Concept 1:", "## Concept 2:", etc.:
 
 ## Concept [N]: [Concept Title]

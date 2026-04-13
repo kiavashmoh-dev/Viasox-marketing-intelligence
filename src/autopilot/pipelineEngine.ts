@@ -1283,7 +1283,21 @@ ${feedback}
 Previous brief that needs to be redone (for reference — DO NOT copy this):
 <previous_brief>
 ${ts.scriptResult || '[no previous brief]'}
-</previous_brief>`;
+</previous_brief>
+
+## ROOT CAUSE DIAGNOSIS (MANDATORY — PRODUCE BEFORE THE NEW BRIEF)
+
+Before regenerating, you MUST analyze the previous brief against the feedback and diagnose the ROOT CAUSE of each issue. Output a concise diagnosis ABOVE the new brief:
+
+### ROOT CAUSE ANALYSIS
+For each problem identified in the feedback:
+1. **What failed:** Name the specific failure pattern (e.g., "talking point drift," "wrong awareness treatment," "generic manifesto contamination," "framework structure violation," "hook archetype convergence," "product line confusion," "word count overrun," "visual pacing monotony")
+2. **Why it failed:** The structural reason — did the model default to manifesto examples instead of the assigned talking point? Did it front-load the product in an Unaware brief? Did it use post-education reviewer language in the hook? Did it exceed the word ceiling because beats weren't planned?
+3. **Corrective action:** The specific decision that will be DIFFERENT in the new brief — name the beat, the line, or the structural change
+
+This diagnosis ensures the regeneration targets the actual failure instead of blindly retrying with the same structural approach. The new brief MUST demonstrate that each diagnosed issue has been corrected — if the diagnosis says "talking point only appeared in 1 beat," the new brief must thread it through at least 3 beats.
+
+After the diagnosis, proceed to generate the complete new brief.`;
 
   const fullDirection: CreativeDirection = {
     ...direction,

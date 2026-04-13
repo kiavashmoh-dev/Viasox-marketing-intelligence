@@ -1207,6 +1207,23 @@ All selectors (awareness, ad type, product, funnel, framework, duration, book) i
 - Most Aware + AGC + Compression + BOF + 1-15 sec = Polished short-form spot: "Viasox Compression — 20% off this week" with nurse removing shoes after shift, immediate CTA
 These should be COMPLETELY DIFFERENT scripts because every selector changes the output.
 
+## STEP 0 — STRATEGIC OUTLINE (MANDATORY — PRODUCE BEFORE THE BRIEF)
+
+Before writing any brief tables, you MUST produce a concise strategic outline. This catches structural drift, word count overruns, and talking point neglect before you commit to a full ${durationTarget.sweetSpot} brief. Output this outline ABOVE the main brief:
+
+### STRATEGIC OUTLINE
+- **Framework Rationale:** Why ${params.framework} is the right framework for ${params.awarenessLevel} × ${params.adType} × ${params.product}. One sentence connecting the framework's arc to the awareness level's requirements.
+- **Beat Map:** Plan each beat against the time budget (target ${durationTarget.sweetSpot}, hard ceiling ${durationTarget.hardCeiling}). For each beat: what happens, approximate word count, primary emotion.${params.conceptAngleContext ? `
+- **Concept Execution Plan:** How the pre-loaded concept's hypothesis, angle, and emotional core will be threaded through each beat. Name the specific concept element that drives each beat.` : ''}
+- **Talking Point Threading:** Where exactly does the assigned talking point surface in each beat? Name the beat and the specific language you'll use. The talking point must appear in at least 3 beats — if your outline shows it in fewer, revise the plan before proceeding.
+- **Visual Pacing Plan:** List your planned shot type sequence beat-by-beat. Flag any two consecutive same-type shots (e.g., two Talking Head rows back-to-back). For Ecom: verify every shot exists in the available footage library.
+- **Hook Strategy:** For each of your ${params.hookVariations} hooks: the hook archetype (question / statement / revelation / action / statistic / scene), the emotional entry point, and the first 5-6 words. No two hooks may share an archetype.
+- **Word Budget:** Estimate the word count per beat. Sum them. If the total exceeds ${durationTarget.hardCeiling}, cut beats or tighten language BEFORE writing the full brief. Do not proceed with an outline that exceeds the ceiling.
+
+**SELF-CHECK BEFORE PROCEEDING:** After outlining, verify: (1) talking point appears in ≥3 beats, (2) no two hooks share an archetype, (3) total word estimate is within ${durationTarget.sweetSpot}, (4) ${params.awarenessLevel === 'Unaware' ? 'Schwartz\'s Three Elimination Rules are honored in Beats 1-2' : 'the awareness level\'s structural requirements are met in the beat map'}, (5) every visual is producible for ${params.adType}. If any check fails, fix the outline first.
+
+Then write the complete brief below the outline, executing the plan faithfully.
+
 ${templateAdType === 'AGC (Actor Generated Content)' ? `OUTPUT STRUCTURE — AGC PRODUCTION BRIEF (follow this exact order):
 
 **1. STRATEGY SECTION** — Complete strategy block with: Concept, Angle, Avatar, Location, Product, Collection, Promotion, Offer, Pacing, Music, Assets, Additional Notes

@@ -240,6 +240,34 @@ Different creative scenarios, emotional entry points, and narrative approaches a
 **4. Persona Spread**
 Not all briefs targeting the exact same customer archetype. The batch should reach different segments — healthcare workers, seniors, gift-buying caregivers, style-conscious women, skeptical first-timers, etc. If every brief targets "woman with foot pain" = FLAG.
 
+## SYSTEMIC PATTERN ANALYSIS (MANDATORY — PRODUCE AFTER BATCH-LEVEL CHECKS)
+
+Beyond per-brief issues and batch-level diversity checks, analyze the batch for SYSTEMIC patterns — structural tendencies that repeat across multiple briefs and indicate a deeper creative or strategic habit the pipeline has fallen into. These are more valuable than individual brief flags because they diagnose the ROOT CAUSE of recurring quality issues.
+
+Look for these specific systemic patterns:
+
+**1. Hook Archetype Convergence** — Do 3+ briefs open with the same hook archetype (all questions, all statements, all "Have you ever..." openings)? Name the archetype and count the occurrences. This indicates the concept generator is defaulting to a single entry pattern.
+
+**2. Framework Execution Drift** — Do briefs NAME a framework but structurally execute a different one? (e.g., "PAS" labeled but the body is really Before-After-Bridge). Count how many briefs show framework drift. This indicates the script writer is using framework names as labels, not structural guides.
+
+**3. Manifesto Contamination** — Do briefs pull example phrases, angle frames, or hook lines directly from the manifesto/system prompt ("sock graveyard," "shoe swapping," "30-inch truth," "the sock mark problem") rather than mining fresh language from the actual review data? Count instances. This is the most common quality killer — the model copying reference examples instead of creating original work.
+
+**4. Talking Point Surface-Level Threading** — Do briefs mention the assigned talking point (angle) in the hook and CTA but neglect it in the body beats? Count how many briefs have the talking point in <3 beats. This indicates structural drift where the middle of the brief defaults to generic comfort messaging.
+
+**5. Visual Pacing Monotony** — Do briefs stack the same shot types consecutively (3 Talking Head rows in a row, 2 Product Close-ups back-to-back)? Count instances across the batch. This produces boring visual rhythm in the final edit.
+
+**6. Awareness Level Bleed** — Do Unaware briefs accidentally use Problem Aware vocabulary, or do Problem Aware briefs accidentally use Solution Aware framing? Name the specific bleed pattern and which briefs it affects.
+
+For each systemic pattern detected, output:
+
+### Systemic Pattern: [Pattern Name]
+- **Affected briefs:** [list which briefs]
+- **Specific evidence:** [quote the repeated language, hook archetype, or structural element]
+- **Root cause hypothesis:** [why the pipeline is producing this pattern — e.g., "The manifesto's example angles are positioned as instructional context but the model treats them as templates to copy"]
+- **Recommended fix:** [what should change in future batches — e.g., "Add a manifesto contamination gate to the concept generator that rejects any concept containing verbatim manifesto phrases"]
+
+If NO systemic patterns are detected (all issues are isolated to individual briefs), explicitly state: "No systemic patterns detected — all issues are brief-specific."
+
 ${creativeDirectionInstructions ? `## CREATIVE DIRECTOR'S INSTRUCTIONS — VERIFY COMPLIANCE\n\nThe creative director gave these specific instructions for this batch:\n<creative_direction>\n${creativeDirectionInstructions}\n</creative_direction>\n\nFor EACH brief, verify whether the creative direction was followed. Flag any brief that contradicts or ignores these instructions.` : ''}`;
 
   const user = `## REVIEW DATA CONTEXT
@@ -298,7 +326,10 @@ Then at the end:
 
 **Overall Batch Assessment:** [3-5 sentences on the batch's strategic quality, creative range, and production readiness]
 **Strongest Brief:** [which and why]
-**Weakest Brief:** [which and why]`;
+**Weakest Brief:** [which and why]
+
+### Systemic Pattern Analysis
+[For each pattern detected, output the pattern name, affected briefs, specific evidence, root cause hypothesis, and recommended fix. If no systemic patterns detected, state: "No systemic patterns detected — all issues are brief-specific."]`;
 
   // Inject memory intelligence
   let memorySection = '';

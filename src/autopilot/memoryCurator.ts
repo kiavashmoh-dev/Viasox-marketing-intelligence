@@ -72,12 +72,64 @@ function buildCuratorInput(): string {
     parts.push('');
   }
 
-  // Reviewer failure patterns
+  // Reviewer failure patterns (aggregate counts)
   const failures = getReviewerFailurePatterns();
   if (failures.length > 0) {
     parts.push(`## REVIEWER FAILURE PATTERNS (FLAG/FAIL counts across all batches)`);
     parts.push(failures.map((f) => `- ${f.check}: ${f.count} times`).join('\n'));
     parts.push('');
+  }
+
+  // Failure context correlation — which angle/product combos trigger which failures
+  const allBriefs = store.batches.flatMap((b) => b.briefs);
+  const failedBriefs = allBriefs.filter((b) => b.reviewFlags.length > 0);
+  if (failedBriefs.length > 0) {
+    parts.push(`## FAILURE CONTEXT CORRELATION (angle × product × check)`);
+    parts.push(`Briefs with FLAGS/FAILs: ${failedBriefs.length} of ${allBriefs.length} total\n`);
+
+    // Group failures by angle+check to find failure-prone combos
+    const comboMap: Record<string, { count: number; checks: Record<string, number>; scores: number[] }> = {};
+    for (const brief of failedBriefs) {
+      const key = `${brief.angle} × ${brief.product}`;
+      if (!comboMap[key]) comboMap[key] = { count: 0, checks: {}, scores: [] };
+      comboMap[key].count++;
+      comboMap[key].scores.push(brief.reviewScore);
+      for (const flag of brief.reviewFlags) {
+        comboMap[key].checks[flag] = (comboMap[key].checks[flag] ?? 0) + 1;
+      }
+    }
+
+    const sorted = Object.entries(comboMap).sort((a, b) => b[1].count - a[1].count);
+    for (const [combo, data] of sorted.slice(0, 8)) {
+      const avgScore = (data.scores.reduce((s, v) => s + v, 0) / data.scores.length).toFixed(1);
+      const topChecks = Object.entries(data.checks)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([check, cnt]) => `${check} (${cnt}x)`)
+        .join(', ');
+      parts.push(`- **${combo}** — ${data.count} flagged brief(s), avg score ${avgScore}/10 | Top failures: ${topChecks}`);
+    }
+    parts.push('');
+
+    // High-scoring combos (for "proven strengths" contrast)
+    const highScorers = allBriefs.filter((b) => b.reviewScore >= 8);
+    if (highScorers.length > 0) {
+      parts.push(`## HIGH-PERFORMING COMBOS (score ≥ 8/10)`);
+      const highMap: Record<string, { count: number; frameworks: string[]; avgScore: number }> = {};
+      for (const brief of highScorers) {
+        const key = `${brief.angle} × ${brief.product}`;
+        if (!highMap[key]) highMap[key] = { count: 0, frameworks: [], avgScore: 0 };
+        highMap[key].count++;
+        highMap[key].avgScore += brief.reviewScore;
+        if (!highMap[key].frameworks.includes(brief.framework)) {
+          highMap[key].frameworks.push(brief.framework);
+        }
+      }
+      for (const [combo, data] of Object.entries(highMap).sort((a, b) => b[1].count - a[1].count).slice(0, 5)) {
+        parts.push(`- **${combo}** — ${data.count} high-score brief(s), avg ${(data.avgScore / data.count).toFixed(1)}/10 | Frameworks: ${data.frameworks.join(', ')}`);
+      }
+      parts.push('');
+    }
   }
 
   // Per-batch summaries (last 5)
@@ -142,6 +194,13 @@ STRUCTURE YOUR BRIEFING EXACTLY AS:
 
 ### Proven Strengths — BUILD ON THESE
 [Bullet list of patterns that consistently score well in reviews. Include which angle/framework/hook combos produced the highest scores.]
+
+### Failure Mode Intelligence — CONDITIONAL WARNINGS
+[This is the most actionable section. Analyze the failure context correlation data to extract SPECIFIC failure modes — patterns that predict when quality drops. Format each as a conditional warning that agents can act on. Examples of the format:
+- "When talking point is a MEDICAL CONDITION (Neuropathy, Diabetes, Varicose Veins) + awareness is UNAWARE → concepts drift to generic comfort messaging 40% of the time. COUNTERMEASURE: Force the medical condition into the concept title and Beat 1 scene."
+- "When ad type is ECOM + duration is 1-15 SEC → briefs overshoot word ceiling by 30%+ in 60% of cases. COUNTERMEASURE: Plan 25-word body maximum, not 35."
+- "When framework is PAS + angle is PROBLEM-BASED → Hook Differentiation fails 50% of the time because all 3 hooks default to pain questions. COUNTERMEASURE: Force at least one statement and one revelation hook."
+Only include failure modes supported by the data (at least 2 occurrences of the pattern). If the history is too small to detect conditional patterns, say so and provide general warnings instead.]
 
 ### Creative Direction History
 [Summary of past creative direction instructions and feedback, so agents understand the creative director's evolving preferences and can align with them even if no new direction is given this batch.]
