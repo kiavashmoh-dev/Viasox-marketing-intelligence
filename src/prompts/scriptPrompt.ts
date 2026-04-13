@@ -1366,7 +1366,7 @@ CRITICAL: Write completely original copy. Every line must be built from the actu
 
   // Inject memory briefing if available — focused on style/voice patterns
   const memorySection = memoryBriefing
-    ? `\n\n## CREATIVE INTELLIGENCE — STYLE & VOICE AWARENESS\n\nThe following briefing summarizes the creative history of this system. Use the sections on "Overused Patterns" and "Proven Strengths" to write scripts that feel fresh while building on what works.\n\n${memoryBriefing}`
+    ? `\n\n## CREATIVE INTELLIGENCE — STYLE & VOICE AWARENESS\n\nThe following briefing summarizes the creative history of this system. Use the sections on "Overused Patterns" and "Proven Strengths" to write scripts that feel fresh while building on what works.\n\n**CREATIVE FRESHNESS RULE:** Check the "Creative Repetition Watch" section. If recent briefs for this angle used similar hooks or narrative structures, write hooks and body copy that take a distinctly different tone, structure, or emotional angle. Do NOT recycle hook lines or story beats from recent output — every brief should feel like it was written by a different creative team.\n\n${memoryBriefing}`
     : '';
 
   // Inject inspiration bank context if available

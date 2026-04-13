@@ -158,6 +158,46 @@ function buildCuratorInput(): string {
     parts.push('');
   }
 
+  // Recent creative inventory — concept summaries + hooks with dates
+  // This gives the curator concrete data to flag repetition risks
+  const now = Date.now();
+  const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+  const recentInventoryBriefs = allBriefs
+    .filter((b) => {
+      const batchDate = store.batches.find((batch) => batch.briefs.includes(b))?.date;
+      return batchDate && (now - Date.parse(batchDate)) < TWO_WEEKS_MS;
+    });
+
+  if (recentInventoryBriefs.length > 0) {
+    parts.push(`## RECENT CREATIVE INVENTORY (last 14 days — for repetition avoidance)`);
+    parts.push(`RULE: Do NOT repeat the same concept, story, or hook within 7 days. After 7 days, the same ANGLE can be revisited but with a meaningfully different concept, framework, hook style, or emotional entry. Same idea + same twist = too soon.\n`);
+
+    // Group by angle for easy scanning
+    const byAngle: Record<string, typeof recentInventoryBriefs> = {};
+    for (const brief of recentInventoryBriefs) {
+      const key = brief.angle;
+      if (!byAngle[key]) byAngle[key] = [];
+      byAngle[key].push(brief);
+    }
+
+    for (const [angle, briefs] of Object.entries(byAngle)) {
+      parts.push(`### ${angle}`);
+      for (const brief of briefs) {
+        const batchDate = store.batches.find((batch) => batch.briefs.includes(brief))?.date ?? '?';
+        const daysAgo = batchDate !== '?' ? Math.round((now - Date.parse(batchDate)) / (24 * 60 * 60 * 1000)) : '?';
+        const isWithinWeek = typeof daysAgo === 'number' && daysAgo < 7;
+        const freshness = isWithinWeek ? '**TOO RECENT — DO NOT REPEAT**' : 'Can revisit with fresh twist';
+        parts.push(`- [${batchDate}, ${daysAgo}d ago] ${brief.id} (${brief.product}) — ${freshness}`);
+        parts.push(`  Concept: "${brief.conceptSummary.slice(0, 150)}"`);
+        parts.push(`  Framework: ${brief.framework} | Emotion: ${brief.emotionalEntry} | Persona: ${brief.persona}`);
+        if (brief.hookSummaries.length > 0) {
+          parts.push(`  Hooks: ${brief.hookSummaries.map((h) => `"${h}"`).join(' | ')}`);
+        }
+      }
+      parts.push('');
+    }
+  }
+
   // Per-batch summaries (last 5)
   const recentBatches = store.batches.slice(-5);
   if (recentBatches.length > 0) {
@@ -230,6 +270,15 @@ Only include failure modes supported by the data (at least 2 occurrences of the 
 
 ### Creative Direction History
 [Summary of past creative direction instructions and feedback, so agents understand the creative director's evolving preferences and can align with them even if no new direction is given this batch.]
+
+### Creative Repetition Watch — DO NOT REPEAT THESE
+[This section prevents back-to-back creative repetition. Review the RECENT CREATIVE INVENTORY data and list:
+- Any concept, story, or hook from the **last 7 days** that agents must NOT repeat or closely imitate. Be specific: name the concept summary, the hooks, and the emotional entry so agents know exactly what to avoid.
+- For angles that appeared in the last 7 days: specify what MUST be different if the same angle appears again (different framework, different emotional entry, different hook style, different story/scenario).
+- For angles that last appeared 7-14 days ago: note they CAN be revisited but encourage a fresh twist — different framework, hook style, or emotional entry point.
+- If no recent history exists, say "No prior batches in the last 14 days — full creative freedom."
+
+The goal is NOT to ban angles or topics — it's to ensure that when we revisit them, we bring genuinely new creative approaches. Same angle + same framework + same hook style + same emotional entry = creative stagnation. Same angle + new framework + different hooks + different story = healthy creative evolution.]
 
 ### Style Reference Evolution
 [If reference styles have been provided across batches, describe how the visual/narrative direction has evolved. If no references have been provided, note that and suggest that agents default to the brand's established style.]

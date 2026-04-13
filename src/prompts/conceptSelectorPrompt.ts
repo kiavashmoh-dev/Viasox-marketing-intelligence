@@ -274,10 +274,10 @@ Then select the SINGLE best concept.`;
   // Inject memory briefing if available
   let memorySection = '';
   if (memoryBriefing) {
-    memorySection += `\n\n## CREATIVE INTELLIGENCE — INSTITUTIONAL MEMORY\n\n${memoryBriefing}`;
+    memorySection += `\n\n## CREATIVE INTELLIGENCE — INSTITUTIONAL MEMORY\n\n**CREATIVE FRESHNESS RULE:** When evaluating concepts, PENALIZE any concept that closely mirrors a recent brief (same story, same emotional hook, same scenario) from the last 7 days. Check the "Creative Repetition Watch" section — if this angle was done recently, the winning concept MUST take a genuinely different creative path. Prefer concepts that explore new frameworks, new emotional entries, or new hook styles over concepts that retread familiar ground, even if the familiar concept is "safer."\n\n${memoryBriefing}`;
   }
   if (angleHistory) {
-    memorySection += `\n\n## PAST CREATIVE DECISIONS FOR "${angle}" ANGLE\n\nThe following table shows every brief previously produced for the "${angle}" angle. Use this to consciously select concepts that bring FRESH creative approaches.\n\n${angleHistory}`;
+    memorySection += `\n\n## PAST CREATIVE DECISIONS FOR "${angle}" ANGLE\n\nThe following table shows every brief previously produced for the "${angle}" angle. Use this to consciously select concepts that bring FRESH creative approaches. If a concept closely resembles any entry from the last 7 days (same story arc, same hook style, same emotional entry), downrank it significantly.\n\n${angleHistory}`;
   }
 
   // Inject inspiration bank context if available

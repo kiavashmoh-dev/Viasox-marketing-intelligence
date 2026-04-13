@@ -844,7 +844,7 @@ A reference ad has been provided in the system instructions (look for "PINNED RE
 
   // Inject memory briefing if available
   const memorySection = memoryBriefing
-    ? `\n\n## CREATIVE INTELLIGENCE — INSTITUTIONAL MEMORY\n\nThe following briefing comes from analysis of all previous batches this system has produced. Use it to generate concepts that are FRESH and DIFFERENT from what has been done before, while building on proven strengths.\n\n${memoryBriefing}`
+    ? `\n\n## CREATIVE INTELLIGENCE — INSTITUTIONAL MEMORY\n\nThe following briefing comes from analysis of all previous batches this system has produced. Use it to generate concepts that are FRESH and DIFFERENT from what has been done before, while building on proven strengths.\n\n**CREATIVE FRESHNESS RULE:** Pay close attention to the "Creative Repetition Watch" section. If this angle was used within the last 7 days, you MUST generate concepts with a meaningfully different story, emotional entry, hook approach, and framework than what was done before. Revisiting the same angle is fine — repeating the same concept is not. Each batch should feel like a new creative world, not a remix of last week.\n\n${memoryBriefing}`
     : '';
 
   // Inject inspiration bank context if available
