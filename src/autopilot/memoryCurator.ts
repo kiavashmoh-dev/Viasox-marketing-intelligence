@@ -132,6 +132,32 @@ function buildCuratorInput(): string {
     }
   }
 
+  // Criterion-level analysis — which criteria are weakest system-wide
+  const scoredBriefs = allBriefs.filter((b) => b.scoring?.reviewerBreakdown);
+  if (scoredBriefs.length >= 3) {
+    const criteriaKeys = [
+      'scriptVagueness', 'confusionFactor', 'scriptLineStrength', 'hookQuality',
+      'hookToBodyTransition', 'adTypeAdaptation', 'uniquenessCreativity',
+      'angleSpecificity', 'visualClarity', 'inspirationAdherence', 'frameworkExecution',
+    ] as const;
+
+    parts.push(`## CRITERION-LEVEL PERFORMANCE (across ${scoredBriefs.length} scored briefs)`);
+    for (const key of criteriaKeys) {
+      const scores: number[] = [];
+      for (const b of scoredBriefs) {
+        const bd = b.scoring!.reviewerBreakdown;
+        const entry = bd[key as keyof typeof bd];
+        if (entry && typeof entry === 'object' && 'score' in entry) scores.push(entry.score);
+      }
+      if (scores.length === 0) continue;
+      const avg = scores.reduce((s, v) => s + v, 0) / scores.length;
+      const failCount = scores.filter((s) => s <= 4).length;
+      const flagCount = scores.filter((s) => s > 4 && s <= 6).length;
+      parts.push(`- **${key}**: avg ${avg.toFixed(1)}/10 (${failCount} FAILs, ${flagCount} FLAGs across ${scores.length} briefs)`);
+    }
+    parts.push('');
+  }
+
   // Per-batch summaries (last 5)
   const recentBatches = store.batches.slice(-5);
   if (recentBatches.length > 0) {

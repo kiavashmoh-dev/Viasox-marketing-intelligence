@@ -19,7 +19,7 @@ import type {
 } from './memoryTypes';
 
 const STORAGE_KEY = 'viasox_creative_memory';
-const CURRENT_VERSION = 2;
+const CURRENT_VERSION = 3;
 
 // ─── Core Read/Write ────────────────────────────────────────────────────────
 
@@ -45,10 +45,14 @@ function migrateStore(parsed: CreativeMemoryStore): CreativeMemoryStore {
     scoreCalibration: parsed.scoreCalibration ?? null,
     pendingDirectiveProposals: parsed.pendingDirectiveProposals ?? [],
   };
-  // Backfill inspirationIdsUsed on legacy brief records
+  // Backfill optional fields on legacy brief records
   for (const batch of next.batches) {
     for (const brief of batch.briefs) {
       if (brief.inspirationIdsUsed === undefined) brief.inspirationIdsUsed = [];
+      // v3: backfill scoring field on pre-v3 briefs
+      if ((brief as BriefMemoryRecord).scoring === undefined) {
+        (brief as BriefMemoryRecord).scoring = null;
+      }
     }
   }
   next.version = CURRENT_VERSION;
@@ -114,6 +118,53 @@ export function deleteBatch(batchId: string): void {
   if (store.redoEvents) {
     store.redoEvents = store.redoEvents.filter((r) => r.batchId !== batchId);
   }
+  saveMemory(store);
+}
+
+// ─── User Score Override ───────────────────────────────────────────────────
+
+/**
+ * Let the user override the reviewer's score for a specific brief.
+ * Updates the scoring record, recalculates finalScore, and triggers
+ * recomputation of angle patterns + calibration so the learning system
+ * reflects the user's judgment immediately.
+ */
+export function updateBriefScore(
+  _batchId: string,
+  briefId: string,
+  userScore: number,
+  userNotes: string,
+): void {
+  const store = loadMemory();
+  // Find the brief across all batches by its id (most recent match wins)
+  let brief: BriefMemoryRecord | undefined;
+  for (let i = store.batches.length - 1; i >= 0; i--) {
+    brief = store.batches[i].briefs.find((b) => b.id === briefId);
+    if (brief) break;
+  }
+  if (!brief) return;
+
+  const clamped = Math.max(1, Math.min(10, Math.round(userScore * 10) / 10));
+
+  if (brief.scoring) {
+    brief.scoring.userOverrideScore = clamped;
+    brief.scoring.userOverrideNotes = userNotes || null;
+    brief.scoring.overriddenAt = new Date().toISOString();
+    brief.scoring.finalScore = clamped;
+  } else {
+    // Legacy brief without scoring breakdown — still allow override
+    brief.scoring = {
+      reviewerBreakdown: {} as any,
+      reviewerOverallScore: brief.reviewScore,
+      userOverrideScore: clamped,
+      userOverrideNotes: userNotes || null,
+      finalScore: clamped,
+      scoredAt: brief.batchId,
+      overriddenAt: new Date().toISOString(),
+    };
+  }
+  brief.reviewScore = clamped;
+
   saveMemory(store);
 }
 

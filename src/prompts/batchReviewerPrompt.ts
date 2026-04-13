@@ -94,137 +94,42 @@ Ecom ads are built entirely in post-production:
 - No new shoots, no custom locations, no specific actors
 - Visuals must be describable with existing footage types (product close-ups, lifestyle moments, text cards)
 
-## PER-BRIEF CHECKS (10) — SCORE EACH ONE:
+## PER-BRIEF QUALITY CRITERIA (11) — SCORE EACH 1-10:
 
-**1. Hook Differentiation + Hook-Body Separation**
-Are the 3 hooks genuinely DIFFERENT approaches — different hook formulas (Question vs Statement vs Revelation), different emotional entry points, different visual openings? Three variations on the same idea = FAIL. Two similar + one different = FLAG.
-**CRITICAL ADDITIONAL CHECK:** Does the FIRST LINE of the body script repeat, paraphrase, or closely echo ANY of the 3 hooks? Each hook is a different entry point that leads into the SAME body. If the body's first line says essentially the same thing as one of the hooks, the viewer will hear the same sentence twice back-to-back — that's a FAIL. The body's first line must ADVANCE the narrative from where any hook would leave off, not restart it.
+Score each criterion 1-10. 1-4 = FAIL (fundamental issue), 5-6 = FLAG (needs work), 7-10 = PASS (acceptable to strong). Be specific in your notes — quote the lines that demonstrate the score.
 
-**2. Problem Specificity**
-Does the brief name a SPECIFIC pain point with SENSORY detail? "Foot discomfort" = FAIL. "The numbness that creeps up from your toes by 3pm" = PASS. Use the angle-specific language: Neuropathy = tingling/numbness/burning; Swelling = puffy/heavy/tight; Diabetes = circulation/foot care/non-binding; Varicose Veins = visible veins/aching/appearance.
+**1. scriptVagueness — Script Specificity (NEVER be vague)**
+Does the script use SPECIFIC, CONCRETE language throughout? Every line should paint a picture. "Experience comfort like never before" = 2/10. "The numbness that starts in your toes by 3pm and crawls up past your ankles" = 9/10. Check every beat — even one vague line in an otherwise specific script brings this score down. Data points must be specific ("89% reported reduced marks" not "most customers noticed a difference").
 
-**3. Angle Alignment (STRICTEST CHECK)**
-Does the brief's ENTIRE narrative orbit the assigned angle, or does it just mention it once and default to generic comfort messaging? The angle should be STRUCTURAL — it shapes the hook, the body, the visuals, and the CTA context. A brief assigned "Neuropathy" that mostly talks about soft socks = FAIL.
-**CRITICAL:** The specific angle word/phrase MUST appear in the script at least once. If the angle is "Neuropathy" and the words "neuropathy," "nerve pain," or "nerve damage" never appear — AUTOMATIC FAIL. If the angle is "Swelling" and the words "swell," "swollen," "puffy," or "edema" never appear — AUTOMATIC FAIL. Generic comfort language does NOT count as angle alignment.
+**2. confusionFactor — Clarity for Cold Audience (1.5x WEIGHT)**
+Could a cold audience member who knows NOTHING about Viasox follow this ad? By the halfway point, does the viewer understand what the ad is about? An Unaware script should not ASSUME the audience knows their problem — it should SHOW the problem through identification scenes. The viewer should never feel lost or wonder "what is this for?" If someone would need to rewatch to understand = FAIL. For Unaware briefs: the 5-beat structure must guide the viewer from recognition to revelation naturally. Schwartz's Three Elimination Rules must be honored in Beats 1-2 (no price, no product name, no direct problem/solution statement). Banned vocabulary in hook/Beat 1: "neuropathy," "edema," "compression sock," "Viasox," "offer," "buy."
 
-**3b. Awareness Level Correctness — SCHWARTZ'S THREE ELIMINATION RULES**
+**3. scriptLineStrength — Line Strength / Read-Aloud Test (1.5x WEIGHT)**
+Read every script line OUT LOUD mentally. Does it sound like a real person talking? Lines should never feel robotic, stilted, or like advertising copy. "Our innovative sock technology provides unparalleled comfort" = 2/10 (corporate). "I didn't even realize my feet were swelling until my daughter pointed it out" = 9/10 (human). Check: conversational phrasing, natural pauses, emotional resonance, varied sentence rhythm. Scripts that sound like they were written by a committee fail here.
 
-Check that the brief follows the CORRECT awareness level principles per Schwartz's Breakthrough Advertising (pp. 36-38) and the Viasox April 2026 Manifesto Update:
+**4. hookQuality — Hook Quality (1.5x WEIGHT)**
+Do the hooks do what hooks are supposed to do? Each hook must: (a) be SPECIFIC to the assigned angle and persona — not a generic "Have you ever noticed..." that could work for any product, (b) catch the attention of the specific audience we're targeting, (c) create enough curiosity or recognition to keep the viewer watching. Three hooks that are variations of the same idea = 3/10. Three genuinely different approaches (different archetypes: question / statement / revelation / scene) = 8+/10. Also check: if an Unaware brief, do hooks honor Schwartz's Three Elimination Rules (no price, no product, no direct problem statement)?
 
-**IF THE BRIEF IS UNAWARE** — apply Schwartz's Three Elimination Rules as HARD GATES. Any violation = FAIL.
+**5. hookToBodyTransition — Hook → Body Transition**
+The hooks must lead SEAMLESSLY into the first line of the script body. They must feel like they belong in that script. Check: (a) does each hook feel like it's part of the same ad, or is it forced/disconnected? (b) Does the first body line ADVANCE the narrative from where any hook would leave off, or does it restart/repeat the hook idea? (c) Could you read "hook → first body line" out loud and it sounds like a natural continuation? If the first body line says essentially the same thing as one of the hooks = 2/10. If it feels like a jarring jump = 4/10. If it flows naturally from all 3 hooks = 9/10.
 
-- **RULE 1 — NO PRICE.** Does the brief mention price, offers, "B2G3", "5 pairs for $60", discounts, or money language in ANY of the first 4 body beats? If yes = **FAIL** (Schwartz Rule 1 violation). Offer appears only in the final CTA beat.
+**6. adTypeAdaptation — Ad Type Adaptation**
+Is the entire brief properly adapted to the selected ad type? The template must be filled out completely and correctly for the format. Check: Ecom = all 8 sections present, shot types from available footage library, conversational VO lines. AGC = 9-hook matrix, production notes, B-roll list. UGC = raw/authentic feel, phone-shot aesthetic, spoken not written. Static = single image composition. Founder = personal monologue. Product accuracy matters here too: EasyStretch ≠ compression, Compression = medical support. VO-by-length rule: 16-59 sec and 60-90 sec MUST have voiceover. Length calibration: 1-15 sec ≤ 37 words, 16-59 sec ≤ 145 words, 60-90 sec ≤ 225 words. Count the body words.
 
-- **RULE 2 — NO PRODUCT NAME IN BEATS 1-2.** Does the hook, the first body line, or the identification beat name "Viasox," "our socks," "these socks," "compression socks," or visually show a branded product close-up? If yes = **FAIL** (Schwartz Rule 2 violation). Product should appear ONLY in Beat 5 (Product Reveal), near the end.
+**7. uniquenessCreativity — Uniqueness & Creativity**
+Does this brief feel FRESH or does it feel like every other brief the system has produced? Check for: overused openings ("Have you ever noticed..."), templated structures, manifesto example contamination (copying "sock graveyard," "shoe swapping," "30-inch truth" from reference examples), generic comfort messaging. A brief that could have been written without looking at the review data = 3/10. A brief with a genuinely original angle on the assigned talking point, grounded in real customer language = 9/10.
 
-- **RULE 3 — NO DIRECT PROBLEM/SOLUTION STATEMENT IN OPENING.** Does the hook or first body line directly name a medical condition ("neuropathy," "diabetic neuropathy," "edema," "varicose veins"), directly tell the viewer they have a problem ("Do you suffer from X?", "If you have Y..."), or promise a solution in Beat 1? If yes = **FAIL** (Schwartz Rule 3 violation). The opening must feel like a SCENE the viewer sees themselves in, not a pitch.
+**8. angleSpecificity — Angle/Concept Specificity**
+Does the brief's ENTIRE narrative orbit the assigned angle, or does it mention it once then drift to generic messaging? The angle should be STRUCTURAL — shaping hooks, body, visuals, and CTA. A brief assigned "Neuropathy" that mostly talks about soft socks = 3/10. The angle word/phrase MUST appear in the script at least once. But don't go too niche — the brief should still feel relatable to the target audience, not like a medical paper. The sweet spot: deeply about the angle, broadly relatable in emotion.
 
-**RULE 4 — 5-BEAT BODY STRUCTURE CHECK.** Does the Unaware brief's body map cleanly to the 5-Beat Unaware Structure?
-  1. **Identification** — a specific sensory moment the Unaware viewer recognizes as "me" (sock marks, ankles tight by 3pm, morning numbness, line across the calf). MUST exist — no "you have neuropathy" shortcut.
-  2. **Reframe** — reveal that the normalized moment isn't normal, or isn't caused by what they think. The "wait, what?" beat.
-  3. **Mechanism** — the invisible physiological cause (circulation, elastic compression, nerve pressure). Brief, credible, curiosity-building.
-  4. **Category Reveal** — "There's a type of sock built to prevent this" — the CATEGORY appears, not the brand.
-  5. **Product Reveal** — Viasox appears ONLY here, at the end. Soft CTA.
+**9. visualClarity — Visual Clarity for Editors/Producers**
+Are the visual descriptions clear enough that an editor or producer could execute them without guessing? Each visual should paint a specific picture: subject, action, environment, shot type. "Product shot" = 3/10. "Close-up of woman's hand pulling EasyStretch sock over her calf, morning light through kitchen window" = 9/10. For Ecom: every shot must exist in the available footage library (no gym, medical, sports, travel, hiking, children footage). For AGC/Video: shot types, camera angles, talent notes must all be filled.
 
-  If any beat is missing OR if the beats are compressed/reordered = **FLAG** (or **FAIL** if Identification or Reframe are absent).
+**10. inspirationAdherence — Inspiration Ad Adherence (skip if no inspiration provided)**
+If a reference/inspiration ad was provided for this brief, how closely does the brief follow its creative DNA? The brief should mirror the reference's hook archetype, emotional entry point, narrative shape, and pacing rhythm — adapted to this brief's specific talking point and product. If the brief ignores the reference entirely = 2/10. If it structurally mirrors the reference while being original in content = 9/10. Score NULL if no inspiration ad was provided for this task.
 
-**RULE 5 — SUB-PERSONA IDENTIFIED.** Does the brief clearly target ONE of the 3 Unaware sub-personas?
-  - The Normalizer ("my ankles have always been like that")
-  - The Diagnosed Non-Searcher (has diabetes/pregnancy but doesn't connect it to sock choice)
-  - The Incidental Sufferer (has symptoms but blames wrong cause — age, weather, long days)
-
-  If the brief's persona description doesn't map to one of these three = **FLAG**. If the brief feels like it's for an already-Problem-Aware viewer = **FAIL**.
-
-**RULE 6 — BANNED UNAWARE VOCABULARY IN HOOK / BEAT 1.** Scan the hook and first body line for these banned words/phrases:
-  "neuropathy", "diabetic neuropathy", "edema", "varicose veins", "compression sock", "Viasox", "our socks", "these socks", "buy", "offer", "discount", "shop now", "B2G3", "sale", "solution", "treatment", "cure", "symptoms", "condition", "suffer from", "if you have"
-
-  Any of these words in the opening = **FAIL**.
-
-**RULE 7 — REVIEW LANGUAGE NOT PULLED VERBATIM.** Reviews are POST-education — they're written by customers who already understand the problem and solution. Check that the hook hasn't lifted resolved/educated review language like "finally no sock marks!" directly. A hook like that reads as Problem Aware / Solution Aware, not Unaware. If the hook sounds like a resolved customer testimonial = **FLAG**.
-
-**UNAWARE STILL NEEDS TO BE CLEAR, NOT VAGUE.** Unaware does NOT mean abstract. The viewer must still understand the ad's WORLD within 3 seconds (a woman, a morning, a struggle, legs). The condition should be VISIBLE through sensory details (red marks shown, swollen ankles shown, wincing) even if not NAMED. If an Unaware brief is so vague that a viewer wouldn't know what it's about by Beat 3 = **FLAG**.
-
-**PRODUCT REVEAL MUST BE EARNED.** Does the product reveal feel bridged by the Category Reveal beat, or does it appear out of nowhere? Missing bridge = **FLAG**.
-
-**AUDIENCE CHECK.** ALL Viasox briefs target women 50+. If the Unaware brief describes or implies a younger demographic (gym-goers, young professionals, athletes, anyone under 40) = **FAIL**.
-
-**PREFERRED UNAWARE FRAMEWORK:** "The Gradualization (Schwartz)" framework maps 1:1 to the 5-beat Unaware structure and is the native choice for Unaware briefs. If the brief is Unaware and uses "PAS" or "Before-After-Bridge" instead, check whether those frameworks have been adapted to 5-beat structure — if they're executing as standard PAS with the problem statement up front = **FLAG**.
-
-**IF THE BRIEF IS PROBLEM AWARE**: Lead with specific vivid pain. Product appears in the second half. CTA is medium-soft. Medical vocabulary and condition naming is allowed in Beat 1.
-
-**IF THE AWARENESS LEVEL DOESN'T MATCH THE BRIEF'S ACTUAL STRUCTURE** — e.g., a brief labeled "Unaware" that opens with "Do you suffer from neuropathy?" — **FAIL**.
-
-**3c. Short Form Format Check (for 1-15 sec / short form briefs)**
-Short form briefs (1-15 sec) should NOT read like compressed long-form ads. Check that:
-- The script table has 3-5 rows MAX (not 6-8 squeezed in)
-- The ad uses ONE creative approach (POV, direct address, before/after, VO over B-roll, text-on-screen, reaction), not a mini-movie
-- There is NO full story arc (problem → agitate → solution → proof → CTA is a 16-59 sec / 60-90 sec structure, not 15s)
-- If a short form brief reads like a mid-form brief with words cut out = FAIL
-
-**3d. VO-by-Length Rule (NON-NEGOTIABLE)**
-Cross-check the brief's Medium/Duration against its Voiceover field and Script Body rows:
-- **Short-form (1-15 sec):** Text-only/no-VO is ALLOWED. The brief may say "No VO — text overlays only" in the Voiceover field and use on-screen text rows instead of spoken lines. This is a valid creative choice at this length. PASS.
-- **Mid-form (16-59 sec) and Expanded (60-90 sec) briefs:** VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY. If the Voiceover field says "No VO", "Silent", "Text only", or is blank/missing, AND the Script Body rows don't have spoken words — **AUTOMATIC FAIL**. Mid and expanded ads MUST have a spoken track (VO narrator, UGC creator talking, founder on camera, podcast hosts, or spokesperson). A 16-59 sec or 60-90 sec ad with silent b-roll and on-screen text only is a creative failure per the VO-by-length rule.
-- Also verify: the Script Body rows (not just hooks) contain spoken words for 16-59 sec and 60-90 sec briefs. Every body row should have voice content.
-
-**3e. Length Calibration (THE TOOL WRITES LONG — HARD RUNTIME CEILINGS)**
-All word counts below are calibrated for a 150 WPM voiceover pace and anchored to the MAXIMUM of each range so the final cut NEVER exceeds the stated runtime. The tool has a measured tendency to overshoot target duration by 20-30% — be strict. Count the total spoken word count across the Script Body rows (hooks are separate, count body only) and compare to the target:
-
-- **1-15 sec target (final cut MUST be ≤ 15s):** sweet spot 30-35 words, hard ceiling 37 words.
-- **16-59 sec target (final cut MUST be ≤ 59s):** sweet spot 115-135 words, hard ceiling 145 words.
-- **60-90 sec target (final cut MUST be ≤ 90s):** sweet spot 190-215 words, hard ceiling 225 words.
-
-If the brief's body word count is within the sweet spot = PASS. If it's between sweet spot and hard ceiling = FLAG (note the overshoot with exact word count). If it exceeds the hard ceiling = **AUTOMATIC FAIL** (note the overshoot with exact word count — e.g., "1-15 sec brief with 52 words in body, 41% over 37-word hard ceiling"). Exceeding the ceiling means the final cut will exceed the Asana Medium column runtime — this is non-negotiable.
-
-Mentally read the body script at a natural conversational pace. If it feels rushed to fit the target, it's too long — FLAG even if it's under the hard ceiling.
-
-**4. Data Grounding**
-At least 2 SPECIFIC data points from review analysis (percentages, frequencies, customer quotes with context)? "Customers love them" = FAIL. "89% reported reduced sock marks within the first week" = PASS. Check that cited data points are plausible against the review data provided.
-
-**5. Product Accuracy**
-Does the brief use correct product-specific messaging?
-- EasyStretch = comfort, no marks, easy on/off, non-binding, diabetic-safe. NOT compression.
-- Compression = medical support, graduated compression, performance, long shifts. IS compression.
-- Ankle Compression = versatility, low-cut style, ankle support, active lifestyle.
-Mixing these up = FAIL.
-
-**6. Offer Integration**
-B2G3 (Buy 2, Get 3 Free / "5 pairs for $60") correctly integrated? It should appear in the CTA section and optionally be teased earlier. Missing = FAIL. Wrong offer details = FAIL. Offer appearing too early (before the story earns it) = FLAG.
-
-**7. CTA Appropriateness**
-TOF requires SOFT CTA: "Learn more," "See why 107K+ switched," "Discover," "Find out." Hard sell language ("Buy now," "Shop today," "Order yours," "Add to cart") = FAIL for TOF. The CTA must feel like an invitation, not a demand.
-
-**8. Framework Execution**
-Does the brief actually FOLLOW the assigned framework's structure? PAS must have clear Problem → Agitate → Solution arc. Before-After-Bridge must show the before state, the after state, and the bridge. If the framework is named but the brief's structure doesn't match = FLAG.
-
-**9. Brand Voice Compliance**
-Viasox is 70% Caregiver (warm, empathetic, helpful) / 30% Regular Guy (approachable, not preachy). Read the script lines OUT LOUD mentally. Do they sound like a warm friend talking, or do they sound like:
-- A medical brochure? = FAIL
-- A hard-sell infomercial? = FAIL
-- Generic ad copy? = FLAG
-- Overly polished/corporate? = FLAG
-The script should feel like someone who genuinely cares telling you about something that helped them.
-
-**10. Audience Accuracy (MANDATORY)**
-ALL Viasox products target WOMEN 50+ as the core audience. Check the brief's Primary Persona / Avatar:
-- Does it describe a woman over 50? If the persona is "active 25-40 year old," "gym-goer," "young professional," "athlete," or any demographic under 50 = AUTOMATIC FAIL.
-- Even "active" personas must be 50+ women who walk, garden, travel, or stand for work — not fitness enthusiasts or young athletes.
-- Healthcare workers in our audience are women 50+ nurses, not young medical residents.
-- Ankle Compression does NOT skew younger. There is no "younger" product line.
-- The ONLY acceptable exception: gift-buyer angle where an adult child (any age) is buying FOR a parent 50+.
-- Check talent descriptions, settings, and scenarios — do they imply a 50+ woman's world or a younger person's world?
-
-**11. Completeness & Structure**
-All Ecom brief sections present and properly formatted?
-- Brief Info (ID, Date, Product, Collection, Format)
-- Strategy (Awareness, Emotion, Avatar, Landing Page)
-- Offer (Promo, Asset, Value Callout, Urgency)
-- Editing Instructions (Pacing, Resolution, Captions, Transitions, Music, Voiceover, Assets, Notes)
-- Script Hooks (3 hooks in table format with line #, shot type, visual, hook line)
-- Script Body (body rows in table format)
-- Key Data Points
-- Framework Breakdown
-Missing sections = FAIL. Incomplete sections = FLAG.
+**11. frameworkExecution — Framework Execution**
+Does the brief actually FOLLOW the assigned framework's structure, or just name it? PAS must have clear Problem → Agitate → Solution arc. Before-After-Bridge must show the before state, the after state, and the bridge. The Gradualization must map to the 5-beat Unaware structure. A brief where the framework is named but the body doesn't structurally match = 3/10. A brief where every beat maps cleanly to the framework and you could annotate each section = 9/10. Check that the framework was well-chosen for this awareness level — PAS with the problem statement up front is wrong for Unaware.
 
 ## BATCH-LEVEL CHECKS (4):
 
@@ -287,32 +192,40 @@ ${b.briefContent}
 
 ## YOUR TASK — BE THOROUGH AND STRICT
 
-Review each brief against ALL 10 per-brief checks. Then evaluate ALL 4 batch-level checks.
+Review each brief against ALL 11 quality criteria. Then evaluate the 4 batch-level checks and systemic pattern analysis.
 
-**Take your time.** Read each brief carefully. Read the hooks out loud mentally. Check the data points against the review data. Verify product messaging accuracy. Ensure the framework structure is actually followed.
+**Take your time.** Read each brief carefully. Read the hooks and script lines out loud mentally. Check specificity, clarity, line strength, hook-body flow. Verify the angle permeates the entire narrative. Ensure the framework structure is actually followed.
 
-For each brief, output:
+**SCORING DISCIPLINE:** hookQuality, confusionFactor, and scriptLineStrength carry 1.5x weight in the composite score. A brief can pass all structural checks but still score low if the hooks are generic, the audience would be confused, or the lines sound robotic. These three criteria are the hardest to get right and the most important for ad performance.
+
+For each brief, output a JSON code fence with the structured scoring data, followed by a brief markdown analysis:
 
 ### Brief [N]: [TaskName] — [APPROVED / NEEDS ATTENTION]
-**Score: X/10**
-| Check | Result | Notes |
-|-------|--------|-------|
-| 1. Hook Differentiation | PASS/FLAG/FAIL | [specific note — name the hooks and explain] |
-| 2. Problem Specificity | PASS/FLAG/FAIL | [quote the specific language used] |
-| 3. Angle Alignment | PASS/FLAG/FAIL | [how deeply does the angle permeate?] |
-| 3b. Awareness Correctness (Schwartz) | PASS/FLAG/FAIL | [for Unaware: Rule 1/2/3 compliance, 5-beat mapping, sub-persona, banned-word scan] |
-| 3d. VO-by-Length Rule | PASS/FLAG/FAIL | [duration, VO field value, body VO present? 16-59 sec+ must have VO] |
-| 3e. Length Calibration | PASS/FLAG/FAIL | [count body words, compare to target, note overshoot %] |
-| 4. Data Grounding | PASS/FLAG/FAIL | [list the data points found] |
-| 5. Product Accuracy | PASS/FLAG/FAIL | [any product messaging errors?] |
-| 6. Offer Integration | PASS/FLAG/FAIL | [where and how is B2G3 mentioned?] |
-| 7. CTA Appropriateness | PASS/FLAG/FAIL | [quote the CTA language] |
-| 8. Framework Execution | PASS/FLAG/FAIL | [does structure match framework?] |
-| 9. Brand Voice | PASS/FLAG/FAIL | [read-aloud test result] |
-| 10. Completeness | PASS/FLAG/FAIL | [any missing sections?] |
 
-**Strengths:** [What this brief does well]
-**Weaknesses:** [What needs improvement — be specific with line references]
+\`\`\`json
+{
+  "taskName": "[task name]",
+  "verdict": "APPROVED or NEEDS_ATTENTION",
+  "scores": {
+    "scriptVagueness": { "score": [1-10], "notes": "[quote specific vague vs specific lines]" },
+    "confusionFactor": { "score": [1-10], "notes": "[would a cold audience follow this by halfway?]" },
+    "scriptLineStrength": { "score": [1-10], "notes": "[read-aloud test — quote best and worst lines]" },
+    "hookQuality": { "score": [1-10], "notes": "[are hooks specific to this angle? different archetypes?]" },
+    "hookToBodyTransition": { "score": [1-10], "notes": "[does hook flow into first body line seamlessly?]" },
+    "adTypeAdaptation": { "score": [1-10], "notes": "[template complete? VO rule? word count? product accuracy?]" },
+    "uniquenessCreativity": { "score": [1-10], "notes": "[fresh or templated? manifesto contamination?]" },
+    "angleSpecificity": { "score": [1-10], "notes": "[does the angle permeate all beats or just hook+CTA?]" },
+    "visualClarity": { "score": [1-10], "notes": "[could an editor execute these visuals without guessing?]" },
+    "inspirationAdherence": { "score": [1-10 or null], "notes": "[does it mirror the reference ad's structure?]" },
+    "frameworkExecution": { "score": [1-10], "notes": "[does the body structurally match the named framework?]" }
+  },
+  "overallScore": [weighted composite],
+  "strengths": ["...", "..."],
+  "weaknesses": ["...", "..."]
+}
+\`\`\`
+
+**Root Cause Analysis (for any criterion scoring ≤5):** For each low-scoring criterion, identify: (1) what specifically failed, (2) the structural reason why, (3) what should change. This is the most valuable output — it tells the learning system WHY a brief scored low, not just that it did.
 
 Then at the end:
 

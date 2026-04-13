@@ -1,14 +1,19 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { AutopilotState } from '../../engine/autopilotTypes';
 import type { AngleDirectiveProposal } from '../../autopilot/memoryTypes';
 import TaskBriefCard from './TaskBriefCard';
 import BatchChatPanel from './BatchChatPanel';
+import ScoreOverridePanel from './ScoreOverridePanel';
 import { downloadEcomBriefDoc, downloadProductionBriefCsv } from '../../utils/downloadUtils';
 import {
   addFeedback,
   getPendingDirectiveProposals,
   dismissDirectiveProposal,
+  updateBriefScore,
 } from '../../autopilot/memoryStore';
+import { parseReviewResult } from '../../autopilot/reviewParser';
+import { recomputeAndSaveAnglePatterns } from '../../autopilot/anglePatternMiner';
+import { recomputeAndSaveCalibration } from '../../autopilot/scoreCalibration';
 import { addAngleDirective } from '../../utils/customOptionsRegistry';
 
 interface Props {
@@ -40,6 +45,25 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
 
   const completed = state.tasks.filter((t) => t.step === 'complete');
   const failed = state.tasks.filter((t) => t.step === 'error');
+
+  // Parse reviewer output for structured scoring data
+  const parsedReview = useMemo(
+    () => (state.reviewResult ? parseReviewResult(state.reviewResult) : null),
+    [state.reviewResult],
+  );
+
+  // Track score overrides to force re-renders
+  const [scoreTick, setScoreTick] = useState(0);
+
+  const handleScoreOverride = useCallback(
+    (taskName: string, batchId: string, score: number, notes: string) => {
+      updateBriefScore(batchId, taskName, score, notes);
+      try { recomputeAndSaveAnglePatterns(); } catch { /* non-fatal */ }
+      try { recomputeAndSaveCalibration(); } catch { /* non-fatal */ }
+      setScoreTick((t) => t + 1);
+    },
+    [],
+  );
 
   const handleAcceptProposal = (proposal: AngleDirectiveProposal) => {
     const directive = editedDirectives[proposal.id] ?? proposal.directiveText;
@@ -272,17 +296,40 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
         </div>
       )}
 
-      {/* Individual Brief Cards */}
+      {/* Individual Brief Cards with Score Panels */}
       <div className="space-y-3">
-        {state.tasks.map((ts, i) => (
-          <TaskBriefCard
-            key={i}
-            taskState={ts}
-            index={i}
-            onRedo={onRedoTask}
-            isRedoing={redoingIndex === i}
-          />
-        ))}
+        {state.tasks.map((ts, i) => {
+          const reviewMatch = parsedReview?.briefs.find(
+            (b) => b.taskName.toLowerCase().includes(ts.task.parsed.name.toLowerCase()),
+          );
+          return (
+            <div key={`${i}-${scoreTick}`}>
+              <TaskBriefCard
+                taskState={ts}
+                index={i}
+                onRedo={onRedoTask}
+                isRedoing={redoingIndex === i}
+              />
+              {ts.step === 'complete' && (
+                <div className="mt-2 ml-4">
+                  <ScoreOverridePanel
+                    briefId={ts.task.parsed.name}
+                    scoring={reviewMatch?.scoring ?? null}
+                    legacyScore={reviewMatch?.score ?? 0}
+                    onOverride={(score, notes) =>
+                      handleScoreOverride(
+                        ts.task.parsed.name,
+                        new Date().toISOString(),
+                        score,
+                        notes,
+                      )
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Download All (bottom) */}

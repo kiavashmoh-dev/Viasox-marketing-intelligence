@@ -5,6 +5,74 @@
  * Stores compact summaries (not full brief text) to stay within localStorage limits.
  */
 
+// ─── Quality Scoring System ─────────────────────────────────────────────────
+//
+// 11 criteria scored 1-10 by the batch reviewer. The user can override the
+// final composite score after reviewing. High scores teach the system what
+// works; low scores trigger root-cause analysis to avoid repetition.
+
+/** Names of the 11 quality criteria — used as keys throughout the scoring system. */
+export const SCORING_CRITERIA = [
+  'scriptVagueness',
+  'confusionFactor',
+  'scriptLineStrength',
+  'hookQuality',
+  'hookToBodyTransition',
+  'adTypeAdaptation',
+  'uniquenessCreativity',
+  'angleSpecificity',
+  'visualClarity',
+  'inspirationAdherence',
+  'frameworkExecution',
+] as const;
+
+export type CriterionName = typeof SCORING_CRITERIA[number];
+
+/** Human-readable labels for each criterion (for UI display). */
+export const CRITERION_LABELS: Record<CriterionName, string> = {
+  scriptVagueness: 'Script Specificity',
+  confusionFactor: 'Clarity for Cold Audience',
+  scriptLineStrength: 'Line Strength (Read-Aloud)',
+  hookQuality: 'Hook Quality',
+  hookToBodyTransition: 'Hook → Body Transition',
+  adTypeAdaptation: 'Ad Type Adaptation',
+  uniquenessCreativity: 'Uniqueness & Creativity',
+  angleSpecificity: 'Angle Specificity',
+  visualClarity: 'Visual Clarity for Editors',
+  inspirationAdherence: 'Inspiration Ad Adherence',
+  frameworkExecution: 'Framework Execution',
+};
+
+/**
+ * Criteria that carry 1.5x weight in the composite score.
+ * These are the user's top concerns: hooks, confusion, and line strength.
+ */
+export const WEIGHTED_CRITERIA: CriterionName[] = [
+  'hookQuality',
+  'confusionFactor',
+  'scriptLineStrength',
+];
+
+export interface CriterionScore {
+  score: number;           // 1-10
+  notes: string;           // Reviewer's explanation
+  result: 'PASS' | 'FLAG' | 'FAIL';
+}
+
+export type ScoreBreakdown = {
+  [K in CriterionName]: CriterionScore | null;
+};
+
+export interface ScoringRecord {
+  reviewerBreakdown: ScoreBreakdown;
+  reviewerOverallScore: number;          // Weighted composite 1-10
+  userOverrideScore: number | null;      // User's override, null = accepted reviewer's
+  userOverrideNotes: string | null;      // Why the user overrode
+  finalScore: number;                    // userOverrideScore ?? reviewerOverallScore
+  scoredAt: string;                      // ISO timestamp of reviewer scoring
+  overriddenAt: string | null;           // ISO timestamp of user override
+}
+
 // ─── Per-Brief Memory Record (~500-800 bytes each) ──────────────────────────
 
 export interface BriefMemoryRecord {
@@ -21,11 +89,13 @@ export interface BriefMemoryRecord {
   selectionReasoning: string;    // Why this concept was picked
   emotionalEntry: string;        // Primary emotion targeted
   persona: string;               // Target archetype (healthcare worker, senior, etc.)
-  reviewScore: number;           // 1-10 from batch reviewer
+  reviewScore: number;           // Composite 1-10 (= scoring.finalScore when available)
   reviewVerdict: 'APPROVED' | 'NEEDS_ATTENTION';
-  reviewFlags: string[];         // Which of the 10 checks got FLAG/FAIL
+  reviewFlags: string[];         // Which criteria got FLAG/FAIL
   reviewStrengths: string[];     // Bullet points from reviewer
   reviewWeaknesses: string[];    // Bullet points from reviewer
+  /** Detailed per-criterion scoring. null for legacy briefs scored before v3. */
+  scoring: ScoringRecord | null;
   /**
    * Inspiration Bank item IDs that were injected into this brief's concept
    * and/or script generation. Used post-batch to update each item's

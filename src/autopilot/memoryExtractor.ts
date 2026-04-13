@@ -145,13 +145,14 @@ export async function saveCompletedBatchToMemory(
       selectionReasoning: ts.selectionReasoning ?? '',
       emotionalEntry,
       persona,
-      reviewScore: reviewMatch?.score ?? 7,
+      reviewScore: reviewMatch?.scoring?.finalScore ?? reviewMatch?.score ?? 0,
       reviewVerdict: reviewMatch?.verdict ?? 'APPROVED',
       reviewFlags: reviewMatch?.checks
         .filter((c) => c.result !== 'PASS')
         .map((c) => c.name) ?? [],
       reviewStrengths: reviewMatch?.strengths ?? [],
       reviewWeaknesses: reviewMatch?.weaknesses ?? [],
+      scoring: reviewMatch?.scoring ?? null,
       inspirationIdsUsed: Array.from(new Set(ts.inspirationIdsUsed ?? [])),
     });
   }
@@ -186,7 +187,7 @@ export async function saveCompletedBatchToMemory(
       if (ids.length === 0) continue;
       for (const id of ids) {
         try {
-          await recordInspirationUsage(id, brief.reviewScore, batchId);
+          await recordInspirationUsage(id, brief.scoring?.finalScore ?? brief.reviewScore, batchId);
         } catch (err) {
           console.warn('[memoryExtractor] recordInspirationUsage failed', id, err);
         }
