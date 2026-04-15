@@ -290,11 +290,62 @@ OUTPUT ONLY THE BRIEFING. No preamble, no explanation of your process.`;
 export async function runMemoryCurator(
   apiKey: string,
   signal: AbortSignal,
+  /** Optional inspiration bank items for performance intelligence. */
+  inspirationItems?: Array<{
+    id: string; title: string; starred: boolean;
+    adType: string; angleType: string; duration: string;
+    derivedScore: number | null; sampleSize: number;
+    contextualScores?: Record<string, { angleType: string; duration: string; avgScore: number; sampleSize: number }>;
+  }>,
 ): Promise<CreativeIntelligenceBriefing | null> {
   const store = loadMemory();
   if (store.batches.length === 0) return null;
 
-  const curatorInput = buildCuratorInput();
+  let curatorInput = buildCuratorInput();
+
+  // Inject inspiration performance intelligence if available
+  if (inspirationItems && inspirationItems.length > 0) {
+    const inspParts: string[] = [];
+    inspParts.push(`## INSPIRATION BANK PERFORMANCE INTELLIGENCE`);
+    inspParts.push(`Total items in bank: ${inspirationItems.length}`);
+    inspParts.push('');
+
+    // Top performers
+    const scored = inspirationItems
+      .filter((i) => i.derivedScore !== null && i.sampleSize >= 2)
+      .sort((a, b) => (b.derivedScore ?? 0) - (a.derivedScore ?? 0));
+    if (scored.length > 0) {
+      inspParts.push('**Top-performing inspirations (by derivedScore):**');
+      for (const item of scored.slice(0, 5)) {
+        inspParts.push(`- "${item.title}" (${item.adType}, ${item.angleType}, ${item.duration}) — ${item.derivedScore?.toFixed(1)}/10 across ${item.sampleSize} uses${item.starred ? ' ★' : ''}`);
+        const ctxEntries = Object.values(item.contextualScores ?? {});
+        for (const ctx of ctxEntries) {
+          inspParts.push(`  → ${ctx.angleType} + ${ctx.duration}: ${ctx.avgScore.toFixed(1)}/10 (${ctx.sampleSize} uses)`);
+        }
+      }
+      inspParts.push('');
+    }
+
+    // Coverage gaps — ad types and durations with no inspiration items
+    const adTypeCounts: Record<string, number> = {};
+    const durationCounts: Record<string, number> = {};
+    for (const item of inspirationItems) {
+      adTypeCounts[item.adType] = (adTypeCounts[item.adType] ?? 0) + 1;
+      durationCounts[item.duration] = (durationCounts[item.duration] ?? 0) + 1;
+    }
+    const gaps: string[] = [];
+    if (!durationCounts['1-15 sec']) gaps.push('No short-form (1-15 sec) inspiration ads — user should add some');
+    if (!adTypeCounts['Founder Style']) gaps.push('No Founder Style inspiration ads');
+    if (!adTypeCounts['UGC (User Generated Content)']) gaps.push('No UGC inspiration ads');
+    if (gaps.length > 0) {
+      inspParts.push('**Inspiration gaps (missing coverage):**');
+      for (const g of gaps) inspParts.push(`- ${g}`);
+      inspParts.push('');
+    }
+
+    curatorInput += '\n' + inspParts.join('\n');
+  }
+
   const totalBriefs = store.batches.reduce((s, b) => s + b.briefs.length, 0);
 
   const briefingText = await sendMessage(

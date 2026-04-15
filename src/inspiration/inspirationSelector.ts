@@ -38,6 +38,7 @@ import { getEffectiveTags } from '../engine/inspirationTypes';
 import type {
   InspirationItem,
   InspirationSelectionParams,
+  ContextualScoreEntry,
 } from '../engine/inspirationTypes';
 
 export interface ScoredInspiration {
@@ -113,8 +114,16 @@ export async function selectInspiration(
       reasons.push(`product: ${opts.productCategory}`);
     }
     if (opts.duration && tags.duration === opts.duration) {
-      score += 2;
-      reasons.push(`duration: ${opts.duration}`);
+      // Short-form (1-15 sec) gets a massive duration boost — these ads
+      // are fundamentally different and need short-form-specific references.
+      const isShortForm = opts.duration === '1-15 sec';
+      score += isShortForm ? 6 : 2;
+      reasons.push(`duration: ${opts.duration}${isShortForm ? ' (short-form priority)' : ''}`);
+    } else if (opts.duration === '1-15 sec' && tags.duration !== '1-15 sec') {
+      // Penalize non-short-form items when the brief IS short-form —
+      // a 60-second reference teaches the wrong pacing/structure.
+      score -= 2;
+      reasons.push('duration mismatch: not short-form (-2)');
     }
     if (opts.fullAiSpec && tags.fullAiSpecification === opts.fullAiSpec) {
       score += 2;
@@ -143,21 +152,39 @@ export async function selectInspiration(
     }
 
     // ── Performance boost from derived score (closed feedback loop) ──
-    // Items whose past briefs scored well are surfaced more aggressively.
-    // Items whose past briefs scored poorly are pushed down. Confidence
-    // ramps with sample size so a single 9/10 doesn't dominate, but a
-    // proven 9/10 across 4 uses absolutely should.
-    const derivedScore = item.derivedScore ?? null;
-    const sample = item.derivedScoreSampleSize ?? 0;
-    if (derivedScore !== null && sample > 0) {
-      const confidence = Math.min(1, sample / 4);
-      const rawDelta = (derivedScore - 5) * 0.8 * confidence;
+    // Prefer CONTEXTUAL score (matching angleType + duration) over flat.
+    // Items whose past briefs scored well in THIS context are surfaced
+    // more aggressively. Confidence ramps with sample size.
+    let perfScore: number | null = null;
+    let perfSample = 0;
+    let perfLabel = 'derivedScore';
+
+    // Try contextual score first
+    const ctxKey = opts.angleType && opts.duration
+      ? `${opts.angleType}|${opts.duration}`
+      : null;
+    const ctxEntry: ContextualScoreEntry | undefined = ctxKey
+      ? item.contextualScores?.[ctxKey]
+      : undefined;
+    if (ctxEntry && ctxEntry.sampleSize > 0) {
+      perfScore = ctxEntry.avgScore;
+      perfSample = ctxEntry.sampleSize;
+      perfLabel = `contextScore[${ctxKey}]`;
+    } else {
+      // Fall back to flat derivedScore
+      perfScore = item.derivedScore ?? null;
+      perfSample = item.derivedScoreSampleSize ?? 0;
+    }
+
+    if (perfScore !== null && perfSample > 0) {
+      const confidence = Math.min(1, perfSample / 4);
+      const rawDelta = (perfScore - 5) * 0.8 * confidence;
       const cappedDelta = Math.max(-3, Math.min(6, rawDelta));
       const rounded = Math.round(cappedDelta * 10) / 10;
       if (Math.abs(rounded) >= 0.1) {
         score += rounded;
         reasons.push(
-          `derivedScore: ${derivedScore.toFixed(1)}/10 (×${sample}) → ${rounded > 0 ? '+' : ''}${rounded}`,
+          `${perfLabel}: ${perfScore.toFixed(1)}/10 (×${perfSample}) → ${rounded > 0 ? '+' : ''}${rounded}`,
         );
       }
     }

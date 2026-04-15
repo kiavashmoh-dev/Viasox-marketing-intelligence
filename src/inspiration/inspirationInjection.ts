@@ -77,6 +77,21 @@ export function buildInspirationContext(picks: ScoredInspiration[]): string {
       lines.push('');
     }
 
+    if (item.productBridge) {
+      lines.push(`**Product bridge (when/how product enters):** ${item.productBridge.trim()}`);
+      lines.push('');
+    }
+
+    if (item.keyLanguage) {
+      lines.push(`**Key language & pain points to absorb:** ${item.keyLanguage.trim()}`);
+      lines.push('');
+    }
+
+    if (item.lineFlowAnalysis) {
+      lines.push(`**Line flow (how lines build on each other):** ${item.lineFlowAnalysis.trim()}`);
+      lines.push('');
+    }
+
     if (item.userNotes) {
       lines.push(`**User notes:** ${item.userNotes.trim()}`);
       lines.push('');
@@ -222,6 +237,38 @@ export function buildDeepInspirationContext(picks: ScoredInspiration[]): string 
       lines.push('```');
       lines.push(refScript.trim());
       lines.push('```');
+      lines.push('');
+    }
+
+    if (item.productBridge) {
+      lines.push(`**Product bridge — REPLICATE THIS TRANSITION APPROACH:** ${item.productBridge.trim()}`);
+      lines.push('');
+    }
+
+    if (item.keyLanguage) {
+      lines.push(`**Key language & pain points — USE THIS VOCABULARY:** ${item.keyLanguage.trim()}`);
+      lines.push('');
+    }
+
+    if (item.lineFlowAnalysis) {
+      lines.push(`**Line flow — MATCH THIS RHYTHM AND MOMENTUM:** ${item.lineFlowAnalysis.trim()}`);
+      lines.push('');
+    }
+
+    // Surface contextual performance if this item has been used before
+    const ctxScores = Object.values(item.contextualScores ?? {});
+    if (ctxScores.length > 0) {
+      lines.push('**Performance history by context:**');
+      for (const cs of ctxScores) {
+        const criterionNotes = cs.criterionAvgs
+          ? ` | Best: ${Object.entries(cs.criterionAvgs)
+              .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
+              .slice(0, 3)
+              .map(([k, v]) => `${k}: ${v?.toFixed(1)}`)
+              .join(', ')}`
+          : '';
+        lines.push(`- ${cs.angleType} + ${cs.duration}: **${cs.avgScore.toFixed(1)}/10** (${cs.sampleSize} uses)${criterionNotes}`);
+      }
       lines.push('');
     }
 

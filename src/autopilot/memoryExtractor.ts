@@ -185,9 +185,35 @@ export async function saveCompletedBatchToMemory(
     for (const brief of briefRecords) {
       const ids = brief.inspirationIdsUsed ?? [];
       if (ids.length === 0) continue;
+
+      // Build criterion scores map from the scoring breakdown (if available)
+      const criterionScores: Record<string, number> = {};
+      if (brief.scoring?.reviewerBreakdown) {
+        for (const [key, entry] of Object.entries(brief.scoring.reviewerBreakdown)) {
+          if (entry && typeof entry.score === 'number') {
+            criterionScores[key] = entry.score;
+          }
+        }
+      }
+
+      // Find the matching task to get angleType from the original Asana data
+      const matchingTask = completedTasks.find((t) => t.task.parsed.name === brief.id);
+      const angleType = matchingTask?.task.parsed.angle;
+
       for (const id of ids) {
         try {
-          await recordInspirationUsage(id, brief.scoring?.finalScore ?? brief.reviewScore, batchId);
+          await recordInspirationUsage(
+            id,
+            brief.scoring?.finalScore ?? brief.reviewScore,
+            batchId,
+            {
+              angleType: angleType,
+              duration: brief.duration,
+              criterionScores: Object.keys(criterionScores).length > 0
+                ? criterionScores
+                : undefined,
+            },
+          );
         } catch (err) {
           console.warn('[memoryExtractor] recordInspirationUsage failed', id, err);
         }

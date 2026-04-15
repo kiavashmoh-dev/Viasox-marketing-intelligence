@@ -148,7 +148,10 @@ Return EXACTLY this shape, no extra keys, no markdown:
   ],
   "styleNotes": "2-4 sentences on visual / tonal patterns: pacing, color palette, voiceover tone, on-screen text, music feel, etc.",
   "hookBreakdown": "Beat-by-beat analysis of the first 3 seconds — what the viewer sees, hears, and feels. Required for video.",
-  "narrativeArc": "Brief structural breakdown — Hook → Problem → Solution → Proof → CTA, or whatever pattern this ad follows."
+  "narrativeArc": "Brief structural breakdown — Hook → Problem → Solution → Proof → CTA, or whatever pattern this ad follows.",
+  "productBridge": "WHERE and HOW does the product get introduced? At what point does the ad transition from problem/story to product reveal? Describe the exact bridge moment — what the viewer just experienced emotionally, what visual/line introduces the product, and how it feels (earned vs. forced, soft vs. hard). Example: 'Product appears at 0:22 after 15 seconds of pain identification — the bridge is a contrast cut from sock marks to clean skin with the line \"There's a sock that doesn't do this.\"' For ads with no clear product bridge (engagement-only, brand awareness), say 'No product bridge — engagement/awareness ad.'",
+  "keyLanguage": "List the SPECIFIC words, phrases, and pain point language that make this ad effective. Include: (1) exact pain-point words used (e.g., 'marks', 'swelling', 'numb', 'tight'), (2) emotional phrases (e.g., 'I finally feel like myself', 'my daughter noticed before I did'), (3) proof language (e.g., '107,000 reviews', '90% reported'), (4) any customer voice or review-derived language. Be exhaustive — future generators will use these as vocabulary banks.",
+  "lineFlowAnalysis": "Analyze how the script lines BUILD on each other. What is the rhythm? How does each line advance from the previous one? Where are the emotional peaks and valleys? How does the pacing shift between problem and solution? Example: 'Opens staccato (3-word punches: \"Morning. Marks. Again.\"), slows for the emotional mid-section (longer sentences about daily impact), then tightens again for the product reveal (short, confident lines).'"
 }
 
 If a tag is genuinely unclear, use "unknown" instead of guessing — but try hard to commit to a value.

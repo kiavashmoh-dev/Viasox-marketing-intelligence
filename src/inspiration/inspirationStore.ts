@@ -266,19 +266,28 @@ const MAX_BATCH_HISTORY = 20;
 
 /**
  * Record a single usage of an inspiration item by a brief that has been
- * scored by the batch reviewer. Updates the rolling average derivedScore
- * and bumps usageCount + lastUsedAt + lastUsedInBatchIds. No-op when the
+ * scored by the batch reviewer. Updates:
+ *   1. The flat rolling-average derivedScore (backward compat)
+ *   2. The contextual score for the brief's (angleType, duration) pair
+ *   3. Per-criterion averages within the contextual score
+ * Bumps usageCount + lastUsedAt + lastUsedInBatchIds. No-op when the
  * item doesn't exist (it may have been deleted between batches).
  */
 export async function recordInspirationUsage(
   itemId: string,
   reviewScore: number,
   batchId: string,
+  context?: {
+    angleType?: string;
+    duration?: string;
+    criterionScores?: Record<string, number>;
+  },
 ): Promise<void> {
   if (!Number.isFinite(reviewScore)) return;
   const item = await getItem(itemId);
   if (!item) return;
 
+  // ── 1. Update flat derivedScore (rolling average) ──────────────────
   const prevSample = item.derivedScoreSampleSize ?? 0;
   const prevScore = item.derivedScore ?? null;
   const nextSample = prevSample + 1;
@@ -290,6 +299,46 @@ export async function recordInspirationUsage(
   const prevBatches = item.lastUsedInBatchIds ?? [];
   const nextBatches = [batchId, ...prevBatches.filter((b) => b !== batchId)].slice(0, MAX_BATCH_HISTORY);
 
+  // ── 2. Update contextual score for (angleType, duration) ───────────
+  const contextualScores = { ...(item.contextualScores ?? {}) };
+  if (context?.angleType && context?.duration) {
+    const key = `${context.angleType}|${context.duration}`;
+    const existing = contextualScores[key];
+    const ctxPrevSample = existing?.sampleSize ?? 0;
+    const ctxPrevAvg = existing?.avgScore ?? 0;
+    const ctxNextSample = ctxPrevSample + 1;
+    const ctxNextAvg = ctxPrevSample === 0
+      ? reviewScore
+      : (ctxPrevAvg * ctxPrevSample + reviewScore) / ctxNextSample;
+
+    // ── 3. Update per-criterion averages within context ──────────────
+    const prevCriterionAvgs = existing?.criterionAvgs ?? {};
+    const nextCriterionAvgs = { ...prevCriterionAvgs };
+    if (context.criterionScores) {
+      for (const [criterion, score] of Object.entries(context.criterionScores)) {
+        if (!Number.isFinite(score)) continue;
+        const prevCritAvg = prevCriterionAvgs[criterion];
+        if (prevCritAvg === undefined) {
+          nextCriterionAvgs[criterion] = Math.round(score * 10) / 10;
+        } else {
+          nextCriterionAvgs[criterion] = Math.round(
+            ((prevCritAvg * ctxPrevSample + score) / ctxNextSample) * 10
+          ) / 10;
+        }
+      }
+    }
+
+    contextualScores[key] = {
+      angleType: context.angleType,
+      duration: context.duration,
+      avgScore: Math.round(ctxNextAvg * 10) / 10,
+      sampleSize: ctxNextSample,
+      criterionAvgs: Object.keys(nextCriterionAvgs).length > 0
+        ? nextCriterionAvgs
+        : undefined,
+    };
+  }
+
   const updated: InspirationItem = {
     ...item,
     usageCount: (item.usageCount ?? 0) + 1,
@@ -297,6 +346,7 @@ export async function recordInspirationUsage(
     derivedScoreSampleSize: nextSample,
     lastUsedAt: new Date().toISOString(),
     lastUsedInBatchIds: nextBatches,
+    contextualScores,
   };
 
   await updateItem(updated);

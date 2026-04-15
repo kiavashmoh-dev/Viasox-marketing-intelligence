@@ -53,6 +53,28 @@ export interface InspirationAnalysis {
   hookBreakdown?: string;
   /** Structure breakdown — narrative arc */
   narrativeArc?: string;
+  /** When and how the product is introduced — the "bridge" moment */
+  productBridge?: string;
+  /** Specific language, words, phrases, and pain points that make this ad effective */
+  keyLanguage?: string;
+  /** How the script lines build on each other — rhythm, momentum, transitions */
+  lineFlowAnalysis?: string;
+}
+
+// ─── Contextual Performance Scoring ──────────────────────────────────────────
+//
+// Instead of a single flat derivedScore, track performance per (angleType,
+// duration) context. An inspiration can be a 9/10 for Neuropathy + short-form
+// but a 4/10 for Diabetes + expanded — the system should know the difference.
+
+/** Key for context-specific scoring — serialized as "angleType|duration". */
+export interface ContextualScoreEntry {
+  angleType: string;
+  duration: string;
+  avgScore: number;
+  sampleSize: number;
+  /** Per-criterion average scores (built from the 11-criterion reviewer data). */
+  criterionAvgs?: Partial<Record<string, number>>;
 }
 
 /** Persisted record for a single inspiration item. */
@@ -89,6 +111,12 @@ export interface InspirationItem {
   styleNotes: string;
   hookBreakdown?: string;
   narrativeArc?: string;
+  /** When and how the product is introduced — the "bridge" moment. */
+  productBridge?: string;
+  /** Specific language, words, phrases, and pain points used. */
+  keyLanguage?: string;
+  /** How script lines build on each other — rhythm, momentum, transitions. */
+  lineFlowAnalysis?: string;
 
   // User state
   starred: boolean;
@@ -115,6 +143,12 @@ export interface InspirationItem {
   lastUsedAt?: string | null;
   /** Most recent batch IDs that used this item (capped to last 20). */
   lastUsedInBatchIds?: string[];
+  /**
+   * Performance scores broken down by (angleType, duration) context.
+   * Keyed as "angleType|duration" → ContextualScoreEntry.
+   * Falls back to flat derivedScore when no context match exists.
+   */
+  contextualScores?: Record<string, ContextualScoreEntry>;
 }
 
 /** Aggregated stats over the bank. */

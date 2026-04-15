@@ -40,7 +40,8 @@ import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator
 import { saveCompletedBatchToMemory } from './memoryExtractor';
 import { getDeepInspirationContextBlock } from '../inspiration/inspirationInjection';
 import type { ScoredInspiration } from '../inspiration/inspirationSelector';
-import { getItem as getInspirationItem, getFrames as getInspirationFrames } from '../inspiration/inspirationStore';
+import { getItem as getInspirationItem, getFrames as getInspirationFrames, getAllItems as getAllInspirationItems } from '../inspiration/inspirationStore';
+import { getEffectiveTags } from '../engine/inspirationTypes';
 import { runAngleDirectiveProposer } from './angleDirectiveProposer';
 import { formatAnglePatternsForEvaluator } from './anglePatternMiner';
 import { getAnglePatternsFor, getScoreCalibration } from './memoryStore';
@@ -1310,7 +1311,23 @@ After the diagnosis, proceed to generate the complete new brief.`;
   let memoryBriefing = currentState.memoryBriefing || '';
   if (!memoryBriefing && memory.batches.length > 0) {
     try {
-      const briefing = await runMemoryCurator(apiKey, signal);
+      // Load inspiration items for curator intelligence
+      const allInsp = await getAllInspirationItems();
+      const inspForCurator = allInsp
+        .filter((i) => i.status === 'ready')
+        .map((i) => {
+          const tags = getEffectiveTags(i);
+          return {
+            id: i.id, title: i.title, starred: i.starred,
+            adType: String(tags.adType ?? 'unknown'),
+            angleType: String(tags.angleType ?? 'unknown'),
+            duration: String(tags.duration ?? 'unknown'),
+            derivedScore: i.derivedScore ?? null,
+            sampleSize: i.derivedScoreSampleSize ?? 0,
+            contextualScores: i.contextualScores,
+          };
+        });
+      const briefing = await runMemoryCurator(apiKey, signal, inspForCurator);
       if (briefing) memoryBriefing = briefing.briefingText;
     } catch { /* non-fatal */ }
     await delay(INTER_CALL_DELAY);

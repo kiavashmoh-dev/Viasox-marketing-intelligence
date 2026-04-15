@@ -17,6 +17,8 @@ import {
 import { loadMemory, addRedoEvent, getAnglePatternsFor } from '../../autopilot/memoryStore';
 import { formatAnglePatternsForEvaluator } from '../../autopilot/anglePatternMiner';
 import { runMemoryCurator } from '../../autopilot/memoryCurator';
+import { getAllItems as getAllInspirationItems } from '../../inspiration/inspirationStore';
+import { getEffectiveTags } from '../../engine/inspirationTypes';
 import { buildAnglesPrompt } from '../../prompts/anglesPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { sendMessage, sendVisionMessage } from '../../api/claude';
@@ -108,11 +110,26 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
     abortRef.current = controller;
 
     try {
-      // Run memory curator
+      // Run memory curator (with inspiration intelligence)
       const memory = loadMemory();
       if (memory.batches.length > 0) {
         try {
-          const briefing = await runMemoryCurator(apiKey, controller.signal);
+          const allInsp = await getAllInspirationItems();
+          const inspForCurator = allInsp
+            .filter((i) => i.status === 'ready')
+            .map((i) => {
+              const tags = getEffectiveTags(i);
+              return {
+                id: i.id, title: i.title, starred: i.starred,
+                adType: String(tags.adType ?? 'unknown'),
+                angleType: String(tags.angleType ?? 'unknown'),
+                duration: String(tags.duration ?? 'unknown'),
+                derivedScore: i.derivedScore ?? null,
+                sampleSize: i.derivedScoreSampleSize ?? 0,
+                contextualScores: i.contextualScores,
+              };
+            });
+          const briefing = await runMemoryCurator(apiKey, controller.signal, inspForCurator);
           if (briefing) memoryBriefingRef.current = briefing.briefingText;
         } catch { /* non-fatal */ }
       }
