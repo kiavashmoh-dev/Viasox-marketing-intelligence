@@ -153,6 +153,9 @@ function parseAnalyzerResponse(raw: string): InspirationAnalysis {
     styleNotes: typeof obj.styleNotes === 'string' ? obj.styleNotes : '',
     hookBreakdown: typeof obj.hookBreakdown === 'string' ? obj.hookBreakdown : undefined,
     narrativeArc: typeof obj.narrativeArc === 'string' ? obj.narrativeArc : undefined,
+    productBridge: typeof obj.productBridge === 'string' ? obj.productBridge : undefined,
+    keyLanguage: typeof obj.keyLanguage === 'string' ? obj.keyLanguage : undefined,
+    lineFlowAnalysis: typeof obj.lineFlowAnalysis === 'string' ? obj.lineFlowAnalysis : undefined,
   };
 }
 
@@ -168,11 +171,105 @@ async function persistAnalysis(
     styleNotes: analysis.styleNotes,
     hookBreakdown: analysis.hookBreakdown,
     narrativeArc: analysis.narrativeArc,
+    productBridge: analysis.productBridge,
+    keyLanguage: analysis.keyLanguage,
+    lineFlowAnalysis: analysis.lineFlowAnalysis,
     status: 'ready',
     analysisError: undefined,
   };
   await updateItem(updated);
   return updated;
+}
+
+/**
+ * Re-analyze an existing item to backfill new analysis fields
+ * (productBridge, keyLanguage, lineFlowAnalysis) without losing
+ * existing metadata (scores, stars, user overrides, usage data).
+ */
+export async function reanalyzeItem(
+  itemId: string,
+  apiKey: string,
+  signal?: AbortSignal,
+): Promise<InspirationItem | null> {
+  const { getItem, getFrames } = await import('./inspirationStore');
+  const item = await getItem(itemId);
+  if (!item || item.status !== 'ready') return null;
+
+  if (item.kind === 'video') {
+    const frames = await getFrames(itemId);
+    if (frames.length === 0 && !item.attachedScriptText && !item.textContent) return null;
+    const result = await analyzeVideoItem(
+      { item, frames, attachedScriptText: item.attachedScriptText },
+      apiKey,
+      signal,
+    );
+    // Preserve user state and performance data that persistAnalysis would overwrite
+    const preserved: InspirationItem = {
+      ...result,
+      starred: item.starred,
+      autoStarred: item.autoStarred,
+      userNotes: item.userNotes,
+      userTagOverrides: item.userTagOverrides,
+      usageCount: item.usageCount,
+      derivedScore: item.derivedScore,
+      derivedScoreSampleSize: item.derivedScoreSampleSize,
+      lastUsedAt: item.lastUsedAt,
+      lastUsedInBatchIds: item.lastUsedInBatchIds,
+      contextualScores: item.contextualScores,
+    };
+    await updateItem(preserved);
+    return preserved;
+  } else {
+    const textContent = item.textContent ?? '';
+    if (!textContent.trim()) return null;
+    const result = await analyzeTextItem(
+      { item, textContent },
+      apiKey,
+      signal,
+    );
+    const preserved: InspirationItem = {
+      ...result,
+      starred: item.starred,
+      autoStarred: item.autoStarred,
+      userNotes: item.userNotes,
+      userTagOverrides: item.userTagOverrides,
+      usageCount: item.usageCount,
+      derivedScore: item.derivedScore,
+      derivedScoreSampleSize: item.derivedScoreSampleSize,
+      lastUsedAt: item.lastUsedAt,
+      lastUsedInBatchIds: item.lastUsedInBatchIds,
+      contextualScores: item.contextualScores,
+    };
+    await updateItem(preserved);
+    return preserved;
+  }
+}
+
+/**
+ * Re-analyze ALL ready items in the bank. Returns count of successfully
+ * re-analyzed items. Skips items that fail gracefully.
+ */
+export async function reanalyzeAllItems(
+  apiKey: string,
+  signal?: AbortSignal,
+  onProgress?: (done: number, total: number, title: string) => void,
+): Promise<number> {
+  const { getAllItems } = await import('./inspirationStore');
+  const items = (await getAllItems()).filter((i) => i.status === 'ready');
+  let done = 0;
+
+  for (const item of items) {
+    if (signal?.aborted) break;
+    try {
+      onProgress?.(done, items.length, item.title);
+      await reanalyzeItem(item.id, apiKey, signal);
+      done++;
+    } catch (err) {
+      console.warn(`[reanalyze] Failed for ${item.title}:`, err);
+    }
+  }
+
+  return done;
 }
 
 /** Mark an item as failed and persist the error. */
