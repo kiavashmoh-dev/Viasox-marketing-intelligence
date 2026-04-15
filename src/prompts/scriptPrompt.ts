@@ -914,14 +914,23 @@ The main script body. Each row = ONE thought, ONE breath. The number of rows dep
 | 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
 
 **CRITICAL BODY RULES:**
-- ${isShortFormDuration(params.duration) ? `This is a ${params.duration} short-form ad. You MAY choose text-only/no-VO (on-screen text over b-roll, no spoken words in Lines) OR include VO on every row — both are valid. If you choose no-VO, the Lines column should contain the on-screen text line the viewer reads. If you choose VO, Lines should contain spoken words. Be consistent within the brief.` : `EVERY row MUST have spoken words in the Lines column — NO silent rows. Even BROLL cutaway rows must have voiceover continuing. This is a ${params.duration} ad and VO is MANDATORY.`}
+- ${isShortFormDuration(params.duration) ? `This is a ${params.duration} SHORT-FORM ad — the most experimental format in the Viasox toolkit.
+
+**SHORT-FORM SCRIPT RULES:**
+- You MAY choose text-only/no-VO (on-screen text over b-roll, no spoken words in Lines) OR include VO on every row — both are valid. If you choose no-VO, the Lines column should contain the on-screen text the viewer reads. If you choose VO, Lines should contain spoken words. Be consistent within the brief.
+- **NATIVE STYLE IS KING.** The script should feel like organic social content, not a polished ad. Think: content that blends into a TikTok/Reels/Shorts feed. Raw > polished. Authentic > produced.
+- **NO FULL ARC REQUIRED.** The body can be as short as 2-3 rows for a single-moment concept. Do NOT force a beginning-middle-end if the concept works as a visual punch, a provocation, or a single powerful beat.
+- **CTA RULES:** Text-on-screen only. Never a spoken CTA for short-form. The CTA can be as minimal as a brand name card or "viasox.com" — or ABSENT ENTIRELY for engagement/awareness concepts.
+- **NOT EVERY SHORT-FORM AD MUST SELL.** If the concept's goal is engagement (comments, shares) or awareness (brand recall, scroll-stop), write to THAT goal. "Stop the scroll and plant the seed" is a valid script mission.
+- **EXPERIMENTAL = ENCOURAGED.** Weird hooks, unusual pacing, emotional gut-punches, meme-adjacent formats, ASMR/sensory approaches — all valid for short-form.` : `EVERY row MUST have spoken words in the Lines column — NO silent rows. Even BROLL cutaway rows must have voiceover continuing. This is a ${params.duration} ad and VO is MANDATORY.`}
 - Each row = ONE thought, ONE breath. If you would pause mid-sentence, SPLIT into two rows.
 - Every row MUST have a Building Block label that explains its strategic purpose in the persuasion arc.
 - **Total word budget:** ${durationTarget.sweetSpot} across all body rows combined. Hard ceiling: ${durationTarget.hardCeiling} words. Count before finalizing.
 
 ### 4. FRAMEWORK BREAKDOWN
-## How ${params.framework} Was Applied
-Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.`}
+${isShortFormDuration(params.duration) && (params.framework === 'No Framework (Pure Moment)' || params.framework === 'No Framework') ? `## Creative Approach
+Explain the structural approach used (single moment, visual contrast, provocation, native clip, reaction/reveal, etc.) and why it serves the concept. Reference specific row numbers.` : `## How ${params.framework} Was Applied
+Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.`}`}
 
 ## ADVERTISING MASTERY PRINCIPLES
 Apply these principles from the four foundational marketing texts throughout every script:
@@ -929,7 +938,7 @@ Apply these principles from the four foundational marketing texts throughout eve
 ### FROM SCIENTIFIC ADVERTISING (Claude Hopkins)
 
 **The Service Principle:**
-The only purpose of advertising is to sell. Do not aim to amuse or entertain. Every frame of this script must advance the sale. The best advertising looks like news, feels like a service, and acts like a salesperson.
+${isShortFormDuration(params.duration) ? 'For short-form ads, the purpose extends beyond direct selling. Short-form can aim to stop the scroll, spark engagement, build brand awareness, or plant a seed that converts later. Not every 10-second clip needs to close a sale — some need to start a conversation. The best short-form advertising looks like CONTENT, not like ads.' : 'The only purpose of advertising is to sell. Do not aim to amuse or entertain. Every frame of this script must advance the sale. The best advertising looks like news, feels like a service, and acts like a salesperson.'}
 
 **The Specificity Principle:**
 Specifics outperform generalities by orders of magnitude. Never say "many customers love our socks." Say "47% of reviewers mentioned comfort in their first sentence." Never say "helps with swelling." Say "reduces ankle circumference noticeably, according to nurses who tested them on 12-hour shifts." Specific facts SELL. Vague claims are ignored.

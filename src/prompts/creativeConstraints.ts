@@ -68,17 +68,19 @@ export const DURATION_TARGETS: Record<string, DurationTarget> = {
     hardCeiling: 37,
     maxSeconds: 15,
     description:
-      'Short-form social ad. Hook must land in the first 1.5 seconds. One problem, one solution, one CTA — or a single powerful moment. No story arcs, no setups, no multi-beat mini-movies. Everything must happen inside 15 seconds of runtime.',
+      'Short-form social ad — a FUNDAMENTALLY DIFFERENT creative format, not a compressed version of a longer ad. These are the most experimental, native, scroll-stopping pieces in the Viasox toolkit. They do NOT always need to sell. They can aim purely for engagement, awareness, or brand recall. A single powerful moment, a visual punch, a provocative statement, a native-style clip — all valid. No framework required. No full arc required. No CTA required (or text-on-screen CTA only). VO is optional. Everything must fit inside 15 seconds of runtime.',
     voRequired: false,
     voRule:
-      'Text-only / no-VO is ALLOWED for short-form. You may choose text + b-roll with no voiceover, OR you may include a VO. Both are valid for 1-15 sec.',
+      'Text-only / no-VO is ALLOWED for short-form. You may choose text + b-roll with no voiceover, OR you may include a VO. Both are equally valid creative choices for 1-15 sec. Native-style ads (no VO, minimal text, organic feel) are STRONGLY encouraged.',
     recommendedFrameworks: [
+      'ANY framework or NO formal framework — short-form is the experimental lane',
       'PAS (Problem-Agitate-Solution)',
       'Before-After-Bridge',
       'The Contrast Framework',
       'Hook-Story-Offer',
       'The Myth Buster',
       'The Demonstration Proof',
+      'No Framework (Pure Moment / Visual Punch / Native Style)',
     ],
   },
   '16-59 sec': {
@@ -297,7 +299,76 @@ ${target.description}
 
 **Rule of thumb:** When in doubt, CUT a line rather than ADD one. The default assumption for this brief is "your first draft is too long."
 
-**Frameworks that fit ${target.duration}:** ${target.recommendedFrameworks.join(', ')}. If you are working with a different framework, make sure it can compress its full narrative arc into ${target.maxSeconds} seconds of runtime — if it cannot, switch to one of the recommended frameworks.`;
+**Frameworks that fit ${target.duration}:** ${target.voRequired ? `${target.recommendedFrameworks.join(', ')}. If you are working with a different framework, make sure it can compress its full narrative arc into ${target.maxSeconds} seconds of runtime — if it cannot, switch to one of the recommended frameworks.` : 'ANY framework — or NO formal framework. Short-form is the experimental lane. The concept dictates the structure, not the framework. If a traditional framework naturally fits, use it. If the concept works better as a single moment, visual punch, or native clip with no arc — that is equally valid.'}`;
+}
+
+// ─── SHORT-FORM CREATIVE PHILOSOPHY ──────────────────────────────────────────
+
+/**
+ * Returns the full short-form creative philosophy block.
+ * Injected into concept generator, selector, script writer, and reviewer
+ * ONLY when the brief is 1-15 sec. This is the foundational document that
+ * makes short-form a first-class creative format.
+ */
+export function buildShortFormCreativePhilosophy(): string {
+  return `## SHORT-FORM CREATIVE PHILOSOPHY (1-15 SEC) — MAJOR CREATIVE FORMAT
+
+Short-form is NOT a compressed version of a longer ad. It is its own creative discipline with its own rules, strengths, and goals. Treat it as the most experimental, native, scroll-stopping format in the Viasox toolkit.
+
+### CORE PRINCIPLES
+
+1. **NOT EVERY AD NEEDS TO SELL.** Short-form ads can aim purely for engagement, brand awareness, scroll-stopping impact, or emotional resonance. A 10-second clip that gets 500 comments and 50 shares is MORE valuable than a 10-second ad that tries to hard-sell and gets scrolled past. Valid goals:
+   - **Engagement bait** — provoke comments, reactions, debate ("Wait, your socks do THAT to your legs?")
+   - **Awareness / brand recall** — plant the brand in memory without pushing a sale
+   - **Share-worthy content** — something people send to someone they know
+   - **Scroll-stop visual punch** — a single arresting image or moment
+   - **Native content** — feels like an organic post, not an ad
+
+2. **NO FRAMEWORK REQUIRED.** Traditional frameworks (PAS, AIDA, Hook-Story-Offer) are designed for longer arcs. Short-form can use them if they fit, but it's equally valid to have NO formal framework — just a single powerful moment, a visual contrast, a provocative question, or a raw native clip. The concept should dictate the structure, not the other way around.
+
+3. **NO FULL ARC REQUIRED.** A 12-second ad doesn't need a beginning, middle, and end. It can be:
+   - A single moment (close-up of sock marks fading + text overlay)
+   - A visual before/after (2 shots, no words needed)
+   - A bold statement with proof (one claim + one data point)
+   - A reaction clip (someone's genuine response to the product)
+   - A question that lingers ("When's the last time you looked at your ankles?")
+   - A pattern interrupt (something unexpected that stops the scroll)
+
+4. **NATIVE STYLE IS KING.** The best-performing short-form content looks like organic social posts, not polished ads. Think: iPhone-shot feel, authentic moments, raw reactions, casual text overlays, content that blends into a TikTok/Reels/Shorts feed. The audience's ad radar is strongest in the first 3 seconds — native style bypasses it.
+
+5. **VO AND NO-VO ARE EQUAL.** No default preference. Choose based on what serves the concept:
+   - **No VO** — text overlays on visual b-roll, native sound (ASMR, ambient), trending audio feel
+   - **VO** — punchy single-sentence narration, reaction-style commentary, conversational tone
+   - **Hybrid** — text on screen with a short VO kicker at the end
+
+6. **CTAs ARE MINIMAL OR ABSENT.** Short-form CTAs:
+   - Text-on-screen only ("Link in bio" / "viasox.com" / brand name card) — never a spoken sales push
+   - Or NO CTA at all — the ad's job is to stop the scroll and plant the seed, not close the sale
+   - Logo/brand name in the last 1-2 seconds is sufficient for awareness goals
+
+7. **EXPERIMENTAL = ENCOURAGED.** Short-form is where we try things that would be too risky in a 60-second piece. Weird hooks, unconventional visuals, emotional gut-punches, humor, controversy, meme-adjacent formats. If it stops the scroll and connects to the brand, it's valid.
+
+### SHORT-FORM CREATIVE LANES (mix these across concepts — do NOT default to only one)
+
+| Lane | Description | Example |
+|------|-------------|---------|
+| **Native Clip** | Looks like an organic social post. iPhone-style, casual, authentic. | Close-up of someone pulling off tight socks, red marks visible. Text: "This isn't normal." |
+| **Visual Punch** | Single arresting image or visual contrast. Minimal/no text. | Split-screen: regular sock = red marks / Viasox = clean skin. No words needed. |
+| **Provocation** | Bold statement or question designed to stop and engage. | "Your socks are cutting off your circulation. You just stopped noticing." |
+| **Reaction / Reveal** | Genuine response to discovery or product experience. | Someone seeing their leg marks disappear after switching socks. Raw reaction. |
+| **Data Bomb** | One shocking stat presented visually. No story, just impact. | "107,000+ reviews. 4.8 stars. Zero sock marks." with product visual. |
+| **ASMR / Sensory** | Sound-first or texture-first. Satisfying visuals, native audio. | Slow-mo of bamboo fabric stretching, natural sound, minimal text. |
+| **Meme-Adjacent** | Plays on cultural format the audience recognizes. Shareable. | "POV: You finally found socks that don't leave marks" + relatable visual. |
+| **Micro-Story** | Tiny narrative (2-3 beats max). Beginning and payoff, no middle. | Morning routine → sees marks → discovers Viasox. 3 shots, 10 seconds. |
+
+### WHAT MAKES A BAD SHORT-FORM AD
+
+- Trying to cram a 30-second story into 15 seconds (compressed mini-movie)
+- Hard-sell CTA with urgency language ("BUY NOW! LIMITED TIME!")
+- Reading like a polished brand commercial instead of native content
+- Using complex frameworks that need narrative breathing room
+- Opening with the brand name or product (instant ad radar trigger)
+- Multiple ideas competing for attention in 15 seconds`;
 }
 
 /**
@@ -306,7 +377,10 @@ ${target.description}
  * VO rule and the length target for a specific duration.
  */
 export function buildBriefConstraintsBlock(duration?: string): string {
+  const shortFormPhilosophy = isShortFormDuration(duration)
+    ? `\n\n${buildShortFormCreativePhilosophy()}`
+    : '';
   return `${buildDurationSpecificVoRule(duration)}
 
-${buildDurationSpecificLengthTarget(duration)}`;
+${buildDurationSpecificLengthTarget(duration)}${shortFormPhilosophy}`;
 }

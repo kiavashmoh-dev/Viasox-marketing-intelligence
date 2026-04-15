@@ -728,11 +728,19 @@ ${buildFullAiSkillContext({
 
   const user = `Generate exactly 5 creative ${params.angleType} concepts & angles for ${params.product}${params.primaryTalkingPoint ? ` focused on "${params.primaryTalkingPoint}"` : ''} at the **${params.awarenessLevel}** awareness level, optimized for ${params.funnelStage} (${params.funnelStage === 'TOF' ? 'Top of Funnel' : params.funnelStage === 'MOF' ? 'Middle of Funnel' : 'Bottom of Funnel'}) using ${params.adType} format.${talkingPointNote}${fullAiDirective}
 
-**BRIEF LENGTH: ${params.duration ?? '16-59 sec'}** (final cut MUST be ≤ ${durationTarget.maxSeconds}s) — Target ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words). Every concept must fit comfortably in this time budget. Recommended frameworks for this length: ${durationTarget.recommendedFrameworks.join(', ')}.
+**BRIEF LENGTH: ${params.duration ?? '16-59 sec'}** (final cut MUST be ≤ ${durationTarget.maxSeconds}s) — Target ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words). Every concept must fit comfortably in this time budget.${durationTarget.voRequired ? ` Recommended frameworks for this length: ${durationTarget.recommendedFrameworks.join(', ')}.` : ''}
 
 **VO REQUIREMENT FOR CONCEPTS:** ${durationTarget.voRequired
   ? `This is a ${params.duration} brief — VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY. Do NOT pitch concepts built around text-only/silent b-roll or pure visual montage with no spoken words. Every concept MUST include a voiceover, on-camera dialogue, founder monologue, podcast conversation, or spokesperson delivery. A concept for ${params.duration} without a spoken track is a creative failure and will be rejected.`
-  : `This is a ${params.duration} short-form brief. You MAY pitch concepts that are text-only/no-VO (pure visual grammar with on-screen text over b-roll) OR concepts with VO — both are valid. Mix both styles across the 5 concepts if it serves the angle variety.`}
+  : `This is a ${params.duration} SHORT-FORM brief — the most EXPERIMENTAL format in our toolkit.
+
+**SHORT-FORM CONCEPT GENERATION RULES:**
+- Mix VO and no-VO concepts across the 5 options. At least 1 concept should be native-style (no VO, minimal text, organic social feel) and at least 1 should use VO.
+- NOT every concept needs to sell or drive conversion. Include at least 1 concept aimed purely at ENGAGEMENT (comments, shares, reactions) or AWARENESS (brand recall, scroll-stop impact) rather than direct response.
+- NO framework is required. If a concept works as a single powerful moment, a visual punch, or a native clip — that is a valid concept. Do not force-fit arcs.
+- CTAs should be TEXT ON SCREEN ONLY (or absent entirely for engagement/awareness concepts). No spoken CTAs for short-form.
+- NATIVE STYLE is strongly valued — concepts that look and feel like organic social content (not polished ads) should be represented.
+- This is the creative playground. Propose at least 1 concept that is genuinely experimental — unusual hook, unexpected format, bold creative risk.`}
 
 **CRITICAL — AWARENESS LEVEL IS ${params.awarenessLevel.toUpperCase()}:**
 ${params.awarenessLevel === 'Unaware' ? `⚠️ UNAWARE IS THE DEFAULT TOF AWARENESS LEVEL (April 2026 Manifesto). Every concept must honor Schwartz's Three Elimination Rules in the opening: NO price, NO product name, NO direct problem/solution statement.

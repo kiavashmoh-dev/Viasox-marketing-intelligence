@@ -301,7 +301,10 @@ export type ScriptFramework =
   | 'The Objection Crusher'
   | 'The Identity Alignment'
   | 'The Reason-Why (Hopkins)'
-  | 'The Gradualization (Schwartz)';
+  | 'The Gradualization (Schwartz)'
+  // --- Short-form experimental ---
+  | 'No Framework (Pure Moment)'
+  | 'No Framework';
 
 export type MarketingBookReference =
   | 'Scientific Advertising (Hopkins)'

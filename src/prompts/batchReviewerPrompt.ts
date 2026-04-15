@@ -98,6 +98,15 @@ Ecom ads are built entirely in post-production:
 
 Score each criterion 1-10. 1-4 = FAIL (fundamental issue), 5-6 = FLAG (needs work), 7-10 = PASS (acceptable to strong). Be specific in your notes — quote the lines that demonstrate the score.
 
+**⚠️ SHORT-FORM SCORING ADAPTATION (apply ONLY to 1-15 sec briefs):**
+Short-form (1-15 sec) ads follow a fundamentally different creative philosophy. When scoring a short-form brief, adapt these criteria:
+- **frameworkExecution:** If the brief uses "No Framework (Pure Moment)" or similar, score based on whether the chosen creative approach (visual punch, provocation, native clip, reaction/reveal, etc.) is well-executed — NOT whether a traditional framework is followed. A single-moment concept with no arc that delivers powerful impact = 9/10.
+- **hookToBodyTransition:** Short-form scripts may only have 2-3 body rows. The transition standard is "does it flow?" not "does it advance a multi-beat narrative." A concept that IS the hook (the entire ad is one idea) can score 8+/10 here.
+- **adTypeAdaptation:** Short-form CTAs should be text-on-screen only or absent entirely. Do NOT penalize a short-form brief for lacking a spoken CTA. Native-style aesthetic (raw, authentic, organic social feel) is a STRENGTH for short-form, not a weakness.
+- **uniquenessCreativity:** Experimental and unconventional approaches should be REWARDED for short-form. A brief that takes a creative risk (meme-adjacent format, ASMR/sensory approach, pure visual contrast, provocative question with no answer) is doing short-form RIGHT.
+- **scriptVagueness:** Short-form can use brevity as a weapon. "Morning. Marks. Again." is MORE specific than a 15-word description in this format. Judge specificity relative to the word budget, not absolute word count.
+- **Overall philosophy:** Short-form ads do NOT always need to sell. Engagement-goal and awareness-goal briefs are valid. Score them on whether they achieve THEIR stated goal, not against a conversion-focused rubric.
+
 **1. scriptVagueness — Script Specificity (NEVER be vague)**
 Does the script use SPECIFIC, CONCRETE language throughout? Every line should paint a picture. "Experience comfort like never before" = 2/10. "The numbness that starts in your toes by 3pm and crawls up past your ankles" = 9/10. Check every beat — even one vague line in an otherwise specific script brings this score down. Data points must be specific ("89% reported reduced marks" not "most customers noticed a difference").
 

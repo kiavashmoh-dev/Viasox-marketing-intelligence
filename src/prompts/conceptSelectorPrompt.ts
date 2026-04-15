@@ -133,9 +133,13 @@ ${getScriptFrameworks()}
 Before scoring any concept on the weighted criteria below, apply this hard filter first:
 
 ${shortForm
-  ? `**SHORT-FORM (${duration}) RULES:**
-- VO is OPTIONAL at ${duration}. Concepts with VO AND concepts with pure text-only/silent b-roll are both valid. Do not penalize either.
+  ? `**SHORT-FORM (${duration}) RULES — THIS IS THE EXPERIMENTAL LANE:**
+- VO is OPTIONAL at ${duration}. Concepts with VO AND concepts with pure text-only/silent b-roll/native style are EQUALLY valid. Do not penalize either.
 - LENGTH GATE: any concept that pitches more than ${durationTarget.hardCeiling} words of implied spoken content or more than 3-4 distinct story beats is TOO BIG for ${duration}. Do NOT select it — it will force the script writer to overshoot length. Only select concepts that fit tightly within the ${durationTarget.sweetSpot} budget.
+- **NO FRAMEWORK REQUIRED.** Concepts that work as a single powerful moment, a visual punch, a provocative question, or a native-style clip are JUST AS VALID as concepts with a formal narrative arc. Do NOT penalize a concept for lacking a traditional framework.
+- **NOT EVERY SHORT-FORM AD MUST SELL.** Concepts aimed at engagement (comments, shares, reactions), awareness (brand recall, scroll-stop), or native content are VALID goals for short-form. Do not reject a concept just because it doesn't have a conversion CTA.
+- **NATIVE STYLE IS VALUED.** Concepts that look and feel like organic social content (not polished ads) score HIGHER for short-form, not lower. If a concept would blend into a TikTok/Reels feed, that's a strength.
+- **REWARD CREATIVE RISK.** Short-form is where we experiment. Unusual hooks, unexpected formats, bold creative choices should be rewarded, not penalized for being "unconventional."
 - Remember: the tool has historically overshot length by 20-30%. Pick the tightest, sharpest concept, not the most ambitious.`
   : `**MEDIUM/EXPANDED (${duration}) RULES — VO IS MANDATORY:**
 - This is a ${duration} brief. VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY per the VO-by-length rule. Any concept that relies on text-only/silent b-roll, pure visual montage with no spoken words, or on-screen text as the sole verbal channel must be REJECTED — do not select it.
@@ -191,7 +195,19 @@ ${isUnaware ? `**UNAWARE WEIGHTING (applies because this is an Unaware brief):**
 
 5. **Data Grounding (10%)** — Does the concept cite specific review data (percentages, customer language, measurable claims)? BUT: Unaware concepts must TRANSFORM review language into pre-recognition framing — not paste customer quotes verbatim. A concept that uses "90% reported sock marks disappeared" as a Beat 3 Mechanism insight beats one that opens with "finally no sock marks!"
 
-6. **Creative Freshness (10%)** — Does the concept find a unique, scene-first entry point? A fresh identification moment into the "${angle}" territory that hasn't been done a thousand times? Originality in the mundane moment, the reframe twist, the mechanism visualization, or the "category reveal" setup.` : `1. **Angle-Task Alignment (25%)** — Does this concept DEEPLY address the "${angle}" angle? Not surface-level mention, but structural alignment where the angle IS the concept's core. A Neuropathy brief must be ABOUT nerve pain — the numbness, the tingling, the burning, the fear of what it means. Not "comfortable socks" with neuropathy mentioned once.
+6. **Creative Freshness (10%)** — Does the concept find a unique, scene-first entry point? A fresh identification moment into the "${angle}" territory that hasn't been done a thousand times? Originality in the mundane moment, the reframe twist, the mechanism visualization, or the "category reveal" setup.` : shortForm ? `**SHORT-FORM WEIGHTING (applies because this is a 1-15 sec brief):**
+
+1. **Scroll-Stop Power (30%)** — Would this stop a fast-scrolling thumb in the first 1-1.5 seconds? Short-form lives or dies by the opening frame. The concept must create instant visual or emotional impact — recognition ("that's me"), shock ("wait, what?"), curiosity, or pattern interrupt. This is THE most important criterion for short-form.
+
+2. **Native Feel & Format Fit (20%)** — Does this concept feel like organic social content that belongs in a TikTok/Reels/Shorts feed? Would the viewer engage with it BEFORE realizing it's an ad? Polished, branded, "commercial" concepts score LOWER. Raw, authentic, native-feeling concepts score HIGHER. Also: does the concept actually fit in ${duration}? A concept with 4+ beats is too big.
+
+3. **Angle Connection (15%)** — Does the concept connect to the "${angle}" angle in a way that feels authentic, not forced? For short-form, the angle can be expressed through a single vivid moment rather than a full narrative argument. A 10-second close-up of sock marks with one provocative line can be more powerful than a compressed problem-solution arc.
+
+4. **Creative Boldness (15%)** — Is this concept doing something DIFFERENT? Unusual hook, unexpected format, emotional gut-punch, humor, meme-adjacent, or genuinely experimental approach? Short-form is the creative playground — reward risk-taking. Safe, formulaic concepts score LOWER.
+
+5. **Goal Clarity (10%)** — Is the concept's goal clear — whether that's engagement (drive comments/shares), awareness (plant the brand), or conversion (drive click)? All three are valid for short-form, but the concept should clearly serve ONE goal, not try to do everything in 15 seconds.
+
+6. **Production Feasibility (10%)** — ${isFullAi ? 'Can this concept actually be generated by current AI text-to-video models? Does it work within the visual constraints of AI generation?' : 'Can this concept actually be built in post-production? Native-style concepts that need only existing footage + text overlays are the EASIEST to produce — reward simplicity.'}` : `1. **Angle-Task Alignment (25%)** — Does this concept DEEPLY address the "${angle}" angle? Not surface-level mention, but structural alignment where the angle IS the concept's core. A Neuropathy brief must be ABOUT nerve pain — the numbness, the tingling, the burning, the fear of what it means. Not "comfortable socks" with neuropathy mentioned once.
 
 2. **Production Feasibility (20%)** — ${isFullAi ? 'Can this concept actually be generated by current AI text-to-video models? Does it work with voiceover-led storytelling, identity-consistent characters, and AI-friendly visual territories (cinematic, surreal, historical, documentary, educational)? Concepts requiring tight branded product close-ups, multi-person dialogue with lip-sync, complex hand-product manipulation, or real-world brand-accurate locations score LOW. Concepts that exploit what AI uniquely does (impossible scale, time travel, surreal metaphor, dreamlike imagery) score HIGH.' : 'Can this concept actually be built in post-production? Does it work with text overlays, existing footage, voiceover, and product shots? Concepts requiring specific talent, locations, or complex scenes that can\'t be assembled in editing = score LOW.'}
 
@@ -223,9 +239,9 @@ FIVE_BEAT_MAPPING: [One line per beat showing how the selected concept maps to t
 
 REASONING: [5-7 sentences of deep analysis. Explain WHY this concept wins AND why it passes Schwartz's Three Elimination Rules. Reference the specific identification beat, the reframe, and how it avoids the banned Unaware vocabulary. Be specific about why the others failed the Unaware gate — did they name the condition in the hook? Did they open with the product? Did they skip the mechanism beat?]` : `REASONING: [4-6 sentences of deep analysis. Explain WHY this concept wins on the criteria. Reference specific elements of the concept. Explain why the others fell short. Be specific — "Concept 3's hook about morning numbness is stronger than Concept 1's generic pain opening because it names the EXACT sensation and time of day, which creates instant recognition for neuropathy sufferers."]`}
 
-FRAMEWORK_SUGGESTION: [Full framework name from the list above — e.g., "The Contrast Framework"${isUnaware ? '. NOTE: For Unaware briefs, strongly prefer "The Gradualization (Schwartz)" framework — it maps natively to the 5-beat Unaware structure.' : ''}]
+FRAMEWORK_SUGGESTION: [Full framework name from the list above — e.g., "The Contrast Framework"${isUnaware ? '. NOTE: For Unaware briefs, strongly prefer "The Gradualization (Schwartz)" framework — it maps natively to the 5-beat Unaware structure.' : ''}${shortForm ? '. NOTE: For short-form (1-15 sec), you may suggest "No Framework (Pure Moment)" if the concept works better without a traditional narrative arc. This is a valid choice for short-form only.' : ''}]
 
-FRAMEWORK_REASONING: [2-3 sentences explaining why this specific framework best serves the selected concept's narrative arc and the "${angle}" angle${isUnaware ? ', AND how it supports the 5-beat Unaware body structure' : ''}]`;
+FRAMEWORK_REASONING: [2-3 sentences explaining why this specific framework best serves the selected concept's narrative arc and the "${angle}" angle${isUnaware ? ', AND how it supports the 5-beat Unaware body structure' : ''}${shortForm ? '. For short-form, if you chose "No Framework", explain what structural approach the concept uses instead (single moment, visual contrast, provocation, native clip, etc.)' : ''}]`;
 
   const productData = getProductAnalysis(analysis, productCategory);
   const user = `## BRIEF CONTEXT
