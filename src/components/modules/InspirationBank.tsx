@@ -29,6 +29,7 @@ import {
   analyzeVideoItem,
   analyzeTextItem,
   markFailed,
+  reanalyzeAllItems,
 } from '../../inspiration/inspirationAnalyzer';
 import type { AdType, AngleType, ProductCategory } from '../../engine/types';
 
@@ -87,6 +88,8 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<InspirationItem | null>(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [reanalyzing, setReanalyzing] = useState(false);
+  const [reanalyzeProgress, setReanalyzeProgress] = useState('');
 
   // Filters
   const [filterKind, setFilterKind] = useState<InspirationKind | 'all'>('all');
@@ -252,6 +255,31 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
     await reload();
   };
 
+  const handleReanalyzeAll = async () => {
+    const readyCount = items.filter((i) => i.status === 'ready').length;
+    if (readyCount === 0) return;
+    if (
+      !confirm(
+        `Re-analyze all ${readyCount} items to extract deeper insights (product bridge, key language, line flow)? This uses one API call per item. Stars, notes, scores, and overrides are preserved.`,
+      )
+    )
+      return;
+    setReanalyzing(true);
+    setReanalyzeProgress(`Starting... 0/${readyCount}`);
+    try {
+      const done = await reanalyzeAllItems(apiKey, undefined, (d, total, title) => {
+        setReanalyzeProgress(`${d + 1}/${total}: ${title}`);
+      });
+      setReanalyzeProgress(`Done — ${done} items updated`);
+      await reload();
+    } catch (err) {
+      setReanalyzeProgress(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setReanalyzing(false);
+      setTimeout(() => setReanalyzeProgress(''), 5000);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-6xl mx-auto">
@@ -273,6 +301,14 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
             </div>
             <div className="flex gap-2">
               <button
+                onClick={handleReanalyzeAll}
+                disabled={reanalyzing || items.filter((i) => i.status === 'ready').length === 0}
+                className="px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-100 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Re-analyze all items to extract product bridge, key language, and line flow insights"
+              >
+                {reanalyzing ? 'Re-analyzing…' : '↻ Re-analyze All'}
+              </button>
+              <button
                 onClick={() => setShowUpload(true)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
               >
@@ -288,6 +324,13 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
               <StatTile label="Videos" value={String(stats.byKind.video)} />
               <StatTile label="Briefs" value={String(stats.byKind.brief)} />
               <StatTile label="Starred" value={String(stats.starredCount)} />
+            </div>
+          )}
+
+          {/* Re-analyze progress */}
+          {reanalyzeProgress && (
+            <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${reanalyzing ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+              {reanalyzing ? '⏳ ' : '✓ '}{reanalyzeProgress}
             </div>
           )}
 

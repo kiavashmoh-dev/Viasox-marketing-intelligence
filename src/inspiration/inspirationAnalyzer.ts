@@ -10,7 +10,7 @@ import { sendVisionMessage, type ContentBlock } from '../api/claude';
 import type { InspirationItem, InspirationAnalysis } from '../engine/inspirationTypes';
 import { buildInspirationAnalyzerPrompt } from './inspirationAnalyzerPrompt';
 import { stripDataUrlPrefix } from './frameExtractor';
-import { updateItem } from './inspirationStore';
+import { updateItem, getItem, getFrames, getAllItems } from './inspirationStore';
 
 const MAX_TOKENS = 8000;
 const MODEL = 'claude-opus-4-6';
@@ -191,7 +191,6 @@ export async function reanalyzeItem(
   apiKey: string,
   signal?: AbortSignal,
 ): Promise<InspirationItem | null> {
-  const { getItem, getFrames } = await import('./inspirationStore');
   const item = await getItem(itemId);
   if (!item || item.status !== 'ready') return null;
 
@@ -254,7 +253,6 @@ export async function reanalyzeAllItems(
   signal?: AbortSignal,
   onProgress?: (done: number, total: number, title: string) => void,
 ): Promise<number> {
-  const { getAllItems } = await import('./inspirationStore');
   const items = (await getAllItems()).filter((i) => i.status === 'ready');
   let done = 0;
 
