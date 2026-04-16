@@ -52,8 +52,8 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
     [state.reviewResult],
   );
 
-  // Track score overrides to force re-renders
-  const [scoreTick, setScoreTick] = useState(0);
+  // Bump to trigger parent re-render after score override (value unused — setter only)
+  const [, setScoreTick] = useState(0);
 
   const handleScoreOverride = useCallback(
     (taskName: string, batchId: string, score: number, notes: string) => {
@@ -303,7 +303,7 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
             (b) => b.taskName.toLowerCase().includes(ts.task.parsed.name.toLowerCase()),
           );
           return (
-            <div key={`${i}-${scoreTick}`}>
+            <div key={i}>
               <TaskBriefCard
                 taskState={ts}
                 index={i}

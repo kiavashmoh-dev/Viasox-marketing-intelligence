@@ -149,7 +149,9 @@ export default function MemoryPanel({ onClose }: Props) {
                             <span className="font-medium">{b.id}</span>
                             <span>{b.angle} / {b.product}</span>
                             <span className="text-slate-400">{b.framework}</span>
-                            <span className="ml-auto">{b.reviewScore}/10</span>
+                            <span className={`ml-auto ${b.reviewScore > 0 ? '' : 'text-slate-300'}`}>
+                              {b.reviewScore > 0 ? `${b.reviewScore}/10` : '—'}
+                            </span>
                           </div>
                         ))}
                       </div>

@@ -26,14 +26,22 @@ export default function ScoreOverridePanel({ scoring, legacyScore, onOverride }:
   const [overrideMode, setOverrideMode] = useState(false);
   const [overrideScore, setOverrideScore] = useState('');
   const [overrideNotes, setOverrideNotes] = useState('');
+  // Local override state — survives parent re-renders and avoids
+  // reliance on the stale parsedReview cache in BatchResultsView.
+  const [localOverride, setLocalOverride] = useState<{ score: number; notes: string } | null>(null);
 
-  const displayScore = scoring?.finalScore ?? legacyScore;
-  const isOverridden = scoring?.userOverrideScore != null;
+  // Priority: local override (just set) > prop scoring > legacy
+  const effectiveScore = localOverride?.score ?? scoring?.finalScore ?? legacyScore;
+  const hasScore = localOverride != null || scoring != null || legacyScore > 0;
+  const isOverridden = localOverride != null || scoring?.userOverrideScore != null;
 
   const handleSubmit = () => {
     const parsed = parseFloat(overrideScore);
     if (isNaN(parsed) || parsed < 1 || parsed > 10) return;
     onOverride(parsed, overrideNotes);
+    // Immediately reflect the override in the UI without waiting
+    // for the parent's stale parsedReview to re-derive.
+    setLocalOverride({ score: parsed, notes: overrideNotes });
     setOverrideMode(false);
   };
 
@@ -42,15 +50,20 @@ export default function ScoreOverridePanel({ scoring, legacyScore, onOverride }:
       {/* Header with composite score */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className={`text-lg font-bold px-2.5 py-1 rounded-lg ${scoreColor(displayScore)}`}>
-            {displayScore > 0 ? `${displayScore.toFixed(1)}/10` : 'Not scored'}
+          <span className={`text-lg font-bold px-2.5 py-1 rounded-lg ${hasScore ? scoreColor(effectiveScore) : 'text-slate-400 bg-slate-100'}`}>
+            {hasScore ? `${effectiveScore.toFixed(1)}/10` : 'Not scored'}
           </span>
           {isOverridden && (
             <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
               Overridden by user
             </span>
           )}
-          {scoring && !isOverridden && (
+          {!hasScore && (
+            <span className="text-[10px] text-slate-400">
+              QC review didn't return a score — use override to set one
+            </span>
+          )}
+          {hasScore && scoring && !isOverridden && !localOverride && (
             <span className="text-[10px] text-slate-400">
               Reviewer score (weighted)
             </span>
@@ -139,9 +152,9 @@ export default function ScoreOverridePanel({ scoring, legacyScore, onOverride }:
       )}
 
       {/* Show previous override notes */}
-      {isOverridden && scoring?.userOverrideNotes && !overrideMode && (
+      {isOverridden && !overrideMode && (localOverride?.notes || scoring?.userOverrideNotes) && (
         <div className="text-[10px] text-slate-400 mt-2 italic">
-          Override notes: "{scoring.userOverrideNotes}"
+          Override notes: "{localOverride?.notes || scoring?.userOverrideNotes}"
         </div>
       )}
     </div>
