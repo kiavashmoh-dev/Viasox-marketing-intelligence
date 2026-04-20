@@ -3,7 +3,7 @@ import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideFull } from './adTypeGuides';
 import { getAwarenessConceptGuide } from './awarenessGuide';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
-import { buildBriefConstraintsBlock, getDurationTarget } from './creativeConstraints';
+import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
 import {
   getProductPurchaseTriggers,
   getProductStrategicInsights,
@@ -488,8 +488,77 @@ export function buildAnglesPrompt(
   // "silent text-only montage" for a 16-59 sec or 60-90 sec brief).
   const durationTarget = getDurationTarget(params.duration);
   const briefConstraints = buildBriefConstraintsBlock(params.duration);
+  const isShortForm = isShortFormDuration(params.duration ?? '');
+  const hasInspiration = !!inspirationContext;
+
+  // ─── TOP-PRIORITY USER DIRECTIVES ──────────────────────────────────────
+  // These are the user's four concrete creative choices. They MUST dominate
+  // the model's attention BEFORE it reaches the manifesto context (which is
+  // voluminous and otherwise becomes the gravitational center). Authority
+  // hierarchy below makes explicit that manifesto is supporting context,
+  // not the primary signal.
+  const userPrimaryDirectives = `## ⚠️⚠️⚠️ TOP-PRIORITY USER DIRECTIVES — READ FIRST, WEIGHT HIGHEST
+
+The user has made specific creative choices for this brief. Those choices are
+the non-negotiable foundation of every concept you generate. Before you absorb
+the Viasox manifesto, strategic principles, or background context below,
+internalize these directives — they OUTRANK everything else.
+
+${params.primaryTalkingPoint ? `### 1. PRIMARY TALKING POINT (= WHAT THE AD IS ABOUT)
+**"${params.primaryTalkingPoint.toUpperCase()}"**
+
+This is the SUBJECT of every concept. It is NOT "socks in general," NOT
+"comfortable lifestyle," NOT "healthcare workers." It is **${params.primaryTalkingPoint}**.
+Every concept must be unmistakably about ${params.primaryTalkingPoint}. If a concept
+could exist without ${params.primaryTalkingPoint}, it is wrong and must be rewritten.
+
+` : ''}### ${params.primaryTalkingPoint ? '2' : '1'}. ANGLE TYPE (= HOW WE APPROACH IT)
+**${params.angleType.toUpperCase()}**
+
+Every concept must use the ${params.angleType} architecture — not Problem-Based
+unless specified, not a blend, not whatever the manifesto's "winning ad bank"
+suggests. The specific angle type above.
+
+### ${params.primaryTalkingPoint ? '3' : '2'}. DURATION / MEDIUM (= FORMAT CONSTRAINT)
+**${params.duration ?? '16-59 sec'}**
+
+${isShortForm ? `This is **1-15 sec short-form** — a fundamentally different creative format.
+Single moments are valid. No framework required. Native style is preferred.
+Engagement or awareness goals are valid (not just conversion). CTAs are text-on-screen only.
+The short-form philosophy below supersedes any manifesto guidance that would
+push for narrative arcs or multi-beat structures.` : `This is ${params.duration}. Every concept must fit comfortably in this time
+budget. Word budget: ${durationTarget.sweetSpot} (hard ceiling ${durationTarget.hardCeiling} words).
+Concepts that require more spoken content than the budget are disqualified.`}
+
+${hasInspiration ? `### ${params.primaryTalkingPoint ? '4' : '3'}. INSPIRATION REFERENCE (= THE CREATIVE BLUEPRINT)
+A reference ad has been hand-picked for this exact combination of ad type +
+angle + duration. It is THE BLUEPRINT. Every concept you generate MUST
+structurally mirror the reference — same hook archetype, same emotional entry,
+same narrative shape, same product-bridge timing, same key-language register.
+Do NOT ignore the reference and default to manifesto patterns. Study the
+"INSPIRATION BANK" section (appears later in this prompt) CAREFULLY before
+writing any concept.
+
+` : ''}---
+
+**HIERARCHY OF AUTHORITY** (highest to lowest — when they conflict, the higher rule wins):
+1. User directives above (talking point, angle type, duration${hasInspiration ? ', inspiration reference' : ''})
+2. Awareness level rules (Schwartz Three Elimination Rules for Unaware, etc.)
+3. Ad type format rules (UGC raw vs AGC polished vs Static, etc.)
+4. Funnel stage pacing (TOF cold-audience rules, BOF urgency rules, etc.)
+5. Manifesto background (emotional pain patterns, voice of customer, segments, winning ad bank)
+6. General marketing principles (Hopkins specificity, Bly benefits, Neumeier differentiation)
+
+**The manifesto and marketing principles are BACKGROUND CONTEXT. They inform
+tone, vocabulary, and strategic reasoning — they do NOT choose the subject,
+override the angle, or reshape the duration. Your job is to channel the
+manifesto intelligence THROUGH the user's chosen directives, not to drift
+toward generic manifesto patterns because they're more voluminous in this prompt.**
+`;
 
   const system = `${buildSystemBase()}
+
+${userPrimaryDirectives}
 
 ${briefConstraints}
 

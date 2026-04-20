@@ -19,10 +19,14 @@ export function buildInspirationContext(picks: ScoredInspiration[]): string {
 
   const lines: string[] = [];
   lines.push('');
-  lines.push('# INSPIRATION BANK — REFERENCE EXAMPLES');
+  lines.push('# ⚠️ INSPIRATION BANK — MANDATORY REFERENCE');
   lines.push('');
   lines.push(
-    `The following ${picks.length} reference example${picks.length === 1 ? '' : 's'} from the Viasox Inspiration Bank ${picks.length === 1 ? 'is' : 'are'} highly relevant to this task. ${picks.length === 1 ? 'It was' : 'They were'} hand-picked because ${picks.length === 1 ? 'it' : 'they'} match the ad type, angle, and product context. STUDY ${picks.length === 1 ? 'IT' : 'THEM'}. The goal is not to copy ${picks.length === 1 ? 'it' : 'them'} verbatim, but to absorb the patterns, hooks, structure, and tone — then synthesize something that draws on what makes ${picks.length === 1 ? 'this example' : 'these examples'} work.`
+    `The following ${picks.length} reference example${picks.length === 1 ? '' : 's'} from the Viasox Inspiration Bank ${picks.length === 1 ? 'was' : 'were'} hand-picked by the user for THIS brief because ${picks.length === 1 ? 'it matches' : 'they match'} the ad type, angle, and product context. ${picks.length === 1 ? 'This is' : 'These are'} the creative direction the user wants.`
+  );
+  lines.push('');
+  lines.push(
+    `**This is NOT optional stylistic guidance — every concept must structurally mirror the reference${picks.length === 1 ? '' : 's'}.** Same hook archetype, same narrative shape, same pacing, same product-bridge approach. Do NOT ignore the bank in favor of generic manifesto patterns. Adapt the blueprint to this brief's talking point; do not invent a different direction.`
   );
   lines.push('');
 
@@ -135,10 +139,18 @@ export function buildDeepInspirationContext(picks: ScoredInspiration[]): string 
 
   const lines: string[] = [];
   lines.push('');
-  lines.push('# INSPIRATION BANK — REFERENCE EXAMPLES (DEEP MIRRORING MODE)');
+  lines.push('# ⚠️ INSPIRATION BANK — MANDATORY CREATIVE BLUEPRINT (DEEP MIRRORING MODE)');
   lines.push('');
   lines.push(
-    `The following ${picks.length} reference example${picks.length === 1 ? '' : 's'} from the Viasox Inspiration Bank ${picks.length === 1 ? 'was' : 'were'} hand-picked because ${picks.length === 1 ? 'it matches' : 'they match'} the ad type, angle, product, and format of THIS specific brief. ${picks.length === 1 ? 'It is' : 'These are'} the proven creative patterns we know already work for this exact context. **You must follow ONE of them closely OR blend a coherent mix of them.** Do not generate concepts that ignore these references — they are the locked baseline of what good looks like for this task.`
+    `The following ${picks.length} reference example${picks.length === 1 ? '' : 's'} from the Viasox Inspiration Bank ${picks.length === 1 ? 'was' : 'were'} hand-picked by the user specifically for this brief because ${picks.length === 1 ? 'it matches' : 'they match'} the ad type, angle, product, duration, and format. ${picks.length === 1 ? 'It is' : 'These are'} the proven creative blueprint${picks.length === 1 ? '' : 's'} the user wants you to mirror.`
+  );
+  lines.push('');
+  lines.push(
+    `**THIS IS NOT OPTIONAL INSPIRATION — IT IS THE BLUEPRINT.** Every concept you generate MUST visibly echo the reference${picks.length === 1 ? '' : 's'}: same hook archetype, same emotional entry point, same narrative shape, same pacing rhythm, same product-bridge timing, same key-language register. Do NOT ignore the bank in favor of generic manifesto patterns. The user selected ${picks.length === 1 ? 'this reference' : 'these references'} because ${picks.length === 1 ? 'it represents' : 'they represent'} the creative direction ${picks.length === 1 ? 'they' : 'they'} want — your job is to adapt the blueprint to this brief's specific talking point and product, NOT to invent a different direction.`
+  );
+  lines.push('');
+  lines.push(
+    `**REJECTION RULE:** If a concept does not visibly echo the reference${picks.length === 1 ? "'s" : "s'"} hook style, narrative structure, AND product-bridge timing, that concept is invalid. A concept is not "done" until you can point to the reference element it mirrors.`
   );
   lines.push('');
 

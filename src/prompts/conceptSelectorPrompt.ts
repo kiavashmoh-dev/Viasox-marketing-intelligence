@@ -64,7 +64,40 @@ export function buildConceptSelectorPrompt(
   const shortForm = isShortFormDuration(duration);
   const briefConstraints = buildBriefConstraintsBlock(duration);
 
+  const hasInspiration = !!inspirationContext;
+
+  // ─── TOP-PRIORITY USER DIRECTIVES (SELECTOR) ───────────────────────────
+  // Mirror of the directives block in the concept generator prompt. Ensures
+  // the selector applies the same hierarchy when evaluating: user choices
+  // override manifesto patterns when they conflict.
+  const userPrimaryDirectives = `## ⚠️⚠️⚠️ TOP-PRIORITY USER DIRECTIVES — APPLY FIRST WHEN EVALUATING
+
+The user chose specific creative parameters for this brief. Any concept that
+doesn't serve these directives — no matter how "strategically deep" or
+"manifesto-aligned" it otherwise appears — is a failure.
+
+**Primary Talking Point:** "${angle}" — every selected concept must be unmistakably ABOUT this.
+**Angle Type:** ${angle} structural architecture (not a blend, not whatever the manifesto suggests)
+**Duration / Medium:** ${medium} (${duration}) — the concept must fit this format${shortForm ? ' (short-form experimental lane)' : ''}
+${hasInspiration ? `**Inspiration Reference:** The user pinned a reference ad — the selected concept MUST visibly mirror it (hook archetype, narrative shape, product-bridge timing, language register).` : ''}
+
+**HIERARCHY OF AUTHORITY** (when criteria conflict, the higher rule wins):
+1. User directives above (angle, duration${hasInspiration ? ', inspiration reference' : ''})
+2. Awareness level rules (Schwartz, Unaware/Problem Aware/etc.)
+3. Ad type format rules (UGC vs AGC vs Static, etc.)
+4. Funnel stage pacing
+5. Manifesto background (emotional patterns, voice of customer, winning ad bank)
+6. General marketing principles
+
+When evaluating, if Concept A flaunts manifesto theory but drifts from the angle/inspiration
+and Concept B stays laser-focused on the angle/inspiration with simpler psychology,
+**Concept B wins.** This is the exact failure mode the user has flagged: concepts
+that ignore their choices in favor of generic manifesto patterns.
+`;
+
   const system = `${buildSystemBase()}
+
+${userPrimaryDirectives}
 
 ${briefConstraints}
 
@@ -197,27 +230,31 @@ ${isUnaware ? `**UNAWARE WEIGHTING (applies because this is an Unaware brief):**
 
 6. **Creative Freshness (10%)** — Does the concept find a unique, scene-first entry point? A fresh identification moment into the "${angle}" territory that hasn't been done a thousand times? Originality in the mundane moment, the reframe twist, the mechanism visualization, or the "category reveal" setup.` : shortForm ? `**SHORT-FORM WEIGHTING (applies because this is a 1-15 sec brief):**
 
-1. **Scroll-Stop Power (30%)** — Would this stop a fast-scrolling thumb in the first 1-1.5 seconds? Short-form lives or dies by the opening frame. The concept must create instant visual or emotional impact — recognition ("that's me"), shock ("wait, what?"), curiosity, or pattern interrupt. This is THE most important criterion for short-form.
+1. **Scroll-Stop Power (25%)** — Would this stop a fast-scrolling thumb in the first 1-1.5 seconds? Short-form lives or dies by the opening frame. The concept must create instant visual or emotional impact — recognition ("that's me"), shock ("wait, what?"), curiosity, or pattern interrupt.
 
-2. **Native Feel & Format Fit (20%)** — Does this concept feel like organic social content that belongs in a TikTok/Reels/Shorts feed? Would the viewer engage with it BEFORE realizing it's an ad? Polished, branded, "commercial" concepts score LOWER. Raw, authentic, native-feeling concepts score HIGHER. Also: does the concept actually fit in ${duration}? A concept with 4+ beats is too big.
+2. **Angle Authenticity (25%)** — Does the concept specifically serve the "${angle}" angle? For short-form, the angle can be expressed through a single vivid moment rather than a full narrative argument — but that moment MUST be about ${angle}, not generic comfort or lifestyle. A concept that's generic short-form content with ${angle} stapled on scores LOW. A concept whose single moment IS the ${angle} experience scores HIGH.${inspirationContext ? `
 
-3. **Angle Connection (15%)** — Does the concept connect to the "${angle}" angle in a way that feels authentic, not forced? For short-form, the angle can be expressed through a single vivid moment rather than a full narrative argument. A 10-second close-up of sock marks with one provocative line can be more powerful than a compressed problem-solution arc.
+**+ INSPIRATION MIRRORING (critical sub-criterion):** If a reference ad was injected, the concept MUST visibly mirror the reference's hook archetype, format, and pacing. Concepts that ignore the reference score LOW even if they're otherwise strong.` : ''}
 
-4. **Creative Boldness (15%)** — Is this concept doing something DIFFERENT? Unusual hook, unexpected format, emotional gut-punch, humor, meme-adjacent, or genuinely experimental approach? Short-form is the creative playground — reward risk-taking. Safe, formulaic concepts score LOWER.
+3. **Native Feel & Format Fit (15%)** — Does this concept feel like organic social content that belongs in a TikTok/Reels/Shorts feed? Raw, authentic, native-feeling concepts score HIGHER than polished commercial concepts. Also: does the concept fit in ${duration}? A concept with 4+ beats is too big.
 
-5. **Goal Clarity (10%)** — Is the concept's goal clear — whether that's engagement (drive comments/shares), awareness (plant the brand), or conversion (drive click)? All three are valid for short-form, but the concept should clearly serve ONE goal, not try to do everything in 15 seconds.
+4. **Creative Boldness (15%)** — Is this concept doing something DIFFERENT? Unusual hook, unexpected format, emotional gut-punch, humor, meme-adjacent, or genuinely experimental? Short-form is the creative playground — reward risk-taking over safe formulas.
 
-6. **Production Feasibility (10%)** — ${isFullAi ? 'Can this concept actually be generated by current AI text-to-video models? Does it work within the visual constraints of AI generation?' : 'Can this concept actually be built in post-production? Native-style concepts that need only existing footage + text overlays are the EASIEST to produce — reward simplicity.'}` : `1. **Angle-Task Alignment (25%)** — Does this concept DEEPLY address the "${angle}" angle? Not surface-level mention, but structural alignment where the angle IS the concept's core. A Neuropathy brief must be ABOUT nerve pain — the numbness, the tingling, the burning, the fear of what it means. Not "comfortable socks" with neuropathy mentioned once.
+5. **Goal Clarity (10%)** — Is the concept's goal clear (engagement / awareness / conversion)? All three are valid for short-form; pick concepts that serve ONE clearly, not ones that try to do everything in 15 seconds.
 
-2. **Production Feasibility (20%)** — ${isFullAi ? 'Can this concept actually be generated by current AI text-to-video models? Does it work with voiceover-led storytelling, identity-consistent characters, and AI-friendly visual territories (cinematic, surreal, historical, documentary, educational)? Concepts requiring tight branded product close-ups, multi-person dialogue with lip-sync, complex hand-product manipulation, or real-world brand-accurate locations score LOW. Concepts that exploit what AI uniquely does (impossible scale, time travel, surreal metaphor, dreamlike imagery) score HIGH.' : 'Can this concept actually be built in post-production? Does it work with text overlays, existing footage, voiceover, and product shots? Concepts requiring specific talent, locations, or complex scenes that can\'t be assembled in editing = score LOW.'}
+6. **Production Feasibility (10%)** — ${isFullAi ? 'Can this concept actually be generated by current AI text-to-video models? Does it work within the visual constraints of AI generation?' : 'Can this concept actually be built in post-production? Native-style concepts that need only existing footage + text overlays are easiest to produce — reward simplicity.'}` : `1. **Angle-Task Alignment (35%)** — MOST CRITICAL. Does this concept EXCLUSIVELY serve the "${angle}" angle? Not surface-level mention, but structural alignment where the angle IS the concept's core. A ${angle} brief must be ABOUT ${angle} — the specific symptoms, language, fears, and daily reality of that condition. A concept that could work for "comfortable socks in general" with ${angle} stapled on is a REJECTED concept. If you're not certain the concept would FAIL without ${angle}, downrank it.${inspirationContext ? `
 
-3. **Hook Strength & Scroll-Stop Power (20%)** — Would the opening 3 seconds stop a scroller who is NOT looking for socks? The hook must create instant recognition ("that's me"), curiosity ("wait, what?"), or emotional response ("I feel that"). Generic health claims or product features do NOT stop scrolls.
+**+ INSPIRATION MIRRORING (critical sub-criterion):** A reference ad has been injected by the user for THIS brief. The concept MUST visibly mirror the reference's hook archetype, emotional entry, narrative shape, pacing, and product-bridge timing. A concept that ignores the reference in favor of generic manifesto patterns scores LOW — no matter how "strategically deep" it otherwise feels. The reference is the blueprint, not optional guidance.` : ''}
 
-4. **Strategic Depth (15%)** — Does the concept apply real marketing psychology? Is it using Schwartz's awareness architecture correctly? Does it follow Hopkins' specificity principle? Is there a Neumeier-style differentiation play? A concept that just describes a scenario without strategic depth is a B-tier concept.
+2. **Hook Strength & Scroll-Stop Power (20%)** — Would the opening 3 seconds stop a scroller who is NOT looking for socks? The hook must create instant recognition ("that's me"), curiosity ("wait, what?"), or emotional response ("I feel that"). Generic health claims or product features do NOT stop scrolls.
 
-5. **Data Grounding (10%)** — Does the concept cite specific review data (percentages, customer language, measurable claims)? "90% reported relief" beats "customers love them." Specific customer language beats generic benefit claims.
+3. **Production Feasibility (15%)** — ${isFullAi ? 'Can this concept actually be generated by current AI text-to-video models? Does it work with voiceover-led storytelling, identity-consistent characters, and AI-friendly visual territories? Concepts requiring tight branded product close-ups, multi-person lip-sync, or real-world brand-accurate locations score LOW.' : 'Can this concept actually be built in post-production? Does it work with text overlays, existing footage, voiceover, and product shots? Concepts requiring specific talent, locations, or complex multi-scene narratives score LOW.'}
 
-6. **Creative Freshness (10%)** — Does the concept find a unique entry point? A fresh angle into the "${angle}" territory that hasn't been done a thousand times? Originality in the hook, the metaphor, the scenario, or the emotional frame.`}
+4. **Creative Freshness (15%)** — Does the concept find a unique entry point? A fresh angle into the "${angle}" territory that hasn't been done a thousand times? Originality in the hook, the metaphor, the scenario, or the emotional frame. If the memory briefing flags recent repetition of this angle, freshness becomes critical.
+
+5. **Strategic Depth (8%)** — Does the concept apply sound marketing psychology (Schwartz awareness architecture, Hopkins specificity, Neumeier differentiation)? Note: this criterion is intentionally lower-weighted. A concept that nails the angle with basic psychology beats a concept that ignores the angle but flaunts theory.
+
+6. **Data Grounding (7%)** — Does the concept cite specific review data (percentages, customer language, measurable claims)? Specific beats generic. But do NOT select a concept JUST because it cites review data if it fails on angle alignment — that's the failure mode we're correcting against.`}
 
 ## RESPONSE FORMAT — STRICT:
 

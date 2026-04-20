@@ -577,8 +577,39 @@ ${params.adType === 'UGC (User Generated Content)' ? '   - "Selfie Talking Head"
   // module stays in sync on length calibration and VO-by-length enforcement.
   const durationTarget = getDurationTarget(params.duration);
   const briefConstraints = buildBriefConstraintsBlock(params.duration);
+  const isShortForm = isShortFormDuration(params.duration);
+  const hasInspirationCtx = !!inspirationContext;
+  const hasConceptCtx = !!params.conceptAngleContext;
+
+  // ─── TOP-PRIORITY USER DIRECTIVES (SCRIPT WRITER) ──────────────────────
+  // Elevates the user's concrete choices (talking point, duration, concept,
+  // inspiration) above manifesto context so they dominate the script even
+  // when the manifesto blocks below are voluminous.
+  const userPrimaryDirectives = `## ⚠️⚠️⚠️ TOP-PRIORITY USER DIRECTIVES — WEIGHT HIGHEST
+
+${params.primaryTalkingPoint ? `**Primary Talking Point:** "${params.primaryTalkingPoint.toUpperCase()}" — the subject of this script. If the script could work without ${params.primaryTalkingPoint}, it's wrong.
+` : ''}**Duration:** ${params.duration}${isShortForm ? ' (short-form experimental lane — single moments valid, no framework required, native style preferred)' : ` (word budget: ${durationTarget.sweetSpot}, hard ceiling ${durationTarget.hardCeiling} words)`}
+**Framework:** ${params.framework}
+${hasConceptCtx ? `**Pre-selected Concept:** The user picked a specific concept/angle from an earlier generation. That concept is THE script's strategy (see <concept_strategy> block below).
+` : ''}${hasInspirationCtx ? `**Inspiration Reference:** The user pinned a reference ad — this script MUST structurally mirror it (hook archetype, narrative shape, pacing, product-bridge timing, key-language register). See INSPIRATION BANK below.
+` : ''}
+**HIERARCHY OF AUTHORITY** (when rules conflict, higher wins):
+1. User directives above (talking point, duration${hasConceptCtx ? ', pre-selected concept' : ''}${hasInspirationCtx ? ', inspiration reference' : ''})
+2. Awareness level rules (Schwartz elimination rules for Unaware, etc.)
+3. Framework rules (the ${params.framework} framework's structure)
+4. Ad type format rules (UGC raw vs AGC polished vs Static, etc.)
+5. Manifesto background (emotional patterns, voice of customer, winning ad bank)
+6. General marketing principles (Hopkins, Bly, Neumeier)
+
+The manifesto and marketing theory below are BACKGROUND CONTEXT. They inform
+tone and vocabulary — they do NOT choose the subject, override the angle,
+or reshape the duration. Channel the manifesto intelligence THROUGH the
+user's choices, not around them.
+`;
 
   const system = `${buildSystemBase()}
+
+${userPrimaryDirectives}
 
 ## SCRIPT FRAMEWORK
 ${frameworkDetail}
