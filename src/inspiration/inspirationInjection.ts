@@ -71,6 +71,11 @@ export function buildInspirationContext(picks: ScoredInspiration[]): string {
       lines.push('');
     }
 
+    if (item.visualBlueprint) {
+      lines.push(`**Visual blueprint — REPRODUCE THIS EXECUTION:** ${item.visualBlueprint.trim()}`);
+      lines.push('');
+    }
+
     if (item.hookBreakdown) {
       lines.push(`**Hook breakdown:** ${item.hookBreakdown.trim()}`);
       lines.push('');
@@ -230,6 +235,15 @@ export function buildDeepInspirationContext(picks: ScoredInspiration[]): string 
       lines.push('');
     }
 
+    if (item.visualBlueprint) {
+      lines.push(`**Visual blueprint — REPRODUCE THIS EXECUTION EXACTLY:** ${item.visualBlueprint.trim()}`);
+      lines.push('');
+      lines.push(
+        `**Visual fidelity rule:** The brief's Shot Visual, Editing Notes, and Caption columns MUST reflect this blueprint. If the blueprint says "single persistent text blob," the brief must NOT default to sequential text cards. If it says "single continuous shot," the brief must NOT chop into a multi-cut montage. Reproduce the execution, don't just absorb the vibe.`,
+      );
+      lines.push('');
+    }
+
     if (item.hookBreakdown) {
       lines.push(`**Hook breakdown (first 3 seconds — REPLICATE THIS APPROACH):** ${item.hookBreakdown.trim()}`);
       lines.push('');
@@ -296,7 +310,7 @@ export function buildDeepInspirationContext(picks: ScoredInspiration[]): string 
   lines.push('');
   lines.push('1. **Pick a path:** either FOLLOW the PRIMARY reference closely, or BLEND a coherent mix of 2-3 references that share compatible structures. Do NOT ignore the bank.');
   lines.push("2. **Concept level:** every concept you generate must structurally mirror the chosen reference(s) — same hook archetype, same emotional entry, same narrative shape.");
-  lines.push('3. **Visual level:** the visual treatment, framing, color palette, and pacing must match what the references show. If frames are attached for the PRIMARY reference, use them as the literal visual blueprint.');
+  lines.push('3. **Visual level — THIS IS CRITICAL:** the visual treatment MUST mirror the reference(s) at execution level — not just vibe. If the reference uses a single persistent text blob, your brief uses a single persistent text blob (not sequential cards). If it uses a single continuous shot, your brief uses a single continuous shot (not a multi-cut montage). If the text runs long as one blob, your brief\'s Caption column runs long as one blob. The Visual Blueprint field spells out the specific execution — reproduce it. This is the #1 failure mode for short-form: the brief follows the NO-VO rule but invents a different visual treatment. Do not do that.');
   lines.push('4. **Script level:** the script body must walk the same beats as the chosen reference(s). Use the reference scripts above to study rhythm, sentence length, and pacing — do NOT copy lines.');
   lines.push('5. **Hook level:** the first 3 seconds must use one of the hook archetypes shown above. Do not invent a new hook style for this brief.');
   lines.push('6. **Tone:** voice, register, sentence length, and rhythm must echo the reference scripts.');

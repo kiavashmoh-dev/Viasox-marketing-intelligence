@@ -49,6 +49,12 @@ export interface InspirationAnalysis {
   learnings: string[];
   /** Visual / tonal patterns — 2-4 sentences */
   styleNotes: string;
+  /**
+   * DETAILED visual execution blueprint — text presentation mode, cut structure,
+   * aesthetic register, typographic style, duration-sustained element. Especially
+   * critical for short-form (1-15 sec) where the visual treatment IS the ad.
+   */
+  visualBlueprint?: string;
   /** Analysis of the opening 3 seconds */
   hookBreakdown?: string;
   /** Structure breakdown — narrative arc */
@@ -109,6 +115,12 @@ export interface InspirationItem {
   summary: string;
   learnings: string[];
   styleNotes: string;
+  /**
+   * Detailed visual execution blueprint — text presentation mode, cut structure,
+   * aesthetic register, typography, duration-sustained visual. Especially critical
+   * for short-form (1-15 sec) ads where visual treatment is the entire execution.
+   */
+  visualBlueprint?: string;
   hookBreakdown?: string;
   narrativeArc?: string;
   /** When and how the product is introduced — the "bridge" moment. */
