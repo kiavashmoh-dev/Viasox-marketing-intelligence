@@ -116,8 +116,19 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
 
   if (!reviewMarkdown) return result;
 
-  // Extract per-brief sections — look for task name patterns
-  const briefSections = reviewMarkdown.split(/(?=###?\s+(?:VIASOX|Brief|Task)[\s-]*\d*)/i);
+  // Extract per-brief sections — look for task name patterns.
+  // Accept H2 or H3, with optional bold markers, and multiple prefix words.
+  // Falls back to splitting on any JSON code fence if no headings match.
+  let briefSections = reviewMarkdown.split(/(?=##?#?\s*\**\s*(?:VIASOX|Brief|Task|Ad|Viasox|#)[\s#-]*\d+)/i);
+
+  // Fallback: if the split produced one big chunk (no heading matched),
+  // split on JSON code fences instead so each fence becomes its own section.
+  if (briefSections.length <= 1 && reviewMarkdown.includes('```json')) {
+    console.warn('[reviewParser] No brief headings matched — falling back to JSON fence split');
+    briefSections = reviewMarkdown.split(/(?=```json)/);
+  }
+
+  console.log(`[reviewParser] Split review into ${briefSections.length} section(s); total length ${reviewMarkdown.length}`);
 
   for (const section of briefSections) {
     // Try JSON extraction first — its `taskName` field is authoritative
@@ -142,7 +153,13 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
       }
     }
 
-    if (!taskName) continue;
+    if (!taskName) {
+      // Skip section but log why so we can diagnose
+      if (section.trim().length > 100) {
+        console.warn(`[reviewParser] Skipping section: no task name extracted (first 80 chars): ${section.slice(0, 80)}`);
+      }
+      continue;
+    }
 
     const brief: ParsedBriefReview = {
       taskName,
@@ -154,12 +171,15 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
       weaknesses: [],
     };
 
+    console.log(`[reviewParser] Processing brief section: taskName="${taskName}", hasJson=${!!jsonData}`);
+
     // Primary: use the JSON data we already extracted
     if (jsonData) {
       const scoring = buildScoringRecord(jsonData);
       if (scoring) {
         brief.scoring = scoring;
         brief.score = scoring.finalScore;
+        console.log(`[reviewParser]   → built scoring record: finalScore=${scoring.finalScore}`);
 
         // Build checks array from breakdown for backward compat
         for (const key of SCORING_CRITERIA) {
@@ -168,6 +188,8 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
             brief.checks.push({ name: key, result: entry.result });
           }
         }
+      } else {
+        console.warn(`[reviewParser]   → JSON extracted but buildScoringRecord returned null. JSON keys: ${Object.keys(jsonData).join(', ')}`);
       }
 
       // Extract strengths/weaknesses from JSON
@@ -228,6 +250,13 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
     }
 
     result.briefs.push(brief);
+  }
+
+  // Final diagnostic summary
+  const withScoring = result.briefs.filter((b) => b.scoring != null).length;
+  console.log(`[reviewParser] Done. Extracted ${result.briefs.length} brief(s), ${withScoring} with scoring records. Task names: [${result.briefs.map((b) => b.taskName).join(', ')}]`);
+  if (result.briefs.length === 0 && reviewMarkdown.length > 200) {
+    console.warn(`[reviewParser] ⚠️ PARSE FAILURE — zero briefs extracted from ${reviewMarkdown.length}-char review. First 500 chars:\n${reviewMarkdown.slice(0, 500)}`);
   }
 
   // Extract batch assessment

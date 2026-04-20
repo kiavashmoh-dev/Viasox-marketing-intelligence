@@ -303,10 +303,20 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
           // the reviewer may prefix names (e.g., "Brief 1: VIASOX-001") or use
           // the bare identifier. Exact-match equality alone would be too strict.
           const taskNameLower = ts.task.parsed.name.toLowerCase();
+          // Also try matching on the trailing number (e.g., "187") as a last resort
+          const taskNumberMatch = ts.task.parsed.name.match(/(\d+)\s*$/);
+          const taskNumber = taskNumberMatch ? taskNumberMatch[1] : null;
           const reviewMatch = parsedReview?.briefs.find((b) => {
             const bLower = b.taskName.toLowerCase();
-            return bLower === taskNameLower || bLower.includes(taskNameLower) || taskNameLower.includes(bLower);
+            if (bLower === taskNameLower) return true;
+            if (bLower.includes(taskNameLower) || taskNameLower.includes(bLower)) return true;
+            // Last-resort: match by trailing number
+            if (taskNumber && b.taskName.includes(taskNumber)) return true;
+            return false;
           });
+          if (parsedReview && !reviewMatch && ts.step === 'complete') {
+            console.warn(`[BatchResultsView] No review match for "${ts.task.parsed.name}". Available: [${parsedReview.briefs.map((b) => b.taskName).join(', ')}]`);
+          }
           return (
             <div key={i}>
               <TaskBriefCard
