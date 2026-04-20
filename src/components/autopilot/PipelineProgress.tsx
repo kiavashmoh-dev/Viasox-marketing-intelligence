@@ -7,14 +7,24 @@ interface Props {
 
 const STEP_LABELS: Record<string, string> = {
   pending: 'Waiting',
+  'strategist-thinking': 'Creative Strategist writing per-brief thesis (Opus)...',
   'generating-concepts': 'Generating 5 concepts (Opus)...',
+  'critiquing-concepts': 'Differentiation Critic checking relevance (Opus)...',
+  'regenerating-concepts': 'Regenerating concepts with critic guidance (Opus)...',
   'selecting-concept': 'Expert strategist selecting best concept (Opus)...',
   'generating-script': 'Writing full Ecom brief (Opus)...',
   complete: 'Done',
   error: 'Failed',
 };
 
-const STEP_ORDER = ['generating-concepts', 'selecting-concept', 'generating-script', 'complete'];
+const STEP_ORDER = [
+  'strategist-thinking',
+  'generating-concepts',
+  'critiquing-concepts',
+  'selecting-concept',
+  'generating-script',
+  'complete',
+];
 
 function StepDots({ currentStep }: { currentStep: string }) {
   const currentIdx = STEP_ORDER.indexOf(currentStep);

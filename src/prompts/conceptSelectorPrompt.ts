@@ -327,10 +327,10 @@ Then select the SINGLE best concept.`;
   // Inject memory briefing if available
   let memorySection = '';
   if (memoryBriefing) {
-    memorySection += `\n\n## CREATIVE INTELLIGENCE — INSTITUTIONAL MEMORY\n\n**CREATIVE FRESHNESS RULE:** When evaluating concepts, PENALIZE any concept that closely mirrors a recent brief (same story, same emotional hook, same scenario) from the last 7 days. Check the "Creative Repetition Watch" section — if this angle was done recently, the winning concept MUST take a genuinely different creative path. Prefer concepts that explore new frameworks, new emotional entries, or new hook styles over concepts that retread familiar ground, even if the familiar concept is "safer."\n\n${memoryBriefing}`;
+    memorySection += `\n\n## CREATIVE INTELLIGENCE — INSTITUTIONAL MEMORY\n\n**RELEVANCE RULE:** The memory below is a reference library, not a blacklist. Favor concepts that genuinely serve THIS brief's talking point, duration, product, and inspiration. A concept that mirrors recent territory is FINE if it serves the current parameters well — the failure mode you're guarding against is IRRELEVANCE (generic manifesto patterns with the talking point stapled on), not repetition. When you see past approaches that underperformed (scores ≤5), use that as a signal to prefer concepts that do something meaningfully better on similar parameters.\n\n${memoryBriefing}`;
   }
   if (angleHistory) {
-    memorySection += `\n\n## PAST CREATIVE DECISIONS FOR "${angle}" ANGLE\n\nThe following table shows every brief previously produced for the "${angle}" angle. Use this to consciously select concepts that bring FRESH creative approaches. If a concept closely resembles any entry from the last 7 days (same story arc, same hook style, same emotional entry), downrank it significantly.\n\n${angleHistory}`;
+    memorySection += `\n\n## PAST CREATIVE DECISIONS FOR "${angle}" ANGLE\n\nThe following table shows every brief previously produced for the "${angle}" angle. Use this for context on what's been tried and how it performed. Concepts that worked before (high scores) can inform your selection — similar territory is OK if it serves the current brief. Concepts that underperformed are worth rethinking. Do NOT downrank a concept just because it shares territory with a recent brief; only downrank if it fails the relevance test for THIS brief's specific parameters.\n\n${angleHistory}`;
   }
 
   // Inject inspiration bank context if available

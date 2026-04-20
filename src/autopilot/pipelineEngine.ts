@@ -46,6 +46,8 @@ import { runAngleDirectiveProposer } from './angleDirectiveProposer';
 import { formatAnglePatternsForEvaluator } from './anglePatternMiner';
 import { getAnglePatternsFor, getScoreCalibration } from './memoryStore';
 import { formatCalibrationForReviewer } from './scoreCalibration';
+import { runCreativeStrategist } from './creativeStrategist';
+import { runDifferentiationCritic } from './differentiationCritic';
 
 // ─── All creative agents use Opus ────────────────────────────────────────────
 
@@ -576,18 +578,9 @@ export async function runConceptPhase(
     const { task } = ts;
 
     try {
-      // ── Generate Concepts ──────────────────────────────────────────
-      ts.step = 'generating-concepts';
-      onProgress({ ...state });
-
-      // Load pinned inspiration if any (overrides general bank matches).
-      // If no pin, fall back to a DEEP load of the bank — top pick gets frames
-      // for vision, all picks get rich text with reference scripts + strong
-      // mirroring directives. This gives unpinned tasks the same depth.
+      // ── Load inspiration context (same as before) ──────────────────
       const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
       const deep = pinned ? null : await loadDeepInspirationForTask(task);
-      // Capture which bank items are feeding this task — used post-batch to
-      // update each item's derivedScore via recordInspirationUsage.
       ts.inspirationIdsUsed = mergeInspirationIds(
         ts.inspirationIdsUsed,
         collectInspirationIds(pinned, deep),
@@ -595,101 +588,170 @@ export async function runConceptPhase(
       const inspirationCtx = pinned
         ? pinned.richContext
         : (deep && deep.hasContent ? deep.richContext : '');
+
+      // ── Pre-compute angle pattern history (what's worked for this angle+product) ──
+      const anglePatternTable = formatAnglePatternsForEvaluator(
+        task.parsed.angle,
+        task.parsed.product,
+        getAnglePatternsFor(task.parsed.angle, task.parsed.product),
+      );
+
+      // ── Step 1: Creative Strategist — write the per-brief thesis ──────
+      ts.step = 'strategist-thinking';
+      onProgress({ ...state });
+
+      const thesis = await runCreativeStrategist(
+        {
+          taskName: task.parsed.name,
+          angle: task.parsed.angle,
+          product: task.parsed.product,
+          medium: task.parsed.medium,
+          duration: task.duration,
+          adType: task.scriptParamsBase.adType,
+          awarenessLevel: task.scriptParamsBase.awarenessLevel,
+          funnelStage: task.scriptParamsBase.funnelStage,
+          primaryTalkingPoint: task.anglesParams.primaryTalkingPoint,
+          inspirationContext: inspirationCtx,
+          anglePatternTable,
+          memoryBriefing,
+        },
+        apiKey,
+        signal,
+      );
+      ts.strategistThesis = thesis;
+      onProgress({ ...state });
+
+      await delay(INTER_CALL_DELAY);
+
+      // ── Step 2: Generate Concepts (with thesis as top directive) ──────
+      ts.step = 'generating-concepts';
+      onProgress({ ...state });
+
       const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing, inspirationCtx);
 
-      // Inject the SPECIFIC angle from Asana as the primary creative directive.
-      // This ensures "Neuropathy" briefs are actually ABOUT neuropathy, not generic.
-      // Also check for custom angle directives from the registry.
       const customDirectives = getAngleDirectives()
         .filter((d) => d.angle.toLowerCase() === task.parsed.angle.toLowerCase() ||
                        d.product.toLowerCase() === task.product.toLowerCase())
         .map((d) => `**Custom Directive (${d.angle} / ${d.product}):** ${d.directive}`)
         .join('\n');
 
-      const angleDirective = `\n\n## ⚠️ PRIMARY CREATIVE DIRECTIVE — TALKING POINT: "${task.parsed.angle}"
+      const buildAngleDirective = (regenGuidance?: string) => `\n\n## ⚠️⚠️⚠️ CREATIVE STRATEGIST'S THESIS — THE #1 DIRECTIVE FOR THIS BRIEF
+
+The following thesis was produced by the Creative Strategist agent specifically for this brief. It synthesizes the talking point, duration, product, inspiration, and memory into a single creative direction. **This thesis supersedes manifesto patterns. Execute it faithfully.**
+
+${thesis}
+
+---
+
+${regenGuidance ? `## 🔄 REGENERATION GUIDANCE — YOU MUST FIX THESE ISSUES
+
+The previous 5 concepts were REJECTED by the Differentiation Critic for the following reasons. You must address every point below in this regeneration:
+
+${regenGuidance}
+
+---
+
+` : ''}## PRIMARY TALKING POINT: "${task.parsed.angle}"
 ${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customDirectives}\n` : ''}
 
-**THIS OVERRIDES ALL OTHER INSPIRATION.** The manifesto examples (sock graveyard, shoe swapping, 30-inch truth, etc.), winning ad bank, emotional patterns, and customer voice bank are BACKGROUND CONTEXT — they inform tone and strategy, but they do NOT set the topic. The topic is "${task.parsed.angle}" and ONLY "${task.parsed.angle}".
+Every concept must be unmistakably, specifically about "${task.parsed.angle}". Not about comfort in general, not about gifting, not about working all day — about "${task.parsed.angle}" and tightly tied to the thesis above.
 
-Every concept must:
-1. Be unmistakably, specifically about "${task.parsed.angle}" — not about comfort in general, not about gifting, not about working all day, not about any other condition or lifestyle unless it directly connects to "${task.parsed.angle}"
-2. Name "${task.parsed.angle}" explicitly (or its direct synonym) in the concept description
-3. Describe scenarios, symptoms, or experiences that someone with/experiencing "${task.parsed.angle}" would immediately recognize as THEIR reality
-4. Use customer language specifically from the "${task.parsed.angle}" angle language bank below — not generic Viasox quotes about other conditions
-
-**REJECTION TEST:** If you could swap out "${task.parsed.angle}" for a different talking point and the concept would still work unchanged, the concept is TOO GENERIC and must be rewritten. Each concept must be so tightly bound to "${task.parsed.angle}" that removing it would break the concept.
+**REJECTION TEST (apply this to every concept before finalizing):** If I swap out "${task.parsed.angle}" for a different talking point, does the concept still work unchanged? If yes, the concept is TOO GENERIC — rewrite it. The concept must be so tightly bound to "${task.parsed.angle}" that removing it breaks the concept.
 
 ${getAngleLanguageBank(task.parsed.angle)}
 
 **FORMAT: ${task.parsed.medium} (${task.duration}${task.duration === '1-15 sec' ? ', final cut ≤ 15s' : task.duration === '16-59 sec' ? ', final cut ≤ 59s' : ', final cut ≤ 90s'})**
-${task.duration === '1-15 sec' ? `This is a SHORT FORM ad. Do NOT write a compressed long-form story. Short form means:
-- Experiment with VO and no-VO styles
-- Consider POV-only (viewer sees through the character's eyes)
-- First person, third person, or talking directly to viewer
-- A single powerful moment or image, not a full narrative arc
-- Creative visual treatments: split screen, text overlay, rapid cuts, reaction format
-- The hook IS the ad — there's no "body." Every second is hook.
-- Think TikTok/Reels native, not a TV spot cut short.
-- Word budget: 30-35 words, hard ceiling 37 words.` : task.duration === '16-59 sec' ? `This is a MID FORM ad (16-59 seconds). VO REQUIRED. Structure:
-- Full hook → body → close arc that lands inside 59 seconds
-- 6-7 narrative beats, compact scene count (8-14 storyboard rows)
-- Word budget: 115-135 words, hard ceiling 145 words.
-- Every line must earn its place — cut anything that doesn't drive the arc.` : `This is an EXPANDED ad (60-90 seconds). VO REQUIRED. Structure:
-- Full documentary-style arc with setup, intensification, turn, resolution
-- 8-stage narrative possible, 16-22 storyboard rows
-- Word budget: 190-215 words, hard ceiling 225 words.
-- Pacing matters — every 15-second block must earn attention to keep the viewer through 90s.`}`;
+${task.duration === '1-15 sec' ? `SHORT FORM — single-moment concepts valid, no framework required, native style preferred, text-only CTAs. Word budget: 30-35 words, hard ceiling 37.` : task.duration === '16-59 sec' ? `MID FORM — VO required, full arc, 6-7 beats. Word budget: 115-135 words, hard ceiling 145.` : `EXPANDED — VO required, documentary pacing, 8-stage narrative. Word budget: 190-215 words, hard ceiling 225.`}`;
 
-      const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
+      const runConceptGeneration = async (regenGuidance?: string) => {
+        const angleDirective = buildAngleDirective(regenGuidance);
+        const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
 
-      // Vision call when either:
-      //   - a pin exists with frames, OR
-      //   - the deep bank fallback found a primary video reference with frames
-      let conceptsRaw: string;
-      if (pinned && pinned.frames.length > 0) {
-        const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
-        conceptsRaw = await sendVisionMessageWithRetry(
-          conceptSystem,
-          visionContent,
-          apiKey,
-          24000,
-          OPUS,
-          signal,
-        );
-      } else if (deep && deep.primaryFrames.length > 0) {
-        const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
-        conceptsRaw = await sendVisionMessageWithRetry(
-          conceptSystem,
-          visionContent,
-          apiKey,
-          24000,
-          OPUS,
-          signal,
-        );
-      } else {
-        conceptsRaw = await sendMessageWithRetry(
-          conceptSystem,
-          anglesPrompt.user,
-          apiKey,
-          22000,
-          OPUS,
-          signal,
-        );
-      }
+        if (pinned && pinned.frames.length > 0) {
+          const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
+          return sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, OPUS, signal);
+        } else if (deep && deep.primaryFrames.length > 0) {
+          const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
+          return sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, OPUS, signal);
+        } else {
+          return sendMessageWithRetry(conceptSystem, anglesPrompt.user, apiKey, 22000, OPUS, signal);
+        }
+      };
+
+      let conceptsRaw = await runConceptGeneration();
       ts.conceptsRaw = conceptsRaw;
       onProgress({ ...state });
 
       await delay(INTER_CALL_DELAY);
 
-      // ── Evaluate Concepts ──────────────────────────────────────────
-      ts.step = 'selecting-concept';
+      // ── Step 3: Differentiation Critic — evaluate relevance/quality ──
+      ts.step = 'critiquing-concepts';
       onProgress({ ...state });
 
-      const anglePatternTable = formatAnglePatternsForEvaluator(
-        task.parsed.angle,
-        task.parsed.product,
-        getAnglePatternsFor(task.parsed.angle, task.parsed.product),
+      const critique = await runDifferentiationCritic(
+        {
+          taskName: task.parsed.name,
+          angle: task.parsed.angle,
+          product: task.parsed.product,
+          medium: task.parsed.medium,
+          duration: task.duration,
+          adType: task.scriptParamsBase.adType,
+          concepts: conceptsRaw,
+          thesis,
+          inspirationContext: inspirationCtx,
+          memoryBriefing,
+          isRegenerationAttempt: false,
+        },
+        apiKey,
+        signal,
       );
+      ts.critiqueRaw = critique.raw;
+      onProgress({ ...state });
+
+      // ── Step 4: Optional regeneration (max 1 retry) ──────────────────
+      if (critique.overallVerdict === 'REGENERATE' && critique.regenerationGuidance) {
+        ts.step = 'regenerating-concepts';
+        ts.wasRegenerated = true;
+        onProgress({ ...state });
+
+        await delay(INTER_CALL_DELAY);
+
+        conceptsRaw = await runConceptGeneration(critique.regenerationGuidance);
+        ts.conceptsRaw = conceptsRaw;
+        onProgress({ ...state });
+
+        await delay(INTER_CALL_DELAY);
+
+        // Re-critique — logs only, cannot trigger another regeneration.
+        const critique2 = await runDifferentiationCritic(
+          {
+            taskName: task.parsed.name,
+            angle: task.parsed.angle,
+            product: task.parsed.product,
+            medium: task.parsed.medium,
+            duration: task.duration,
+            adType: task.scriptParamsBase.adType,
+            concepts: conceptsRaw,
+            thesis,
+            inspirationContext: inspirationCtx,
+            memoryBriefing,
+            isRegenerationAttempt: true,
+          },
+          apiKey,
+          signal,
+        );
+        ts.critiqueRegenRaw = critique2.raw;
+        onProgress({ ...state });
+
+        await delay(INTER_CALL_DELAY);
+      } else {
+        await delay(INTER_CALL_DELAY);
+      }
+
+      // ── Evaluate Concepts (thesis is folded into direction block so the
+      //    evaluator sees the same strategic context the generator did) ─
+      ts.step = 'selecting-concept';
+      onProgress({ ...state });
 
       const evalPrompt = buildConceptEvaluatorPrompt(
         conceptsRaw,
@@ -707,8 +769,10 @@ ${task.duration === '1-15 sec' ? `This is a SHORT FORM ad. Do NOT write a compre
         task.scriptParamsBase.awarenessLevel,
       );
 
+      const evalThesisBlock = `\n\n## CREATIVE STRATEGIST'S THESIS — APPLY THIS WHEN EVALUATING\n\n${thesis}\n\nWhen evaluating, favor concepts that execute this thesis faithfully over concepts that drift toward generic manifesto patterns, even when the drifting concepts look "strategically sound" in isolation.`;
+
       const evalResponse = await sendMessageWithRetry(
-        evalPrompt.system + directionBlock,
+        evalPrompt.system + directionBlock + evalThesisBlock,
         evalPrompt.user,
         apiKey,
         9000,
@@ -764,10 +828,9 @@ ${task.duration === '1-15 sec' ? `This is a SHORT FORM ad. Do NOT write a compre
       const { task } = ts;
 
       try {
-        ts.step = 'generating-concepts';
         ts.error = undefined;
-        onProgress({ ...state });
 
+        // Retry the full strategist → generate → critique → select flow.
         const pinned = await loadPinnedInspirationForTask(task.parsed.name, direction.pinnedInspirations);
         const deep = pinned ? null : await loadDeepInspirationForTask(task);
         ts.inspirationIdsUsed = mergeInspirationIds(
@@ -777,6 +840,42 @@ ${task.duration === '1-15 sec' ? `This is a SHORT FORM ad. Do NOT write a compre
         const inspirationCtx = pinned
           ? pinned.richContext
           : (deep && deep.hasContent ? deep.richContext : '');
+
+        const anglePatternTableRetry = formatAnglePatternsForEvaluator(
+          task.parsed.angle,
+          task.parsed.product,
+          getAnglePatternsFor(task.parsed.angle, task.parsed.product),
+        );
+
+        // Strategist
+        ts.step = 'strategist-thinking';
+        onProgress({ ...state });
+        const thesis = await runCreativeStrategist(
+          {
+            taskName: task.parsed.name,
+            angle: task.parsed.angle,
+            product: task.parsed.product,
+            medium: task.parsed.medium,
+            duration: task.duration,
+            adType: task.scriptParamsBase.adType,
+            awarenessLevel: task.scriptParamsBase.awarenessLevel,
+            funnelStage: task.scriptParamsBase.funnelStage,
+            primaryTalkingPoint: task.anglesParams.primaryTalkingPoint,
+            inspirationContext: inspirationCtx,
+            anglePatternTable: anglePatternTableRetry,
+            memoryBriefing,
+          },
+          apiKey,
+          signal,
+        );
+        ts.strategistThesis = thesis;
+        onProgress({ ...state });
+        await delay(INTER_CALL_DELAY);
+
+        // Generate
+        ts.step = 'generating-concepts';
+        onProgress({ ...state });
+
         const anglesPrompt = buildAnglesPrompt(task.anglesParams, analysis, memoryBriefing, inspirationCtx);
         const customDirectives = getAngleDirectives()
           .filter((d) => d.angle.toLowerCase() === task.parsed.angle.toLowerCase() ||
@@ -784,63 +883,64 @@ ${task.duration === '1-15 sec' ? `This is a SHORT FORM ad. Do NOT write a compre
           .map((d) => `**Custom Directive (${d.angle} / ${d.product}):** ${d.directive}`)
           .join('\n');
 
-        const angleDirective = `\n\n## ⚠️ PRIMARY CREATIVE DIRECTIVE — TALKING POINT: "${task.parsed.angle}"
-${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customDirectives}\n` : ''}
-**THIS OVERRIDES ALL OTHER INSPIRATION.** The manifesto examples, winning ad bank, and emotional patterns are BACKGROUND CONTEXT — they do NOT set the topic. The topic is "${task.parsed.angle}" and ONLY "${task.parsed.angle}".
+        const angleDirective = `\n\n## ⚠️⚠️⚠️ CREATIVE STRATEGIST'S THESIS — THE #1 DIRECTIVE FOR THIS BRIEF
 
-Every concept must be unmistakably about "${task.parsed.angle}". If a concept could work with a different talking point swapped in, it is too generic — rewrite it.
+${thesis}
+
+---
+
+## PRIMARY TALKING POINT: "${task.parsed.angle}"
+${customDirectives ? `\n### CUSTOM DIRECTIVES FROM PREVIOUS FEEDBACK:\n${customDirectives}\n` : ''}
+
+Every concept must be unmistakably about "${task.parsed.angle}" and tightly tied to the thesis above. If a concept could work with a different talking point swapped in, it's too generic — rewrite it.
 
 ${getAngleLanguageBank(task.parsed.angle)}
 
-**FORMAT: ${task.parsed.medium} (${task.duration}${task.duration === '1-15 sec' ? ', final cut ≤ 15s' : task.duration === '16-59 sec' ? ', final cut ≤ 59s' : ', final cut ≤ 90s'})**
-${task.duration === '1-15 sec' ? 'This is a SHORT FORM ad (≤15s). Do NOT write a compressed long-form story. Word budget: 30-35 words, hard ceiling 37.' : task.duration === '16-59 sec' ? 'This is a MID FORM ad (≤59s). VO required. Word budget: 115-135 words, hard ceiling 145.' : 'This is an EXPANDED ad (≤90s). VO required. Word budget: 190-215 words, hard ceiling 225.'}`;
+**FORMAT: ${task.parsed.medium} (${task.duration})** — ${task.duration === '1-15 sec' ? 'Short form: single moments, native style, text-only CTAs, 30-35 words max.' : task.duration === '16-59 sec' ? 'Mid form: VO required, full arc, 115-135 words.' : 'Expanded: VO required, 190-215 words, documentary pacing.'}`;
 
         const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
 
         let conceptsRaw: string;
         if (pinned && pinned.frames.length > 0) {
           const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
-          conceptsRaw = await sendVisionMessageWithRetry(
-            conceptSystem,
-            visionContent,
-            apiKey,
-            24000,
-            OPUS,
-            signal,
-          );
+          conceptsRaw = await sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, OPUS, signal);
         } else if (deep && deep.primaryFrames.length > 0) {
           const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
-          conceptsRaw = await sendVisionMessageWithRetry(
-            conceptSystem,
-            visionContent,
-            apiKey,
-            24000,
-            OPUS,
-            signal,
-          );
+          conceptsRaw = await sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, OPUS, signal);
         } else {
-          conceptsRaw = await sendMessageWithRetry(
-            conceptSystem,
-            anglesPrompt.user,
-            apiKey,
-            22000,
-            OPUS,
-            signal,
-          );
+          conceptsRaw = await sendMessageWithRetry(conceptSystem, anglesPrompt.user, apiKey, 22000, OPUS, signal);
         }
         ts.conceptsRaw = conceptsRaw;
         onProgress({ ...state });
-
         await delay(INTER_CALL_DELAY);
 
+        // Critique (no regeneration in retry path — keep it simple)
+        ts.step = 'critiquing-concepts';
+        onProgress({ ...state });
+        const critique = await runDifferentiationCritic(
+          {
+            taskName: task.parsed.name,
+            angle: task.parsed.angle,
+            product: task.parsed.product,
+            medium: task.parsed.medium,
+            duration: task.duration,
+            adType: task.scriptParamsBase.adType,
+            concepts: conceptsRaw,
+            thesis,
+            inspirationContext: inspirationCtx,
+            memoryBriefing,
+            isRegenerationAttempt: false,
+          },
+          apiKey,
+          signal,
+        );
+        ts.critiqueRaw = critique.raw;
+        onProgress({ ...state });
+        await delay(INTER_CALL_DELAY);
+
+        // Select
         ts.step = 'selecting-concept';
         onProgress({ ...state });
-
-        const anglePatternTableRetry = formatAnglePatternsForEvaluator(
-          task.parsed.angle,
-          task.parsed.product,
-          getAnglePatternsFor(task.parsed.angle, task.parsed.product),
-        );
 
         const evalPrompt = buildConceptEvaluatorPrompt(
           conceptsRaw,
@@ -858,8 +958,10 @@ ${task.duration === '1-15 sec' ? 'This is a SHORT FORM ad (≤15s). Do NOT write
           task.scriptParamsBase.awarenessLevel,
         );
 
+        const evalThesisBlock = `\n\n## CREATIVE STRATEGIST'S THESIS — APPLY THIS WHEN EVALUATING\n\n${thesis}\n\nFavor concepts that execute this thesis faithfully over concepts that drift toward generic manifesto patterns.`;
+
         const evalResponse = await sendMessageWithRetry(
-          evalPrompt.system + directionBlock,
+          evalPrompt.system + directionBlock + evalThesisBlock,
           evalPrompt.user,
           apiKey,
           9000,

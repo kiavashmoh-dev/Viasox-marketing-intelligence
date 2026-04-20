@@ -35,7 +35,10 @@ export interface AutopilotTask {
 
 export type PipelineStep =
   | 'pending'
+  | 'strategist-thinking'
   | 'generating-concepts'
+  | 'critiquing-concepts'
+  | 'regenerating-concepts'
   | 'selecting-concept'
   | 'awaiting-concept-approval'
   | 'generating-script'
@@ -58,8 +61,16 @@ export interface ConceptOption {
 export interface TaskPipelineState {
   task: AutopilotTask;
   step: PipelineStep;
+  /** Creative Strategist thesis — the per-brief creative direction produced before concept generation */
+  strategistThesis?: string;
   /** Raw markdown from the Angles Generator */
   conceptsRaw?: string;
+  /** Raw markdown from the Differentiation Critic after initial generation */
+  critiqueRaw?: string;
+  /** Whether the concepts were regenerated due to a failed critique */
+  wasRegenerated?: boolean;
+  /** The second critique run after regeneration (if applicable) */
+  critiqueRegenRaw?: string;
   /** Parsed concept options for interactive review */
   conceptOptions?: ConceptOption[];
   /** Which concept (1-5) was selected */
