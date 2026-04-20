@@ -299,9 +299,14 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
       {/* Individual Brief Cards with Score Panels */}
       <div className="space-y-3">
         {state.tasks.map((ts, i) => {
-          const reviewMatch = parsedReview?.briefs.find(
-            (b) => b.taskName.toLowerCase().includes(ts.task.parsed.name.toLowerCase()),
-          );
+          // Match reviewer output to this task — bidirectional .includes() since
+          // the reviewer may prefix names (e.g., "Brief 1: VIASOX-001") or use
+          // the bare identifier. Exact-match equality alone would be too strict.
+          const taskNameLower = ts.task.parsed.name.toLowerCase();
+          const reviewMatch = parsedReview?.briefs.find((b) => {
+            const bLower = b.taskName.toLowerCase();
+            return bLower === taskNameLower || bLower.includes(taskNameLower) || taskNameLower.includes(bLower);
+          });
           return (
             <div key={i}>
               <TaskBriefCard

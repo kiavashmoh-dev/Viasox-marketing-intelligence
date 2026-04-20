@@ -126,10 +126,13 @@ export async function saveCompletedBatchToMemory(
     const persona = extractPersona(ts.selectedConceptText ?? '', ts.scriptResult ?? '');
     const emotionalEntry = extractEmotionalEntry(ts.selectedConceptText ?? '');
 
-    // Find matching review for this task
-    const reviewMatch = parsedReview?.briefs.find(
-      (b) => b.taskName.toLowerCase().includes(ts.task.parsed.name.toLowerCase())
-    );
+    // Find matching review for this task — bidirectional includes handles
+    // both "VIASOX-001" and "Brief 1: VIASOX-001" naming from the reviewer.
+    const taskNameLower = ts.task.parsed.name.toLowerCase();
+    const reviewMatch = parsedReview?.briefs.find((b) => {
+      const bLower = b.taskName.toLowerCase();
+      return bLower === taskNameLower || bLower.includes(taskNameLower) || taskNameLower.includes(bLower);
+    });
 
     briefRecords.push({
       id: ts.task.parsed.name,

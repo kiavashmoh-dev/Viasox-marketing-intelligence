@@ -120,10 +120,30 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
   const briefSections = reviewMarkdown.split(/(?=###?\s+(?:VIASOX|Brief|Task)[\s-]*\d*)/i);
 
   for (const section of briefSections) {
-    const nameMatch = section.match(/###?\s+((?:VIASOX|Brief|Task)[\s-]*\w+)/i);
-    if (!nameMatch) continue;
+    // Try JSON extraction first — its `taskName` field is authoritative
+    const jsonData = extractJsonBlock(section);
 
-    const taskName = nameMatch[1].trim();
+    // Resolve task name with cascading fallbacks:
+    // 1. JSON's taskName field (most reliable)
+    // 2. Any VIASOX-\d+ identifier anywhere in the section
+    // 3. The heading text up to em-dash or colon
+    let taskName = '';
+    if (jsonData?.taskName && typeof jsonData.taskName === 'string') {
+      taskName = jsonData.taskName.trim();
+    } else {
+      const viasoxMatch = section.match(/VIASOX[\s-]*\d+/i);
+      if (viasoxMatch) {
+        taskName = viasoxMatch[0].replace(/\s+/g, '-').toUpperCase();
+      } else {
+        const headingMatch = section.match(/###?\s+([^\n]+)/);
+        if (headingMatch) {
+          taskName = headingMatch[1].split(/[—:]/)[0].trim();
+        }
+      }
+    }
+
+    if (!taskName) continue;
+
     const brief: ParsedBriefReview = {
       taskName,
       verdict: 'APPROVED',
@@ -134,8 +154,7 @@ export function parseReviewResult(reviewMarkdown: string): ParsedBatchReview {
       weaknesses: [],
     };
 
-    // Primary: try JSON extraction
-    const jsonData = extractJsonBlock(section);
+    // Primary: use the JSON data we already extracted
     if (jsonData) {
       const scoring = buildScoringRecord(jsonData);
       if (scoring) {
