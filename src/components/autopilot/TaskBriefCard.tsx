@@ -15,6 +15,82 @@ interface Props {
 const NAVY = '#1b365d';
 const BORDER = '#bfbfbf';
 
+// ─── Regen Stage Tracker ─────────────────────────────────────────────────────
+// Visible during redo. Mirrors the per-brief pipeline stages so the user
+// knows exactly which Opus call is running and what's left.
+
+const REGEN_STAGES: { id: string; label: string; sublabel: string }[] = [
+  { id: 'strategist-thinking', label: 'Creative Strategist', sublabel: 'Writing the per-brief thesis with your feedback' },
+  { id: 'generating-concepts', label: 'Generating Concepts', sublabel: '5 concepts from the thesis + your feedback' },
+  { id: 'critiquing-concepts', label: 'Differentiation Critic', sublabel: 'Grading each concept for relevance' },
+  { id: 'regenerating-concepts', label: 'Regenerating Concepts', sublabel: 'Only fires if the critic rejects the first batch' },
+  { id: 'selecting-concept', label: 'Selecting Best Concept', sublabel: 'Senior strategist picks the winner' },
+  { id: 'generating-script', label: 'Writing Full Brief', sublabel: 'Longest stage — the final brief is being assembled' },
+  { id: 'complete', label: 'Finalizing', sublabel: 'Validating output and saving' },
+];
+
+function RegenStageTracker({ step }: { step: string }) {
+  // Determine how far along we are. Any step past the current stage is "done."
+  // If the step is 'regenerating-concepts' we skip showing the earlier stages
+  // as incomplete — they already happened.
+  const currentIdx = REGEN_STAGES.findIndex((s) => s.id === step);
+  // If step doesn't match any stage yet (e.g., just fired redo, state hasn't
+  // propagated), show everything as pending.
+  const effectiveIdx = currentIdx < 0 ? -1 : currentIdx;
+  // Skip the "Regenerating Concepts" stage in the display unless it's the
+  // current step (since it only appears when the critic rejects).
+  const visibleStages = REGEN_STAGES.filter(
+    (s) => s.id !== 'regenerating-concepts' || step === 'regenerating-concepts',
+  );
+
+  return (
+    <div className="space-y-1.5">
+      {visibleStages.map((stage) => {
+        const idx = REGEN_STAGES.findIndex((s) => s.id === stage.id);
+        const isDone = effectiveIdx > idx;
+        const isCurrent = effectiveIdx === idx;
+        const isPending = effectiveIdx < idx;
+        return (
+          <div
+            key={stage.id}
+            className={`flex items-start gap-3 p-2.5 rounded-lg border transition-colors ${
+              isCurrent
+                ? 'bg-blue-50 border-blue-200'
+                : isDone
+                  ? 'bg-emerald-50 border-emerald-100'
+                  : 'bg-slate-50 border-slate-100'
+            }`}
+          >
+            <div className="mt-0.5 shrink-0">
+              {isDone ? (
+                <div className="w-4 h-4 rounded-full bg-emerald-500 text-white text-[10px] flex items-center justify-center font-bold">
+                  ✓
+                </div>
+              ) : isCurrent ? (
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <div className="w-4 h-4 rounded-full border-2 border-slate-300" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div
+                className={`text-xs font-semibold ${
+                  isCurrent ? 'text-blue-700' : isDone ? 'text-emerald-700' : 'text-slate-500'
+                }`}
+              >
+                {stage.label}
+              </div>
+              <div className={`text-[10px] mt-0.5 ${isPending ? 'text-slate-400' : 'text-slate-500'}`}>
+                {stage.sublabel}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function SectionHeader({ title }: { title: string }) {
   return (
     <div className="text-xs font-bold text-slate-800 mt-4 mb-1.5 uppercase tracking-wider">
@@ -108,9 +184,13 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
   const [showFeedback, setShowFeedback] = useState(false);
   const { task, step, selectedConceptIndex, selectionReasoning, recommendedFramework, scriptResult, error } = taskState;
 
-  const isComplete = step === 'complete' && scriptResult;
+  const isComplete = step === 'complete' && !!scriptResult;
   const isFailed = step === 'error';
-  const isProcessing = step === 'generating-concepts' || step === 'selecting-concept' || step === 'generating-script';
+  const isProcessing = step === 'generating-concepts' || step === 'selecting-concept' || step === 'generating-script' || step === 'strategist-thinking' || step === 'critiquing-concepts' || step === 'regenerating-concepts';
+  // When a redo is in progress, suppress the "Complete" UI treatment entirely
+  // (badge + expanded brief preview) until the regen finishes. Otherwise the
+  // old brief flashes as "complete" during the redo, which is confusing.
+  const showCompleteUi = isComplete && !isRedoing;
 
   // Derived metadata for the header badges (ad type, VO/no VO).
   // Only meaningful once the brief is complete — but still useful to know
@@ -133,13 +213,15 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
     }
   };
 
-  // Parse brief sections for formatted preview
-  const briefInfo = isComplete ? parseKvTable(scriptResult, 'BRIEF INFO') : {};
-  const strategy = isComplete ? parseKvTable(scriptResult, 'STRATEGY') : {};
-  const offer = isComplete ? parseKvTable(scriptResult, 'OFFER') : {};
-  const editing = isComplete ? parseKvTable(scriptResult, 'EDITING INSTRUCTIONS') : {};
-  const hooks = isComplete ? parseScriptTable(scriptResult, 'SCRIPT \\(HOOKS\\)') : [];
-  const body = isComplete ? parseScriptTable(scriptResult, 'SCRIPT \\(BODY\\)') : [];
+  // Parse brief sections for formatted preview — only when genuinely complete
+  // (not mid-regen). During regen, scriptResult still holds the OLD value
+  // until the final assignment, so we suppress parsing to avoid showing stale.
+  const briefInfo = showCompleteUi ? parseKvTable(scriptResult, 'BRIEF INFO') : {};
+  const strategy = showCompleteUi ? parseKvTable(scriptResult, 'STRATEGY') : {};
+  const offer = showCompleteUi ? parseKvTable(scriptResult, 'OFFER') : {};
+  const editing = showCompleteUi ? parseKvTable(scriptResult, 'EDITING INSTRUCTIONS') : {};
+  const hooks = showCompleteUi ? parseScriptTable(scriptResult, 'SCRIPT \\(HOOKS\\)') : [];
+  const body = showCompleteUi ? parseScriptTable(scriptResult, 'SCRIPT \\(BODY\\)') : [];
 
   const handleRedo = () => {
     if (!feedbackText.trim() || !onRedo) return;
@@ -189,8 +271,8 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
           >
             {meta.adTypeShort}
           </span>
-          {/* VO / No VO pill — only meaningful once the brief is complete */}
-          {isComplete && (
+          {/* VO / No VO pill — only meaningful once the brief is truly complete */}
+          {showCompleteUi && (
             <span
               className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${
                 meta.hasVoiceover
@@ -202,26 +284,41 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
               {meta.hasVoiceover ? '\uD83C\uDFA4 VO' : 'No VO'}
             </span>
           )}
-          {isComplete && selectedConceptIndex && (
+          {showCompleteUi && selectedConceptIndex && (
             <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
               Concept {selectedConceptIndex} | {recommendedFramework?.split(' ')[0]}
             </span>
           )}
-          {isComplete && (
+          {showCompleteUi && (
             <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
               {'\u2713'} Complete
             </span>
           )}
+          {/* Redo-in-progress: single combined pill showing current stage.
+              Replaces the old generic "Re-doing..." plus per-step pills that
+              fought with the "Complete" badge during the regen cascade. */}
           {isRedoing && (
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
               <span className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-              Re-doing...
+              {step === 'strategist-thinking' ? 'Regen — Strategist'
+                : step === 'generating-concepts' ? 'Regen — Concepts'
+                : step === 'critiquing-concepts' ? 'Regen — Critic'
+                : step === 'regenerating-concepts' ? 'Regen — Retry Concepts'
+                : step === 'selecting-concept' ? 'Regen — Selecting'
+                : step === 'generating-script' ? 'Regen — Writing Brief'
+                : step === 'complete' ? 'Regen — Finalizing'
+                : 'Regen — Starting'}
             </span>
           )}
           {isProcessing && !isRedoing && (
             <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
               <span className="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
-              {step === 'generating-concepts' ? 'Concepts...' : step === 'selecting-concept' ? 'Selecting...' : 'Writing...'}
+              {step === 'strategist-thinking' ? 'Strategist...'
+                : step === 'generating-concepts' ? 'Concepts...'
+                : step === 'critiquing-concepts' ? 'Critic...'
+                : step === 'regenerating-concepts' ? 'Retry...'
+                : step === 'selecting-concept' ? 'Selecting...'
+                : 'Writing...'}
             </span>
           )}
           {isFailed && (
@@ -246,8 +343,30 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
             </div>
           )}
 
-          {/* Formatted Brief Preview */}
-          {isComplete && scriptResult && (
+          {/* Redo-in-progress panel — replaces the brief preview during regen
+              so the stale old brief doesn't render as if it were the new
+              output. Shows each stage with a live highlight + explanation. */}
+          {isRedoing && (
+            <div className="p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="text-sm font-semibold text-slate-800">
+                  Regenerating with your feedback...
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                The full critical-thinking pipeline is running. Your feedback is the
+                #1 directive at every stage. This typically takes 2-4 minutes — the
+                previous version is being replaced, not edited.
+              </p>
+              <RegenStageTracker step={step} />
+            </div>
+          )}
+
+          {/* Formatted Brief Preview — only when truly complete AND not
+              mid-regen. Prevents the old brief from flashing as "complete"
+              during the regen cascade. */}
+          {showCompleteUi && scriptResult && (
             <div className="p-4">
               {/* Title */}
               <div className="text-center text-sm font-bold text-slate-800 mb-3">

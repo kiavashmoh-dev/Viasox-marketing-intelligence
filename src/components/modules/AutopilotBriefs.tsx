@@ -420,6 +420,18 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
 
   const handleRedoTask = useCallback(async (taskIndex: number, feedback: string) => {
     if (!pipelineState) return;
+
+    // Synchronously batch: mark task as starting the regen AND set redoingIndex
+    // so the UI never has a frame where isRedoing=true but the task still
+    // shows step='complete' from the previous run. Without this, the
+    // "Complete" UI flashes momentarily at the start of every regen.
+    const primedState: AutopilotState = {
+      ...pipelineState,
+      tasks: pipelineState.tasks.map((t, i) =>
+        i === taskIndex ? { ...t, step: 'strategist-thinking' as const, error: undefined } : t,
+      ),
+    };
+    setPipelineState(primedState);
     setRedoingIndex(taskIndex);
 
     const controller = new AbortController();
@@ -429,7 +441,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
       const result = await redoSingleTask(
         taskIndex,
         feedback,
-        pipelineState,
+        primedState,
         analysis,
         apiKey,
         resourceContext,
