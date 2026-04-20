@@ -792,6 +792,22 @@ This ad is built entirely from EXISTING footage. Every visual must be grounded i
 
 **Footage we do NOT have — NEVER write visuals implying these:** Indoor gym/fitness, medical offices/clinical settings, sports activities (running, cycling, hiking), travel/airports, restaurants/dining, children/family scenes, pet scenes.
 
+**Cross-check uploaded footage inventory:** If the prompt includes an "ADDITIONAL RESOURCE CONTEXT (uploaded by user)" section (typically a Google Sheet or doc the user uploaded with their actual footage library), those items are ALSO available and ARE authoritative — they may list more specific clips, locations, or talent than the baseline list above. Scan that section before locking your Shot Type choices. When the uploaded inventory names a specific clip that fits the concept, prefer it over a generic baseline Shot Type.
+
+${inspirationContext ? `**⚠️ INSPIRATION ↔ FOOTAGE LIBRARY RECONCILIATION (APPLIES WHEN INSPIRATION IS PINNED):**
+The pinned inspiration ad may use visuals that DO NOT exist in our footage library (e.g., the reference shows a gym scene, an airport, a restaurant, a child). You MUST NOT invent footage we don't have just because the inspiration shows it. You ALSO must not abandon the inspiration's visual intent — your job is to reproduce the EMOTIONAL BEAT, PACING, and VISUAL MEANING using footage we actually have.
+
+**The reconciliation rule:**
+1. For each shot in the inspiration, ask: "Is this available in our footage library (baseline list above, plus any uploaded inventory)?"
+2. If YES → use it directly, matching the inspiration's framing.
+3. If NO → pick the CLOSEST AVAILABLE Shot Type that preserves the same emotional beat / role in the narrative. Examples:
+   - Inspiration: "Close-up of feet on hotel room carpet after a flight" → Our substitute: "Feet Up Lifestyle (Home Environment)" — both convey rest after a long day; hotel vs home is irrelevant to the relief moment.
+   - Inspiration: "Runner lacing up shoes on a trail" → Our substitute: "Putting On Socks (Home Environment) followed by Walking (Outdoor Setting)" — preserves the preparation-then-action arc without requiring trail or sports footage.
+   - Inspiration: "Kid jumping on their mom's bed" → Our substitute: ABANDON that shot, re-route narrative. Some substitutions aren't available — when the inspiration's intent cannot be preserved with our library, drop that beat and use a neighboring beat to carry the meaning.
+4. Document every substitution in the VISUAL SUBSTITUTION LOG (Section 9) so the editor knows what the reference intended and why you diverged.
+
+**The hierarchy:** Footage library is a hard constraint. Inspiration fidelity is preserved by intent, not by literal shot-matching. Never write a Shot Visual that implies footage we don't have.` : ''}
+
 **Visual Description Rules:**
 The Suggested Visual column must be a SHORT, CONVERSATIONAL description of what the viewer sees — one natural sentence, 8-20 words.
 - GOOD: "Close-up of her pulling the compression socks up over her calves on the couch"
@@ -887,7 +903,22 @@ Row count adapts to the concept and duration — more rows for longer scripts, f
 List every statistic and customer quote referenced in the script, with source frequencies.
 
 ### 8. HOW ${params.framework} WAS APPLIED
-Walk through each phase of the framework and explain how it maps to specific rows in the body. Reference row numbers.` : templateAdType === 'Static' ? `## SCRIPT OUTPUT FORMAT
+Walk through each phase of the framework and explain how it maps to specific rows in the body. Reference row numbers.
+
+${inspirationContext ? `### 9. VISUAL SUBSTITUTION LOG
+
+Because a specific inspiration ad was pinned for this brief, document any visual substitutions you made — moments where the inspiration used a shot we don't have in our footage library, and you chose the closest available alternative.
+
+Format as a markdown table:
+
+| # | Inspiration Shot | Our Substitute | Rationale (1 sentence) |
+|---|------------------|----------------|------------------------|
+| 1 | [What the reference ad uses, e.g., "Close-up of feet on a trail at sunrise"] | [Shot Type from our library, e.g., "Standing Feet (Outdoor Setting)"] | [Why this preserves the inspiration's emotional beat, pacing, or visual intent] |
+| 2 | ... | ... | ... |
+
+If NO substitutions were required (every inspiration visual exists in our library), state exactly: **"No substitutions required — all visuals sourced from available footage."**
+
+If the inspiration required a visual you had to DROP entirely (no acceptable substitute in our library), log it here too with "DROPPED" in the Substitute column and a note on which adjacent beat absorbed the meaning.` : ''}` : templateAdType === 'Static' ? `## SCRIPT OUTPUT FORMAT
 
 ### 1. STRATEGY SUMMARY (at the top, before the script)
 Start with a clear summary block:
