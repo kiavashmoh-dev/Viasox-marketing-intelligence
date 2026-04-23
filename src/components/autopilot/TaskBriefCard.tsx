@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { TaskPipelineState } from '../../engine/autopilotTypes';
 import { downloadEcomBriefDoc, downloadProductionBriefCsv, parseKvTable, parseScriptTable } from '../../utils/downloadUtils';
 import { buildBriefMeta } from '../../autopilot/briefMeta';
@@ -192,6 +192,13 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
   // old brief flashes as "complete" during the redo, which is confusing.
   const showCompleteUi = isComplete && !isRedoing;
 
+  // Auto-expand whenever redo starts. Guarantees the user sees the stage
+  // tracker without having to click the header. Only expands once per redo
+  // start; if the user manually collapses mid-regen, we don't fight them.
+  useEffect(() => {
+    if (isRedoing) setExpanded(true);
+  }, [isRedoing]);
+
   // Derived metadata for the header badges (ad type, VO/no VO).
   // Only meaningful once the brief is complete — but still useful to know
   // the configured ad type even mid-pipeline.
@@ -330,36 +337,36 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
         </div>
       </button>
 
+      {/* Redo-in-progress panel — ALWAYS visible during regen, independent
+          of the expanded state. The user needs to see the stage tracker
+          whether or not they've clicked the header. */}
+      {isRedoing && (
+        <div className="border-t border-blue-200 bg-blue-50/50 p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <div className="text-sm font-semibold text-slate-800">
+              Regenerating with your feedback...
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500 leading-relaxed">
+            The full critical-thinking pipeline is running. Your feedback is the
+            #1 directive at every stage. This typically takes 2-4 minutes — the
+            previous version is being replaced, not edited.
+          </p>
+          <RegenStageTracker step={step} />
+        </div>
+      )}
+
       {/* Expanded content */}
       {expanded && (
         <div className="border-t border-slate-100">
           {/* Selection reasoning */}
-          {selectionReasoning && (
+          {selectionReasoning && !isRedoing && (
             <div className="bg-blue-50 border-b border-blue-100 p-4">
               <div className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1">
                 Why This Concept Was Selected
               </div>
               <p className="text-xs text-blue-800 leading-relaxed">{selectionReasoning}</p>
-            </div>
-          )}
-
-          {/* Redo-in-progress panel — replaces the brief preview during regen
-              so the stale old brief doesn't render as if it were the new
-              output. Shows each stage with a live highlight + explanation. */}
-          {isRedoing && (
-            <div className="p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                <div className="text-sm font-semibold text-slate-800">
-                  Regenerating with your feedback...
-                </div>
-              </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                The full critical-thinking pipeline is running. Your feedback is the
-                #1 directive at every stage. This typically takes 2-4 minutes — the
-                previous version is being replaced, not edited.
-              </p>
-              <RegenStageTracker step={step} />
             </div>
           )}
 

@@ -1268,7 +1268,18 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
     }
   }
 
-  // ── Batch Review ────────────────────────────────────────────────────────
+  // ── Batch Review (one-brief-at-a-time) ─────────────────────────────────
+  // Previously this was a single "review all briefs" call with max_tokens=22000.
+  // That worked for 2-4 briefs but broke on 8+ briefs because:
+  //   input (28-35K tokens of brief content + manifesto + calibration) +
+  //   needed output (9-10K tokens for 11-criterion JSON × N briefs) exceeded
+  //   the budget, causing the API to reject or truncate mid-JSON → parser
+  //   found no JSON → all briefs showed as "Not scored".
+  //
+  // Now we call the reviewer once per brief. Each call has a bounded token
+  // budget (~16K input system-prompt-cached + ~2K per-brief user / ~6K output)
+  // that can't overflow. Anthropic's prompt caching handles the repeated
+  // system prompt efficiently. One brief's failure doesn't kill the others.
 
   const completedTasks = state.tasks.filter((t) => t.step === 'complete' && t.scriptResult);
 
@@ -1276,19 +1287,29 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
     state.phase = 'reviewing';
     onProgress({ ...state });
 
-    try {
-      const pastFailures = getReviewerFailurePatterns();
-      const calibrationBlock = formatCalibrationForReviewer(getScoreCalibration());
+    const pastFailures = getReviewerFailurePatterns();
+    const calibrationBlock = formatCalibrationForReviewer(getScoreCalibration());
+    const reviewSections: string[] = [];
+    let reviewSuccesses = 0;
+
+    for (let i = 0; i < completedTasks.length; i++) {
+      if (signal.aborted) break;
+
+      const t = completedTasks[i];
+      console.log(`[reviewer] Reviewing brief ${i + 1}/${completedTasks.length}: ${t.task.parsed.name}`);
+
       const reviewPrompt = buildBatchReviewerPrompt(
-        completedTasks.map((t) => ({
-          taskName: t.task.parsed.name,
-          angle: t.task.parsed.angle,
-          product: t.task.parsed.product,
-          medium: t.task.parsed.medium,
-          framework: t.recommendedFramework ?? 'PAS',
-          briefContent: t.scriptResult!,
-          awarenessLevel: t.task.scriptParamsBase.awarenessLevel,
-        })),
+        [
+          {
+            taskName: t.task.parsed.name,
+            angle: t.task.parsed.angle,
+            product: t.task.parsed.product,
+            medium: t.task.parsed.medium,
+            framework: t.recommendedFramework ?? 'PAS',
+            briefContent: t.scriptResult!,
+            awarenessLevel: t.task.scriptParamsBase.awarenessLevel,
+          },
+        ],
         analysis,
         direction.instructions,
         memoryBriefing,
@@ -1296,17 +1317,41 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
         calibrationBlock,
       );
 
-      state.reviewResult = await sendMessageWithRetry(
-        reviewPrompt.system,
-        reviewPrompt.user,
-        apiKey,
-        22000,
-        OPUS,
-        signal,
-      );
-    } catch (err) {
-      state.reviewResult = `Review failed: ${err instanceof Error ? err.message : String(err)}`;
+      try {
+        const result = await sendMessageWithRetry(
+          reviewPrompt.system,
+          reviewPrompt.user,
+          apiKey,
+          6000, // enough for one brief's JSON + markdown; safe on any batch size
+          OPUS,
+          signal,
+        );
+        // Normalize the heading so the concatenated output has unique brief
+        // numbers. Each per-brief call produces "### Brief 1: ...". Replace
+        // the number with the batch-level index so the review report reads
+        // correctly.
+        const normalized = result.replace(/###\s+Brief\s+\d+\s*:/i, `### Brief ${i + 1}:`);
+        reviewSections.push(normalized);
+        reviewSuccesses++;
+      } catch (err) {
+        console.warn(`[reviewer] Failed to review ${t.task.parsed.name}:`, err);
+        reviewSections.push(
+          `### Brief ${i + 1}: ${t.task.parsed.name} — REVIEW FAILED\n\nReview generation failed: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+
+      // Inter-call delay to stay friendly with rate limits; skip on the last one.
+      if (i < completedTasks.length - 1 && !signal.aborted) {
+        await delay(INTER_CALL_DELAY);
+      }
     }
+
+    if (reviewSections.length > 0) {
+      state.reviewResult = reviewSections.join('\n\n---\n\n');
+    } else {
+      state.reviewResult = `Review failed: no briefs were reviewed.`;
+    }
+    console.log(`[reviewer] Per-brief review complete: ${reviewSuccesses}/${completedTasks.length} succeeded`);
   }
 
   // ── Save to memory + run post-batch learning loop ───────────────────────
