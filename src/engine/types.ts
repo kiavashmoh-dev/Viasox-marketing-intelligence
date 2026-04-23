@@ -158,7 +158,8 @@ export type ModuleId =
   | 'comments'
   | 'product-intelligence'
   | 'autopilot'
-  | 'inspiration';
+  | 'inspiration'
+  | 'memory-vault';
 
 export interface AppState {
   view: AppView;

@@ -157,6 +157,10 @@ export async function saveCompletedBatchToMemory(
       reviewWeaknesses: reviewMatch?.weaknesses ?? [],
       scoring: reviewMatch?.scoring ?? null,
       inspirationIdsUsed: Array.from(new Set(ts.inspirationIdsUsed ?? [])),
+      // Full brief markdown — persisted so the Memory Vault can view and
+      // export past briefs long after the original batch results screen is gone.
+      briefMarkdown: ts.scriptResult,
+      adType: ts.task.scriptParamsBase.adType,
     });
   }
 

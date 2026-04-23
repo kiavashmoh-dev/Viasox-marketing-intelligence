@@ -46,6 +46,12 @@ const creativeModules: Module[] = [
     description: 'Upload reference videos and briefs \u2014 auto-tagged and injected as style guidance into every generation',
     icon: '\uD83D\uDCDA',
   },
+  {
+    id: 'memory-vault',
+    title: 'Memory Vault',
+    description: 'Browse every past batch, review scores, override grades, and download historic briefs',
+    icon: '\uD83D\uDDC3\uFE0F',
+  },
 ];
 
 const insightModules: Module[] = [

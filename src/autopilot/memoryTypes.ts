@@ -103,6 +103,18 @@ export interface BriefMemoryRecord {
    * were active for this task.
    */
   inspirationIdsUsed?: string[];
+  /**
+   * Full brief markdown (ts.scriptResult). Stored so the Memory Vault can
+   * render past briefs and export them as .doc / .csv long after the batch
+   * ends. Optional because older batches (pre-v4) didn't persist this.
+   */
+  briefMarkdown?: string;
+  /**
+   * Ad type for this brief (e.g., "Ecom Style", "AGC", "Static"). Captured
+   * so the Memory Vault picks the right downloader (AGC → production CSV,
+   * everything else → Ecom DOC). Optional for backwards compat.
+   */
+  adType?: string;
 }
 
 // ─── Angle × Framework × Hook Pattern Record ────────────────────────────────

@@ -14,6 +14,7 @@ import CommentIntelligence from './components/modules/CommentIntelligence';
 import ProductIntelligence from './components/modules/ProductIntelligence';
 import AutopilotBriefs from './components/modules/AutopilotBriefs';
 import InspirationBank from './components/modules/InspirationBank';
+import MemoryVault from './components/modules/MemoryVault';
 import { useAnalysis } from './hooks/useAnalysis';
 
 export default function App() {
@@ -137,6 +138,8 @@ export default function App() {
           return <AutopilotBriefs {...moduleProps} />;
         case 'inspiration':
           return <InspirationBank apiKey={apiKey} onBack={handleBackToDashboard} />;
+        case 'memory-vault':
+          return <MemoryVault onBack={handleBackToDashboard} />;
         default:
           return null;
       }
