@@ -3,7 +3,19 @@ import type { ParsedAsanaTask, AutopilotTask } from '../engine/autopilotTypes';
 // Custom directives are read in pipelineEngine.ts, not here
 
 function mapProduct(raw: string): ProductCategory {
-  const lower = raw.toLowerCase();
+  const trimmed = raw.trim();
+  // Match Asana abbreviations as whole tokens first (case-insensitive),
+  // before the substring fallback. The substring fallback would route
+  // "ACS" → "EasyStretch" (no match → default) which is wrong, and
+  // "COMP" → wrong (would match the substring 'comp' but happens to land
+  // correctly on Compression). Explicit checks make intent obvious.
+  const upper = trimmed.toUpperCase();
+  if (upper === 'ACS') return 'Ankle Compression';
+  if (upper === 'COMP') return 'Compression';
+  if (upper === 'ES') return 'EasyStretch';
+
+  // Substring fallback for spelled-out names (older boards, mixed input).
+  const lower = trimmed.toLowerCase();
   if (lower.includes('ankle')) return 'Ankle Compression';
   if (lower.includes('easy') || lower.includes('stretch')) return 'EasyStretch';
   if (lower.includes('compression')) return 'Compression';

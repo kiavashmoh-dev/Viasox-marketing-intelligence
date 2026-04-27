@@ -6,7 +6,11 @@ const EXTRACTION_SYSTEM = `You extract structured task data from Asana board scr
 const EXTRACTION_PROMPT = `Extract all visible tasks from this Asana board screenshot. For each task row, extract these columns:
 
 - name: The task name or VIASOX ID (e.g., "VIASOX-77" or the task title)
-- product: The Product column value — must be one of: EasyStretch, Compression, Ankle Compression
+- product: The Product column value. The board now uses ABBREVIATIONS — translate them as you extract:
+    "ACS"  → "Ankle Compression"
+    "COMP" → "Compression"
+    "ES"   → "EasyStretch"
+    Older boards may still spell out the full names ("Ankle Compression Socks", "Compression", "EasyStretch") — accept those too. Always RETURN the canonical full name ("EasyStretch", "Compression", or "Ankle Compression"), never the abbreviation.
 - angle: The Angle column value — e.g., Neuropathy, Swelling, Diabetes, Varicose Veins
 - medium: The Medium column value — must be one of: Shortform, Midform, Expanded
 - adType: (OPTIONAL) The Ad Type column value IF visible. Recognized values include:
@@ -17,8 +21,9 @@ const EXTRACTION_PROMPT = `Extract all visible tasks from this Asana board scree
     an adType value when it is explicitly written in the screenshot.
 
 Return ONLY a JSON array. No markdown code fences. No explanation.
-Example: [{"name":"VIASOX-77","product":"EasyStretch","angle":"Neuropathy","medium":"Shortform","adType":"Ecom Style"}]
-Example without ad type: [{"name":"VIASOX-78","product":"Compression","angle":"Swelling","medium":"Midform"}]
+Example with abbreviation: [{"name":"VIASOX-77","product":"EasyStretch","angle":"Neuropathy","medium":"Shortform","adType":"Ecom Style"}] (input was "ES")
+Example: [{"name":"VIASOX-78","product":"Compression","angle":"Swelling","medium":"Midform"}] (input was "COMP")
+Example: [{"name":"VIASOX-79","product":"Ankle Compression","angle":"Plantar Fasciitis","medium":"Shortform"}] (input was "ACS")
 
 If a standard column value (name/product/angle/medium) is not clearly visible, use your best interpretation of what's shown.`;
 
