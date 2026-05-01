@@ -118,7 +118,17 @@ export function downloadAsDoc(content: string, title: string): void {
  *
  * Works for AGC and all other video production brief types (UGC, Founder, Podcast, etc.)
  */
-export function downloadProductionBriefCsv(markdownContent: string, product: string, adType: string): void {
+export function downloadProductionBriefCsv(
+  markdownContent: string,
+  product: string,
+  adType: string,
+  /**
+   * Optional Asana task name (e.g., "SOX-374_ES"). When provided, the CSV
+   * is downloaded with that exact filename so the file matches the task name
+   * the user sees in Asana. Falls back to a generic timestamped slug if absent.
+   */
+  overrideTaskName?: string,
+): void {
   const isAgc = adType === 'AGC (Actor Generated Content)';
   const lines = markdownContent.split('\n');
   const csv: string[][] = [];
@@ -308,8 +318,15 @@ export function downloadProductionBriefCsv(markdownContent: string, product: str
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const typeSlug = adType.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
-  a.download = `${typeSlug}-brief-${product.toLowerCase()}-${Date.now()}.csv`;
+  if (overrideTaskName && overrideTaskName.trim().length > 0) {
+    // Mirror the task name exactly — the user wants the file to match the
+    // Asana task ID (e.g., "SOX-374_ES.csv"). Strip only OS-illegal chars.
+    const safe = overrideTaskName.trim().replace(/[\\/:*?"<>|]/g, '_');
+    a.download = `${safe}.csv`;
+  } else {
+    const typeSlug = adType.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+    a.download = `${typeSlug}-brief-${product.toLowerCase()}-${Date.now()}.csv`;
+  }
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -497,7 +514,10 @@ h1 { text-align: center; }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${briefId}.doc`;
+  // Strip only OS-illegal chars; preserve casing, hyphens, and underscores so
+  // the file name matches the Asana task ID exactly (e.g., "SOX-374_ES.doc").
+  const safeBriefId = briefId.replace(/[\\/:*?"<>|]/g, '_');
+  a.download = `${safeBriefId}.doc`;
   a.click();
   URL.revokeObjectURL(url);
 }

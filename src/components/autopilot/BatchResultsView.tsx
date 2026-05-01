@@ -104,6 +104,7 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
           ts.scriptResult,
           ts.task.product,
           ts.task.scriptParamsBase.adType,
+          ts.task.parsed.name,
         );
       }
     });

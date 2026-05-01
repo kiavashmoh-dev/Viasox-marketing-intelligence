@@ -76,7 +76,14 @@ function downloadBrief(brief: BriefMemoryRecord): void {
   if (!brief.briefMarkdown) return;
   const isAgc = brief.adType === 'AGC (Actor Generated Content)';
   if (isAgc) {
-    downloadProductionBriefCsv(brief.briefMarkdown, brief.product, brief.adType ?? 'AGC (Actor Generated Content)');
+    // brief.id mirrors the original Asana task name (e.g., "SOX-374_ES").
+    // Pass it so the CSV file matches the task name the user knows.
+    downloadProductionBriefCsv(
+      brief.briefMarkdown,
+      brief.product,
+      brief.adType ?? 'AGC (Actor Generated Content)',
+      brief.id,
+    );
   } else {
     downloadEcomBriefDoc(brief.briefMarkdown, brief.id);
   }

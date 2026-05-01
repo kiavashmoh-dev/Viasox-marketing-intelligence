@@ -214,7 +214,7 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
   const handleExport = () => {
     if (!scriptResult) return;
     if (isAgcExport) {
-      downloadProductionBriefCsv(scriptResult, task.product, briefAdType);
+      downloadProductionBriefCsv(scriptResult, task.product, briefAdType, task.parsed.name);
     } else {
       downloadEcomBriefDoc(scriptResult, task.parsed.name);
     }

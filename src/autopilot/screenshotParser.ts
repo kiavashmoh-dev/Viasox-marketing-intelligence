@@ -5,7 +5,7 @@ const EXTRACTION_SYSTEM = `You extract structured task data from Asana board scr
 
 const EXTRACTION_PROMPT = `Extract all visible tasks from this Asana board screenshot. For each task row, extract these columns:
 
-- name: The task name or VIASOX ID (e.g., "VIASOX-77" or the task title)
+- name: The task name EXACTLY as shown — preserve every character, including hyphens, underscores, casing, and any product suffix. The current naming convention is "SOX-{number}_{PRODUCT}" (e.g., "SOX-374_ES", "SOX-368_COMP", "SOX-371_ACS") — return that string verbatim, do NOT shorten it, normalize it, lowercase it, or strip the suffix. Older boards may still use "VIASOX-77" style — accept those too and return them as-is. The downloaded brief filename is built from this exact string, so any change here breaks the file name the user sees.
 - product: The Product column value. The board now uses ABBREVIATIONS — translate them as you extract:
     "ACS"  → "Ankle Compression"
     "COMP" → "Compression"
