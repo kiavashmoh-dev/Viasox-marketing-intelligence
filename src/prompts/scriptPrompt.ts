@@ -38,7 +38,7 @@ function buildFunnelGuide(stage: FunnelStage): string {
 2. Zero product language in the first 40% of the script. No brand name, no "socks," no "compression" until the viewer is hooked.
 3. Hopkins' "select your audience" principle: the hook must call out a SPECIFIC person so the right viewer self-selects.
 4. Proof density LOW — maximum one data point or one customer voice. Save the proof stack for MOF.
-5. CTA must be soft: "Learn more," "See why 100,000+ people switched," "Discover." NEVER "Buy now" or "Shop."
+5. CTA must be soft: "Learn more," "See why 107,000+ people switched," "Discover." NEVER "Buy now" or "Shop."
 6. The script must feel like CONTENT, not an ad. If it reads like a sales pitch in the first half, it fails TOF.
 7. Schwartz: Lead with IDENTIFICATION or PROBLEM, never the product.
 
@@ -160,7 +160,7 @@ function buildScriptProductGuide(product: ProductCategory): string {
 **EMOTIONAL TERRITORY:** Freedom, versatility, "compression my way," discreet self-care, "I can finally try compression without it feeling medical"`,
 
     'Other': `## PRODUCT LINE: GENERAL VIASOX
-Focus on universal value propositions: superior comfort, no sock marks, beautiful designs, purpose-built quality, **over 1 million pairs sold and over 100,000 positive reviews**. Tailor messaging based on other selectors.`,
+Focus on universal value propositions: superior comfort, no sock marks, beautiful designs, purpose-built quality, **over 1 million pairs sold and 107,000+ positive reviews**. Tailor messaging based on other selectors.`,
   };
   return guides[product] ?? guides['Other'];
 }
@@ -319,7 +319,7 @@ Structure: Myth stated (0-15%) → Why people believe it (15-35%) → The truth 
 Execution:
 - MYTH: State a misconception boldly. Bly's "news" lead — present as surprising information. "You've been told compression socks have to be tight to work."
 - WHY THEY BELIEVE IT: Hopkins' specificity — explain where the myth came from. Pharmacy compression DOES feel like a tourniquet. Validate WHY they hold this belief.
-- THE TRUTH: Hopkins' reason-why — counter-evidence with specific data. "Over 100,000 reviews and 1 million+ pairs sold prove otherwise."
+- THE TRUTH: Hopkins' reason-why — counter-evidence with specific data. "107,993 reviews and over 1 million pairs sold prove otherwise."
 - VIASOX: Schwartz's mechanization — explain the mechanism that makes the myth irrelevant.
 - CTA: Education language: "See the truth" or "Discover what 107K people already know."
 Best for: Education, thought leadership. Problem-Aware and Solution-Aware. TOF and MOF.`,
@@ -390,7 +390,7 @@ Best for: All awareness levels. Most powerful for Unaware and Problem-Aware. TOF
   'The Reason-Why (Hopkins)': `**The Reason-Why** — Hopkins (the core of Scientific Advertising)
 Structure: Bold claim (0-15%) → Reason #1/mechanism (15-35%) → Reason #2/evidence (35-55%) → Reason #3/social proof (55-80%) → Therefore-CTA (80-100%)
 Execution:
-- BOLD CLAIM: Hopkins — vague claims are ignored, specific claims demand attention. "Over 100,000 customers agree: most comfortable socks they've ever worn."
+- BOLD CLAIM: Hopkins — vague claims are ignored, specific claims demand attention. "107,993 customers agree: most comfortable socks they've ever worn."
 - REASON #1 (MECHANISM): Explain WHY the claim is true. Non-binding bamboo fiber, graduated compression that adapts, wide-mouth opening. The mechanism makes the claim believable.
 - REASON #2 (EVIDENCE): Stack data. Review frequencies, transformation metrics. Hopkins: each specific fact doubles persuasion.
 - REASON #3 (SOCIAL PROOF): Other people's reasons. Customer quotes explaining WHY in their own words. Hopkins: a customer's reason is more powerful than a brand's reason.
@@ -863,9 +863,9 @@ Output as a markdown table with these exact fields:
 ### 3. OFFER
 | Field | Value |
 |-------|-------|
-| Promo | ${params.offer === 'B2G3' ? 'Buy 2 Get 3 Free (6 for $60)' : params.offer === 'B1G1' ? 'Buy 1 Get 1 Free' : 'None'} |
+| Promo | ${params.offer === 'B2G3' ? 'Buy 2 Get 3 Free (5 for $60)' : params.offer === 'B1G1' ? 'Buy 1 Get 1 Free' : 'None'} |
 | Promo Asset | ${params.offer !== 'None' ? 'Standard end card' : 'None'} |
-| Value Callout | ${params.offer === 'B2G3' ? '6 Pairs for $60 ($12 per pair, $90 worth of free socks)' : params.offer === 'B1G1' ? '2 Pairs for $30' : 'None'} |
+| Value Callout | ${params.offer === 'B2G3' ? '5 Pairs for $60 ($12 per pair, $90 worth of free socks)' : params.offer === 'B1G1' ? '2 Pairs for $30' : 'None'} |
 | Urgency Element | [If applicable based on promo period, otherwise "None"] |
 
 ### 4. EDITING INSTRUCTIONS
@@ -1275,7 +1275,7 @@ ${params.agcMusicDirection ? `Music: ${params.agcMusicDirection}` : ''}` : ''}
 A ${params.adType} script and a different ad type script for the same awareness level should be completely different productions — different talent, different visuals, different delivery style.
 
 **CRITICAL — PRODUCT LINE IS ${params.product.toUpperCase()}:**
-${params.product === 'EasyStretch' ? 'This is the EasyStretch line — NON-BINDING, NON-COMPRESSION comfort socks. Stretches up to 30 inches with no elastic band. NEVER call these compression socks. Lead with: no sock marks, easy to put on, bamboo softness, beautiful patterns. The independence angle (putting on socks alone) and style angle (not "medical" looking) are the strongest script moments for this product.' : ''}${params.product === 'Compression' ? 'This is the Compression line — graduated compression at 12-15 mmHg (the "sweet spot" — strong enough to actually work, gentle enough to wear all day). Lead with: real compression that doesn\'t feel like a tourniquet, survives 12-hour shifts, reduces swelling. Differentiate from pharmacy compression (which is typically 20-30 mmHg). Healthcare worker insider language is powerful here: shifts, scrubs, break room, charting.' : ''}${params.product === 'Ankle Compression' ? 'This is the Ankle Compression line — uniform compression around the ankle and arch (NOT graduated; uniform pressure on the specific zones that need support) in ankle-length format. Lead with: versatile, discreet, works with any shoe, targeted support exactly where it matters. Position as modern and active. "Invisible compression" is the strongest script moment. Avoid heavy medical messaging.' : ''}${params.product === 'Other' ? 'Focus on universal Viasox value propositions: comfort, no sock marks, beautiful designs, **over 1 million pairs sold and over 100,000 positive reviews**.' : ''}
+${params.product === 'EasyStretch' ? 'This is the EasyStretch line — NON-BINDING, NON-COMPRESSION comfort socks. Stretches up to 30 inches with no elastic band. NEVER call these compression socks. Lead with: no sock marks, easy to put on, bamboo softness, beautiful patterns. The independence angle (putting on socks alone) and style angle (not "medical" looking) are the strongest script moments for this product.' : ''}${params.product === 'Compression' ? 'This is the Compression line — graduated compression at 12-15 mmHg (the "sweet spot" — strong enough to actually work, gentle enough to wear all day). Lead with: real compression that doesn\'t feel like a tourniquet, survives 12-hour shifts, reduces swelling. Differentiate from pharmacy compression (which is typically 20-30 mmHg). Healthcare worker insider language is powerful here: shifts, scrubs, break room, charting.' : ''}${params.product === 'Ankle Compression' ? 'This is the Ankle Compression line — uniform compression around the ankle and arch (NOT graduated; uniform pressure on the specific zones that need support) in ankle-length format. Lead with: versatile, discreet, works with any shoe, targeted support exactly where it matters. Position as modern and active. "Invisible compression" is the strongest script moment. Avoid heavy medical messaging.' : ''}${params.product === 'Other' ? 'Focus on universal Viasox value propositions: comfort, no sock marks, beautiful designs, **over 1 million pairs sold and 107,000+ positive reviews**.' : ''}
 The product line changes the messaging pillars, the talent/setting, and the emotional territory. An EasyStretch script and a Compression script should feature different people, different settings, and different proof points.
 
 **CRITICAL — FUNNEL STAGE IS ${params.funnelStage}:**

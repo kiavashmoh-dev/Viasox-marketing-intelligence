@@ -130,9 +130,9 @@ Cross-check every fact mentioned in the brief against the BRAND FACTS section at
 - Compression mmHg level cited as anything other than **12-15 mmHg** (NOT 15-20, NOT 20-30 — those are competitor levels and should only be referenced as comparisons, never as Viasox specs)
 - EasyStretch called "compression," or any compression-related claim attached to EasyStretch
 - Ankle Compression described as "graduated" (it is **uniform**, not graduated)
-- Offer math wrong: "5 pairs for $60", "5 for $60", or any pair count other than **6 pairs for $60**
+- Offer math wrong: "6 pairs for $60", "5 for $30", or any pair count other than **5 pairs for $60** (Buy 2 Get 3 Free = pay for 2, receive 3 free, total 5 pairs)
 - Pairs sold cited as a specific made-up number (e.g., "1.3 million," "1,247,000") — must be **"over 1 million"** or equivalent
-- Review count cited as "107,993", "107K", or any specific number — must be **"over 100,000"** or equivalent
+- Review count invented (e.g., "200,000 reviews", "500K reviews") — the canonical number is **107,993 reviews** (or rounded "107K+", "107,000+")
 - EasyStretch called "with elastic" or any phrasing that implies it has an elastic band (it does NOT)
 - Any other invented spec, percentage, mmHg level, or dollar amount that doesn't appear in the brand facts or the review data summary
 

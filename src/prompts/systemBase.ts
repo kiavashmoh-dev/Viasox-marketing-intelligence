@@ -21,15 +21,16 @@ These are the ONLY correct values for these facts. Whenever any of them appear i
 
 **OFFER — Buy 2 Get 3 Free:**
 - Canonical name: "Buy 2 Get 3 Free" (or "B2G3" internally)
+- The math: pay for 2 pairs, get 3 free = **5 pairs total for $60**
 - Equivalent valid phrasings (pick whichever fits the script's tone — never invent new ones):
-  - "$90 worth of free socks"
+  - "5 pairs for $60"
   - "$12 per pair"
-  - "6 pairs for $60"
-- NEVER write "5 pairs for $60", "5 for $60", "5 pairs", or any variation that gets the math wrong. The deal is **6 pairs for $60**.
+  - "$90 worth of free socks" (the 3 free pairs are valued at $30 each = $90 retail value)
+- NEVER write "6 pairs for $60", "5 for $30", or any other variation that gets the math wrong. The deal is **5 pairs for $60**.
 
 **SOCIAL PROOF NUMBERS:**
 - **Pairs sold:** **Over 1 million pairs sold.** Phrasings: "over 1 million pairs," "more than a million pairs," "1 million+ pairs sold." Do NOT invent a more specific count (e.g., "1.3 million," "1,247,000").
-- **Positive reviews:** **Over 100,000 positive reviews.** Phrasings: "100,000+ reviews," "over 100,000 reviews," "100K+ reviews." Do NOT cite "107,993," "107K," "108K," or any other specific number in brief output — those are stale internal counts that should never be in a customer-facing brief.
+- **Positive reviews:** **107,993 reviews** (or rounded phrasings: "107K+ reviews," "107,000+ reviews," "over 107,000 reviews"). This is the actual analyzed review count and the canonical social-proof number used in scripts.
 
 **INVENTION RULE:** If a brief contains a number, percentage, mmHg level, dollar amount, pair count, or product spec, it MUST be either (a) one of the brand facts above exactly as written, or (b) a real customer-review percentage that comes from the analysis data summary in the prompt. Invented metrics, rounded approximations of facts, or "I think it's around X" guesses are forbidden.
 

@@ -356,7 +356,7 @@ Short-form is NOT a compressed version of a longer ad. It is its own creative di
 | **Visual Punch** | Single arresting image or visual contrast. Minimal/no text. | Split-screen: regular sock = red marks / Viasox = clean skin. No words needed. |
 | **Provocation** | Bold statement or question designed to stop and engage. | "Your socks are cutting off your circulation. You just stopped noticing." |
 | **Reaction / Reveal** | Genuine response to discovery or product experience. | Someone seeing their leg marks disappear after switching socks. Raw reaction. |
-| **Data Bomb** | One shocking stat presented visually. No story, just impact. | "100,000+ reviews. 4.8 stars. Zero sock marks." with product visual. |
+| **Data Bomb** | One shocking stat presented visually. No story, just impact. | "107,000+ reviews. 4.8 stars. Zero sock marks." with product visual. |
 | **ASMR / Sensory** | Sound-first or texture-first. Satisfying visuals, native audio. | Slow-mo of bamboo fabric stretching, natural sound, minimal text. |
 | **Meme-Adjacent** | Plays on cultural format the audience recognizes. Shareable. | "POV: You finally found socks that don't leave marks" + relatable visual. |
 | **Micro-Story** | Tiny narrative (2-3 beats max). Beginning and payoff, no middle. | Morning routine → sees marks → discovers Viasox. 3 shots, 10 seconds. |
