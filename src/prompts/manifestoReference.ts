@@ -350,7 +350,7 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 **How to Execute:**
 - PROBLEM: One specific pain point from review data. Hopkins: specificity is your weapon. Not "discomfort" but "deep red rings around your calves that take hours to fade."
 - PROMISE: The bold claim Viasox makes. Bly: the promise must pass the "so what?" test. Not "comfortable socks" but "the first socks that won't leave a single mark." Make the promise specific and testable.
-- PROOF: This is the longest section — Bly's proof cascade. Stack at least 3 types of proof: (1) Data from reviews ("8.8% of 107K reviews cite no marks"), (2) Customer testimony (direct quote), (3) Mechanism explanation (Hopkins: give the reason why). Each proof element must be Ultra-specific.
+- PROOF: This is the longest section — Bly's proof cascade. Stack at least 3 types of proof: (1) Data from reviews ("8.8% of 100,000+ reviews cite no marks"), (2) Customer testimony (direct quote), (3) Mechanism explanation (Hopkins: give the reason why). Each proof element must be Ultra-specific.
 - PUSH: CTA with urgency. Bly: give a reason to act NOW. Include risk reversal (guarantee) and the offer if applicable.
 
 ### 7. Hook-Story-Offer
@@ -411,9 +411,9 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 **How to Execute:**
 - MYTH: State a misconception boldly. Bly's "news" lead type — present this as surprising information. "You've been told compression socks have to be tight to work." "Everyone says diabetic socks have to look medical." The myth must be something the viewer currently BELIEVES.
 - WHY THEY BELIEVE IT: Hopkins' specificity — explain where this myth came from. Pharmacy compression DOES feel like a tourniquet. Medical socks HAVE always been beige. Validate WHY they hold this belief.
-- THE TRUTH: Hopkins' reason-why — present the counter-evidence with specific data. "107,993 reviews prove otherwise." "In 29,357 compression reviews, the #1 compliment was COMFORT." Every truth-claim needs a data point.
+- THE TRUTH: Hopkins' reason-why — present the counter-evidence with specific data. "Over 100,000 reviews prove otherwise." "In 29,357 compression reviews, the #1 compliment was COMFORT." Every truth-claim needs a data point.
 - VIASOX: Show how the product embodies the busted myth. Schwartz's mechanization: explain the mechanism that makes the myth irrelevant.
-- CTA: Education language: "See the truth" or "Discover what 107K people already know."
+- CTA: Education language: "See the truth" or "Discover what 100,000+ people already know."
 
 ### 13. The Enemy Framework
 **Book Origin:** Schwartz (enemy naming + in-group dynamics)
@@ -424,7 +424,7 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 - VALIDATE: Schwartz's intensification — make them FEEL the hatred. Use their exact review language: "I threw every pair away," "feels like a blood pressure cuff on my leg." The more specific the complaint, the more they nod along.
 - REVEAL: Don't just say "here's something better" — position Viasox as the ANTI-enemy. If the enemy is tight elastic, the reveal is non-binding tops. If the enemy is beige medical, the reveal is 50+ patterns. The alternative must be the EXACT opposite of the enemy's flaw.
 - PROVE: Schwartz's three dimensions — intensify desire (show the beautiful alternative), strengthen identification (people like them switched), build belief (data + testimony).
-- CTA: Rebellion/community language: "Join 107K people who said 'never again' to [enemy]."
+- CTA: Rebellion/community language: "Join 100,000+ people who said 'never again' to [enemy]."
 
 ### 14. The Discovery Narrative
 **Book Origin:** Hopkins (sample principle as narrative) + Schwartz (the gradualization)
@@ -487,11 +487,11 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 **Structure:** Bold claim (0-15%) → Reason why #1/mechanism (15-35%) → Reason why #2/evidence (35-55%) → Reason why #3/social proof (55-80%) → Therefore-CTA (80-100%)
 **Best for:** Solution-Aware and Product-Aware audiences. MOF and BOF. Data-rich content.
 **How to Execute:**
-- BOLD CLAIM: Make a specific, testable claim. Hopkins: vague claims are ignored; specific claims demand attention. "107,993 customers agree: these are the most comfortable socks they've ever worn." "8.8% of all reviewers specifically mention zero sock marks."
+- BOLD CLAIM: Make a specific, testable claim. Hopkins: vague claims are ignored; specific claims demand attention. "Over 100,000 customers agree: these are the most comfortable socks they've ever worn." "8.8% of all reviewers specifically mention zero sock marks."
 - REASON #1 (MECHANISM): Hopkins: give the REASON WHY the claim is true. Explain the mechanism — non-binding bamboo fiber, graduated compression that adapts, wide-mouth opening engineered for easy application. The mechanism makes the claim believable.
 - REASON #2 (EVIDENCE): Stack more reasons with data. Review frequencies, customer transformation metrics, comparison data. Hopkins: each specific fact doubles the persuasion. "29% mention comfort first. 12.3% call out the patterns. 8.8% highlight zero marks."
 - REASON #3 (SOCIAL PROOF): Other people's reasons. Customer quotes that explain WHY they love it in their own words. Hopkins: a customer giving their reason is more powerful than a brand giving its reason.
-- CTA: Logical conclusion language: "That's why 107K people switched" or "Now you know why. Try them."
+- CTA: Logical conclusion language: "That's why 100,000+ people switched" or "Now you know why. Try them."
 
 ### 20. The Gradualization (Schwartz)
 **Book Origin:** Schwartz (awareness progression for Unaware audiences — the gradualization technique)
@@ -501,7 +501,7 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 - SCENARIO: Schwartz's gradualization — start with a situation the viewer recognizes but hasn't connected to your product category. NO mention of socks, compression, marks, swelling, or ANY product language. Instead: "You know that feeling when you can't quite get comfortable?" or show a person going about their day with subtle signs of discomfort they've normalized.
 - AWARENESS SHIFT: Schwartz: the critical moment where the viewer begins to realize "wait, this IS a problem I have." The shift must feel like THEIR realization, not your pitch. Use the manifesto's Hidden Suffering pattern — acknowledge something they've never put into words. "Nobody talks about the little battles that start your day."
 - CONNECTION: Bridge their dawning awareness to the category of solution WITHOUT naming the specific product yet. "What if the problem isn't you — it's what you're wearing?" Schwartz: for Unaware audiences, the product must be EARNED through the awareness progression.
-- INTRODUCTION: Finally, gently introduce Viasox — but still as INFORMATION, not a pitch. "107,000 people discovered the same thing." Schwartz: Unaware audiences need to feel like they're DISCOVERING, not being sold to.
+- INTRODUCTION: Finally, gently introduce Viasox — but still as INFORMATION, not a pitch. "Over 100,000 people discovered the same thing." Schwartz: Unaware audiences need to feel like they're DISCOVERING, not being sold to.
 - CTA: Maximum softness: "Learn more," "See what they found," "Discover." Schwartz: NEVER push a sale on an Unaware audience. Your only goal is to move them to Problem-Aware.`;
 }
 
@@ -641,7 +641,7 @@ Every Unaware script maps to these 5 beats:
 
 4. **CATEGORY REVEAL (~65-85%)** — There is a different CATEGORY of sock. Not Viasox yet. "Socks designed for legs that change shape through the day exist. Most people don't know they're out there."
 
-5. **PRODUCT REVEAL + SOFT CTA (~85-100%)** — Viasox is named, but only with a curiosity-driving CTA. No price, no offer, no direct buy. "See what 107K people found." / "Learn more." / "See if it's for you."
+5. **PRODUCT REVEAL + SOFT CTA (~85-100%)** — Viasox is named, but only with a curiosity-driving CTA. No price, no offer, no direct buy. "See what 100,000+ people found." / "Learn more." / "See if it's for you."
 
 ---
 
@@ -1141,7 +1141,7 @@ These are calibration examples. Every script, hook, and concept generated must m
 WHY IT WORKS: Sensory detail. Specific moment. The reader feels the scene. No product mention. Emotional entry through loss of feeling, not "foot pain."
 
 **BAD Hook (same brief, common AI mistake):**
-"Are you tired of dealing with neuropathy pain in your feet? Discover the socks that 107,000 customers swear by!"
+"Are you tired of dealing with neuropathy pain in your feet? Discover the socks that 100,000+ customers swear by!"
 WHY IT FAILS: Generic question hook. "Tired of dealing with" is dead language. Leads with product category. Sounds like every sock ad. No sensory detail, no scene, no emotion.
 
 **GOOD Hook (Unaware / Swelling — Scene Identification technique):**
@@ -1197,7 +1197,7 @@ WHY IT FAILS: "Changed the game" — banned cliché. "Medical-grade" — over-me
 ### CTA — GOOD vs. BAD
 
 **GOOD CTA (TOF):**
-"See why 107,993 people stopped settling. Your feet already know what they need."
+"See why 100,000+ people stopped settling. Your feet already know what they need."
 WHY IT WORKS: Social proof number. "Stopped settling" frames the action as empowerment. "Your feet already know" — gentle, confident, body-wisdom language. Soft — no "buy now."
 
 **BAD CTA (TOF):**
@@ -1659,7 +1659,7 @@ Proof: 5.5% (1,079 reviews) work-related fatigue. 7.5% professional imperative t
 
 Common objections across all Viasox products:
 1. Price → "Worth every penny" (4,200+ reviews). Cost per wear is lower than drugstore alternatives.
-2. "Just socks" → 107,993 reviews and 19.5% repeat purchase rate say otherwise.
+2. "Just socks" → over 100,000 reviews and 19.5% repeat purchase rate say otherwise.
 3. Skepticism → 624 skeptic-to-believer reviews averaging 4.6 stars.
 4. Medical concerns → Designed with medical needs in mind but looks/feels like premium regular socks.`,
   };

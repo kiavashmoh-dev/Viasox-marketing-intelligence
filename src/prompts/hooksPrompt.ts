@@ -354,7 +354,7 @@ ${params.awarenessLevel === 'Unaware' ? `**UNAWARE RULES (Schwartz's Three Elimi
 
 You are writing hooks for people who do NOT know they have a problem. Apply Schwartz's Three Elimination Rules as HARD BANS:
 
-1. **NO PRICE** — no offers, no "B2G3", no "5 pairs for $60", no money language.
+1. **NO PRICE** — no offers, no "B2G3", no "6 pairs for $60", no "$12 per pair", no "$90 worth of free socks", no money language.
 2. **NO PRODUCT NAME** — no "Viasox," no "our socks," no "these socks," no "compression socks." The product does not exist yet for this viewer.
 3. **NO DIRECT PROBLEM OR SOLUTION STATEMENT** — no "neuropathy," no "edema," no "swelling," no "varicose veins," no "Do you suffer from X?", no "If you have Y...", no "the solution to...", no promises of relief.
 

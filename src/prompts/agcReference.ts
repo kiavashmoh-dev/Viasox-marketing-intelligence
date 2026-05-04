@@ -48,7 +48,7 @@ Every row in the AGC brief MUST have a Building Block label. This label explains
 **Credibility blocks:**
 - **Testimonial** — Direct quote or paraphrased customer experience
 - **Reviews** — Reference review data, star ratings, customer count
-- **Social proof** — Show popularity signals (107K+ customers, sold-out runs, waitlists)
+- **Social proof** — Show popularity signals (over 1 million pairs sold, 100,000+ reviews, sold-out runs, waitlists)
 - **Authority figure** — Expert or professional endorsement (nurse, doctor, podiatrist)
 
 **Story blocks:**
@@ -109,7 +109,7 @@ Each Verbal is a different opening line using a different hook strategy. They sh
 Examples of Verbal differentiation:
 - Verbal 1: Confession/admission ("Nobody ever told me these lines meant something.")
 - Verbal 2: Challenge/question ("Look at what your socks are doing to your legs. Really look.")
-- Verbal 3: Social proof/curiosity ("107,000 people switched to these socks. I found out why.")
+- Verbal 3: Social proof/curiosity ("Over 100,000 people switched to these socks. I found out why.")
 
 **Step 3 — Combine into 9 hooks:**
 | Visual A + Verbal 1 | Visual A + Verbal 2 | Visual A + Verbal 3 |
@@ -262,7 +262,7 @@ Every row in the production brief MUST have a Building Block label. This label e
 **Credibility blocks:**
 - **Testimonial** — Direct quote or paraphrased customer experience
 - **Reviews** — Reference review data, star ratings, customer count
-- **Social proof** — Show popularity signals (107K+ customers, sold-out runs, waitlists)
+- **Social proof** — Show popularity signals (over 1 million pairs sold, 100,000+ reviews, sold-out runs, waitlists)
 - **Authority figure** — Expert or professional endorsement (nurse, doctor, podiatrist)
 
 **Story blocks:**

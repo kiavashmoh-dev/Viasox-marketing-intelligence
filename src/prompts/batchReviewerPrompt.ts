@@ -122,8 +122,21 @@ Do the hooks do what hooks are supposed to do? Each hook must: (a) be SPECIFIC t
 **5. hookToBodyTransition — Hook → Body Transition**
 The hooks must lead SEAMLESSLY into the first line of the script body. They must feel like they belong in that script. Check: (a) does each hook feel like it's part of the same ad, or is it forced/disconnected? (b) Does the first body line ADVANCE the narrative from where any hook would leave off, or does it restart/repeat the hook idea? (c) Could you read "hook → first body line" out loud and it sounds like a natural continuation? If the first body line says essentially the same thing as one of the hooks = 2/10. If it feels like a jarring jump = 4/10. If it flows naturally from all 3 hooks = 9/10.
 
-**6. adTypeAdaptation — Ad Type Adaptation**
-Is the entire brief properly adapted to the selected ad type? The template must be filled out completely and correctly for the format. Check: Ecom = all 8 sections present, shot types from available footage library, conversational VO lines. AGC = 9-hook matrix, production notes, B-roll list. UGC = raw/authentic feel, phone-shot aesthetic, spoken not written. Static = single image composition. Founder = personal monologue. Product accuracy matters here too: EasyStretch ≠ compression, Compression = medical support. VO-by-length rule: 16-59 sec and 60-90 sec MUST have voiceover. Length calibration: 1-15 sec ≤ 37 words, 16-59 sec ≤ 145 words, 60-90 sec ≤ 225 words. Count the body words.
+**6. adTypeAdaptation — Ad Type Adaptation + Brand Fact Accuracy**
+Is the entire brief properly adapted to the selected ad type? The template must be filled out completely and correctly for the format. Check: Ecom = all 8 sections present, shot types from available footage library, conversational VO lines. AGC = 9-hook matrix, production notes, B-roll list. UGC = raw/authentic feel, phone-shot aesthetic, spoken not written. Static = single image composition. Founder = personal monologue. VO-by-length rule: 16-59 sec and 60-90 sec MUST have voiceover. Length calibration: 1-15 sec ≤ 37 words, 16-59 sec ≤ 145 words, 60-90 sec ≤ 225 words. Count the body words.
+
+**⚠️ BRAND FACT ACCURACY (HARD GATE — any violation = automatic 1/10 on this criterion):**
+Cross-check every fact mentioned in the brief against the BRAND FACTS section at the top of these instructions. If ANY of the following errors appear, this criterion is FAILED regardless of other strengths:
+- Compression mmHg level cited as anything other than **12-15 mmHg** (NOT 15-20, NOT 20-30 — those are competitor levels and should only be referenced as comparisons, never as Viasox specs)
+- EasyStretch called "compression," or any compression-related claim attached to EasyStretch
+- Ankle Compression described as "graduated" (it is **uniform**, not graduated)
+- Offer math wrong: "5 pairs for $60", "5 for $60", or any pair count other than **6 pairs for $60**
+- Pairs sold cited as a specific made-up number (e.g., "1.3 million," "1,247,000") — must be **"over 1 million"** or equivalent
+- Review count cited as "107,993", "107K", or any specific number — must be **"over 100,000"** or equivalent
+- EasyStretch called "with elastic" or any phrasing that implies it has an elastic band (it does NOT)
+- Any other invented spec, percentage, mmHg level, or dollar amount that doesn't appear in the brand facts or the review data summary
+
+Flag the specific fact error in the notes field of this criterion's score.
 
 **7. uniquenessCreativity — Uniqueness & Creativity**
 Does this brief feel FRESH or does it feel like every other brief the system has produced? Check for: overused openings ("Have you ever noticed..."), templated structures, manifesto example contamination (copying "sock graveyard," "shoe swapping," "30-inch truth" from reference examples), generic comfort messaging. A brief that could have been written without looking at the review data = 3/10. A brief with a genuinely original angle on the assigned talking point, grounded in real customer language = 9/10.

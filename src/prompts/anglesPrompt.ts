@@ -222,7 +222,7 @@ function buildAngleTypeMandate(angleType: AngleType): string {
 
 **FORMAT VARIATIONS:**
 - "3 signs your socks are making your [condition] worse" (problem-focused, great for Problem Aware)
-- "3 reasons 107,000+ women switched to these socks" (social proof + list, great for Solution Aware)
+- "3 reasons 100,000+ women switched to these socks" (social proof + list, great for Solution Aware)
 - "3 things I wish I knew before I spent $200 on socks that don't work" (confession + list, great for Unaware)
 - "3 signs you need to change your socks today" (urgency + list, great for Problem Aware)
 - "3 reasons your doctor would approve of these" (authority + list, great for Diabetes/Neuropathy)
@@ -242,7 +242,7 @@ function buildAngleTypeMandate(angleType: AngleType): string {
 **CONCEPT STRUCTURE:**
 - Opening 30%: ATTACK the status quo — name what's broken, unfair, or unacceptable about current options. Be specific and bold. Call out the industry, the "one-size-fits-all" lie, the ugly medical socks, the impossible-to-wear compression, the overpriced pharmacy brands. The viewer should feel validated: "FINALLY someone is saying what I've been thinking."
 - Middle 40%: PROVE the problem — specific evidence that the current options are failing people. Use measurements, comparisons, failed product experiences, and customer frustration language. Stack the evidence so the viewer feels increasingly frustrated with what they've been settling for.
-- Final 30%: THE ALTERNATIVE — Viasox as the answer to everything that's wrong. The product introduction feels like vindication, not a sales pitch. "There's a reason 107,000+ people stopped settling."
+- Final 30%: THE ALTERNATIVE — Viasox as the answer to everything that's wrong. The product introduction feels like vindication, not a sales pitch. "There's a reason 100,000+ people stopped settling."
 
 **MANDATORY ELEMENTS:**
 1. Each concept must name a SPECIFIC enemy — not just "bad socks" but the specific failure: pharmacy compression that takes 10 minutes to put on, "diabetic socks" that look medical and feel worse, the $40 socks that still leave marks, the sizing lie, the ugly beige tubes
@@ -298,7 +298,7 @@ function buildProductLineGuide(product: ProductCategory): string {
 
     'Compression': `**THE COMPRESSION LINE — Graduated Compression Socks**
 
-**PRODUCT IDENTITY:** Viasox Compression is the PERFORMANCE + MEDICAL line. These are true graduated compression socks (15-20 mmHg) designed for people who need active circulatory support — but with the comfort and style that Viasox is known for.
+**PRODUCT IDENTITY:** Viasox Compression is the PERFORMANCE + MEDICAL line. These are graduated compression socks at **12-15 mmHg** (the "sweet spot" — strong enough to actually work, gentle enough to wear all day), designed for people who need active circulatory support but also need socks they will actually keep wearing.
 
 **PRIMARY AUDIENCE:** Women 50+ with swelling/edema/varicose veins, healthcare workers (nurses on 12-hour shifts), standing workers (retail, warehouse, teachers), travelers, post-surgery recovery, people with chronic venous insufficiency.
 
@@ -322,15 +322,15 @@ function buildProductLineGuide(product: ProductCategory): string {
 
     'Ankle Compression': `**THE ANKLE COMPRESSION LINE — Targeted Ankle Support**
 
-**PRODUCT IDENTITY:** Viasox Ankle Compression is the TARGETED SUPPORT line. These are ankle-length graduated compression socks for people who want compression benefits in a low-profile, versatile format.
+**PRODUCT IDENTITY:** Viasox Ankle Compression is the TARGETED SUPPORT line. These are ankle-length socks with **uniform compression around the ankle and arch** (NOT graduated — uniform pressure focused exactly where the support matters). For people who want targeted compression benefits in a low-profile, versatile format.
 
 **PRIMARY AUDIENCE:** Women 50+ with localized ankle/foot swelling, standing workers (nurses, retail, teachers), women who prefer ankle-length socks for shoe versatility, warm-climate customers who find knee-highs too hot, and anyone new to compression who finds knee-highs intimidating.
 
 **CORE MESSAGING PILLARS (in priority order):**
-1. **Compression Without the Crew** — Full graduated compression in ankle length. Get the benefits without the visible sock.
+1. **Compression Without the Crew** — Targeted ankle-and-arch compression in ankle length. Get the support without the visible sock.
 2. **Versatile & Discreet** — Works with any shoe: sneakers, loafers, dress shoes, boots. No one knows you're wearing compression.
 3. **All-Season Comfort** — Perfect for warm weather when crew-length compression is too hot.
-4. **Same Technology, Shorter Length** — Same graduated compression technology as the full line, just in ankle format.
+4. **Targeted Where It Matters** — Uniform compression concentrated on the ankle and arch — the specific pressure points that need support.
 5. **Gateway to Compression** — For people who've never tried compression and find knee-highs too medical or too much.
 
 **MESSAGING RULES FOR ANKLE COMPRESSION:**
@@ -350,7 +350,7 @@ When the product line is not specified, focus on the UNIVERSAL Viasox value prop
 2. No sock marks / non-binding comfort
 3. Beautiful designs that eliminate "medical sock" stigma
 4. Purpose-built for people with real foot and leg challenges
-5. 107K+ customer base as social proof
+5. 100,000+ customer base as social proof
 
 Tailor the messaging based on the angle type, awareness level, and funnel stage rather than product-specific features.`,
   };
@@ -370,7 +370,7 @@ These people have NEVER heard of Viasox. They may not even know they have a prob
 3. Brand name, product name, and explicit product benefits must NOT appear until the final 30% of the concept.
 4. The concept must feel like CONTENT, not advertising. If it reads like an ad in the first half, it fails TOF.
 5. Use Hopkins' "select your audience" principle: the opening must call out a SPECIFIC person ("nurses," "moms," "anyone who stands 8+ hours") so the right viewer self-selects.
-6. CTA must be soft and curiosity-driven: "Learn more," "See why 107K+ people switched," "Watch this," "Discover." NEVER "Buy now" or "Shop."
+6. CTA must be soft and curiosity-driven: "Learn more," "See why 100,000+ people switched," "Watch this," "Discover." NEVER "Buy now" or "Shop."
 7. Proof density should be LOW — one surprising data point or one emotional customer voice maximum. Save the proof stack for MOF.
 
 **HOOK PRIORITY:** Emotional/curiosity hooks > identity hooks > "did you know" hooks. Product hooks are BANNED at TOF.
@@ -407,7 +407,7 @@ These people know Viasox exists (or have engaged with a TOF ad). They are INTERE
 4. Schwartz's "three dimensions" rule: every MOF concept must work on at least TWO of the three dimensions — intensify DESIRE, strengthen IDENTIFICATION, or build BELIEF.
 5. Hopkins' "specifics" rule: vague claims are banned. Every benefit must have a measurable or observable proof point. "Comfortable" is banned — "90% reported less pain in one week" is required.
 6. The concept must OVERCOME at least one specific objection (price, skepticism, "I've tried compression before," "socks can't really help").
-7. CTA is medium-direct: "Try your first pair," "See the reviews," "Compare for yourself," "Join 107K+ customers." NOT passive ("learn more") or aggressive ("buy now").
+7. CTA is medium-direct: "Try your first pair," "See the reviews," "Compare for yourself," "Join 100,000+ customers." NOT passive ("learn more") or aggressive ("buy now").
 
 **HOOK PRIORITY:** Proof hooks > social proof hooks > "reason why" hooks > before/after hooks.
 
@@ -819,7 +819,7 @@ MANDATORY STRUCTURE — every Unaware concept must map to the 5-beat body:
 2. REFRAME (Beat 2, ~25-45%) — the "wait..." moment. The normalized experience is named as NOT normal.
 3. MECHANISM (Beat 3, ~45-65%) — short plain-English explanation of WHY. Not a medical lecture.
 4. CATEGORY REVEAL (Beat 4, ~65-85%) — reveal that a different CATEGORY of sock exists. Not Viasox yet.
-5. PRODUCT REVEAL + SOFT CTA (Beat 5, ~85-100%) — Viasox is finally named with a curiosity CTA ("Learn more," "See what 107K people found"). No price, no offer, no direct buy.
+5. PRODUCT REVEAL + SOFT CTA (Beat 5, ~85-100%) — Viasox is finally named with a curiosity CTA ("Learn more," "See what 100K people found"). No price, no offer, no direct buy.
 
 TARGET ONE SUB-PERSONA per concept (label it in the Primary Persona field):
 - The Normalizer — attributes discomfort to age/weather/shoes
@@ -846,7 +846,7 @@ The ad type must FUNDAMENTALLY shape the creative execution. A UGC concept and a
 Follow the ${params.angleType} structural mandate from the system instructions. The angle type determines the CONCEPT ARCHITECTURE — the opening/middle/closing structure, the mandatory elements, and what's banned. A Problem-Based concept and an Aspiration-Based concept for the same product and awareness level must have completely different structures.
 
 **CRITICAL — PRODUCT LINE IS ${params.product.toUpperCase()}:**
-${params.product === 'EasyStretch' ? 'This is the EasyStretch (non-binding comfort) line. Lead with COMFORT, NO SOCK MARKS, and EASY TO PUT ON. These are NOT compression socks — never position as compression. The style/fashion angle is strongest for this line. Independence messaging (putting on socks alone) is a key differentiator.' : ''}${params.product === 'Compression' ? 'This is the Compression line (15-20 mmHg graduated compression). Lead with PERFORMANCE and RESULTS — real compression that doesn\'t feel like a tourniquet. The "12-hour shift" and "survives all day" proof context is strongest. Differentiate from pharmacy/drugstore compression.' : ''}${params.product === 'Ankle Compression' ? 'This is the Ankle Compression line. Lead with VERSATILITY and DISCREET COMPRESSION — full compression benefits in a low-profile ankle format. Position as modern and active. "Invisible compression" and warm-weather/athletic contexts are strongest.' : ''}${params.product === 'Other' ? 'Focus on universal Viasox value propositions: superior comfort, no sock marks, beautiful designs, and the 107K+ customer base.' : ''}
+${params.product === 'EasyStretch' ? 'This is the EasyStretch (non-binding comfort) line — stretches up to 30 inches, no elastic band. Lead with COMFORT, NO SOCK MARKS, and EASY TO PUT ON. These are NOT compression socks — never position as compression. The style/fashion angle is strongest for this line. Independence messaging (putting on socks alone) is a key differentiator.' : ''}${params.product === 'Compression' ? 'This is the Compression line — graduated compression at 12-15 mmHg (the "sweet spot"; pharmacy/medical compression is typically 20-30 mmHg, which is why it feels like a tourniquet). Lead with PERFORMANCE and RESULTS — real compression that doesn\'t feel like a tourniquet. The "12-hour shift" and "survives all day" proof context is strongest. Differentiate from pharmacy/drugstore compression.' : ''}${params.product === 'Ankle Compression' ? 'This is the Ankle Compression line — uniform compression around the ankle and arch (NOT graduated; targeted pressure where it matters). Lead with VERSATILITY and DISCREET COMPRESSION — targeted ankle/arch support in a low-profile format. Position as modern and active. "Invisible compression" is strongest. NEVER call this graduated compression.' : ''}${params.product === 'Other' ? 'Focus on universal Viasox value propositions: superior comfort, no sock marks, beautiful designs, over 1 million pairs sold, over 100,000 positive reviews.' : ''}
 Product-specific features, audiences, and emotional territories must be reflected in every concept. An EasyStretch concept and a Compression concept for the same angle and awareness level should target different audiences with different messaging.
 
 **CRITICAL — FUNNEL STAGE IS ${params.funnelStage} (${params.funnelStage === 'TOF' ? 'Top of Funnel' : params.funnelStage === 'MOF' ? 'Middle of Funnel' : 'Bottom of Funnel'}):**

@@ -110,7 +110,7 @@ Every Unaware concept must be buildable into this 5-beat structure in the script
 
 4. **CATEGORY REVEAL (~65-85% of runtime)** — Only NOW do we reveal that there is a category of sock designed differently. Not Viasox yet. The category. "Socks that don't do that exist. They've been around for years. Most people don't know they're out there."
 
-5. **PRODUCT REVEAL (~85-100% of runtime)** — Only NOW do we name Viasox. And only with a soft, curiosity-driving CTA. Never a direct "buy now." Never a price. Never an offer. The CTA is about DISCOVERY: "See what 107K people found." / "Learn more." / "See if it's for you."
+5. **PRODUCT REVEAL (~85-100% of runtime)** — Only NOW do we name Viasox. And only with a soft, curiosity-driving CTA. Never a direct "buy now." Never a price. Never an offer. The CTA is about DISCOVERY: "See what 100K people found." / "Learn more." / "See if it's for you."
 
 **This 5-beat structure is NON-NEGOTIABLE.** If a concept cannot be mapped to these 5 beats, it is not a proper Unaware concept — it's mislabeled and should be rejected.
 
@@ -288,7 +288,7 @@ This is the CRITICAL distinction. A Problem Aware ad and a Solution Aware ad for
 - "Compression Without Compromise" — Medical support that doesn't sacrifice comfort. The mechanism: graduated compression + non-binding tops.
 - "Not Your Grandmother's Compression Socks" — Schwartz's "new mechanism" framing. Old compression = tourniquet pain, ugly beige, hard to put on. New = Viasox's approach.
 - "The Skeptic Converter" — Lead with "I didn't believe socks could help either" → mechanism → proof → conversion. 18% of reviewers are Skeptic Converted — massive proof pool.
-- "Why 107K+ Reviews" — Social proof at scale. For Solution Aware, review volume IS the mechanism ("this many people can't be wrong").
+- "Why 100,000+ Reviews" — Social proof at scale. For Solution Aware, review volume IS the mechanism ("this many people can't be wrong").
 - Hopkins' specificity applied: Not "comfortable compression" but "compression that 47% of reviewers describe using the word 'comfortable' in their first sentence."
 - Neumeier's differentiation: The trifecta positioning — medical support + fashion design + accessibility — no competitor owns all three.
 
@@ -348,7 +348,7 @@ Product Aware is the PROOF stage. They don't need awareness (Unaware), pain ackn
    - CTA: Direct — "Get yours," "Try your first pair," "Shop now." No softness needed.
 
 **VIASOX-SPECIFIC PRODUCT AWARE MESSAGING (from Manifesto + Four Books):**
-- "107,000+ 5-Star Reviews" — The weight of social proof. At Product Aware, review volume converts.
+- "100,000+ 5-Star Reviews" — The weight of social proof. At Product Aware, review volume converts.
 - "Here's What Nurses Are Saying" — Identity-specific proof deep-dive. One segment's overwhelming endorsement.
 - "The Socks With a Cult Following" — Repeat purchase data, word-of-mouth expansion ("my husband asked me to buy him a pair").
 - "New Patterns Just Dropped" — What's NEW re-engages Product Aware prospects. Fresh product = fresh reason to act.
@@ -372,7 +372,7 @@ Product Aware is the PROOF stage. They don't need awareness (Unaware), pain ackn
 - Aspiration-Based → the after state IS the product. "This is what your mornings look like with Viasox."
 - Comparison-Based → comparative superiority. "The highest-rated [X] in [category]."
 - Problem-Based → only as a brief reminder. "Remember those marks? They're gone."
-- Emotion-Based → the emotion is DESIRE and BELONGING, not pain. "Join the 107K+ people who..."
+- Emotion-Based → the emotion is DESIRE and BELONGING, not pain. "Join the 100,000+ people who..."
 - Education-Based → deep-dive on mechanism: "Here's exactly HOW non-binding compression works."
 - Solution-Based → the solution IS Viasox. Go deep on specifics.
 - Seasonal/Situational → NEW reasons to buy: seasonal patterns, gift occasions, product launches.
@@ -438,13 +438,13 @@ Most Aware is the CONVERSION stage. Every other stage builds toward this moment.
 **ANGLE TYPE ADJUSTMENTS FOR MOST AWARE:**
 - Seasonal/Situational → STRONGEST. Timing creates urgency: "Mother's Day is Sunday," "Holiday shipping deadline," "New Year, new patterns."
 - Testimonial-Based → one POWER quote, not a story. "Life-changing. I've ordered 8 pairs." — quick validation.
-- Social Proof → numbers only. "107K+ reviews. 4.8 stars." No explanation needed.
+- Social Proof → numbers only. "100,000+ reviews. 4.8 stars." No explanation needed.
 - Comparison-Based → NOT recommended. They're past comparing. Focus on acting.
 - Problem-Based → NOT recommended. The problem is solved in their mind. Don't re-open it.
 - Emotion-Based → the emotion is EXCITEMENT and ANTICIPATION. "Finally getting the pair you've been eyeing."
 - Education-Based → NOT recommended. They know everything. Don't re-educate.
 - Fear-Based → only as FOMO: "Don't miss this deal," "This pattern sold out last time."
-- Identity-Based → "Join 107K+ customers" — belonging as the final nudge.
+- Identity-Based → "Join 100,000+ customers" — belonging as the final nudge.
 - Aspiration-Based → brief vision only: "Imagine never thinking about your socks again. That starts today."
 
 **SCHWARTZ HEADLINE RULES FOR MOST AWARE:**
@@ -626,7 +626,7 @@ You must DIFFERENTIATE in the first 2-3 seconds. They already know the problem. 
 **SOLUTION AWARE HOOK PATTERNS:**
 - **New mechanism:** "Compression that doesn't feel like a tourniquet — here's why." (mechanism differentiation)
 - **Failure acknowledgment:** "If every compression sock you've tried hurts by noon, you've been wearing the wrong kind." (empathy + mechanism)
-- **Data-led differentiation:** "4.8 stars from 107,000+ reviews. Most compression socks can't even get 1,000." (proof as differentiation)
+- **Data-led differentiation:** "4.8 stars from 100,000+ reviews. Most compression socks can't even get 1,000." (proof as differentiation)
 - **Category contrast:** "Not your grandmother's compression socks." (old vs. new framing)
 - **Skeptic conversion:** "I was done trying compression socks. Then someone showed me these." (testimonial-led differentiation)
 - **Mechanism specificity:** "Non-binding tops. No sock marks. Here's the science behind it." (mechanism hook)
@@ -767,7 +767,7 @@ Only NOW do we reveal that there is a different CATEGORY of sock. Not Viasox yet
 **BEAT 5 — PRODUCT REVEAL + SOFT CTA (~85-100% of runtime)**
 Only NOW do we name Viasox. And only with a curiosity-driving, soft CTA.
 - No direct "Buy now." No price. No offer. No discount.
-- Approved CTAs: "See what 107K people found." / "Learn more." / "See if it's for you." / "Watch what happens next." / "Discover it."
+- Approved CTAs: "See what 100K people found." / "Learn more." / "See if it's for you." / "Watch what happens next." / "Discover it."
 - The CTA moves them from Unaware to Problem-Aware — not from scroll to checkout.
 
 **⚠️ This 5-beat structure is NON-NEGOTIABLE.** If a script cannot be mapped to these 5 beats, it is not a proper Unaware script.

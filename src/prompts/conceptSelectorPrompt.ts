@@ -186,7 +186,7 @@ ${isUnaware ? `
 
 This is an **UNAWARE** brief. The audience does NOT know they have a problem worth solving — they've normalized sock marks, puffy ankles, and tingling feet as "just life" or "just getting older." You MUST reject any concept that reads like a Problem Aware ad. Apply Schwartz's Three Elimination Rules (Breakthrough Advertising pp. 36-38) as hard rejection criteria:
 
-**RULE 1 — NO PRICE.** Any concept that references price, offers, discounts, deals, "B2G3", "5 pairs for $60", "free shipping", or money language in Beats 1–4 = REJECT.
+**RULE 1 — NO PRICE.** Any concept that references price, offers, discounts, deals, "B2G3", "Buy 2 Get 3", "6 pairs for $60", "$12 per pair", "$90 worth of free socks", "free shipping", or money language in Beats 1–4 = REJECT.
 
 **RULE 2 — NO PRODUCT NAME.** Any concept whose hook, identification beat, or agitation beat names "Viasox," "the sock," "our sock," "these socks," "compression socks," or describes a branded sock product visually in Beats 1–2 = REJECT. Product appears only in Beat 5 (Category Reveal → Product Reveal) at the END.
 
@@ -287,7 +287,7 @@ FRAMEWORK_REASONING: [2-3 sentences explaining why this specific framework best 
 - Product: ${product} (${productCategory})
 - Medium: ${medium} (${duration})
 - Funnel: ${funnelStage} | Awareness: ${awarenessLevel} | Ad Type: ${adType}
-- Offer: Buy 2, Get 3 Free (5 pairs for $60)
+- Offer: Buy 2, Get 3 Free (6 pairs for $60 — $12 per pair, $90 worth of free socks)
 ${isUnaware ? `
 ## CRITICAL: THIS IS AN UNAWARE BRIEF
 
