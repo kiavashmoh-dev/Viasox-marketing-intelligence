@@ -9,7 +9,7 @@ import { buildScriptPrompt } from '../../prompts/scriptPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
 import { getInspirationContextBlock } from '../../inspiration/inspirationInjection';
-import { downloadProductionBriefCsv, downloadEcomBriefDoc } from '../../utils/downloadUtils';
+import { downloadBriefForAdType } from '../../utils/downloadUtils';
 import { getAllProducts, getAllAdTypes, getAllFrameworks } from '../../utils/customOptionsRegistry';
 import ResultsView from '../ResultsView';
 
@@ -197,15 +197,10 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
         error={error}
         feedbackPlaceholder="e.g., Make the hook more attention-grabbing, shorten the middle section, add more urgency to the CTA, change the tone to conversational..."
         wideMode={usesWideTables}
-        extraActions={result ? (
-          (isAgc || isVideoProductionBrief) ? [{
-            label: 'Export CSV',
-            onClick: () => downloadProductionBriefCsv(result, product, adType),
-          }] : isEcom ? [{
-            label: 'Export Brief (.doc)',
-            onClick: () => downloadEcomBriefDoc(result),
-          }] : undefined
-        ) : undefined}
+        extraActions={result ? [{
+          label: (isAgc || isVideoProductionBrief) ? 'Export CSV' : 'Export Brief (.doc)',
+          onClick: () => downloadBriefForAdType(adType, result, product, 'script-writer-output'),
+        }] : undefined}
       />
     );
   }

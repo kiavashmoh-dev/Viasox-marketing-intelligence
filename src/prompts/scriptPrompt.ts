@@ -4,6 +4,7 @@ import { buildAdTypeGuideCompact } from './adTypeGuides';
 import { getAwarenessScriptGuide } from './awarenessGuide';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
 import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
+import { buildBriefTemplateOutputFormat } from './briefTemplates';
 import {
   buildBuildingBlocksReference,
   buildShotTypesReference,
@@ -408,66 +409,6 @@ Execution:
 Best for: SPECIFICALLY Unaware audiences. TOF only. This is the NATIVE framework for every Unaware script. Every Unaware script should essentially be a Gradualization execution regardless of which framework is named — the 5-beat structure is non-negotiable.`,
 };
 
-/**
- * Ad-type-specific production style guidance for non-AGC video production briefs.
- */
-function getVideoProductionNotes(adType: string): string {
-  switch (adType) {
-    case 'UGC (User Generated Content)':
-      return `**AD TYPE PRODUCTION STYLE — UGC:**
-All footage should look phone-shot, raw, and authentic. No professional lighting or crew feel.
-- Primary Shot Type: **ON CAMERA** (selfie/front-facing camera)
-- BROLL: Quick, handheld product shots — phone-quality, natural light
-- Shot Angles: Primarily **Static (Selfie)**, **Sitting**, or **Standing** — wherever a real person would film themselves
-- The script must sound SPOKEN, not written — natural pauses, conversational language, imperfect delivery
-- If it reads like a polished production, rewrite it to sound like a real person talking to their phone`;
-    case 'Founder Style':
-      return `**AD TYPE PRODUCTION STYLE — FOUNDER:**
-The founder speaks directly to camera with passion and personal conviction.
-- Primary Shot Type: **ON CAMERA** — direct address, face visible
-- BROLL: Behind-the-brand footage (warehouse, product design, team), intercut with talking head
-- Shot Angles: **Static (Selfie)** or **Sitting** for personal feel, **Standing** for authority
-- This is a MONOLOGUE — one person, authentic setting, personal story
-- Tone: passionate, knowledgeable, genuine — "Let me tell you why I created this..."`;
-    case 'Fake Podcast Ads':
-      return `**AD TYPE PRODUCTION STYLE — FAKE PODCAST:**
-Two people in a podcast/conversation setup having natural DIALOGUE about the product.
-- Primary Shot Type: **ON CAMERA** for both speakers
-- BROLL: Product close-ups intercut during conversation highlights
-- Shot Angles: **Sitting** (podcast desk/table setup), occasional **Dynamic** for reaction shots
-- Write as DIALOGUE — alternate speakers across rows, include natural interruptions and reactions
-- Must sound like organic discovery, not scripted endorsement
-- Use Talent Notes to specify which speaker (Host/Guest) is talking in each row`;
-    case 'Spokesperson':
-      return `**AD TYPE PRODUCTION STYLE — SPOKESPERSON:**
-Expert or authority figure (doctor, nurse, professional) presenting the product with credibility.
-- Primary Shot Type: **ON CAMERA** — direct address with professional gravitas
-- BROLL: Medical/professional setting B-roll, product demonstrations
-- Shot Angles: **Standing** or **Sitting** — professional environment
-- Establish AUTHORITY first (credentials, experience) before delivering the product message
-- Tone: Professional, trustworthy, measured — not salesy`;
-    case 'Packaging/Employee':
-      return `**AD TYPE PRODUCTION STYLE — PACKAGING/EMPLOYEE:**
-Behind-the-scenes warehouse/packing room content. Real team showing care and attention.
-- Primary Shot Type: Mix of **ON CAMERA** (employees speaking) and **BROLL** (hands packing, product details)
-- Shot Angles: **Dynamic (Third-Person)** for warehouse tours, **Standing** for employee speaking, **Ground-Level** for product close-ups
-- Show the human side: real team, real care, pride in work
-- "We care about every pair" narrative — quality, attention to detail, personal touch`;
-    case 'Full AI (Documentary, story, education, etc)':
-      return `**AD TYPE PRODUCTION STYLE — FULL AI:**
-100% AI-generated footage. No real talent, no live filming, no Viasox stock clips. Every shot is a generation prompt for text-to-video models (Veo / Sora / Runway).
-- Primary Shot Type: **AI-GENERATED** — every row is a visual generation prompt the producer will feed into a model
-- Shot descriptions must read as image/video generation prompts: subject, action, environment, mood, camera language, lighting
-- Voiceover is the dominant audio. Music direction matters — describe it explicitly
-- The Specification (Documentary / Historical / Educational / Emotional Story / Aspirational) sets the narrative mode
-- The Visual Style (Cohesive Characters / Fully VO / Talking To Camera / No Humans Shown / Historical) sets the visual execution language
-- Avoid scenes that AI models struggle with: tight product close-ups with branding, multi-person dialogue, complex hand-product manipulation, real-world brand-accurate locations
-- Maintain identity consistency: if a character recurs, describe her the same way every time so the model can reproduce her
-- Product presence is MINIMAL and symbolic — a brief product beat near the end, a logo card`;
-    default:
-      return '';
-  }
-}
 
 export function buildScriptPrompt(
   params: ScriptParams,
@@ -715,210 +656,7 @@ ${buildVideoProductionBriefReference()}
 
 ${nonEcomOverrideBlock}
 
-${templateAdType === 'AGC (Actor Generated Content)' ? `## AGC PRODUCTION BRIEF OUTPUT FORMAT
-
-This is an AGC (Actor-Generated Content) production brief. The output format is COMPLETELY DIFFERENT from other ad types. Follow this structure exactly:
-
-### 1. STRATEGY SECTION
-Start with a complete strategy block:
-- **Concept:** [The creative concept — what is this ad about, what story does it tell?]
-- **Angle:** [The strategic angle — the emotional/logical frame]
-- **Avatar:** [Who is the person on screen — age range, look, energy, wardrobe, personality]
-- **Location:** [Where the shoot takes place — be specific about the environment]
-- **Product:** [Product line being featured]
-- **Collection:** [Specific collection/patterns if relevant, or "Various"]
-- **Promotion:** [Promo period if any, or "Evergreen"]
-- **Offer:** [B1G1, B2G3, or None]
-- **Pacing:** [${params.agcPacing === 'fast' ? 'Fast (15-30s) — punchy cuts, high energy' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s) — documentary rhythm, let moments breathe' : 'Standard (30-45s) — balanced pacing'}]
-- **Music:** [Music direction — mood, genre, instruments, energy level]
-- **Assets:** [Specific props, products, materials needed for the shoot]
-- **Additional Notes:** [Production notes, special requirements, creative direction]
-
-### 2. HOOKS — 9-Hook Matrix (3 Visuals × 3 Verbals)
-Create EXACTLY 9 hooks by combining 3 Visual approaches with 3 Verbal hooks.
-
-First, describe each Visual and Verbal approach:
-**Visual A:** [Description of first camera setup/location/opening visual]
-**Visual B:** [Description of second — must be genuinely DIFFERENT from A]
-**Visual C:** [Description of third — must be genuinely DIFFERENT from A and B]
-**Verbal 1:** [First hook line strategy]
-**Verbal 2:** [Second hook line strategy — different emotional trigger]
-**Verbal 3:** [Third hook line strategy — different emotional trigger]
-
-Then output all 9 hooks as a markdown table:
-| Hook | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
-|------|----------------|-----------|------------|--------------|------------|-------------|-------|---------------|---------|
-| A1 | [label] | [type] | [angle] | [direction] | [technical] | [what viewer sees] | [spoken words] | [post notes] | [on-screen text] |
-| A2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-| A3 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-| B1 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-| B2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-| B3 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-| C1 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-| C2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-| C3 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-
-### 3. BODY SECTION
-The main script body. Each row = ONE thought, ONE breath. 20-40 rows depending on pacing.
-
-| # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
-|---|----------------|-----------|------------|--------------|------------|-------------|-------|---------------|---------|
-| 1 | [label] | [type] | [angle] | [direction] | [technical] | [what viewer sees] | [spoken words] | [post notes] | [on-screen text] |
-| 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-
-${params.agcBodyFormat === 'face-to-camera' ? 'Body Format: **Face-to-Camera.** ALL speaking rows use Shot Type = ON CAMERA. Talent speaks directly to camera, face visible.' : "Body Format: **POV (Voiceover Narration).** ALL speaking rows use Shot Type = SCRIPT. Talent's voice is heard as VO but they are NOT on camera speaking. Camera shows hands, product, environment."}
-BROLL rows (visual-only cutaways) may appear in either format as brief interruptions between speaking rows.
-
-### 4. EXTRA B-ROLL LIST
-8-12 additional shots for editing flexibility (NOT in the main body):
-
-| # | Shot Type | Shot Angle | Shot Notes | Shot Visual | Editing Notes |
-|---|-----------|------------|------------|-------------|---------------|
-| 1 | BROLL | [angle] | [technical] | [what viewer sees] | [how editors might use this] |
-
-### 5. FRAMEWORK BREAKDOWN
-## How ${params.framework} Was Applied
-Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.` : templateAdType === 'Ecom Style' ? `## ECOM AD BRIEF OUTPUT FORMAT
-
-This is an EDITING BRIEF — a complete production document for an editor who will assemble the ad from existing footage with AI voiceover. The output must follow the dedicated Ecom brief template structure.
-
-### VISUAL GROUNDING RULES (CRITICAL)
-This ad is built entirely from EXISTING footage. Every visual must be grounded in footage that actually exists.
-
-**Available Shot Types (use as Shot Type tags):**
-- Core: Talking Head, Putting On Socks, Feet Up Lifestyle, Bare Legs – Condition, Walking, Standing Feet, Before/After Reveal, Studio Product Shot, Animation / Motion Graphics, Text/Title Card
-- Supplementary: Socks With Shoes, Documentary / Interview, Product Flat Lay (Branded), Branded Shipping Box, EGC / Warehouse, Lifestyle Flat Lay, Material Close-up, PNG Cutout, Home Environment, Outdoor Setting
-- Limited: Yoga / Wellness B-Roll (Ankle Compression only), Car Interior, Mall / Public Indoor, Cafe / Seated Public
-
-**Footage we do NOT have — NEVER write visuals implying these:** Indoor gym/fitness, medical offices/clinical settings, sports activities (running, cycling, hiking), travel/airports, restaurants/dining, children/family scenes, pet scenes.
-
-**Cross-check uploaded footage inventory:** If the prompt includes an "ADDITIONAL RESOURCE CONTEXT (uploaded by user)" section (typically a Google Sheet or doc the user uploaded with their actual footage library), those items are ALSO available and ARE authoritative — they may list more specific clips, locations, or talent than the baseline list above. Scan that section before locking your Shot Type choices. When the uploaded inventory names a specific clip that fits the concept, prefer it over a generic baseline Shot Type.
-
-${inspirationContext ? `**⚠️ INSPIRATION ↔ FOOTAGE LIBRARY RECONCILIATION (APPLIES WHEN INSPIRATION IS PINNED):**
-The pinned inspiration ad may use visuals that DO NOT exist in our footage library (e.g., the reference shows a gym scene, an airport, a restaurant, a child). You MUST NOT invent footage we don't have just because the inspiration shows it. You ALSO must not abandon the inspiration's visual intent — your job is to reproduce the EMOTIONAL BEAT, PACING, and VISUAL MEANING using footage we actually have.
-
-**The reconciliation rule:**
-1. For each shot in the inspiration, ask: "Is this available in our footage library (baseline list above, plus any uploaded inventory)?"
-2. If YES → use it directly, matching the inspiration's framing.
-3. If NO → pick the CLOSEST AVAILABLE Shot Type that preserves the same emotional beat / role in the narrative. Examples:
-   - Inspiration: "Close-up of feet on hotel room carpet after a flight" → Our substitute: "Feet Up Lifestyle (Home Environment)" — both convey rest after a long day; hotel vs home is irrelevant to the relief moment.
-   - Inspiration: "Runner lacing up shoes on a trail" → Our substitute: "Putting On Socks (Home Environment) followed by Walking (Outdoor Setting)" — preserves the preparation-then-action arc without requiring trail or sports footage.
-   - Inspiration: "Kid jumping on their mom's bed" → Our substitute: ABANDON that shot, re-route narrative. Some substitutions aren't available — when the inspiration's intent cannot be preserved with our library, drop that beat and use a neighboring beat to carry the meaning.
-4. Document every substitution in the VISUAL SUBSTITUTION LOG (Section 9) so the editor knows what the reference intended and why you diverged.
-
-**The hierarchy:** Footage library is a hard constraint. Inspiration fidelity is preserved by intent, not by literal shot-matching. Never write a Shot Visual that implies footage we don't have.` : ''}
-
-**Visual Description Rules:**
-The Suggested Visual column must be a SHORT, CONVERSATIONAL description of what the viewer sees — one natural sentence, 8-20 words.
-- GOOD: "Close-up of her pulling the compression socks up over her calves on the couch"
-- GOOD: "Her bare legs with visible sock marks and redness around the ankles"
-- BAD: "Talking Head" (that's a shot type label, not a visual description)
-- BAD: "B-roll of feet" (too vague, the editor can't pull this)
-
-**Visual Pacing:** Vary visuals across the script. If you've written 2+ of the same shot type in a row, switch to something different. The editor needs visual variety.
-
-### SCRIPT WRITING STYLE (NON-NEGOTIABLE)
-Every line must sound like a real person talking to a friend. Full, natural sentences with everyday words. NOT fragments, NOT polished copywriting prose, NOT aggressive direct response.
-- Use natural filler words ("honestly," "actually," "just," "pretty much")
-- NO single-word or two-word lines. NO telegram fragments.
-- NO polished metaphors ("heaviness whispers," "legs carry the weight")
-- Most lines 10-25 words. Read every line out loud — if it sounds like an ad, rewrite it.
-
-### SCRIPT FRAMEWORK ADAPTIVITY
-The script structure must emerge from the concept:
-- **Confession Arc** (first-person): Admission → what they used to believe → discovery → new reality
-- **The Observation** (third-person narrator): Camera notices → describes what we see → reveal → product
-- **The Reframe** (second-person education): Challenge belief → explain why wrong → what works → proof
-- **The Permission Narrative** (second-person gentle): Validate struggle → acknowledge → give permission → how
-- **The Skeptic's Journey** (first-person): Doubt → why skeptical → what changed mind → converted
-- **The Contrast/Split** (mixed): Two outcomes → same situation → reveal difference
-- **Day-in-the-Life** (first or third-person): Moment → walk through day → same day with product → different ending
-
-### AVOID THESE OVERUSED PATTERNS
-Never use: "3pm fatigue", "sock drawer" metaphors, "Here's the thing...", "What if you could...", "The result?" as a transition.
-
----
-
-## OUTPUT STRUCTURE — ECOM AD BRIEF
-
-### 1. BRIEF INFO
-Output as a markdown table with these exact fields:
-| Field | Value |
-|-------|-------|
-| Brief ID | [Generate: PRODUCT_FUNNEL_ConceptSlug_v1, e.g., ES_TOF_DentTest_v1, COMP_MOF_GravityExplainer_v1, ACS_BOF_AnkleSecret_v1] |
-| Date | ${new Date().toISOString().split('T')[0]} |
-| Product | ${params.product === 'EasyStretch' ? 'EasyStretch Socks (Non-Binding Diabetic Socks)' : params.product === 'Compression' ? 'Compression Socks (Knee-High)' : 'Ankle Compression Socks'} |
-| Collection | [Choose based on concept: "Solid Colors + Patterns", "Solid Colors (Black, Navy)", etc.] |
-| Collection Asset | [Specific patterns/colors needed, e.g., "Solid black for demo, patterns at reveal"] |
-| Format | 9:16 vertical (Reels/Stories), 1:1 secondary |
-
-### 2. STRATEGY
-| Field | Value |
-|-------|-------|
-| Awareness Level | ${params.awarenessLevel} (${params.funnelStage}) |
-| Primary Emotion | [Derived from concept — e.g., Relief, Hope, Confidence, Independence, Trust] |
-| Avatar | [Specific person, NOT a label — e.g., "Nurse, 52, who's accepted leg pain as part of the job" or "The Defeated Shopper – Adults 45-75 who have bought countless socks that claim to fit but don't"] |
-| Landing Page | [${params.product} Collection] |
-
-### 3. OFFER
-| Field | Value |
-|-------|-------|
-| Promo | ${params.offer === 'B2G3' ? 'Buy 2 Get 3 Free (5 for $60)' : params.offer === 'B1G1' ? 'Buy 1 Get 1 Free' : 'None'} |
-| Promo Asset | ${params.offer !== 'None' ? 'Standard end card' : 'None'} |
-| Value Callout | ${params.offer === 'B2G3' ? '5 Pairs for $60 ($12 per pair, $90 worth of free socks)' : params.offer === 'B1G1' ? '2 Pairs for $30' : 'None'} |
-| Urgency Element | [If applicable based on promo period, otherwise "None"] |
-
-### 4. EDITING INSTRUCTIONS
-| Field | Value |
-|-------|-------|
-| Pacing | [Derived from concept — e.g., "Demonstration-focused. Opens on visual evidence, builds through the test, delivers solution. 40-50 seconds."] |
-| Resolution | 9:16 primary, 1:1 secondary |
-| Caption & Graphics | [Text overlay strategy — what key moments get captions, style notes] |
-| Transitions | [Cut style — e.g., "Clean cuts. Zoom on evidence shots. Smooth reveal on solution."] |
-| Music | [Mood, genre, energy — e.g., "Curious opening, building through test, warm resolution. Discovery energy."] |
-| Voiceover | AI Voiceover – [Tone description derived from concept — e.g., "Warm, observational female voice. Noticing something, then explaining it."] |
-| Asset | [List the specific footage categories from the shot type library needed for this brief] |
-| Notes | [Production notes — what's most important about this brief's visual approach] |
-
-### 5. SCRIPT (HOOKS) — 3 Variations
-Output as a markdown table with EXACTLY these 4 columns:
-| # | Shot Type | Suggested Visual | Hook Line |
-|---|-----------|-----------------|-----------|
-| 1 | [footage tag] | [conversational description, 8-20 words] | "[the hook line — full natural sentence]" |
-| 2 | [footage tag] | [conversational description] | "[different hook approach]" |
-| 3 | [footage tag] | [conversational description] | "[different hook approach]" |
-
-Each hook must use a DIFFERENT approach. Note which principle it applies (e.g., "Hook 1 — Hopkins Selector").
-
-### 6. SCRIPT (BODY)
-Output as a markdown table with EXACTLY these 4 columns:
-| # | Shot Type | Suggested Visual | Script Line |
-|---|-----------|-----------------|-------------|
-| 1 | [footage tag] | [conversational description, 8-20 words] | "[line — must sound like a real person talking]" |
-| 2 | ... | ... | ... |
-
-Row count adapts to the concept and duration — more rows for longer scripts, fewer for shorter. Each row = one thought, one breath.
-
-### 7. KEY DATA POINTS
-List every statistic and customer quote referenced in the script, with source frequencies.
-
-### 8. HOW ${params.framework} WAS APPLIED
-Walk through each phase of the framework and explain how it maps to specific rows in the body. Reference row numbers.
-
-${inspirationContext ? `### 9. VISUAL SUBSTITUTION LOG
-
-Because a specific inspiration ad was pinned for this brief, document any visual substitutions you made — moments where the inspiration used a shot we don't have in our footage library, and you chose the closest available alternative.
-
-Format as a markdown table:
-
-| # | Inspiration Shot | Our Substitute | Rationale (1 sentence) |
-|---|------------------|----------------|------------------------|
-| 1 | [What the reference ad uses, e.g., "Close-up of feet on a trail at sunrise"] | [Shot Type from our library, e.g., "Standing Feet (Outdoor Setting)"] | [Why this preserves the inspiration's emotional beat, pacing, or visual intent] |
-| 2 | ... | ... | ... |
-
-If NO substitutions were required (every inspiration visual exists in our library), state exactly: **"No substitutions required — all visuals sourced from available footage."**
-
-If the inspiration required a visual you had to DROP entirely (no acceptable substitute in our library), log it here too with "DROPPED" in the Substitute column and a note on which adjacent beat absorbed the meaning.` : ''}` : templateAdType === 'Static' ? `## SCRIPT OUTPUT FORMAT
+${templateAdType === 'Static' ? `## SCRIPT OUTPUT FORMAT — STATIC
 
 ### 1. STRATEGY SUMMARY (at the top, before the script)
 Start with a clear summary block:
@@ -935,73 +673,26 @@ Write the ENTIRE script as a markdown table with these columns:
 With rows for: Headline, Subhead, Body Copy, CTA Button, Visual Description.
 
 ### 3. FRAMEWORK BREAKDOWN (below the table)
-After the script table, include a section:
 ## How ${params.framework} Was Applied
-Explain specifically how the selected framework was translated into this script. Walk through each phase of the framework. Reference the specific elements. This helps the creative team understand the strategic reasoning behind each section of the script.` : `## VIDEO PRODUCTION BRIEF OUTPUT FORMAT
+Explain specifically how the selected framework was translated into this script. Walk through each phase of the framework. Reference the specific elements.` : buildBriefTemplateOutputFormat(params, new Date().toISOString().split('T')[0], !!inspirationContext)}
 
-This is a video production brief. The output uses a detailed table format with building block labels, shot types, and production notes for each line.
+${isShortFormDuration(params.duration) ? `
 
-${getVideoProductionNotes(params.adType)}
+## SHORT-FORM SCRIPT RULES (applies to all 1-15 sec briefs regardless of template)
 
-### 1. STRATEGY SUMMARY
-Start with a clear summary block:
+- You MAY choose text-only/no-VO (on-screen text over b-roll, no spoken words in Lines) OR include VO on every row — both are valid. Be consistent within the brief.
+- **NATIVE STYLE IS KING.** Should feel like organic social content, not a polished ad.
+- **NO FULL ARC REQUIRED.** The body can be as short as 2-3 rows for a single-moment concept.
+- **CTA RULES:** Text-on-screen only. Never a spoken CTA for short-form.
+- **NOT EVERY SHORT-FORM AD MUST SELL.** Engagement, awareness, or scroll-stop are valid goals.
+- **EXPERIMENTAL = ENCOURAGED.** Weird hooks, unusual pacing, meme-adjacent, ASMR — all valid.
+${inspirationContext ? `- **⚠️ VISUAL FIDELITY TO INSPIRATION:** Read the reference's "Visual blueprint" field in the INSPIRATION BANK section and REPRODUCE that execution. If the blueprint says "single persistent text blob," your Caption column shows ONE long blob — not sequential cards. If "single continuous shot," your Shot Type stays consistent — not a rapid-cut montage. Getting "no VO" right but inventing a different visual treatment is a FAILURE.` : ''}` : ''}
 
-**Hypothesis:** [What we believe about the audience and why this approach will work]
-**Ad Type:** ${params.adType}
-**Primary Persona:** [The specific customer segment this targets]
-**Awareness Level:** [The awareness level]
-**Angle:** [The strategic angle — the emotional/logical frame being used]
-${params.agcLocation ? `**Location:** ${params.agcLocation === 'Auto — decide the best location based on the pre-loaded concept, target persona, and DTC marketing best practices' ? '[Choose the best location based on the concept, persona, and ad type — be specific about the environment]' : params.agcLocation}` : '**Location:** [Choose the best location for this ad type — be specific about the environment]'}
-${params.agcTalentDescription ? `**Talent:** ${params.agcTalentDescription === 'Auto — decide the best talent profile based on the pre-loaded concept, target persona, and DTC marketing best practices' ? '[Choose the best talent profile based on the concept and persona — describe age range, look, energy, wardrobe]' : params.agcTalentDescription}` : '**Talent:** [Choose the best talent profile for this ad type — describe age range, look, energy, wardrobe]'}
-${params.agcPacing ? `**Pacing:** ${params.agcPacing === 'fast' ? 'Fast (15-30s) — punchy cuts, high energy' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s) — documentary rhythm, let moments breathe' : 'Standard (30-45s) — balanced pacing'}` : ''}
-${params.agcMusicDirection ? `**Music:** ${params.agcMusicDirection}` : '**Music:** [Music direction — mood, genre, instruments, energy level]'}
-**Offer:** ${params.offer !== 'None' ? params.offer : 'None'}
-
-### 2. HOOKS (${params.hookVariations} variations)
-Write all ${params.hookVariations} hook variations as a markdown table with these columns:
-
-| Hook # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
-|--------|----------------|-----------|------------|--------------|------------|-------------|-------|---------------|---------|
-| 1 | [label] | [type] | [angle] | [direction] | [technical] | [what viewer sees] | [spoken words] | [post notes] | [on-screen text] |
-| 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-
-Each hook should use a DIFFERENT Building Block type and approach. Every hook MUST have spoken words in the Lines column.
-
-### 3. BODY SECTION
-The main script body. Each row = ONE thought, ONE breath. The number of rows depends on duration — more rows for longer scripts, fewer for shorter.
-
-| # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
-|---|----------------|-----------|------------|--------------|------------|-------------|-------|---------------|---------|
-| 1 | [label] | [type] | [angle] | [direction] | [technical] | [what viewer sees] | [spoken words] | [post notes] | [on-screen text] |
-| 2 | ... | ... | ... | ... | ... | ... | ... | ... | ... |
-
-**CRITICAL BODY RULES:**
-- ${isShortFormDuration(params.duration) ? `This is a ${params.duration} SHORT-FORM ad — the most experimental format in the Viasox toolkit.
-
-**SHORT-FORM SCRIPT RULES:**
-- You MAY choose text-only/no-VO (on-screen text over b-roll, no spoken words in Lines) OR include VO on every row — both are valid. If you choose no-VO, the Lines column should contain the on-screen text the viewer reads. If you choose VO, Lines should contain spoken words. Be consistent within the brief.
-- **NATIVE STYLE IS KING.** The script should feel like organic social content, not a polished ad. Think: content that blends into a TikTok/Reels/Shorts feed. Raw > polished. Authentic > produced.
-- **NO FULL ARC REQUIRED.** The body can be as short as 2-3 rows for a single-moment concept. Do NOT force a beginning-middle-end if the concept works as a visual punch, a provocation, or a single powerful beat.
-- **CTA RULES:** Text-on-screen only. Never a spoken CTA for short-form. The CTA can be as minimal as a brand name card or "viasox.com" — or ABSENT ENTIRELY for engagement/awareness concepts.
-- **NOT EVERY SHORT-FORM AD MUST SELL.** If the concept's goal is engagement (comments, shares) or awareness (brand recall, scroll-stop), write to THAT goal. "Stop the scroll and plant the seed" is a valid script mission.
-- **EXPERIMENTAL = ENCOURAGED.** Weird hooks, unusual pacing, emotional gut-punches, meme-adjacent formats, ASMR/sensory approaches — all valid for short-form.
-${inspirationContext ? `- **⚠️ VISUAL FIDELITY TO INSPIRATION (CRITICAL FOR SHORT-FORM):** An inspiration reference has been injected for this brief. Read the reference's **"Visual blueprint — REPRODUCE THIS EXECUTION EXACTLY"** field in the INSPIRATION BANK section below and REPRODUCE that specific execution in your script rows. This is the #1 failure mode the tool has been exhibiting:
-  - If the blueprint says **"single persistent text blob for the whole duration"** → your Caption column on ALL rows should show ONE long text blob (or the same blob persisting across rows), NOT several short cards cutting sequentially. Your Shot Visual column should describe a single sustained visual.
-  - If the blueprint says **"sequential short text cards"** → multiple rows with short card-per-row text is correct.
-  - If the blueprint says **"single continuous shot"** → the Shot Type column should be consistent (e.g., one Talking Head or one Product Close-up sustained); NOT a rapid-cut montage of different shot types.
-  - If the blueprint says **"rapid-cut montage"** → many rows with different shot types is correct.
-  - If the blueprint says **"native social / organic-looking"** → the Shot Notes should specify phone-shot aesthetic, natural lighting, no branding treatment; NOT polished commercial production values.
-  - If the blueprint describes a **specific typographic style** (sans-serif Instagram default, bold punchy full-screen, handwritten, etc.) → match it in the Caption column.
-  - If the blueprint names a **duration-sustained visual element** (a face talking, a persistent product shot, a text overlay) → that element should sustain across your rows, not rotate through different visuals every row.
-  **Short-form succeeds or fails on visual execution. Getting "no VO" right but inventing a different visual treatment is a FAILURE — it misses what makes the reference work.**` : ''}` : `EVERY row MUST have spoken words in the Lines column — NO silent rows. Even BROLL cutaway rows must have voiceover continuing. This is a ${params.duration} ad and VO is MANDATORY.`}
-- Each row = ONE thought, ONE breath. If you would pause mid-sentence, SPLIT into two rows.
-- Every row MUST have a Building Block label that explains its strategic purpose in the persuasion arc.
-- **Total word budget:** ${durationTarget.sweetSpot} across all body rows combined. Hard ceiling: ${durationTarget.hardCeiling} words. Count before finalizing.
-
-### 4. FRAMEWORK BREAKDOWN
+## FRAMEWORK BREAKDOWN
 ${isShortFormDuration(params.duration) && (params.framework === 'No Framework (Pure Moment)' || params.framework === 'No Framework') ? `## Creative Approach
 Explain the structural approach used (single moment, visual contrast, provocation, native clip, reaction/reveal, etc.) and why it serves the concept. Reference specific row numbers.` : `## How ${params.framework} Was Applied
-Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.`}`}
+Explain how the framework maps to the Building Block sequence in the body. Reference specific row numbers and Building Block labels.`}
+
 
 ## ADVERTISING MASTERY PRINCIPLES
 Apply these principles from the four foundational marketing texts throughout every script:

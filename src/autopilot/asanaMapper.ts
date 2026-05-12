@@ -274,6 +274,7 @@ export const AD_TYPE_OPTIONS: readonly AdType[] = [
   'Static',
   'Founder Style',
   'Fake Podcast Ads',
+  'AI Podcast',
   'Spokesperson',
   'Packaging/Employee',
   'Full AI (Documentary, story, education, etc)',

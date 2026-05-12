@@ -35,7 +35,8 @@ import type {
   FeedbackRecord,
 } from '../../autopilot/memoryTypes';
 import ScoreOverridePanel from '../autopilot/ScoreOverridePanel';
-import { downloadEcomBriefDoc, downloadProductionBriefCsv } from '../../utils/downloadUtils';
+import { downloadBriefForAdType } from '../../utils/downloadUtils';
+import type { AdType } from '../../engine/types';
 
 interface Props {
   onBack: () => void;
@@ -74,19 +75,11 @@ function batchAverage(briefs: BriefMemoryRecord[]): number | null {
 
 function downloadBrief(brief: BriefMemoryRecord): void {
   if (!brief.briefMarkdown) return;
-  const isAgc = brief.adType === 'AGC (Actor Generated Content)';
-  if (isAgc) {
-    // brief.id mirrors the original Asana task name (e.g., "SOX-374_ES").
-    // Pass it so the CSV file matches the task name the user knows.
-    downloadProductionBriefCsv(
-      brief.briefMarkdown,
-      brief.product,
-      brief.adType ?? 'AGC (Actor Generated Content)',
-      brief.id,
-    );
-  } else {
-    downloadEcomBriefDoc(brief.briefMarkdown, brief.id);
-  }
+  // brief.id mirrors the original Asana task name (e.g., "SOX-374_ES").
+  // Pass it through so the file matches the task name the user knows.
+  // Default to Ecom Style if adType wasn't captured (legacy briefs).
+  const adType: AdType = (brief.adType as AdType) ?? 'Ecom Style';
+  downloadBriefForAdType(adType, brief.briefMarkdown, brief.product, brief.id);
 }
 
 // ─── Brief Row ──────────────────────────────────────────────────────────

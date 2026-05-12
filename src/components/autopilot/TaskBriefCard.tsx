@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { TaskPipelineState } from '../../engine/autopilotTypes';
-import { downloadEcomBriefDoc, downloadProductionBriefCsv, parseKvTable, parseScriptTable } from '../../utils/downloadUtils';
+import { downloadBriefForAdType, parseKvTable, parseScriptTable } from '../../utils/downloadUtils';
+import { getBriefTemplateId } from '../../prompts/briefTemplates';
 import { buildBriefMeta } from '../../autopilot/briefMeta';
 
 interface Props {
@@ -204,20 +205,21 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
   // the configured ad type even mid-pipeline.
   const meta = buildBriefMeta(taskState);
 
-  // AGC briefs export as a production CSV template (editors rely on that
-  // shape). Every other ad type — Ecom, Full AI, UGC, Founder, Fake
-  // Podcast, Spokesperson, Packaging/Employee, Static — exports as the
-  // standard Ecom DOC template because the autopilot forces the Ecom
-  // output format for all of them.
+  // Each ad type gets its own template + downloader:
+  //   - Production briefs (AGC, Single-Talent for Founder/Spokesperson/UGC,
+  //     Filmed Podcast, Packaging/Employee) → CSV per Nora's workflow.
+  //   - Editing briefs (Ecom, Full AI Visual, AI Podcast, Static) → Doc.
+  // The router in downloadUtils.ts handles picking the right exporter.
   const briefAdType = task.scriptParamsBase.adType;
-  const isAgcExport = briefAdType === 'AGC (Actor Generated Content)';
+  const templateId = getBriefTemplateId(briefAdType);
+  const isCsvExport =
+    templateId === 'agc' ||
+    templateId === 'singletalent' ||
+    templateId === 'filmedpodcast' ||
+    templateId === 'packaging';
   const handleExport = () => {
     if (!scriptResult) return;
-    if (isAgcExport) {
-      downloadProductionBriefCsv(scriptResult, task.product, briefAdType, task.parsed.name);
-    } else {
-      downloadEcomBriefDoc(scriptResult, task.parsed.name);
-    }
+    downloadBriefForAdType(briefAdType, scriptResult, task.product, task.parsed.name);
   };
 
   // Parse brief sections for formatted preview — only when genuinely complete
@@ -408,7 +410,7 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
                   onClick={handleExport}
                   className="text-xs bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-900 transition-colors"
                 >
-                  {isAgcExport ? 'Export .csv' : 'Export .doc'}
+                  {isCsvExport ? 'Export .csv' : 'Export .doc'}
                 </button>
                 {onRedo && (
                   <button

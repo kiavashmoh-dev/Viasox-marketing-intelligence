@@ -201,6 +201,7 @@ export type AdType =
   | 'Static'
   | 'Founder Style'
   | 'Fake Podcast Ads'
+  | 'AI Podcast'
   | 'Spokesperson'
   | 'Packaging/Employee'
   | 'Full AI (Documentary, story, education, etc)';

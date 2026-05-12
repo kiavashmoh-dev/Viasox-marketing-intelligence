@@ -4,7 +4,8 @@ import type { AngleDirectiveProposal } from '../../autopilot/memoryTypes';
 import TaskBriefCard from './TaskBriefCard';
 import BatchChatPanel from './BatchChatPanel';
 import ScoreOverridePanel from './ScoreOverridePanel';
-import { downloadEcomBriefDoc, downloadProductionBriefCsv } from '../../utils/downloadUtils';
+import { downloadBriefForAdType } from '../../utils/downloadUtils';
+import { getBriefTemplateId } from '../../prompts/briefTemplates';
 import {
   addFeedback,
   getPendingDirectiveProposals,
@@ -78,32 +79,36 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
     setRefreshTick((t) => t + 1);
   };
 
-  // AGC briefs export as a production CSV (the editor pipeline depends
-  // on that shape). Every other ad type exports as the standard Ecom
-  // DOC template because the autopilot forces that output for all of
-  // them. Split the "Download All" into two actions so the user gets a
-  // single button per file kind when the batch is mixed.
-  const agcCompleted = completed.filter(
-    (ts) => ts.task.scriptParamsBase.adType === 'AGC (Actor Generated Content)',
-  );
-  const docCompleted = completed.filter(
-    (ts) => ts.task.scriptParamsBase.adType !== 'AGC (Actor Generated Content)',
-  );
+  // Each ad type now has its own template + downloader. Split completed
+  // briefs into the two delivery paths so the user gets one button per
+  // file kind when the batch is mixed:
+  //   - CSV path (production): AGC, Single-Talent, Filmed Podcast, Packaging
+  //   - DOC path (editing): Ecom, Full AI Visual, AI Podcast, Static
+  const csvCompleted = completed.filter((ts) => {
+    const id = getBriefTemplateId(ts.task.scriptParamsBase.adType);
+    return id === 'agc' || id === 'singletalent' || id === 'filmedpodcast' || id === 'packaging';
+  });
+  const docCompleted = completed.filter((ts) => !csvCompleted.includes(ts));
 
   const handleExportAllDocs = () => {
     docCompleted.forEach((ts) => {
       if (ts.scriptResult) {
-        downloadEcomBriefDoc(ts.scriptResult, ts.task.parsed.name);
+        downloadBriefForAdType(
+          ts.task.scriptParamsBase.adType,
+          ts.scriptResult,
+          ts.task.product,
+          ts.task.parsed.name,
+        );
       }
     });
   };
-  const handleExportAllAgcCsvs = () => {
-    agcCompleted.forEach((ts) => {
+  const handleExportAllCsvs = () => {
+    csvCompleted.forEach((ts) => {
       if (ts.scriptResult) {
-        downloadProductionBriefCsv(
+        downloadBriefForAdType(
+          ts.task.scriptParamsBase.adType,
           ts.scriptResult,
           ts.task.product,
-          ts.task.scriptParamsBase.adType,
           ts.task.parsed.name,
         );
       }
@@ -158,15 +163,15 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
                 onClick={handleExportAllDocs}
                 className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors"
               >
-                Download All Ecom Briefs (.doc) — {docCompleted.length} file{docCompleted.length !== 1 ? 's' : ''}
+                Download All Editing Briefs (.doc) — {docCompleted.length} file{docCompleted.length !== 1 ? 's' : ''}
               </button>
             )}
-            {agcCompleted.length > 0 && (
+            {csvCompleted.length > 0 && (
               <button
-                onClick={handleExportAllAgcCsvs}
+                onClick={handleExportAllCsvs}
                 className="w-full py-2.5 bg-indigo-700 text-white rounded-lg text-sm font-medium hover:bg-indigo-800 transition-colors"
               >
-                Download All AGC Briefs (.csv) — {agcCompleted.length} file{agcCompleted.length !== 1 ? 's' : ''}
+                Download All Production Briefs (.csv) — {csvCompleted.length} file{csvCompleted.length !== 1 ? 's' : ''}
               </button>
             )}
           </div>
@@ -357,16 +362,16 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
               className="w-full py-3 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
             >
               <span>{'\uD83D\uDCE5'}</span>
-              Download All Ecom Briefs (.doc) — {docCompleted.length} file{docCompleted.length !== 1 ? 's' : ''}
+              Download All Editing Briefs (.doc) — {docCompleted.length} file{docCompleted.length !== 1 ? 's' : ''}
             </button>
           )}
-          {agcCompleted.length > 0 && (
+          {csvCompleted.length > 0 && (
             <button
-              onClick={handleExportAllAgcCsvs}
+              onClick={handleExportAllCsvs}
               className="w-full py-3 bg-indigo-700 text-white rounded-lg text-sm font-medium hover:bg-indigo-800 transition-colors flex items-center justify-center gap-2"
             >
               <span>{'\uD83D\uDCE5'}</span>
-              Download All AGC Briefs (.csv) — {agcCompleted.length} file{agcCompleted.length !== 1 ? 's' : ''}
+              Download All Production Briefs (.csv) — {csvCompleted.length} file{csvCompleted.length !== 1 ? 's' : ''}
             </button>
           )}
         </div>
