@@ -416,102 +416,27 @@ export function buildScriptPrompt(
   memoryBriefing?: string,
   inspirationContext?: string,
   /**
-   * When true, force the final brief to be rendered in the Ecom Brief output
-   * template regardless of the underlying `params.adType`. The ad-type-specific
-   * CONTENT DIRECTIVES (voice, visuals, creative approach) are preserved —
-   * only the OUTPUT TEMPLATE is unified. This lets the autopilot deliver a
-   * consistent table structure for every brief (Ecom / Full AI / UGC /
-   * Founder / etc.) while AGC and Static retain their own specialized output
-   * shapes (AGC has its own production CSV template; Static is a simpler
-   * script). When false or undefined, the script prompt uses the ad-type-
-   * specific output template as before — this preserves the existing
-   * standalone ScriptWriter module's behavior.
+   * @deprecated — retained only for caller compatibility. Each ad type now
+   * has its own dedicated output template via `buildBriefTemplateOutputFormat`
+   * (briefTemplates.ts). The autopilot used to set this true to force every
+   * brief into the Ecom shape; that's no longer needed and the parameter
+   * is ignored.
    */
-  forceEcomTemplate?: boolean,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _forceEcomTemplate?: boolean,
 ): { system: string; user: string } {
   const frameworkDetail =
     FRAMEWORK_DETAILS[params.framework] ??
     `Framework: ${params.framework}`;
 
   /**
-   * Whether to actually force the Ecom output template. We only honor the
-   * flag for non-AGC, non-Static ad types — those two have domain-specific
-   * output formats that must never be clobbered:
-   *   - AGC: different CSV production template (editors depend on it)
-   *   - Static: simpler script shape (not a full brief)
-   * Every other ad type (Ecom, Full AI, UGC, Founder, Fake Podcast,
-   * Spokesperson, Packaging/Employee) can be rendered in the Ecom template.
+   * Each ad type now has its own dedicated output template via
+   * `buildBriefTemplateOutputFormat` — see briefTemplates.ts. The legacy
+   * useEcomTemplate / templateAdType / nonEcomOverrideBlock machinery
+   * was removed because it forced an Ecom shape onto every non-AGC,
+   * non-Static brief, which conflicted with the new per-ad-type templates
+   * and caused empty downloads.
    */
-  const useEcomTemplate =
-    forceEcomTemplate === true &&
-    params.adType !== 'AGC (Actor Generated Content)' &&
-    params.adType !== 'Static';
-
-  /**
-   * The ad type we use for OUTPUT-FORMAT branching. When `useEcomTemplate` is
-   * true, we force this to "Ecom Style" so the prompt selects the Ecom brief
-   * template — but the ORIGINAL `params.adType` is still used everywhere else
-   * (ad type guide, reference material, creative voice instructions, content
-   * overrides) so the creative direction stays true to the real ad type.
-   */
-  const templateAdType: typeof params.adType = useEcomTemplate ? 'Ecom Style' : params.adType;
-
-  /**
-   * When we force the Ecom template for a non-Ecom ad type (most notably
-   * Full AI), the Ecom template hardcodes shot types and a footage library
-   * grounded in real Viasox filming inventory. We must override those rules
-   * for Full AI (which uses AI-generated video with no footage limitations)
-   * and for other non-Ecom ad types (which have their own native shot
-   * vocabulary). This block is injected just before the output-format
-   * section when `useEcomTemplate` is true and the ad type is not Ecom.
-   */
-  const nonEcomOverrideBlock = (useEcomTemplate && params.adType !== 'Ecom Style') ? `
-## ⚠️ TEMPLATE-vs-CONTENT RULE (READ THIS BEFORE THE OUTPUT FORMAT SECTION)
-
-The OUTPUT TEMPLATE below is the standard Ecom Ad Brief template (8 sections, 4-column Hooks table, 4-column Body table). This is intentional: the batch is being delivered in a unified template for consistency.
-
-However, the **creative CONTENT** of this brief must be built for the **${params.adType}** ad type — NOT for Ecom Style. Everything about the ad type guide, reference material, voice, and visual approach you've already been given still applies. Only the OUTPUT TEMPLATE is unified.
-
-**How to reconcile the two:**
-
-${params.adType === 'Full AI (Documentary, story, education, etc)' ? `### FULL AI CONTENT OVERRIDES (critical — override Ecom template where they conflict)
-
-1. **Shot Type column** — use Full AI shot labels that describe AI-generated visuals:
-   - "AI Scene", "AI B-Roll", "AI Close-Up", "AI Wide Establishing", "AI Montage",
-     "Archival-Style AI", "AI Voiceover Over B-Roll", "AI Talking Head", "Text/Title Card"
-   - DO NOT use "Talking Head" / "Putting On Socks" / "Feet Up Lifestyle" / "Studio Product Shot" / other Ecom-footage tags — Full AI is NOT built from Viasox's existing footage library.
-
-2. **Suggested Visual column** — describe the AI-generated scene in one conversational, cinematic sentence (8-20 words). It must be specific enough that a video-generation model could render the shot from the description alone.
-   - GOOD: "Slow dolly past a woman's hands adjusting her sock on the edge of a soft morning-lit bed."
-   - GOOD: "Wide establishing shot of an empty hospital corridor at dawn, warm light bleeding through the windows."
-   - GOOD: "Archival-style black-and-white footage of nurses walking through a 1950s clinic."
-   - BAD: "Talking Head" (that's a shot tag, not a description)
-   - BAD: "B-roll of feet" (too vague for a generation model)
-
-3. **Script line column** — voice must match the Full AI specification for this brief (${params.fullAiSpecification ?? 'Documentary'} mode). This is cinematic narration, documentary VO, educational exposition, emotional story narration, or aspirational manifesto — NOT the Ecom-casual "talking to a friend" voice. Follow the Full AI skill context and the voice tone rules for the specification.
-
-4. **VISUAL GROUNDING RULES from the Ecom template DO NOT APPLY.** The Ecom template lists "footage we do not have — never write visuals implying these" (gyms, medical clinics, travel, children, pets, etc). IGNORE that list for Full AI. A Full AI brief can depict any environment because the video is generated. Write for the story, not the footage library.
-
-5. **Visual Style for this brief: ${params.fullAiVisualStyle ?? 'Story with cohesive characters'}.** Every scene description must obey this visual style rule — the whole ad must look like one coherent world.
-
-6. **Still use** the 4-column Hooks table and 4-column Body table from the Ecom template, but with Full AI-native content in every cell.
-
-7. **Still produce** all 8 Ecom brief sections (Brief Info, Strategy, Offer, Editing Instructions, Hooks, Body, Key Data Points, Framework Breakdown). Fill each section with Full AI-relevant content (e.g., Editing Instructions → describe AI generation notes, pacing, VO direction, music; Asset → list AI scene types needed).` : `### ${params.adType.toUpperCase()} CONTENT OVERRIDES (critical — override Ecom template where they conflict)
-
-1. **Shot Type column** — use shot labels native to ${params.adType}:
-${params.adType === 'UGC (User Generated Content)' ? '   - "Selfie Talking Head", "POV Handheld", "Reaction Shot", "Phone Screen Recording", "Unboxing POV", "Mirror Selfie", "Casual B-Roll"' : ''}${params.adType === 'Founder Style' ? '   - "Founder On Camera", "Founder Walk and Talk", "Founder Product Demo", "Founder B-Roll", "Desk Talking Head", "Warehouse Walkthrough"' : ''}${params.adType === 'Fake Podcast Ads' ? '   - "Podcast Two-Shot", "Host Close-Up", "Guest Close-Up", "Mic Close-Up", "Over-the-Shoulder", "Studio Wide"' : ''}${params.adType === 'Spokesperson' ? '   - "Spokesperson On Camera", "Spokesperson Walk and Talk", "Studio Insert", "Product Hero Shot", "Environment Cutaway"' : ''}${params.adType === 'Packaging/Employee' ? '   - "Warehouse Handheld", "Employee POV", "Packaging Close-Up", "Shipping Box Reveal", "Employee Talking Head"' : ''}
-   - DO NOT default to Ecom footage tags (Talking Head, Feet Up Lifestyle, Studio Product Shot) unless they genuinely fit the ${params.adType} production.
-
-2. **Suggested Visual column** — one conversational sentence (8-20 words) describing what the viewer sees, consistent with ${params.adType} production style. Match the reality of the production format (e.g., UGC looks raw and phone-shot; Founder Style is authentic and unpolished; Fake Podcast is studio-staged; Spokesperson is polished commercial).
-
-3. **Script line column** — voice and delivery must match ${params.adType} (see the AD TYPE guide in the system prompt above). NOT the default Ecom "friend talking to a friend" cadence unless the ${params.adType} guide says otherwise.
-
-4. **VISUAL GROUNDING RULES from the Ecom template** may or may not apply depending on the ad type — use judgment. If the ${params.adType} production involves shooting new footage (Founder Style, Fake Podcast, Spokesperson, Packaging/Employee), the "footage we do not have" list doesn't constrain you.
-
-5. **Still produce** all 8 Ecom brief sections (Brief Info, Strategy, Offer, Editing Instructions, Hooks, Body, Key Data Points, Framework Breakdown) filled with ${params.adType}-native content. The Editing Instructions section should describe the production approach for ${params.adType}, not Ecom assembly from stock footage.
-
-6. **Still render** the output as a 4-column Hooks table + 4-column Body table (the Ecom template), NOT a 10-column production table.`}
-` : '';
 
   // Duration-specific target (sweet spot + hard ceiling + VO requirement)
   // sourced from the centralized creativeConstraints module so every creative
@@ -648,15 +573,13 @@ ${buildShotTypesReference()}
 ${buildHookFormulaReference()}
 
 ${buildAgcRules()}
-` : (params.adType !== 'Ecom Style' && params.adType !== 'Static' && !useEcomTemplate) ? `
+` : (params.adType !== 'Ecom Style' && params.adType !== 'Static') ? `
 ## VIDEO PRODUCTION BRIEF REFERENCE MATERIAL
 
 ${buildVideoProductionBriefReference()}
 ` : ''}
 
-${nonEcomOverrideBlock}
-
-${templateAdType === 'Static' ? `## SCRIPT OUTPUT FORMAT — STATIC
+${params.adType === 'Static' ? `## SCRIPT OUTPUT FORMAT — STATIC
 
 ### 1. STRATEGY SUMMARY (at the top, before the script)
 Start with a clear summary block:
@@ -995,145 +918,7 @@ Before writing any brief tables, you MUST produce a concise strategic outline. T
 
 Then write the complete brief below the outline, executing the plan faithfully.
 
-${templateAdType === 'AGC (Actor Generated Content)' ? `OUTPUT STRUCTURE — AGC PRODUCTION BRIEF (follow this exact order):
-
-**1. STRATEGY SECTION** — Complete strategy block with: Concept, Angle, Avatar, Location, Product, Collection, Promotion, Offer, Pacing, Music, Assets, Additional Notes
-
-**2. 9-HOOK MATRIX** — First describe the 3 Visual approaches and 3 Verbal hooks, then output all 9 combinations as a markdown table:
-| Hook | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
-
-**3. BODY SECTION** — 20-40 rows, each row = one thought, one breath. Every row has a Building Block label.
-| # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
-Body format: ${params.agcBodyFormat === 'face-to-camera' ? 'Face-to-Camera (all speaking rows = ON CAMERA)' : 'POV (all speaking rows = SCRIPT/VO)'}
-
-**4. EXTRA B-ROLL LIST** — 8-12 additional shots for editing flexibility:
-| # | Shot Type | Shot Angle | Shot Notes | Shot Visual | Editing Notes |
-
-**5. KEY DATA POINTS** — Every statistic and customer quote referenced, with source frequencies.
-
-**6. HOW ${params.framework.toUpperCase()} WAS APPLIED** — Walk through how the framework maps to the Building Block sequence. Reference row numbers.
-
-The brief should:
-1. Apply the ${params.framework} framework through the Building Block sequence — the framework shapes the persuasion arc
-2. Follow the AGC production brief format with ALL 9 columns on every row
-3. Match the ${params.funnelStage} funnel stage and ${params.awarenessLevel} awareness level
-4. Include a Building Block label on EVERY row (hooks and body)
-5. Follow the Short Lines Rule — one thought, one breath per row
-6. Follow the Format Consistency Rule — ${params.agcBodyFormat === 'face-to-camera' ? 'all speaking rows ON CAMERA' : 'all speaking rows SCRIPT (VO)'}
-7. Use real customer language pulled directly from the review data
-8. End with 8-12 extra B-roll shots
-9. Heavily apply the principles from ${params.bookReference} throughout
-10. The FIRST line of the body must NEVER repeat or paraphrase ANY hook — hooks are entry points into the body, the body advances from where any hook leaves off
-
-CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : templateAdType === 'Ecom Style' ? `OUTPUT STRUCTURE — ECOM AD BRIEF (follow the dedicated Ecom template from system instructions):
-
-Follow the ECOM AD BRIEF OUTPUT FORMAT exactly. Output all 8 sections in order:
-1. **BRIEF INFO** — table with Brief ID, Date, Product, Collection, Collection Asset, Format
-2. **STRATEGY** — table with Awareness Level, Primary Emotion, Avatar, Landing Page
-3. **OFFER** — table with Promo, Promo Asset, Value Callout, Urgency Element
-4. **EDITING INSTRUCTIONS** — table with Pacing, Resolution, Caption & Graphics, Transitions, Music, Voiceover, Asset, Notes
-5. **SCRIPT (HOOKS)** — 3 hooks in a 4-column table: # | Shot Type | Suggested Visual | Hook Line
-6. **SCRIPT (BODY)** — body rows in a 4-column table: # | Shot Type | Suggested Visual | Script Line
-7. **KEY DATA POINTS** — every statistic and customer quote referenced, with source frequencies
-8. **HOW ${params.framework.toUpperCase()} WAS APPLIED** — walk through how the framework maps to specific rows in the body. Reference row numbers.
-
-ECOM CRITICAL RULES:
-- Shot Type column = footage category tag (Talking Head, Putting On Socks, Studio Product Shot, etc.)
-- Suggested Visual column = one conversational sentence describing what the viewer sees (8-20 words), NOT a label
-- Every visual must be grounded in footage that EXISTS — never reference gym, medical, sports, travel, hiking, children
-- Every script line must sound like a real person talking to a friend — full natural sentences, no fragments, no ad copy
-- Vary visuals: don't stack 2+ of the same shot type in a row
-- Always output exactly 3 hooks with different approaches. Note which principle each applies.
-- Script body row count adapts to concept and duration — each row = one thought, one breath
-- Choose a script framework that fits the concept, don't default to the same arc every time
-- Avoid overused patterns: "3pm fatigue", "sock drawer", "Here's the thing...", "What if you could...", "The result?"
-
-⚠️ HOOK-TO-BODY TRANSITION RULE (MANDATORY):
-- The FIRST line of the body script must NEVER repeat, paraphrase, or closely echo ANY of the 3 hooks. The hooks are ENTRY POINTS that each lead into the SAME body. If the body's first line says the same thing as a hook, the viewer hears the same sentence twice back-to-back — that's a production failure.
-- Each hook is a different door INTO the same room. The body is the room. The body's first line must ADVANCE the narrative from where any hook would leave off — not restart it.
-- Example FAIL: Hook = "I used to dread putting on socks every morning." → Body Line 1 = "Every morning was a struggle just to get my socks on." (Same idea, reworded.)
-- Example PASS: Hook = "I used to dread putting on socks every morning." → Body Line 1 = "Twenty minutes. That's how long it took — and by the time I was done, I was exhausted before my day even started." (Advances the story with new specific detail.)
-
-The brief should:
-1. Follow the exact ${params.framework} framework structure through the script body
-2. Auto-fill all Brief Info, Strategy, Offer, and Editing Instructions from context
-3. Match the ${params.funnelStage} funnel stage — appropriate hook intensity, CTA directness
-4. Use real customer language pulled directly from the review data
-5. Ground every visual in available footage — if you can't picture existing footage for a visual, redirect
-6. Write every line as a conversational sentence — read it out loud, if it sounds like an ad, rewrite it
-7. Heavily apply the principles from ${params.bookReference} throughout
-
-CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : templateAdType === 'Static' ? `OUTPUT STRUCTURE (follow this exact order):
-
-**1. STRATEGY SUMMARY** (at the very top)
-- Hypothesis
-- Ad Type (${params.adType} — Static Image)
-- Primary Persona
-- Awareness Level (${params.awarenessLevel})
-- Angle (the strategic messaging angle)
-
-**2. SCRIPT TABLE** (markdown table)
-Use the exact table format from the instructions:
-| Timestamp | Shot Type | Visuals | Line | Delivery |
-
-Put ALL ${params.hookVariations} hook variations FIRST in the table (labeled HOOK 1, HOOK 2, etc.), THEN a separator row, THEN the body script with timestamps.
-
-Each hook should use a different approach. After each hook label, note which principle it applies (e.g., "HOOK 1 — Hopkins Selector").
-
-**3. KEY DATA POINTS** — Every statistic and customer quote referenced, with source frequencies.
-
-**4. HOW ${params.framework.toUpperCase()} WAS APPLIED** — Walk through each phase of the ${params.framework} framework and explain how it maps to specific sections of the script table. Reference timestamps.
-
-The script should:
-1. Follow the exact ${params.framework} framework structure
-2. Be written specifically for ${params.adType} format — match the tone, structure, and delivery style
-3. Match the ${params.funnelStage} funnel stage — appropriate hook intensity, CTA directness
-4. Use real customer language pulled directly from the review data
-5. End with a clear, specific CTA appropriate for ${params.funnelStage}
-6. Stay within the ${durationTarget.sweetSpot} sweet spot and NEVER exceed ${durationTarget.hardCeiling} words total spoken word count for ${params.duration}. Count your words before outputting.
-7. ${durationTarget.voRequired ? `MUST include VO or spoken dialogue in every body row (mandatory for ${params.duration})` : `May be text-only/no-VO OR include VO — both valid for ${params.duration} short-form`}
-8. Heavily apply the principles from ${params.bookReference} throughout
-
-CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.` : `OUTPUT STRUCTURE — VIDEO PRODUCTION BRIEF (follow this exact order):
-
-**1. STRATEGY SUMMARY** (at the very top)
-- Hypothesis
-- Ad Type (${params.adType})
-- Primary Persona
-- Awareness Level (${params.awarenessLevel})
-- Angle (the strategic messaging angle)
-- Location (specific environment for the shoot)
-- Talent (who appears on screen — age range, look, energy, wardrobe)
-- Pacing${params.agcPacing ? ` (${params.agcPacing})` : ''}
-- Music direction
-- Offer (${params.offer !== 'None' ? params.offer : 'None'})
-
-**2. HOOKS** — ${params.hookVariations} hook variations as a production brief table:
-| Hook # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
-
-Each hook should use a DIFFERENT Building Block type and approach. Every hook MUST have spoken words in Lines.
-
-**3. BODY SECTION** — Main script body. Each row = one thought, one breath. Every row has a Building Block label.
-| # | Building Block | Shot Type | Shot Angle | Talent Notes | Shot Notes | Shot Visual | Lines | Editing Notes | Caption |
-
-**4. KEY DATA POINTS** — Every statistic and customer quote referenced, with source frequencies.
-
-**5. HOW ${params.framework.toUpperCase()} WAS APPLIED** — Walk through how the framework maps to the Building Block sequence. Reference row numbers.
-
-The brief should:
-1. Apply the ${params.framework} framework through the Building Block sequence — the framework shapes the persuasion arc
-2. Follow the production brief format with ALL columns on every row
-3. Match the ${params.funnelStage} funnel stage and ${params.awarenessLevel} awareness level
-4. Include a Building Block label on EVERY row (hooks and body)
-5. Follow the Short Lines Rule — one thought, one breath per row
-6. ${durationTarget.voRequired ? 'EVERY row must have spoken words in the Lines column — NO silent rows (VO is MANDATORY at ' + params.duration + ')' : 'For this short-form ' + params.duration + ' brief, you may use text-only/no-VO (on-screen text + b-roll with no spoken words) OR include VO — both are valid'}
-7. Stay within the ${durationTarget.sweetSpot} sweet spot and NEVER exceed ${durationTarget.hardCeiling} words total
-8. Use real customer language pulled directly from the review data
-9. End with a clear, specific CTA appropriate for ${params.funnelStage}
-10. Heavily apply the principles from ${params.bookReference} throughout
-11. The FIRST line of the body must NEVER repeat or paraphrase ANY hook — hooks are entry points into the body, the body advances from where any hook leaves off
-
-CRITICAL: Write completely original copy. Every line must be built from the actual review data: real customer language, real frequencies, real quotes. The four books teach you the craft; the review data gives you the material. If any line could have been written without looking at the data, rewrite it.`}`;
+`;
 
   // Inject memory briefing if available — focused on style/voice patterns
   const memorySection = memoryBriefing

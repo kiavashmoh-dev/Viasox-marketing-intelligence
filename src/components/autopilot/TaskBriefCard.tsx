@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { TaskPipelineState } from '../../engine/autopilotTypes';
-import { downloadBriefForAdType, parseKvTable, parseScriptTable } from '../../utils/downloadUtils';
+import { downloadBriefForAdType } from '../../utils/downloadUtils';
 import { getBriefTemplateId } from '../../prompts/briefTemplates';
+import BriefPreview from './BriefPreviews';
 import { buildBriefMeta } from '../../autopilot/briefMeta';
 
 interface Props {
@@ -10,11 +11,6 @@ interface Props {
   onRedo?: (index: number, feedback: string) => void;
   isRedoing?: boolean;
 }
-
-// ─── Style constants matching the E319 template ──────────────────────────────
-
-const NAVY = '#1b365d';
-const BORDER = '#bfbfbf';
 
 // ─── Regen Stage Tracker ─────────────────────────────────────────────────────
 // Visible during redo. Mirrors the per-brief pipeline stages so the user
@@ -92,90 +88,9 @@ function RegenStageTracker({ step }: { step: string }) {
   );
 }
 
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <div className="text-xs font-bold text-slate-800 mt-4 mb-1.5 uppercase tracking-wider">
-      {title}
-    </div>
-  );
-}
 
-function KvTable({ data, fields }: { data: Record<string, string>; fields: string[] }) {
-  const rows = fields.filter((f) => data[f]);
-  if (rows.length === 0) return null;
-  return (
-    <table className="w-full text-xs border-collapse mb-1">
-      <tbody>
-        {rows.map((field) => (
-          <tr key={field} style={{ borderBottom: `1px solid ${BORDER}` }}>
-            <td
-              className="py-1.5 px-2.5 font-semibold text-white align-top"
-              style={{ background: NAVY, width: 140, border: `1px solid ${BORDER}`, fontSize: 11 }}
-            >
-              {field}
-            </td>
-            <td
-              className="py-1.5 px-2.5 text-slate-800 align-top"
-              style={{ border: `1px solid ${BORDER}`, fontSize: 11 }}
-            >
-              {data[field] || '\u2014'}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-function ScriptTablePreview({ rows, title, lineHeader }: { rows: string[][]; title: string; lineHeader: string }) {
-  if (rows.length === 0) return null;
-  return (
-    <>
-      <SectionHeader title={title} />
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse mb-1">
-          <thead>
-            <tr>
-              {['LINE #', 'SHOT TYPE', 'SUGGESTED VISUAL', lineHeader].map((h, i) => (
-                <th
-                  key={h}
-                  className="py-1.5 px-2 text-white font-semibold text-left"
-                  style={{
-                    background: NAVY,
-                    border: `1px solid ${BORDER}`,
-                    fontSize: 10,
-                    width: i === 0 ? 40 : i === 1 ? 80 : i === 2 ? '30%' : undefined,
-                  }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, ri) => (
-              <tr key={ri}>
-                {[row[0] || '', row[1] || '', row[2] || '', row[3] || ''].map((cell, ci) => (
-                  <td
-                    key={ci}
-                    className="py-1.5 px-2 text-slate-800 align-top"
-                    style={{
-                      border: `1px solid ${BORDER}`,
-                      fontSize: 11,
-                      textAlign: ci === 0 ? 'center' : 'left',
-                    }}
-                  >
-                    {cell || '\u2014'}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-}
+// KvTable / ScriptTablePreview have moved into BriefPreviews.tsx so each
+// ad type's preview component owns its own rendering.
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -222,15 +137,9 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
     downloadBriefForAdType(briefAdType, scriptResult, task.product, task.parsed.name);
   };
 
-  // Parse brief sections for formatted preview — only when genuinely complete
-  // (not mid-regen). During regen, scriptResult still holds the OLD value
-  // until the final assignment, so we suppress parsing to avoid showing stale.
-  const briefInfo = showCompleteUi ? parseKvTable(scriptResult, 'BRIEF INFO') : {};
-  const strategy = showCompleteUi ? parseKvTable(scriptResult, 'STRATEGY') : {};
-  const offer = showCompleteUi ? parseKvTable(scriptResult, 'OFFER') : {};
-  const editing = showCompleteUi ? parseKvTable(scriptResult, 'EDITING INSTRUCTIONS') : {};
-  const hooks = showCompleteUi ? parseScriptTable(scriptResult, 'SCRIPT \\(HOOKS\\)') : [];
-  const body = showCompleteUi ? parseScriptTable(scriptResult, 'SCRIPT \\(BODY\\)') : [];
+  // The formatted preview now uses BriefPreview which picks the right
+  // template-specific rendering based on adType. Section parsing happens
+  // inside that component so this surface stays simple.
 
   const handleRedo = () => {
     if (!feedbackText.trim() || !onRedo) return;
@@ -372,37 +281,13 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
             </div>
           )}
 
-          {/* Formatted Brief Preview — only when truly complete AND not
-              mid-regen. Prevents the old brief from flashing as "complete"
-              during the regen cascade. */}
+          {/* Formatted Brief Preview — picks the right template renderer
+              based on adType (Ecom / Full AI / AI Podcast / AGC /
+              Single-Talent / Filmed Podcast / Packaging). Only renders when
+              truly complete AND not mid-regen so stale content doesn't show. */}
           {showCompleteUi && scriptResult && (
             <div className="p-4">
-              {/* Title */}
-              <div className="text-center text-sm font-bold text-slate-800 mb-3">
-                Ecom Ad Template
-              </div>
-
-              {/* BRIEF INFO */}
-              <SectionHeader title="Brief Info" />
-              <KvTable data={briefInfo} fields={['Brief ID', 'Date', 'Product', 'Collection', 'Collection Asset', 'Format']} />
-
-              {/* STRATEGY */}
-              <SectionHeader title="Strategy" />
-              <KvTable data={strategy} fields={['Awareness Level', 'Primary Emotion', 'Avatar', 'Landing Page']} />
-
-              {/* OFFER */}
-              <SectionHeader title="Offer" />
-              <KvTable data={offer} fields={['Promo', 'Promo Asset', 'Value Callout', 'Urgency Element']} />
-
-              {/* EDITING INSTRUCTIONS */}
-              <SectionHeader title="Editing Instructions" />
-              <KvTable data={editing} fields={['Pacing', 'Resolution', 'Caption & Graphics', 'Captions', 'Transitions', 'Music', 'Voiceover', 'Asset', 'Notes']} />
-
-              {/* SCRIPT (HOOKS) */}
-              <ScriptTablePreview rows={hooks} title="Script (Hooks)" lineHeader="HOOK LINE" />
-
-              {/* SCRIPT (BODY) */}
-              <ScriptTablePreview rows={body} title="Script (Body)" lineHeader="SCRIPT LINE" />
+              <BriefPreview adType={briefAdType} scriptResult={scriptResult} />
 
               {/* Actions */}
               <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100">

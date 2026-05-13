@@ -795,6 +795,8 @@ interface CsvTemplateConfig {
   bodyTable: { markdownHeader: string; columns: string[] };
   /** Optional secondary table (e.g., Hooks for Single-Talent). */
   secondaryTable?: { markdownHeader: string; columns: string[] };
+  /** Optional tertiary table (e.g., Extra B-Roll for AGC). */
+  tertiaryTable?: { markdownHeader: string; columns: string[] };
 }
 
 function buildCsv(markdown: string, config: CsvTemplateConfig, product: string, adType: string): string {
@@ -823,10 +825,21 @@ function buildCsv(markdown: string, config: CsvTemplateConfig, product: string, 
     return { rows, endIdx: i };
   };
 
-  // Find a markdown heading and return its line index
+  // Find a markdown heading and return its line index. LLMs sometimes
+  // rephrase or omit numbering, so accept H1-H4 with optional numbering
+  // and accept the header text appearing ANYWHERE on the heading line
+  // (e.g., `### 4. HOOKS — 6-Hook Matrix` or `## Hooks` both match `HOOKS`).
   const findHeader = (header: string): number => {
-    const pattern = new RegExp(`^###?\\s*\\d*\\.?\\s*${header}`, 'i');
-    return lines.findIndex((l) => pattern.test(l.trim()));
+    // 1) Strict match: heading marker + optional numbering + the literal header
+    const strict = new RegExp(`^#{1,4}\\s*\\d*\\.?\\s*${header}`, 'i');
+    let idx = lines.findIndex((l) => strict.test(l.trim()));
+    if (idx >= 0) return idx;
+    // 2) Loose match: heading marker anywhere followed by the header (treat
+    //    the rest of the line as wildcard). This catches reordered headings
+    //    like `### Strategy Section — Concept First` etc.
+    const loose = new RegExp(`^#{1,4}.*${header}`, 'i');
+    idx = lines.findIndex((l) => loose.test(l.trim()));
+    return idx;
   };
 
   // Extract a bulleted key-value block (e.g., "- **Concept:** ...") below a header
@@ -913,6 +926,28 @@ function buildCsv(markdown: string, config: CsvTemplateConfig, product: string, 
         break;
       }
       if (lines[i].trim().startsWith('#')) break;
+    }
+  }
+
+  // Tertiary table (e.g., Extra B-Roll for AGC)
+  if (config.tertiaryTable) {
+    const idx = findHeader(config.tertiaryTable.markdownHeader);
+    csv.push(['']);
+    csv.push([config.tertiaryTable.markdownHeader.replace(/[*\\]/g, '').toUpperCase()]);
+    csv.push(config.tertiaryTable.columns);
+    if (idx >= 0) {
+      for (let i = idx + 1; i < lines.length; i++) {
+        if (lines[i].trim().startsWith('|')) {
+          const { rows } = parseTable(i);
+          for (let r = 1; r < rows.length; r++) {
+            const row = rows[r];
+            while (row.length < config.tertiaryTable.columns.length) row.push('');
+            csv.push(row.slice(0, config.tertiaryTable.columns.length));
+          }
+          break;
+        }
+        if (lines[i].trim().startsWith('#')) break;
+      }
     }
   }
 
@@ -1050,6 +1085,44 @@ export function downloadPackagingBriefCsv(
   downloadCsv(csv, overrideTaskName || `packaging-${product.toLowerCase()}-${Date.now()}`);
 }
 
+// ─── AGC Brief (CSV) — matches the new 6-hook / 8-column template ───────
+
+export function downloadAgcBriefCsv(
+  markdown: string,
+  product: string,
+  adType: string,
+  overrideTaskName?: string,
+): void {
+  const csv = buildCsv(markdown, {
+    title: 'AGC PRODUCTION BRIEF',
+    kvSections: [
+      {
+        markdownHeader: 'STRATEGY SECTION',
+        csvLabel: 'Strategy',
+        fields: ['Concept', 'Angle', 'Avatar', 'Location', 'Product', 'Collection', 'Promotion', 'Offer', 'Pacing', 'Music'],
+      },
+      {
+        markdownHeader: 'PRODUCTION NOTES',
+        csvLabel: 'Production Notes',
+        fields: ['Wardrobe', 'Lighting', 'Props', 'Additional Notes'],
+      },
+    ],
+    secondaryTable: {
+      markdownHeader: 'HOOKS.*6-Hook Matrix',
+      columns: ['Hook', 'Building Block', 'Shot Type (incl. angle)', 'Talent', 'Visual', 'Lines', 'Editing Notes', 'Caption'],
+    },
+    bodyTable: {
+      markdownHeader: 'BODY SECTION',
+      columns: ['#', 'Building Block', 'Shot Type (incl. angle)', 'Talent', 'Visual', 'Lines', 'Editing Notes', 'Caption'],
+    },
+    tertiaryTable: {
+      markdownHeader: 'EXTRA B-ROLL LIST',
+      columns: ['#', 'Shot Type', 'Visual', 'Editing Notes'],
+    },
+  }, product, adType);
+  downloadCsv(csv, overrideTaskName || `agc-${product.toLowerCase()}-${Date.now()}`);
+}
+
 // ─── Router: pick the right exporter for an ad type ─────────────────────
 
 import type { AdType } from '../engine/types';
@@ -1062,7 +1135,7 @@ export function downloadBriefForAdType(
 ): void {
   switch (adType) {
     case 'AGC (Actor Generated Content)':
-      downloadProductionBriefCsv(markdown, product, adType, taskName);
+      downloadAgcBriefCsv(markdown, product, adType, taskName);
       return;
     case 'Fake Podcast Ads':
       downloadFilmedPodcastBriefCsv(markdown, product, adType, taskName);
