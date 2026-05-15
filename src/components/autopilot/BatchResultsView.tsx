@@ -82,11 +82,11 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
   // Each ad type now has its own template + downloader. Split completed
   // briefs into the two delivery paths so the user gets one button per
   // file kind when the batch is mixed:
-  //   - CSV path (production): AGC, Single-Talent, Filmed Podcast, Packaging
-  //   - DOC path (editing): Ecom, Full AI Visual, AI Podcast, Static
+  //   - CSV path (production via AGC template): AGC, Founder, Spokesperson,
+  //     Filmed Podcast, Packaging/Employee, UGC
+  //   - DOC path (editing via Ecom template): Ecom Style, Full AI, AI Podcast, Static
   const csvCompleted = completed.filter((ts) => {
-    const id = getBriefTemplateId(ts.task.scriptParamsBase.adType);
-    return id === 'agc' || id === 'singletalent' || id === 'filmedpodcast' || id === 'packaging';
+    return getBriefTemplateId(ts.task.scriptParamsBase.adType) === 'agc';
   });
   const docCompleted = completed.filter((ts) => !csvCompleted.includes(ts));
 

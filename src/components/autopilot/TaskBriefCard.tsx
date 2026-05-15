@@ -126,12 +126,7 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
   //   - Editing briefs (Ecom, Full AI Visual, AI Podcast, Static) → Doc.
   // The router in downloadUtils.ts handles picking the right exporter.
   const briefAdType = task.scriptParamsBase.adType;
-  const templateId = getBriefTemplateId(briefAdType);
-  const isCsvExport =
-    templateId === 'agc' ||
-    templateId === 'singletalent' ||
-    templateId === 'filmedpodcast' ||
-    templateId === 'packaging';
+  const isCsvExport = getBriefTemplateId(briefAdType) === 'agc';
   const handleExport = () => {
     if (!scriptResult) return;
     downloadBriefForAdType(briefAdType, scriptResult, task.product, task.parsed.name);
