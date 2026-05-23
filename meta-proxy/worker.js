@@ -22,22 +22,24 @@ const KV_KEY_TOKEN = 'meta:token';
 const KV_STATE_PREFIX = 'meta:state:';
 const STATE_TTL_SECONDS = 600; // 10 min — OAuth dance must finish in this window
 
-// Scopes the app requests. Trimmed to the minimum needed for Facebook ad
-// comment pulling + ad metadata. Instagram scopes (instagram_business_basic,
-// instagram_business_manage_comments) require the "Instagram Graph API"
-// product to be added to the Meta app and approved separately — we'll add
-// those when we extend the puller to Instagram ads.
+// Scopes the app requests — READ-ONLY by design.
+// We deliberately omit any scope that can mutate Meta state:
+//   - NOT requesting ads_management (write to ads) — only ads_read
+//   - NOT requesting business_management (write to business assets)
+//   - NOT requesting pages_manage_* (write to pages)
+//   - NOT requesting publish_actions (post to feed)
+// Combined with the GET-only enforcement on /meta/graph below, this guarantees
+// the integration cannot modify, create, or delete anything on the Meta side.
 //   - public_profile: required, returned automatically with any FB login
-//   - pages_show_list / pages_read_engagement / pages_read_user_content:
-//     list pages you manage + read their posts and comments
-//   - business_management: access business assets (ad account links etc.)
-//   - ads_read: read ad metadata + insights (used in Phase 2)
+//   - pages_show_list: list pages the user manages (read-only)
+//   - pages_read_engagement: read engagement metrics + comments on Pages
+//   - pages_read_user_content: read user-generated content on Pages
+//   - ads_read: read ad metadata + insights (the read-only counterpart to ads_management)
 const OAUTH_SCOPES = [
   'public_profile',
   'pages_show_list',
   'pages_read_engagement',
   'pages_read_user_content',
-  'business_management',
   'ads_read',
 ].join(',');
 
@@ -99,21 +101,37 @@ async function clearToken(env) {
   await env.META_KV.delete(KV_KEY_TOKEN);
 }
 
-// Wrap a Graph API call so the token stays server-side and we get useful errors
-async function graphCall(env, path, { method = 'GET', params = {}, body = null } = {}) {
+// ─── READ-ONLY ENFORCEMENT ──────────────────────────────────────────────
+// This Worker is a strict read-only mirror of the Graph API. Any non-GET
+// request is rejected before it ever reaches Meta's servers, regardless
+// of what the caller (browser, future code, compromised dependency)
+// attempts. Combined with the read-only OAuth scopes above, this means
+// the integration physically cannot modify any Meta state.
+const ALLOWED_GRAPH_METHODS = new Set(['GET']);
+
+// Wrap a Graph API call so the token stays server-side and we get useful errors.
+// Refuses non-GET methods at the Worker level so the read-only guarantee
+// holds even if the caller asks for a write.
+async function graphCall(env, path, { method = 'GET', params = {} } = {}) {
+  const upperMethod = (method || 'GET').toUpperCase();
+  if (!ALLOWED_GRAPH_METHODS.has(upperMethod)) {
+    return {
+      ok: false,
+      status: 405,
+      data: { error: { message: `Method ${upperMethod} not allowed — this proxy is read-only (GET only).`, type: 'ReadOnlyProxyError', code: 'method_not_allowed' } },
+    };
+  }
   const token = await loadToken(env);
   if (!token?.access_token) {
-    return { ok: false, status: 401, error: 'Meta not connected' };
+    return { ok: false, status: 401, data: { error: 'Meta not connected' } };
   }
   const baseUrl = `https://graph.facebook.com/${env.META_GRAPH_VERSION}`;
   const search = new URLSearchParams({ ...params, access_token: token.access_token });
   const url = `${baseUrl}/${path.replace(/^\//, '')}?${search.toString()}`;
-  const init = {
-    method,
+  const res = await fetch(url, {
+    method: 'GET', // forced GET — never derive from caller, never send a body
     headers: { 'Content-Type': 'application/json' },
-  };
-  if (body && method !== 'GET') init.body = JSON.stringify(body);
-  const res = await fetch(url, init);
+  });
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, status: res.status, data };
 }
@@ -286,11 +304,13 @@ async function handleGraph(request, env) {
   } catch {
     return jsonResponse({ error: 'Invalid JSON body' }, 400);
   }
-  const { path, method = 'GET', params = {}, body = null } = payload || {};
+  // Body field is intentionally ignored — this proxy is GET-only and never
+  // sends request bodies to Meta. See graphCall() for the enforcement.
+  const { path, method = 'GET', params = {} } = payload || {};
   if (!path || typeof path !== 'string') {
     return jsonResponse({ error: 'Missing "path" in body' }, 400);
   }
-  const result = await graphCall(env, path, { method, params, body });
+  const result = await graphCall(env, path, { method, params });
   return jsonResponse(result.data ?? {}, result.status || (result.ok ? 200 : 500));
 }
 

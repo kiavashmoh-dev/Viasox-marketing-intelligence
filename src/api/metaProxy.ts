@@ -62,8 +62,10 @@ export async function disconnectMeta(): Promise<void> {
 }
 
 /**
- * Server-side Graph API proxy. The Worker injects the access token; we just
- * pass the path + query params.
+ * Server-side Graph API proxy — READ-ONLY by design. The Worker enforces
+ * GET-only at the infrastructure level; non-GET requests are rejected
+ * with HTTP 405 before they reach Meta. The Worker injects the access
+ * token; we just pass the path + query params.
  *
  * @example
  *   const me = await metaGraph<{ id: string; name: string }>({ path: 'me', params: { fields: 'id,name' } });
@@ -71,14 +73,13 @@ export async function disconnectMeta(): Promise<void> {
  */
 export async function metaGraph<T = unknown>(opts: {
   path: string;
-  method?: 'GET' | 'POST';
   params?: Record<string, string | number | boolean>;
-  body?: unknown;
 }): Promise<T> {
   const res = await fetch(`${META_PROXY_URL}/meta/graph`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(opts),
+    // method is implicitly 'GET' on the Worker side — we never send writes
+    body: JSON.stringify({ ...opts, method: 'GET' }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
