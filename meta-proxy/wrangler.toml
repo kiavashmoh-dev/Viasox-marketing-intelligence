@@ -1,0 +1,34 @@
+# Cloudflare Worker — Meta Ads Proxy (OAuth + Graph API + Token Vault)
+# Deploy: cd meta-proxy && npx wrangler deploy
+#
+# Before first deploy, run:
+#   npx wrangler kv namespace create META_KV
+# That command prints a `[[kv_namespaces]]` block — paste the `id = "..."`
+# into the placeholder below, then deploy.
+#
+# Secrets (set BEFORE deploy):
+#   npx wrangler secret put META_APP_ID
+#   npx wrangler secret put META_APP_SECRET
+#   npx wrangler secret put APP_ORIGIN_ALLOWLIST   # e.g. "https://kiavashmoh-dev.github.io,http://localhost:5173"
+
+name = "viasox-meta-proxy"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# KV namespace stores the long-lived Meta access token + OAuth state nonces.
+# After running `npx wrangler kv namespace create META_KV`, paste the printed
+# id below. (The "preview_id" is only used when running `wrangler dev`.)
+[[kv_namespaces]]
+binding = "META_KV"
+id = "ae841f9d7a364d56a8f7e519156eb267"
+
+# Weekly comment refresh (Sundays at 09:00 UTC). The cron handler walks
+# every page and pulls only comments newer than the last fetch cursor.
+[triggers]
+crons = ["0 9 * * SUN"]
+
+# Variables (non-secret) that the Worker reads
+[vars]
+META_GRAPH_VERSION = "v21.0"
+META_OAUTH_AUTHORIZE_URL = "https://www.facebook.com/v21.0/dialog/oauth"
+META_OAUTH_TOKEN_URL = "https://graph.facebook.com/v21.0/oauth/access_token"

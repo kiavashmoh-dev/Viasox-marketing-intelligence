@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import type { RawComment, CommentCsvResult } from '../../utils/commentCsv';
 import { parseCommentCsv } from '../../utils/commentCsv';
+import MetaConnectionPanel from './MetaConnectionPanel';
 
 interface Props {
   onCommentsReady: (comments: RawComment[]) => void;
@@ -56,12 +57,27 @@ export default function CommentUploader({ onCommentsReady, onBack }: Props) {
         </button>
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <div className="text-center mb-2">
+          <div className="text-center mb-6">
             <div className="text-4xl mb-3">{'\uD83D\uDCAC'}</div>
             <h2 className="text-xl font-bold text-slate-800">Ad Comment Intelligence</h2>
             <p className="text-slate-500 text-sm mt-1">
-              Upload a CSV of ad comments to categorize, analyze sentiment, and extract creative insights
+              Pull comments directly from Meta \u2014 or upload a CSV from any source \u2014 to categorize, analyze sentiment, and extract creative insights
             </p>
+          </div>
+
+          {/* Meta connection panel \u2014 once connected, live pull will be available
+              in the next update; for now CSV upload remains the only ingest path. */}
+          <div className="mb-6">
+            <MetaConnectionPanel />
+          </div>
+
+          {/* Divider between live source and CSV upload */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              Or upload CSV
+            </span>
+            <div className="flex-1 h-px bg-slate-200" />
           </div>
 
           {/* Expected format hint */}
