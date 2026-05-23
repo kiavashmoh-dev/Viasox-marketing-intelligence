@@ -22,18 +22,23 @@ const KV_KEY_TOKEN = 'meta:token';
 const KV_STATE_PREFIX = 'meta:state:';
 const STATE_TTL_SECONDS = 600; // 10 min — OAuth dance must finish in this window
 
-// Scopes the app requests. Add Instagram + ads scopes once App Review approves them.
+// Scopes the app requests. Trimmed to the minimum needed for Facebook ad
+// comment pulling + ad metadata. Instagram scopes (instagram_business_basic,
+// instagram_business_manage_comments) require the "Instagram Graph API"
+// product to be added to the Meta app and approved separately — we'll add
+// those when we extend the puller to Instagram ads.
+//   - public_profile: required, returned automatically with any FB login
+//   - pages_show_list / pages_read_engagement / pages_read_user_content:
+//     list pages you manage + read their posts and comments
+//   - business_management: access business assets (ad account links etc.)
+//   - ads_read: read ad metadata + insights (used in Phase 2)
 const OAUTH_SCOPES = [
   'public_profile',
-  'email',
   'pages_show_list',
   'pages_read_engagement',
   'pages_read_user_content',
   'business_management',
   'ads_read',
-  'read_insights',
-  'instagram_basic',
-  'instagram_manage_comments',
 ].join(',');
 
 // ───────────────────────────────────────────────────────────────────────
