@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import type { RawComment, CommentCsvResult } from '../../utils/commentCsv';
 import { parseCommentCsv } from '../../utils/commentCsv';
 import MetaConnectionPanel from './MetaConnectionPanel';
+import CommentPullPanel from './CommentPullPanel';
+import type { MetaStatus } from '../../api/metaProxy';
 
 interface Props {
   onCommentsReady: (comments: RawComment[]) => void;
@@ -14,6 +16,7 @@ export default function CommentUploader({ onCommentsReady, onBack }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const [parseResult, setParseResult] = useState<CommentCsvResult | null>(null);
   const [parsing, setParsing] = useState(false);
+  const [metaConnected, setMetaConnected] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
@@ -65,11 +68,21 @@ export default function CommentUploader({ onCommentsReady, onBack }: Props) {
             </p>
           </div>
 
-          {/* Meta connection panel \u2014 once connected, live pull will be available
-              in the next update; for now CSV upload remains the only ingest path. */}
-          <div className="mb-6">
-            <MetaConnectionPanel />
+          {/* Meta connection panel \u2014 when connected, the live comment puller
+              appears below it; when not, only the CSV upload path is available. */}
+          <div className="mb-4">
+            <MetaConnectionPanel onChange={(s: MetaStatus) => setMetaConnected(s.connected)} />
           </div>
+
+          {/* Live comment puller \u2014 only shown when Meta is connected. Pulls
+              the last 90 days on first run, then delta-pulls thereafter.
+              "Analyze" hands the bank contents to the parent pipeline (same
+              one CSV uploads use). */}
+          {metaConnected && (
+            <div className="mb-6">
+              <CommentPullPanel onAnalyzeBank={onCommentsReady} />
+            </div>
+          )}
 
           {/* Divider between live source and CSV upload */}
           <div className="flex items-center gap-3 mb-6">
