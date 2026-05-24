@@ -19,6 +19,7 @@
  */
 
 const KV_KEY_TOKEN = 'meta:token';
+const KV_KEY_PAGE_TOKENS = 'meta:page_tokens';
 const KV_STATE_PREFIX = 'meta:state:';
 const STATE_TTL_SECONDS = 600; // 10 min — OAuth dance must finish in this window
 
@@ -99,6 +100,7 @@ async function saveToken(env, tokenRecord) {
 
 async function clearToken(env) {
   await env.META_KV.delete(KV_KEY_TOKEN);
+  await env.META_KV.delete(KV_KEY_PAGE_TOKENS);
 }
 
 // ─── READ-ONLY ENFORCEMENT ──────────────────────────────────────────────
@@ -109,10 +111,58 @@ async function clearToken(env) {
 // the integration physically cannot modify any Meta state.
 const ALLOWED_GRAPH_METHODS = new Set(['GET']);
 
+async function loadPageTokens(env) {
+  const raw = await env.META_KV.get(KV_KEY_PAGE_TOKENS);
+  if (!raw) return {};
+  try { return JSON.parse(raw); } catch { return {}; }
+}
+
+async function savePageTokens(env, map) {
+  await env.META_KV.put(KV_KEY_PAGE_TOKENS, JSON.stringify(map));
+}
+
+/**
+ * Refresh the cached map of { page_id: page_access_token } by calling
+ * /me/accounts with the stored user token. Page access tokens are
+ * REQUIRED for engagement endpoints like /POST_ID/comments — a user
+ * token alone returns "(#100) Tried accessing nonexisting field" or
+ * "(#200) The user hasn't authorized" on the same call.
+ */
+async function refreshPageTokens(env) {
+  const userToken = await loadToken(env);
+  if (!userToken?.access_token) {
+    return { ok: false, status: 401, data: { error: 'Meta not connected' } };
+  }
+  const baseUrl = `https://graph.facebook.com/${env.META_GRAPH_VERSION}`;
+  const map = {};
+  let nextUrl = `${baseUrl}/me/accounts?fields=id,name,access_token&limit=100&access_token=${userToken.access_token}`;
+  let pages = 0;
+  while (nextUrl) {
+    const res = await fetch(nextUrl);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { ok: false, status: res.status, data };
+    }
+    for (const p of data.data ?? []) {
+      if (p.id && p.access_token) {
+        map[p.id] = { token: p.access_token, name: p.name || null };
+        pages++;
+      }
+    }
+    nextUrl = data.paging?.next || null;
+  }
+  await savePageTokens(env, map);
+  return { ok: true, status: 200, data: { page_count: pages } };
+}
+
 // Wrap a Graph API call so the token stays server-side and we get useful errors.
 // Refuses non-GET methods at the Worker level so the read-only guarantee
 // holds even if the caller asks for a write.
-async function graphCall(env, path, { method = 'GET', params = {} } = {}) {
+//
+// When `page_id` is provided in opts, uses that page's cached access token
+// instead of the user token. Page tokens are required for post-engagement
+// endpoints (/POST_ID/comments etc.).
+async function graphCall(env, path, { method = 'GET', params = {}, page_id = null } = {}) {
   const upperMethod = (method || 'GET').toUpperCase();
   if (!ALLOWED_GRAPH_METHODS.has(upperMethod)) {
     return {
@@ -121,12 +171,30 @@ async function graphCall(env, path, { method = 'GET', params = {} } = {}) {
       data: { error: { message: `Method ${upperMethod} not allowed — this proxy is read-only (GET only).`, type: 'ReadOnlyProxyError', code: 'method_not_allowed' } },
     };
   }
-  const token = await loadToken(env);
-  if (!token?.access_token) {
-    return { ok: false, status: 401, data: { error: 'Meta not connected' } };
+
+  // Resolve the right token: page token if page_id specified, otherwise user token
+  let tokenToUse;
+  if (page_id) {
+    const pageTokens = await loadPageTokens(env);
+    const entry = pageTokens[page_id];
+    if (!entry?.token) {
+      return {
+        ok: false,
+        status: 412,
+        data: { error: { message: `No cached page token for page_id=${page_id}. Call /meta/page-tokens/refresh first.`, type: 'MissingPageToken', code: 'page_token_missing' } },
+      };
+    }
+    tokenToUse = entry.token;
+  } else {
+    const userToken = await loadToken(env);
+    if (!userToken?.access_token) {
+      return { ok: false, status: 401, data: { error: 'Meta not connected' } };
+    }
+    tokenToUse = userToken.access_token;
   }
+
   const baseUrl = `https://graph.facebook.com/${env.META_GRAPH_VERSION}`;
-  const search = new URLSearchParams({ ...params, access_token: token.access_token });
+  const search = new URLSearchParams({ ...params, access_token: tokenToUse });
   const url = `${baseUrl}/${path.replace(/^\//, '')}?${search.toString()}`;
   const res = await fetch(url, {
     method: 'GET', // forced GET — never derive from caller, never send a body
@@ -306,12 +374,26 @@ async function handleGraph(request, env) {
   }
   // Body field is intentionally ignored — this proxy is GET-only and never
   // sends request bodies to Meta. See graphCall() for the enforcement.
-  const { path, method = 'GET', params = {} } = payload || {};
+  const { path, method = 'GET', params = {}, page_id = null } = payload || {};
   if (!path || typeof path !== 'string') {
     return jsonResponse({ error: 'Missing "path" in body' }, 400);
   }
-  const result = await graphCall(env, path, { method, params });
+  const result = await graphCall(env, path, { method, params, page_id });
   return jsonResponse(result.data ?? {}, result.status || (result.ok ? 200 : 500));
+}
+
+async function handlePageTokensRefresh(request, env) {
+  if (!isOriginAllowed(request, env)) return jsonResponse({ error: 'Origin not allowed' }, 403);
+  const result = await refreshPageTokens(env);
+  return jsonResponse(result.data ?? {}, result.status || (result.ok ? 200 : 500));
+}
+
+async function handlePageTokensList(request, env) {
+  // Returns the LIST of cached pages (id + name only) — never the tokens.
+  if (!isOriginAllowed(request, env)) return jsonResponse({ error: 'Origin not allowed' }, 403);
+  const map = await loadPageTokens(env);
+  const pages = Object.entries(map).map(([id, info]) => ({ id, name: info.name || null }));
+  return jsonResponse({ pages });
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -356,8 +438,12 @@ export default {
       response = await handleDisconnect(request, env);
     } else if (request.method === 'POST' && path === '/meta/graph') {
       response = await handleGraph(request, env);
+    } else if (request.method === 'POST' && path === '/meta/page-tokens/refresh') {
+      response = await handlePageTokensRefresh(request, env);
+    } else if (request.method === 'GET' && path === '/meta/page-tokens') {
+      response = await handlePageTokensList(request, env);
     } else if (request.method === 'GET' && path === '/') {
-      response = jsonResponse({ ok: true, service: 'viasox-meta-proxy', endpoints: ['/meta/oauth/start', '/meta/oauth/callback', '/meta/status', '/meta/disconnect', '/meta/graph'] });
+      response = jsonResponse({ ok: true, service: 'viasox-meta-proxy', endpoints: ['/meta/oauth/start', '/meta/oauth/callback', '/meta/status', '/meta/disconnect', '/meta/graph', '/meta/page-tokens', '/meta/page-tokens/refresh'] });
     } else {
       response = jsonResponse({ error: 'Not found' }, 404);
     }

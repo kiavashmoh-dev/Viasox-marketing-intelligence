@@ -170,25 +170,58 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
       )}
 
       {/* Last pull summary */}
-      {summary && !pulling && (
-        <div className={`border rounded-lg p-3 text-xs ${summary.newCommentsCount > 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
-          <div className="font-semibold">
-            {summary.newCommentsCount > 0
-              ? `Pulled ${summary.newCommentsCount.toLocaleString()} new comments from ${summary.adsScanned} ads`
-              : `No new comments — ${summary.adsScanned} ads scanned`}
+      {summary && !pulling && (() => {
+        const errors = summary.perAd.filter((a) => a.error);
+        const errorRatio = summary.adsScanned > 0 ? errors.length / summary.adsScanned : 0;
+        const allFailed = errors.length > 0 && errors.length === summary.adsScanned;
+        const tone = allFailed
+          ? 'bg-red-50 border-red-200 text-red-900'
+          : summary.newCommentsCount > 0
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+            : 'bg-slate-50 border-slate-200 text-slate-700';
+
+        // Group errors by message so we don't show 2032 identical lines
+        const errorGroups = new Map<string, number>();
+        for (const e of errors) {
+          if (!e.error) continue;
+          errorGroups.set(e.error, (errorGroups.get(e.error) ?? 0) + 1);
+        }
+        const topErrors = Array.from(errorGroups.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3);
+
+        return (
+          <div className={`border rounded-lg p-3 text-xs ${tone}`}>
+            <div className="font-semibold">
+              {summary.newCommentsCount > 0
+                ? `Pulled ${summary.newCommentsCount.toLocaleString()} new comments from ${summary.adsScanned} ads`
+                : allFailed
+                  ? `Every ad errored (${summary.adsScanned} of ${summary.adsScanned}) — see error details below`
+                  : `No new comments — ${summary.adsScanned} ads scanned`}
+            </div>
+            {summary.isInitialBackfill && !allFailed && (
+              <div className="mt-1 text-[10px] opacity-75">
+                Initial 90-day backfill complete. Future pulls will only fetch new comments.
+              </div>
+            )}
+            {topErrors.length > 0 && (
+              <div className="mt-2 space-y-1">
+                <div className="text-[10px] font-semibold uppercase tracking-wider opacity-75">
+                  {errors.length} of {summary.adsScanned} ad{summary.adsScanned !== 1 ? 's' : ''} errored ({Math.round(errorRatio * 100)}%)
+                </div>
+                {topErrors.map(([msg, count], i) => (
+                  <div key={i} className="text-[10px] font-mono break-all bg-white/50 rounded px-2 py-1">
+                    <span className="opacity-60">[{count}×]</span> {msg.slice(0, 400)}{msg.length > 400 ? '…' : ''}
+                  </div>
+                ))}
+                {errorGroups.size > 3 && (
+                  <div className="text-[10px] opacity-60">+{errorGroups.size - 3} other error type{errorGroups.size - 3 !== 1 ? 's' : ''} — full list in browser console</div>
+                )}
+              </div>
+            )}
           </div>
-          {summary.isInitialBackfill && (
-            <div className="mt-1 text-[10px] opacity-75">
-              Initial 90-day backfill complete. Future pulls will only fetch new comments.
-            </div>
-          )}
-          {summary.perAd.some((a) => a.error) && (
-            <div className="mt-1 text-[10px] opacity-75">
-              {summary.perAd.filter((a) => a.error).length} ad{summary.perAd.filter((a) => a.error).length !== 1 ? 's' : ''} errored (see browser console).
-            </div>
-          )}
-        </div>
-      )}
+        );
+      })()}
 
       {/* Error */}
       {error && !pulling && (

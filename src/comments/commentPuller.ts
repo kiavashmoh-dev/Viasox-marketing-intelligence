@@ -12,7 +12,7 @@
  * because we never need to write anything to Meta.
  */
 
-import { metaGraph } from '../api/metaProxy';
+import { metaGraph, refreshPageTokens } from '../api/metaProxy';
 import { putComments, putCursor, getCursor, setLastPullAt } from './commentBank';
 import type { CommentRecord, AdSyncCursor, PullProgress, PullSummary } from './commentBankTypes';
 
@@ -75,11 +75,11 @@ function isAdActive(ad: AdRow): boolean {
 async function paginate<T>(
   initialPath: string,
   initialParams: Record<string, string | number>,
-  stopWhen?: (rows: T[]) => boolean,
+  options: { page_id?: string; stopWhen?: (rows: T[]) => boolean } = {},
 ): Promise<T[]> {
+  const { page_id, stopWhen } = options;
   const out: T[] = [];
-  // Initial page
-  let response = await metaGraph<GraphListResponse<T>>({ path: initialPath, params: initialParams });
+  let response = await metaGraph<GraphListResponse<T>>({ path: initialPath, params: initialParams, page_id });
   while (true) {
     if (response?.data?.length) out.push(...response.data);
     if (stopWhen?.(out)) break;
@@ -95,9 +95,20 @@ async function paginate<T>(
       if (k === 'access_token') continue; // safety: stripped server-side anyway
       params[k] = v;
     }
-    response = await metaGraph<GraphListResponse<T>>({ path: pathOnly, params });
+    response = await metaGraph<GraphListResponse<T>>({ path: pathOnly, params, page_id });
   }
   return out;
+}
+
+/**
+ * Extract the page_id from an effective_object_story_id. Meta's format is
+ * `{page_id}_{post_id}` — so the prefix before the first underscore is
+ * the page. Returns null if the ID doesn't match the expected shape (e.g.,
+ * Instagram-only or some Dynamic Creative ads).
+ */
+function extractPageId(postId: string): string | null {
+  const match = postId.match(/^(\d+)_/);
+  return match ? match[1] : null;
 }
 
 // ─── Main pull flow ────────────────────────────────────────────────────
@@ -116,8 +127,17 @@ export async function pullAllAdComments(
     ...p,
   } as PullProgress);
 
-  // 1) Discover ad accounts
+  // 0) Refresh page access tokens up front — page-post comments REQUIRE
+  //    a page token, not the user token, so the puller must cache these
+  //    before walking ads.
   reportProgress({ phase: 'discovering-ads', currentAd: 0, totalAds: 0, pulledSoFar: 0 });
+  try {
+    await refreshPageTokens();
+  } catch (err) {
+    console.warn('[commentPuller] Page token refresh failed — comment pulls will likely error', err);
+  }
+
+  // 1) Discover ad accounts
   const accounts = await paginate<AdAccountRow>('me/adaccounts', {
     fields: 'id,name,account_status',
     limit: 50,
@@ -173,13 +193,17 @@ export async function pullAllAdComments(
       : backfillSince;
 
     try {
+      // Extract page_id from the post (Meta format: {page_id}_{post_id}).
+      // The Worker uses this page's cached access token for the call —
+      // user tokens get rejected on engagement endpoints.
+      const pageId = extractPageId(postId);
       const commentRows = await paginate<CommentRow>(`${postId}/comments`, {
         fields: 'id,message,created_time,from,like_count',
         since: sinceUnix,
         limit: COMMENTS_PAGE_SIZE,
         // 'order=chronological' returns oldest-first, which is fine for delta cursors
         order: 'chronological',
-      });
+      }, { page_id: pageId ?? undefined });
 
       // Convert + filter empty + dedupe by Meta id within this batch
       const seen = new Set<string>();
@@ -203,6 +227,7 @@ export async function pullAllAdComments(
           campaignId: ad.campaign_id,
           adAccountId: ad.adAccountId,
           adAccountName: ad.adAccountName,
+          pageId: pageId ?? undefined,
           postId,
           platform: 'facebook',
           pulledAt: startedAt,

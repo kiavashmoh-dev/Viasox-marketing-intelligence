@@ -74,6 +74,10 @@ export async function disconnectMeta(): Promise<void> {
 export async function metaGraph<T = unknown>(opts: {
   path: string;
   params?: Record<string, string | number | boolean>;
+  /** When provided, the Worker uses that page's cached access token instead
+   * of the user token. Required for engagement endpoints like
+   * /POST_ID/comments. Call refreshPageTokens() before using this. */
+  page_id?: string;
 }): Promise<T> {
   const res = await fetch(`${META_PROXY_URL}/meta/graph`, {
     method: 'POST',
@@ -89,4 +93,30 @@ export async function metaGraph<T = unknown>(opts: {
     throw new Error(message);
   }
   return data as T;
+}
+
+/**
+ * Refresh the server-side cache of page access tokens. The Worker calls
+ * /me/accounts with the stored user token, then caches each page's
+ * access_token in KV. Required before pulling page-post comments
+ * (which need page tokens, not the user token).
+ */
+export async function refreshPageTokens(): Promise<{ page_count: number }> {
+  const res = await fetch(`${META_PROXY_URL}/meta/page-tokens/refresh`, {
+    method: 'POST',
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(`Page token refresh failed: ${JSON.stringify(data)}`);
+  }
+  return res.json();
+}
+
+/**
+ * List the cached pages (id + name only — tokens never leave the Worker).
+ */
+export async function listCachedPages(): Promise<{ pages: Array<{ id: string; name: string | null }> }> {
+  const res = await fetch(`${META_PROXY_URL}/meta/page-tokens`);
+  if (!res.ok) throw new Error(`Page list HTTP ${res.status}`);
+  return res.json();
 }
