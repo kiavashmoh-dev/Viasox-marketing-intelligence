@@ -24,6 +24,12 @@ interface Props {
   onAnalyzeBank: (rawComments: RawComment[]) => void;
 }
 
+// Mirrors the cap in CommentUploader for CSV uploads. Anthropic's 200K context
+// window is the hard ceiling — sending more produces "prompt is too long" 400s.
+// At ~150-300 tokens per comment + the analysis prompt scaffolding, 500 is
+// comfortably under the limit.
+const MAX_COMMENTS_FOR_ANALYSIS = 500;
+
 function formatTimeAgo(ts: number | null): string {
   if (!ts) return 'never';
   const diffMs = Date.now() - ts;
@@ -96,7 +102,13 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
     setBusy(true);
     try {
       const comments = await getAllComments();
-      const raw = comments.map(commentRecordToRaw);
+      // Sort by recency (newest first) before truncating — the cap exists because
+      // the analysis prompt + comments must fit in Claude's 200K context window.
+      // Recency-weighted sampling means we analyze "what people are saying NOW"
+      // instead of an arbitrary IndexedDB-order slice.
+      const sorted = [...comments].sort((a, b) => b.createdAt - a.createdAt);
+      const capped = sorted.slice(0, MAX_COMMENTS_FOR_ANALYSIS);
+      const raw = capped.map(commentRecordToRaw);
       onAnalyzeBank(raw);
     } finally {
       setBusy(false);
@@ -265,24 +277,36 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
       )}
 
       {/* Analysis CTA */}
-      {hasBank && !pulling && (
-        <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
-          <button
-            onClick={handleClear}
-            disabled={busy}
-            className="text-[11px] text-slate-500 hover:text-red-600 underline disabled:opacity-40"
-          >
-            Wipe bank
-          </button>
-          <button
-            onClick={handleAnalyzeBank}
-            disabled={busy}
-            className="text-sm bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-40"
-          >
-            Analyze {(stats?.totalComments ?? 0).toLocaleString()} Comments →
-          </button>
-        </div>
-      )}
+      {hasBank && !pulling && (() => {
+        const total = stats?.totalComments ?? 0;
+        const willAnalyze = Math.min(total, MAX_COMMENTS_FOR_ANALYSIS);
+        const willTruncate = total > MAX_COMMENTS_FOR_ANALYSIS;
+        return (
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            {willTruncate && (
+              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2 leading-relaxed">
+                Bank holds <strong>{total.toLocaleString()}</strong> comments — Claude's 200K context window caps one analysis run at <strong>{MAX_COMMENTS_FOR_ANALYSIS}</strong>. We'll analyze the <strong>{MAX_COMMENTS_FOR_ANALYSIS} most recent</strong> first.
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={handleClear}
+                disabled={busy}
+                className="text-[11px] text-slate-500 hover:text-red-600 underline disabled:opacity-40"
+              >
+                Wipe bank
+              </button>
+              <button
+                onClick={handleAnalyzeBank}
+                disabled={busy}
+                className="text-sm bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-40"
+              >
+                Analyze {willAnalyze.toLocaleString()}{willTruncate ? ' most-recent' : ''} Comments →
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Diagnostic — what pages do we have access to? */}
       {!pulling && (
