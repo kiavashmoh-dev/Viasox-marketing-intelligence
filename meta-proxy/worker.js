@@ -23,25 +23,32 @@ const KV_KEY_PAGE_TOKENS = 'meta:page_tokens';
 const KV_STATE_PREFIX = 'meta:state:';
 const STATE_TTL_SECONDS = 600; // 10 min — OAuth dance must finish in this window
 
-// Scopes the app requests — READ-ONLY by design.
-// We deliberately omit any scope that can mutate Meta state:
-//   - NOT requesting ads_management (write to ads) — only ads_read
-//   - NOT requesting business_management (write to business assets)
-//   - NOT requesting pages_manage_* (write to pages)
-//   - NOT requesting publish_actions (post to feed)
-// Combined with the GET-only enforcement on /meta/graph below, this guarantees
-// the integration cannot modify, create, or delete anything on the Meta side.
+// Scopes the app requests.
+//
+// IMPORTANT — read-only guarantee in this integration is enforced at the
+// INFRASTRUCTURE layer (the /meta/graph endpoint refuses any HTTP method
+// other than GET), NOT at the scope layer. Even scopes that nominally
+// grant write capability cannot be used to write through this proxy
+// because the Worker physically rejects non-GET requests.
+//
 //   - public_profile: required, returned automatically with any FB login
-//   - pages_show_list: list pages the user manages (read-only)
+//   - pages_show_list: list pages the user manages
 //   - pages_read_engagement: read engagement metrics + comments on Pages
 //   - pages_read_user_content: read user-generated content on Pages
-//   - ads_read: read ad metadata + insights (the read-only counterpart to ads_management)
+//   - ads_read: read-only counterpart to ads_management (we never request ads_management)
+//   - business_management: REQUIRED to enumerate Pages owned by a Business
+//     Manager. Without it, /me/accounts only returns classic-role pages,
+//     which excludes every BM-owned page (the common modern case).
+//     The Worker's GET-only enforcement prevents this scope from being
+//     used to mutate anything; it's used only for /me/businesses,
+//     /{biz_id}/owned_pages, and /{biz_id}/client_pages traversal.
 const OAUTH_SCOPES = [
   'public_profile',
   'pages_show_list',
   'pages_read_engagement',
   'pages_read_user_content',
   'ads_read',
+  'business_management',
 ].join(',');
 
 // ───────────────────────────────────────────────────────────────────────
@@ -122,11 +129,20 @@ async function savePageTokens(env, map) {
 }
 
 /**
- * Refresh the cached map of { page_id: page_access_token } by calling
- * /me/accounts with the stored user token. Page access tokens are
- * REQUIRED for engagement endpoints like /POST_ID/comments — a user
- * token alone returns "(#100) Tried accessing nonexisting field" or
- * "(#200) The user hasn't authorized" on the same call.
+ * Refresh the cached map of { page_id: page_access_token }.
+ *
+ * Page tokens are REQUIRED for engagement endpoints like /POST_ID/comments.
+ *
+ * Three-strategy discovery:
+ *   1. /me/accounts — classic-role pages (those where the user has a direct
+ *      Page Role). Returns access_tokens inline. Works without business_management.
+ *   2. /me/businesses → /{biz_id}/owned_pages + /{biz_id}/client_pages — pages
+ *      owned by or assigned-to a Business Manager. Requires business_management.
+ *      Returns page IDs but NOT tokens.
+ *   3. For each page discovered via strategy 2 that wasn't already tokened by
+ *      strategy 1, call /{page_id}?fields=access_token to fetch the token.
+ *
+ * All steps are GET-only (read-only Graph reads, no mutations).
  */
 async function refreshPageTokens(env) {
   const userToken = await loadToken(env);
@@ -134,25 +150,102 @@ async function refreshPageTokens(env) {
     return { ok: false, status: 401, data: { error: 'Meta not connected' } };
   }
   const baseUrl = `https://graph.facebook.com/${env.META_GRAPH_VERSION}`;
+  const t = userToken.access_token;
   const map = {};
-  let nextUrl = `${baseUrl}/me/accounts?fields=id,name,access_token&limit=100&access_token=${userToken.access_token}`;
-  let pages = 0;
-  while (nextUrl) {
-    const res = await fetch(nextUrl);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return { ok: false, status: res.status, data };
-    }
-    for (const p of data.data ?? []) {
-      if (p.id && p.access_token) {
-        map[p.id] = { token: p.access_token, name: p.name || null };
-        pages++;
+  const discoveredPageIds = new Set();
+  const errors = [];
+
+  // Strategy 1: /me/accounts (classic Page Roles)
+  try {
+    let nextUrl = `${baseUrl}/me/accounts?fields=id,name,access_token&limit=100&access_token=${t}`;
+    while (nextUrl) {
+      const res = await fetch(nextUrl);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        errors.push({ stage: 'me_accounts', status: res.status, error: data.error });
+        break;
       }
+      for (const p of data.data ?? []) {
+        if (p.id) discoveredPageIds.add(p.id);
+        if (p.id && p.access_token) {
+          map[p.id] = { token: p.access_token, name: p.name || null };
+        }
+      }
+      nextUrl = data.paging?.next || null;
     }
-    nextUrl = data.paging?.next || null;
+  } catch (err) {
+    errors.push({ stage: 'me_accounts', exception: String(err) });
   }
+
+  // Strategy 2: /me/businesses → owned_pages + client_pages (requires business_management)
+  const businessPagesDiscovered = []; // { id, name } pairs from business graph
+  try {
+    let businessesUrl = `${baseUrl}/me/businesses?fields=id,name&limit=50&access_token=${t}`;
+    while (businessesUrl) {
+      const res = await fetch(businessesUrl);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        errors.push({ stage: 'me_businesses', status: res.status, error: data.error });
+        break;
+      }
+      for (const biz of data.data ?? []) {
+        for (const edge of ['owned_pages', 'client_pages']) {
+          try {
+            let pageUrl = `${baseUrl}/${biz.id}/${edge}?fields=id,name&limit=100&access_token=${t}`;
+            while (pageUrl) {
+              const pageRes = await fetch(pageUrl);
+              const pageData = await pageRes.json().catch(() => ({}));
+              if (!pageRes.ok) {
+                errors.push({ stage: `business_${edge}`, business_id: biz.id, status: pageRes.status, error: pageData.error });
+                break;
+              }
+              for (const p of pageData.data ?? []) {
+                if (p.id) {
+                  discoveredPageIds.add(p.id);
+                  businessPagesDiscovered.push({ id: p.id, name: p.name || null });
+                }
+              }
+              pageUrl = pageData.paging?.next || null;
+            }
+          } catch (err) {
+            errors.push({ stage: `business_${edge}`, business_id: biz.id, exception: String(err) });
+          }
+        }
+      }
+      businessesUrl = data.paging?.next || null;
+    }
+  } catch (err) {
+    errors.push({ stage: 'me_businesses', exception: String(err) });
+  }
+
+  // Strategy 3: For each business-discovered page lacking a token, fetch one
+  for (const p of businessPagesDiscovered) {
+    if (map[p.id]) continue;
+    try {
+      const res = await fetch(`${baseUrl}/${p.id}?fields=id,name,access_token&access_token=${t}`);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.access_token) {
+        map[p.id] = { token: data.access_token, name: data.name || p.name || null };
+      } else if (!res.ok) {
+        errors.push({ stage: 'page_token_fetch', page_id: p.id, status: res.status, error: data.error });
+      }
+    } catch (err) {
+      errors.push({ stage: 'page_token_fetch', page_id: p.id, exception: String(err) });
+    }
+  }
+
   await savePageTokens(env, map);
-  return { ok: true, status: 200, data: { page_count: pages } };
+
+  return {
+    ok: true,
+    status: 200,
+    data: {
+      page_count: Object.keys(map).length,
+      pages_discovered_total: discoveredPageIds.size,
+      pages_discovered_via_business: businessPagesDiscovered.length,
+      errors: errors.length > 0 ? errors : undefined,
+    },
+  };
 }
 
 // Wrap a Graph API call so the token stays server-side and we get useful errors.

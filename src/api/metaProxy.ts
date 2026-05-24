@@ -95,13 +95,21 @@ export async function metaGraph<T = unknown>(opts: {
   return data as T;
 }
 
+export interface PageTokenRefreshResult {
+  page_count: number;
+  pages_discovered_total?: number;
+  pages_discovered_via_business?: number;
+  errors?: Array<Record<string, unknown>>;
+}
+
 /**
- * Refresh the server-side cache of page access tokens. The Worker calls
- * /me/accounts with the stored user token, then caches each page's
- * access_token in KV. Required before pulling page-post comments
- * (which need page tokens, not the user token).
+ * Refresh the server-side cache of page access tokens. The Worker uses a
+ * three-strategy discovery: /me/accounts (classic roles), business graph
+ * traversal (BM-owned pages), then per-page token fetches. Returns
+ * counts at each stage plus any non-fatal errors that occurred along
+ * the way.
  */
-export async function refreshPageTokens(): Promise<{ page_count: number }> {
+export async function refreshPageTokens(): Promise<PageTokenRefreshResult> {
   const res = await fetch(`${META_PROXY_URL}/meta/page-tokens/refresh`, {
     method: 'POST',
   });
