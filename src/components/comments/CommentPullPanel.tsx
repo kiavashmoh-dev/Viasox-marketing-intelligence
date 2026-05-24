@@ -24,11 +24,12 @@ interface Props {
   onAnalyzeBank: (rawComments: RawComment[]) => void;
 }
 
-// Mirrors the cap in CommentUploader for CSV uploads. Anthropic's 200K context
-// window is the hard ceiling — sending more produces "prompt is too long" 400s.
-// At ~150-300 tokens per comment + the analysis prompt scaffolding, 500 is
-// comfortably under the limit.
-const MAX_COMMENTS_FOR_ANALYSIS = 500;
+// The analysis pipeline now batches Phase 1 (categorization) into 500-comment
+// windows and runs them concurrently, so we no longer need a hard cap. A
+// large-bank safety ceiling is still useful so a runaway pull (e.g. someone
+// adds 50K comments) doesn't kick off a 100-batch run by accident — the
+// banner below tells the user when it would kick in.
+const SAFETY_CEILING = 10_000;
 
 function formatTimeAgo(ts: number | null): string {
   if (!ts) return 'never';
@@ -102,12 +103,11 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
     setBusy(true);
     try {
       const comments = await getAllComments();
-      // Sort by recency (newest first) before truncating — the cap exists because
-      // the analysis prompt + comments must fit in Claude's 200K context window.
-      // Recency-weighted sampling means we analyze "what people are saying NOW"
-      // instead of an arbitrary IndexedDB-order slice.
+      // Sort newest-first so if the safety ceiling kicks in, we keep the
+      // most recent — i.e. "what people are saying NOW" — over a deep
+      // historical sample.
       const sorted = [...comments].sort((a, b) => b.createdAt - a.createdAt);
-      const capped = sorted.slice(0, MAX_COMMENTS_FOR_ANALYSIS);
+      const capped = sorted.slice(0, SAFETY_CEILING);
       const raw = capped.map(commentRecordToRaw);
       onAnalyzeBank(raw);
     } finally {
@@ -279,13 +279,19 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
       {/* Analysis CTA */}
       {hasBank && !pulling && (() => {
         const total = stats?.totalComments ?? 0;
-        const willAnalyze = Math.min(total, MAX_COMMENTS_FOR_ANALYSIS);
-        const willTruncate = total > MAX_COMMENTS_FOR_ANALYSIS;
+        const willAnalyze = Math.min(total, SAFETY_CEILING);
+        const willTruncate = total > SAFETY_CEILING;
+        const batchCount = Math.ceil(willAnalyze / 500);
         return (
           <div className="space-y-2 pt-2 border-t border-slate-100">
             {willTruncate && (
               <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2 leading-relaxed">
-                Bank holds <strong>{total.toLocaleString()}</strong> comments — Claude's 200K context window caps one analysis run at <strong>{MAX_COMMENTS_FOR_ANALYSIS}</strong>. We'll analyze the <strong>{MAX_COMMENTS_FOR_ANALYSIS} most recent</strong> first.
+                Bank holds <strong>{total.toLocaleString()}</strong> comments — analyzing the <strong>{SAFETY_CEILING.toLocaleString()} most recent</strong> to keep the run under an hour.
+              </div>
+            )}
+            {batchCount > 1 && (
+              <div className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded px-3 py-2 leading-relaxed">
+                Will run in <strong>{batchCount}</strong> parallel batches (500 comments each, 3 in flight at a time). Insights report runs once on the merged result.
               </div>
             )}
             <div className="flex items-center justify-between gap-3">

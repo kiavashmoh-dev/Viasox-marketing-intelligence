@@ -10,7 +10,10 @@ interface Props {
   onBack: () => void;
 }
 
-const MAX_COMMENTS = 500;
+// CSV uploads now also flow through the batched categorizer, so this is the
+// same safety ceiling we use on the Meta-pull side — not a hard prompt-window
+// cap. The pipeline will chunk into 500-comment batches automatically.
+const MAX_COMMENTS = 10_000;
 
 export default function CommentUploader({ onCommentsReady, onBack }: Props) {
   const [dragOver, setDragOver] = useState(false);
