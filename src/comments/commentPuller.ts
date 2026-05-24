@@ -129,28 +129,42 @@ export async function pullAllAdComments(
 
   // 0) Refresh page access tokens up front — page-post comments REQUIRE
   //    a page token, not the user token, so the puller must cache these
-  //    before walking ads. If /me/accounts returns zero pages, abort with
-  //    a clear actionable message instead of letting every ad fail.
+  //    before walking ads. Aborts with a diagnostic-driven message if
+  //    no tokens could be cached through any of the three discovery
+  //    strategies (classic roles, business owned_pages, business client_pages).
   reportProgress({ phase: 'discovering-ads', currentAd: 0, totalAds: 0, pulledSoFar: 0 });
   let pageCount = 0;
+  let discoveryResult: Awaited<ReturnType<typeof refreshPageTokens>> | null = null;
   try {
-    const refreshResult = await refreshPageTokens();
-    pageCount = refreshResult.page_count;
+    discoveryResult = await refreshPageTokens();
+    pageCount = discoveryResult.page_count;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(
-      `Failed to fetch page access tokens: ${message}\n\n` +
-      `This usually means Meta rejected the /me/accounts call. Check that your user has a Page Role (Admin / Editor / Moderator) on at least one Facebook Page.`,
+      `Failed to refresh page access tokens: ${message}\n\n` +
+      `Open the "Diagnose page access" section below for a deeper breakdown of what Meta returned.`,
     );
   }
   if (pageCount === 0) {
+    const total = discoveryResult?.pages_discovered_total ?? 0;
+    const viaBiz = discoveryResult?.pages_discovered_via_business ?? 0;
+    const errors = discoveryResult?.errors ?? [];
+    const errSummary = errors.length > 0
+      ? `\nErrors during discovery (${errors.length}):\n${errors.slice(0, 5).map((e) => `  • ${JSON.stringify(e)}`).join('\n')}`
+      : '';
+    const detail =
+      total === 0
+        ? `Meta returned ZERO Facebook Pages through any discovery path (/me/accounts AND /me/businesses → owned_pages / client_pages). Most likely cause: the business_management scope is missing — open "Diagnose page access" to confirm your granted permissions.`
+        : `Meta returned ${total} Page IDs via the business graph but we couldn't fetch an access token for any of them. This usually means your user doesn't have an Admin/Editor role on those pages via Business Manager.`;
     throw new Error(
-      `No Facebook Pages were returned for your account.\n\n` +
-      `To pull ad comments, your Meta user needs a direct Page Role (Admin / Editor / Moderator / Analyst) on every page that owns ads you want to scan. Business-Manager-level access alone is not enough — Meta requires page-level role assignment.\n\n` +
-      `Fix: in Business Manager, go to Pages → select the page → People → Add → assign your user as an Admin or Editor. Repeat for every page that runs ads. Then re-run the pull.`,
+      `No usable Page access tokens.\n\n${detail}\n\n` +
+      `Total pages discovered: ${total} (${viaBiz} via business graph)\n` +
+      `Tokens successfully cached: ${pageCount}` +
+      errSummary +
+      `\n\nNext step: click "Diagnose page access" below for the granted scopes + raw /me/accounts response.`,
     );
   }
-  console.log(`[commentPuller] Cached access tokens for ${pageCount} page(s)`);
+  console.log(`[commentPuller] Cached access tokens for ${pageCount} page(s) — discovered ${discoveryResult?.pages_discovered_total ?? pageCount} total, ${discoveryResult?.pages_discovered_via_business ?? 0} via business graph`);
 
   // 1) Discover ad accounts
   const accounts = await paginate<AdAccountRow>('me/adaccounts', {

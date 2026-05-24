@@ -16,7 +16,7 @@ import { getStats, getAllComments, clearAllComments } from '../../comments/comme
 import type { CommentBankStats, PullProgress, PullSummary } from '../../comments/commentBankTypes';
 import type { CommentRecord } from '../../comments/commentBankTypes';
 import type { RawComment } from '../../utils/commentCsv';
-import { listCachedPages, refreshPageTokens, getMetaDiagnostic, type MetaDiagnostic } from '../../api/metaProxy';
+import { listCachedPages, refreshPageTokens, getMetaDiagnostic, type MetaDiagnostic, type PageTokenRefreshResult } from '../../api/metaProxy';
 
 interface Props {
   /** Called when the user clicks "Analyze N Comments" so the parent can
@@ -53,7 +53,12 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
   const [summary, setSummary] = useState<PullSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [diagnostic, setDiagnostic] = useState<{ pages: Array<{ id: string; name: string | null }>; refreshed: boolean; deep?: MetaDiagnostic } | null>(null);
+  const [diagnostic, setDiagnostic] = useState<{
+    pages: Array<{ id: string; name: string | null }>;
+    refreshed: boolean;
+    deep?: MetaDiagnostic;
+    refreshResult?: PageTokenRefreshResult;
+  } | null>(null);
   const [diagnosing, setDiagnosing] = useState(false);
 
   const refreshStats = useCallback(async () => {
@@ -114,13 +119,18 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
     setDiagnosing(true);
     setDiagnostic(null);
     try {
-      // Force a fresh refresh + deep diagnostic in parallel
-      const [, deep, list] = await Promise.all([
-        refreshPageTokens().catch(() => null),
+      // Force a fresh refresh and capture its result, then deep diagnostic + cached list
+      let refreshResult: PageTokenRefreshResult | undefined;
+      try {
+        refreshResult = await refreshPageTokens();
+      } catch (err) {
+        console.warn('refreshPageTokens failed', err);
+      }
+      const [deep, list] = await Promise.all([
         getMetaDiagnostic().catch((err) => { console.warn('Deep diagnostic failed', err); return null; }),
         listCachedPages().catch(() => ({ pages: [], page_count: 0 })),
       ]);
-      setDiagnostic({ pages: list.pages, refreshed: true, deep: deep ?? undefined });
+      setDiagnostic({ pages: list.pages, refreshed: true, deep: deep ?? undefined, refreshResult });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setDiagnostic({ pages: [], refreshed: false });
@@ -360,6 +370,37 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
                         </div>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {/* Discovery breakdown — counts from the 3-strategy refresh */}
+                {diagnostic.refreshResult && (
+                  <div className="space-y-1 pb-2 border-b border-slate-200">
+                    <div className="font-semibold text-slate-700">Page discovery results</div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="bg-white rounded p-2 border border-slate-200">
+                        <div className="text-lg font-bold text-slate-800">{diagnostic.refreshResult.pages_discovered_total ?? 0}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-slate-500">Discovered total</div>
+                      </div>
+                      <div className="bg-white rounded p-2 border border-slate-200">
+                        <div className="text-lg font-bold text-slate-800">{diagnostic.refreshResult.pages_discovered_via_business ?? 0}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-slate-500">Via business graph</div>
+                      </div>
+                      <div className={`rounded p-2 border ${diagnostic.refreshResult.page_count > 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+                        <div className={`text-lg font-bold ${diagnostic.refreshResult.page_count > 0 ? 'text-emerald-800' : 'text-red-800'}`}>{diagnostic.refreshResult.page_count}</div>
+                        <div className="text-[9px] uppercase tracking-wider opacity-75">Tokens cached</div>
+                      </div>
+                    </div>
+                    {diagnostic.refreshResult.errors && diagnostic.refreshResult.errors.length > 0 && (
+                      <div className="mt-2 bg-red-50 border border-red-200 rounded p-2">
+                        <div className="font-semibold text-red-900 text-[11px]">
+                          {diagnostic.refreshResult.errors.length} discovery error{diagnostic.refreshResult.errors.length !== 1 ? 's' : ''}:
+                        </div>
+                        <pre className="text-[10px] mt-1 overflow-x-auto">
+                          {JSON.stringify(diagnostic.refreshResult.errors.slice(0, 5), null, 2)}
+                        </pre>
+                      </div>
+                    )}
                   </div>
                 )}
 
