@@ -99,6 +99,9 @@ export interface PageTokenRefreshResult {
   page_count: number;
   pages_discovered_total?: number;
   pages_discovered_via_business?: number;
+  /** Pages found via the business graph that we still couldn't get a token for —
+   * usually means the user lacks a BM Task assignment on those Pages. */
+  failed_pages?: Array<{ id: string; name: string | null }>;
   errors?: Array<Record<string, unknown>>;
 }
 

@@ -133,16 +133,26 @@ async function savePageTokens(env, map) {
  *
  * Page tokens are REQUIRED for engagement endpoints like /POST_ID/comments.
  *
- * Three-strategy discovery:
+ * Four-strategy discovery (each strategy may add tokens to `map` that the
+ * later ones won't overwrite):
  *   1. /me/accounts — classic-role pages (those where the user has a direct
  *      Page Role). Returns access_tokens inline. Works without business_management.
- *   2. /me/businesses → /{biz_id}/owned_pages + /{biz_id}/client_pages — pages
- *      owned by or assigned-to a Business Manager. Requires business_management.
- *      Returns page IDs but NOT tokens.
- *   3. For each page discovered via strategy 2 that wasn't already tokened by
- *      strategy 1, call /{page_id}?fields=access_token to fetch the token.
+ *   2. /me/businesses → /{biz_id}/owned_pages + /{biz_id}/client_pages with
+ *      fields=id,name,access_token — pages owned by or assigned-to a Business
+ *      Manager. Requires business_management. Meta may or may not return tokens
+ *      inline depending on Task assignment; what comes back gets cached, what
+ *      doesn't gets retried by strategy 4.
+ *   3. /me/assigned_pages — pages assigned to the current user via Business
+ *      Manager Tasks. Often returns tokens for BM-assigned pages that aren't
+ *      in /me/accounts.
+ *   4. For each page discovered via strategy 2 that STILL lacks a token, fall
+ *      back to /{page_id}?fields=access_token (per-page lookup).
  *
  * All steps are GET-only (read-only Graph reads, no mutations).
+ *
+ * The result lists `failed_pages: [{ id, name }]` for pages discovered through
+ * the business graph that we still couldn't get a token for — so the UI can
+ * tell the user exactly which Pages need a BM Task assignment.
  */
 async function refreshPageTokens(env) {
   const userToken = await loadToken(env);
@@ -153,6 +163,7 @@ async function refreshPageTokens(env) {
   const t = userToken.access_token;
   const map = {};
   const discoveredPageIds = new Set();
+  const pageNames = new Map(); // id → name (best-known)
   const errors = [];
 
   // Strategy 1: /me/accounts (classic Page Roles)
@@ -166,7 +177,10 @@ async function refreshPageTokens(env) {
         break;
       }
       for (const p of data.data ?? []) {
-        if (p.id) discoveredPageIds.add(p.id);
+        if (p.id) {
+          discoveredPageIds.add(p.id);
+          if (p.name) pageNames.set(p.id, p.name);
+        }
         if (p.id && p.access_token) {
           map[p.id] = { token: p.access_token, name: p.name || null };
         }
@@ -178,6 +192,8 @@ async function refreshPageTokens(env) {
   }
 
   // Strategy 2: /me/businesses → owned_pages + client_pages (requires business_management)
+  // Critical: we now ask for access_token inline. For some Task assignments,
+  // Meta returns the token directly here, avoiding the per-page fetch in strategy 4.
   const businessPagesDiscovered = []; // { id, name } pairs from business graph
   try {
     let businessesUrl = `${baseUrl}/me/businesses?fields=id,name&limit=50&access_token=${t}`;
@@ -191,7 +207,7 @@ async function refreshPageTokens(env) {
       for (const biz of data.data ?? []) {
         for (const edge of ['owned_pages', 'client_pages']) {
           try {
-            let pageUrl = `${baseUrl}/${biz.id}/${edge}?fields=id,name&limit=100&access_token=${t}`;
+            let pageUrl = `${baseUrl}/${biz.id}/${edge}?fields=id,name,access_token&limit=100&access_token=${t}`;
             while (pageUrl) {
               const pageRes = await fetch(pageUrl);
               const pageData = await pageRes.json().catch(() => ({}));
@@ -200,9 +216,13 @@ async function refreshPageTokens(env) {
                 break;
               }
               for (const p of pageData.data ?? []) {
-                if (p.id) {
-                  discoveredPageIds.add(p.id);
-                  businessPagesDiscovered.push({ id: p.id, name: p.name || null });
+                if (!p.id) continue;
+                discoveredPageIds.add(p.id);
+                if (p.name) pageNames.set(p.id, p.name);
+                businessPagesDiscovered.push({ id: p.id, name: p.name || null });
+                // Cache token inline if Meta handed one back — saves a round trip
+                if (p.access_token && !map[p.id]) {
+                  map[p.id] = { token: p.access_token, name: p.name || null };
                 }
               }
               pageUrl = pageData.paging?.next || null;
@@ -218,7 +238,32 @@ async function refreshPageTokens(env) {
     errors.push({ stage: 'me_businesses', exception: String(err) });
   }
 
-  // Strategy 3: For each business-discovered page lacking a token, fetch one
+  // Strategy 3: /me/assigned_pages — BM Task-assigned pages with tokens
+  try {
+    let nextUrl = `${baseUrl}/me/assigned_pages?fields=id,name,access_token&limit=100&access_token=${t}`;
+    while (nextUrl) {
+      const res = await fetch(nextUrl);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // Not fatal — this endpoint isn't available for all token types.
+        errors.push({ stage: 'me_assigned_pages', status: res.status, error: data.error });
+        break;
+      }
+      for (const p of data.data ?? []) {
+        if (!p.id) continue;
+        discoveredPageIds.add(p.id);
+        if (p.name) pageNames.set(p.id, p.name);
+        if (p.access_token && !map[p.id]) {
+          map[p.id] = { token: p.access_token, name: p.name || null };
+        }
+      }
+      nextUrl = data.paging?.next || null;
+    }
+  } catch (err) {
+    errors.push({ stage: 'me_assigned_pages', exception: String(err) });
+  }
+
+  // Strategy 4: For each business-discovered page still lacking a token, fetch one
   for (const p of businessPagesDiscovered) {
     if (map[p.id]) continue;
     try {
@@ -226,15 +271,25 @@ async function refreshPageTokens(env) {
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.access_token) {
         map[p.id] = { token: data.access_token, name: data.name || p.name || null };
+        if (data.name) pageNames.set(p.id, data.name);
       } else if (!res.ok) {
-        errors.push({ stage: 'page_token_fetch', page_id: p.id, status: res.status, error: data.error });
+        errors.push({ stage: 'page_token_fetch', page_id: p.id, page_name: pageNames.get(p.id) || p.name || null, status: res.status, error: data.error });
       }
     } catch (err) {
-      errors.push({ stage: 'page_token_fetch', page_id: p.id, exception: String(err) });
+      errors.push({ stage: 'page_token_fetch', page_id: p.id, page_name: pageNames.get(p.id) || p.name || null, exception: String(err) });
     }
   }
 
   await savePageTokens(env, map);
+
+  // Pages we discovered but couldn't get a token for — surface name + id so
+  // the user knows exactly which Pages need a BM Task assignment.
+  const failedPages = [];
+  for (const id of discoveredPageIds) {
+    if (!map[id]) {
+      failedPages.push({ id, name: pageNames.get(id) || null });
+    }
+  }
 
   return {
     ok: true,
@@ -243,6 +298,7 @@ async function refreshPageTokens(env) {
       page_count: Object.keys(map).length,
       pages_discovered_total: discoveredPageIds.size,
       pages_discovered_via_business: businessPagesDiscovered.length,
+      failed_pages: failedPages.length > 0 ? failedPages : undefined,
       errors: errors.length > 0 ? errors : undefined,
     },
   };

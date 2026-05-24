@@ -391,15 +391,34 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
                         <div className="text-[9px] uppercase tracking-wider opacity-75">Tokens cached</div>
                       </div>
                     </div>
-                    {diagnostic.refreshResult.errors && diagnostic.refreshResult.errors.length > 0 && (
-                      <div className="mt-2 bg-red-50 border border-red-200 rounded p-2">
-                        <div className="font-semibold text-red-900 text-[11px]">
-                          {diagnostic.refreshResult.errors.length} discovery error{diagnostic.refreshResult.errors.length !== 1 ? 's' : ''}:
+                    {diagnostic.refreshResult.failed_pages && diagnostic.refreshResult.failed_pages.length > 0 && (
+                      <div className="mt-2 bg-amber-50 border border-amber-200 rounded p-2">
+                        <div className="font-semibold text-amber-900 text-[11px] mb-1">
+                          {diagnostic.refreshResult.failed_pages.length} Page{diagnostic.refreshResult.failed_pages.length !== 1 ? 's' : ''} discovered but missing tokens:
                         </div>
-                        <pre className="text-[10px] mt-1 overflow-x-auto">
+                        <ul className="space-y-0.5">
+                          {diagnostic.refreshResult.failed_pages.map((p) => (
+                            <li key={p.id} className="flex gap-2 text-[10px]">
+                              <span className="font-mono text-amber-700 w-32 shrink-0 truncate" title={p.id}>{p.id}</span>
+                              <span className="text-amber-900 truncate">{p.name || '(unknown name)'}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="mt-2 text-[10px] text-amber-800 leading-relaxed border-t border-amber-200 pt-2">
+                          <strong>Fix:</strong> In Business Settings → <strong>Users</strong> → click your user → <strong>Assets</strong> → <strong>Pages</strong> → <strong>Add Assets</strong> → assign each of these Pages with the <strong>Manage Page</strong> or <strong>Create Content</strong> task.
+                          A classic Page Role (via facebook.com/yourpage/settings) also works.
+                        </div>
+                      </div>
+                    )}
+                    {diagnostic.refreshResult.errors && diagnostic.refreshResult.errors.length > 0 && (
+                      <details className="mt-2">
+                        <summary className="text-[10px] text-slate-500 cursor-pointer hover:text-slate-700">
+                          {diagnostic.refreshResult.errors.length} raw discovery error{diagnostic.refreshResult.errors.length !== 1 ? 's' : ''} (click to expand)
+                        </summary>
+                        <pre className="text-[10px] mt-1 overflow-x-auto bg-red-50 border border-red-200 rounded p-2">
                           {JSON.stringify(diagnostic.refreshResult.errors.slice(0, 5), null, 2)}
                         </pre>
-                      </div>
+                      </details>
                     )}
                   </div>
                 )}
