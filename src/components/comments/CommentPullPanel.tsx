@@ -18,18 +18,28 @@ import type { CommentRecord } from '../../comments/commentBankTypes';
 import type { RawComment } from '../../utils/commentCsv';
 import { listCachedPages, refreshPageTokens, getMetaDiagnostic, type MetaDiagnostic, type PageTokenRefreshResult } from '../../api/metaProxy';
 
-interface Props {
-  /** Called when the user clicks "Analyze N Comments" so the parent can
-   * fan out the bank contents into the existing categorization pipeline. */
-  onAnalyzeBank: (rawComments: RawComment[]) => void;
+/** Context passed up so the saved analysis can be named meaningfully
+ * ("Batch 3 of 11 — comments 1001–1500"). Omit for CSV/single-shot. */
+export interface BankAnalysisContext {
+  type: 'batch';
+  /** 1-indexed slot of the bank's 500-comment slicing. */
+  batchIndex: number;
+  /** Total slots the bank had at the time this analysis was queued. */
+  totalBatches: number;
+  /** Total comments in the bank at the time of analysis. */
+  bankTotal: number;
 }
 
-// The analysis pipeline now batches Phase 1 (categorization) into 500-comment
-// windows and runs them concurrently, so we no longer need a hard cap. A
-// large-bank safety ceiling is still useful so a runaway pull (e.g. someone
-// adds 50K comments) doesn't kick off a 100-batch run by accident — the
-// banner below tells the user when it would kick in.
-const SAFETY_CEILING = 10_000;
+interface Props {
+  /** Called when the user clicks "Analyze Batch N" so the parent can
+   * fan out the slice into the existing categorization pipeline. */
+  onAnalyzeBank: (rawComments: RawComment[], context: BankAnalysisContext) => void;
+}
+
+/** Each Phase-1 categorization call sends a 500-comment window. The bank's
+ *  slicing here uses the same number so each "batch slot" maps 1:1 to one
+ *  Claude call (when no parallel sub-batching). */
+const BATCH_SIZE = 500;
 
 function formatTimeAgo(ts: number | null): string {
   if (!ts) return 'never';
@@ -99,17 +109,27 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
     }
   };
 
-  const handleAnalyzeBank = async () => {
+  /**
+   * Run analysis on a single 500-comment slice of the bank (newest-first
+   * ordering). batchIndex is 1-indexed: batch 1 = comments 1–500 (most
+   * recent), batch 2 = 501–1000, etc.
+   */
+  const handleAnalyzeBatch = async (batchIndex: number) => {
     setBusy(true);
     try {
-      const comments = await getAllComments();
-      // Sort newest-first so if the safety ceiling kicks in, we keep the
-      // most recent — i.e. "what people are saying NOW" — over a deep
-      // historical sample.
-      const sorted = [...comments].sort((a, b) => b.createdAt - a.createdAt);
-      const capped = sorted.slice(0, SAFETY_CEILING);
-      const raw = capped.map(commentRecordToRaw);
-      onAnalyzeBank(raw);
+      const allComments = await getAllComments();
+      const sorted = [...allComments].sort((a, b) => b.createdAt - a.createdAt);
+      const totalBatches = Math.max(1, Math.ceil(sorted.length / BATCH_SIZE));
+      const start = (batchIndex - 1) * BATCH_SIZE;
+      const slice = sorted.slice(start, start + BATCH_SIZE);
+      if (slice.length === 0) return;
+      const raw = slice.map(commentRecordToRaw);
+      onAnalyzeBank(raw, {
+        type: 'batch',
+        batchIndex,
+        totalBatches,
+        bankTotal: sorted.length,
+      });
     } finally {
       setBusy(false);
     }
@@ -276,39 +296,59 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
         </div>
       )}
 
-      {/* Analysis CTA */}
+      {/* Batch slice picker — replaces the single "Analyze X" button. Each
+          row is one 500-comment slice of the bank (newest-first) that can be
+          analyzed independently. Each analysis becomes a saved card on the
+          module's landing page; multiple can later be combined. */}
       {hasBank && !pulling && (() => {
         const total = stats?.totalComments ?? 0;
-        const willAnalyze = Math.min(total, SAFETY_CEILING);
-        const willTruncate = total > SAFETY_CEILING;
-        const batchCount = Math.ceil(willAnalyze / 500);
+        const totalBatches = Math.max(1, Math.ceil(total / BATCH_SIZE));
+        const batches = Array.from({ length: totalBatches }, (_, i) => {
+          const start = i * BATCH_SIZE + 1;
+          const end = Math.min((i + 1) * BATCH_SIZE, total);
+          return { index: i + 1, start, end, size: end - start + 1 };
+        });
         return (
           <div className="space-y-2 pt-2 border-t border-slate-100">
-            {willTruncate && (
-              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2 leading-relaxed">
-                Bank holds <strong>{total.toLocaleString()}</strong> comments — analyzing the <strong>{SAFETY_CEILING.toLocaleString()} most recent</strong> to keep the run under an hour.
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-slate-800">Analyze in batches of {BATCH_SIZE}</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">
+                  Each batch is one saved analysis. Run as many as you want — combine them later from the main page.
+                </div>
               </div>
-            )}
-            {batchCount > 1 && (
-              <div className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded px-3 py-2 leading-relaxed">
-                Will run in <strong>{batchCount}</strong> parallel batches (500 comments each, 3 in flight at a time). Insights report runs once on the merged result.
-              </div>
-            )}
-            <div className="flex items-center justify-between gap-3">
               <button
                 onClick={handleClear}
                 disabled={busy}
-                className="text-[11px] text-slate-500 hover:text-red-600 underline disabled:opacity-40"
+                className="text-[11px] text-slate-500 hover:text-red-600 underline disabled:opacity-40 shrink-0 ml-3"
               >
                 Wipe bank
               </button>
-              <button
-                onClick={handleAnalyzeBank}
-                disabled={busy}
-                className="text-sm bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-40"
-              >
-                Analyze {willAnalyze.toLocaleString()}{willTruncate ? ' most-recent' : ''} Comments →
-              </button>
+            </div>
+            <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+              {batches.map((b) => (
+                <div
+                  key={b.index}
+                  className="flex items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-slate-700">
+                      Batch {b.index} of {totalBatches}
+                      {b.index === 1 && <span className="ml-1.5 text-[10px] font-normal text-slate-500">(most recent)</span>}
+                    </div>
+                    <div className="text-[10px] text-slate-500">
+                      Comments {b.start.toLocaleString()}–{b.end.toLocaleString()} · {b.size} comment{b.size === 1 ? '' : 's'}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleAnalyzeBatch(b.index)}
+                    disabled={busy}
+                    className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-40 shrink-0"
+                  >
+                    Analyze {'→'}
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         );

@@ -3,10 +3,17 @@ import type { RawComment, CommentCsvResult } from '../../utils/commentCsv';
 import { parseCommentCsv } from '../../utils/commentCsv';
 import MetaConnectionPanel from './MetaConnectionPanel';
 import CommentPullPanel from './CommentPullPanel';
+import type { BankAnalysisContext } from './CommentPullPanel';
 import type { MetaStatus } from '../../api/metaProxy';
 
+/** Source descriptor for an analysis run — flows up to CommentIntelligence
+ *  so it can name + categorize the saved card on the landing page. */
+export type AnalysisSource =
+  | { type: 'csv'; fileName?: string }
+  | BankAnalysisContext;
+
 interface Props {
-  onCommentsReady: (comments: RawComment[]) => void;
+  onCommentsReady: (comments: RawComment[], source: AnalysisSource) => void;
   onBack: () => void;
 }
 
@@ -19,17 +26,20 @@ export default function CommentUploader({ onCommentsReady, onBack }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const [parseResult, setParseResult] = useState<CommentCsvResult | null>(null);
   const [parsing, setParsing] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | undefined>(undefined);
   const [metaConnected, setMetaConnected] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     if (!file.name.toLowerCase().endsWith('.csv')) {
       setParseResult({ comments: [], errors: ['Please upload a CSV file'], detectedColumns: {}, headers: [] });
+      setUploadedFileName(undefined);
       return;
     }
     setParsing(true);
     const result = await parseCommentCsv(file);
     setParseResult(result);
+    setUploadedFileName(file.name);
     setParsing(false);
   };
 
@@ -49,7 +59,7 @@ export default function CommentUploader({ onCommentsReady, onBack }: Props) {
   const handleAnalyze = () => {
     if (!parseResult || parseResult.comments.length === 0) return;
     const comments = parseResult.comments.slice(0, MAX_COMMENTS);
-    onCommentsReady(comments);
+    onCommentsReady(comments, { type: 'csv', fileName: uploadedFileName });
   };
 
   const comments = parseResult?.comments ?? [];
