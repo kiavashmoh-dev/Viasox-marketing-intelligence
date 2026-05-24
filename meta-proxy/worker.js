@@ -396,6 +396,51 @@ async function handlePageTokensList(request, env) {
   return jsonResponse({ pages, page_count: pages.length });
 }
 
+/**
+ * Deep diagnostic — shows exactly what Meta says about the current token
+ * and what /me/accounts returns. Used to pinpoint why page tokens aren't
+ * being cached when the user clearly has page roles.
+ */
+async function handleDiagnostic(request, env) {
+  if (!isOriginAllowed(request, env)) return jsonResponse({ error: 'Origin not allowed' }, 403);
+  const token = await loadToken(env);
+  if (!token?.access_token) return jsonResponse({ error: 'Meta not connected' }, 401);
+
+  const baseUrl = `https://graph.facebook.com/${env.META_GRAPH_VERSION}`;
+  const t = token.access_token;
+
+  // Run all three diagnostics in parallel
+  const [meRes, permsRes, accountsRes] = await Promise.all([
+    fetch(`${baseUrl}/me?fields=id,name&access_token=${t}`).then((r) => r.json().catch(() => ({}))),
+    fetch(`${baseUrl}/me/permissions?access_token=${t}`).then((r) => r.json().catch(() => ({}))),
+    fetch(`${baseUrl}/me/accounts?fields=id,name,access_token,tasks&limit=100&access_token=${t}`).then(async (r) => ({
+      status: r.status,
+      body: await r.json().catch(() => ({})),
+    })),
+  ]);
+
+  // Strip access_tokens from the /me/accounts response before returning to browser
+  const safeAccountsBody = { ...accountsRes.body };
+  if (Array.isArray(safeAccountsBody.data)) {
+    safeAccountsBody.data = safeAccountsBody.data.map((p) => ({
+      id: p.id,
+      name: p.name,
+      tasks: p.tasks,
+      has_access_token: !!p.access_token,
+    }));
+  }
+
+  return jsonResponse({
+    me: meRes,
+    granted_permissions: permsRes,
+    me_accounts_raw: {
+      status: accountsRes.status,
+      body: safeAccountsBody,
+    },
+    cached_pages_count: Object.keys(await loadPageTokens(env)).length,
+  });
+}
+
 // ───────────────────────────────────────────────────────────────────────
 // Scheduled handler — weekly comment refresh
 // ───────────────────────────────────────────────────────────────────────
@@ -442,6 +487,8 @@ export default {
       response = await handlePageTokensRefresh(request, env);
     } else if (request.method === 'GET' && path === '/meta/page-tokens') {
       response = await handlePageTokensList(request, env);
+    } else if (request.method === 'GET' && path === '/meta/diagnostic') {
+      response = await handleDiagnostic(request, env);
     } else if (request.method === 'GET' && path === '/') {
       response = jsonResponse({ ok: true, service: 'viasox-meta-proxy', endpoints: ['/meta/oauth/start', '/meta/oauth/callback', '/meta/status', '/meta/disconnect', '/meta/graph', '/meta/page-tokens', '/meta/page-tokens/refresh'] });
     } else {

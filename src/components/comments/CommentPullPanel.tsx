@@ -16,7 +16,7 @@ import { getStats, getAllComments, clearAllComments } from '../../comments/comme
 import type { CommentBankStats, PullProgress, PullSummary } from '../../comments/commentBankTypes';
 import type { CommentRecord } from '../../comments/commentBankTypes';
 import type { RawComment } from '../../utils/commentCsv';
-import { listCachedPages, refreshPageTokens } from '../../api/metaProxy';
+import { listCachedPages, refreshPageTokens, getMetaDiagnostic, type MetaDiagnostic } from '../../api/metaProxy';
 
 interface Props {
   /** Called when the user clicks "Analyze N Comments" so the parent can
@@ -53,7 +53,7 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
   const [summary, setSummary] = useState<PullSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [diagnostic, setDiagnostic] = useState<{ pages: Array<{ id: string; name: string | null }>; refreshed: boolean } | null>(null);
+  const [diagnostic, setDiagnostic] = useState<{ pages: Array<{ id: string; name: string | null }>; refreshed: boolean; deep?: MetaDiagnostic } | null>(null);
   const [diagnosing, setDiagnosing] = useState(false);
 
   const refreshStats = useCallback(async () => {
@@ -114,10 +114,13 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
     setDiagnosing(true);
     setDiagnostic(null);
     try {
-      // Force a fresh refresh so the cache mirrors /me/accounts right now
-      await refreshPageTokens();
-      const result = await listCachedPages();
-      setDiagnostic({ pages: result.pages, refreshed: true });
+      // Force a fresh refresh + deep diagnostic in parallel
+      const [, deep, list] = await Promise.all([
+        refreshPageTokens().catch(() => null),
+        getMetaDiagnostic().catch((err) => { console.warn('Deep diagnostic failed', err); return null; }),
+        listCachedPages().catch(() => ({ pages: [], page_count: 0 })),
+      ]);
+      setDiagnostic({ pages: list.pages, refreshed: true, deep: deep ?? undefined });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setDiagnostic({ pages: [], refreshed: false });
@@ -286,7 +289,80 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
               {diagnosing ? 'Checking…' : 'Refresh + list my Pages'}
             </button>
             {diagnostic && (
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-2">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-3">
+                {/* Deep diagnostic — what Meta actually says */}
+                {diagnostic.deep && (
+                  <div className="space-y-2 pb-2 border-b border-slate-200">
+                    <div className="font-semibold text-slate-700">Token diagnostic from Meta</div>
+
+                    {/* Identity */}
+                    <div>
+                      <span className="text-slate-500">User:</span>{' '}
+                      <span className="font-mono">{diagnostic.deep.me.name || '?'} ({diagnostic.deep.me.id || '?'})</span>
+                    </div>
+
+                    {/* Granted permissions */}
+                    {diagnostic.deep.granted_permissions.data && (() => {
+                      const granted = diagnostic.deep.granted_permissions.data!.filter((p) => p.status === 'granted').map((p) => p.permission);
+                      const declined = diagnostic.deep.granted_permissions.data!.filter((p) => p.status === 'declined').map((p) => p.permission);
+                      const expected = ['public_profile', 'pages_show_list', 'pages_read_engagement', 'pages_read_user_content', 'ads_read'];
+                      const missing = expected.filter((s) => !granted.includes(s));
+                      return (
+                        <div>
+                          <div className="text-slate-500 mb-1">Permissions granted:</div>
+                          <div className="flex flex-wrap gap-1 mb-1">
+                            {granted.map((p) => (
+                              <span key={p} className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">{p}</span>
+                            ))}
+                          </div>
+                          {declined.length > 0 && (
+                            <>
+                              <div className="text-slate-500 mb-1">Permissions DECLINED by user:</div>
+                              <div className="flex flex-wrap gap-1 mb-1">
+                                {declined.map((p) => (
+                                  <span key={p} className="text-[10px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-mono">{p}</span>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                          {missing.length > 0 && (
+                            <div className="bg-amber-50 border border-amber-200 rounded p-2 mt-1">
+                              <div className="font-semibold text-amber-900">⚠ Missing required scope{missing.length !== 1 ? 's' : ''}:</div>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {missing.map((p) => (
+                                  <span key={p} className="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-mono">{p}</span>
+                                ))}
+                              </div>
+                              <div className="text-[10px] text-amber-800 mt-1">
+                                Disconnect Meta in the panel above, then re-authorize — make sure to leave all permissions checked on Facebook's prompt.
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    {/* /me/accounts raw response */}
+                    <div>
+                      <div className="text-slate-500">
+                        /me/accounts response (HTTP {diagnostic.deep.me_accounts_raw.status}):
+                      </div>
+                      {diagnostic.deep.me_accounts_raw.body.error ? (
+                        <pre className="bg-red-50 border border-red-200 rounded p-2 text-[10px] overflow-x-auto mt-1">
+                          {JSON.stringify(diagnostic.deep.me_accounts_raw.body.error, null, 2)}
+                        </pre>
+                      ) : (
+                        <div className="text-[10px] mt-0.5">
+                          Returned <strong>{diagnostic.deep.me_accounts_raw.body.data?.length ?? 0}</strong> page{(diagnostic.deep.me_accounts_raw.body.data?.length ?? 0) !== 1 ? 's' : ''}
+                          {diagnostic.deep.me_accounts_raw.body.data && diagnostic.deep.me_accounts_raw.body.data.length > 0 && (
+                            <span> — with tokens: {diagnostic.deep.me_accounts_raw.body.data.filter((p) => p.has_access_token).length}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="font-semibold text-slate-700">
                   Cached access tokens for {diagnostic.pages.length} Page{diagnostic.pages.length !== 1 ? 's' : ''}
                 </div>

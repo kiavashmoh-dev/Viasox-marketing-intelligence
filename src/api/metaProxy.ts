@@ -120,3 +120,22 @@ export async function listCachedPages(): Promise<{ pages: Array<{ id: string; na
   if (!res.ok) throw new Error(`Page list HTTP ${res.status}`);
   return res.json();
 }
+
+/**
+ * Deep diagnostic that returns: the user identity, the granted permissions
+ * on the current token, the raw /me/accounts response (status + body with
+ * tokens stripped), and the count of currently-cached page tokens. Used
+ * to pinpoint why page-token caching fails despite proper page roles.
+ */
+export interface MetaDiagnostic {
+  me: { id?: string; name?: string; error?: unknown };
+  granted_permissions: { data?: Array<{ permission: string; status: 'granted' | 'declined' }>; error?: unknown };
+  me_accounts_raw: { status: number; body: { data?: Array<{ id: string; name: string; tasks?: string[]; has_access_token: boolean }>; error?: unknown; paging?: unknown } };
+  cached_pages_count: number;
+}
+
+export async function getMetaDiagnostic(): Promise<MetaDiagnostic> {
+  const res = await fetch(`${META_PROXY_URL}/meta/diagnostic`);
+  if (!res.ok) throw new Error(`Diagnostic HTTP ${res.status}`);
+  return res.json();
+}
