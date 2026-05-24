@@ -16,6 +16,7 @@ import { getStats, getAllComments, clearAllComments } from '../../comments/comme
 import type { CommentBankStats, PullProgress, PullSummary } from '../../comments/commentBankTypes';
 import type { CommentRecord } from '../../comments/commentBankTypes';
 import type { RawComment } from '../../utils/commentCsv';
+import { listCachedPages, refreshPageTokens } from '../../api/metaProxy';
 
 interface Props {
   /** Called when the user clicks "Analyze N Comments" so the parent can
@@ -52,6 +53,8 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
   const [summary, setSummary] = useState<PullSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [diagnostic, setDiagnostic] = useState<{ pages: Array<{ id: string; name: string | null }>; refreshed: boolean } | null>(null);
+  const [diagnosing, setDiagnosing] = useState(false);
 
   const refreshStats = useCallback(async () => {
     try {
@@ -104,6 +107,23 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
       await refreshStats();
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleDiagnose = async () => {
+    setDiagnosing(true);
+    setDiagnostic(null);
+    try {
+      // Force a fresh refresh so the cache mirrors /me/accounts right now
+      await refreshPageTokens();
+      const result = await listCachedPages();
+      setDiagnostic({ pages: result.pages, refreshed: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setDiagnostic({ pages: [], refreshed: false });
+      setError(msg);
+    } finally {
+      setDiagnosing(false);
     }
   };
 
@@ -249,6 +269,78 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
             Analyze {(stats?.totalComments ?? 0).toLocaleString()} Comments →
           </button>
         </div>
+      )}
+
+      {/* Diagnostic — what pages do we have access to? */}
+      {!pulling && (
+        <details className="border-t border-slate-100 pt-3">
+          <summary className="text-[11px] text-slate-500 cursor-pointer hover:text-slate-700">
+            Diagnose page access (which Pages can I pull comments from?)
+          </summary>
+          <div className="mt-2 space-y-2">
+            <button
+              onClick={handleDiagnose}
+              disabled={diagnosing}
+              className="text-xs border border-slate-300 text-slate-700 bg-white px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-40"
+            >
+              {diagnosing ? 'Checking…' : 'Refresh + list my Pages'}
+            </button>
+            {diagnostic && (
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-2">
+                <div className="font-semibold text-slate-700">
+                  Cached access tokens for {diagnostic.pages.length} Page{diagnostic.pages.length !== 1 ? 's' : ''}
+                </div>
+                {diagnostic.pages.length === 0 ? (
+                  <div className="text-amber-700 leading-relaxed">
+                    <strong>Meta returned zero pages.</strong> Your Meta user needs a direct <strong>Page Role</strong> (Admin / Editor / Moderator / Analyst) on the pages that own your ads.
+                    Business-Manager-level access alone is NOT enough — Meta requires explicit page-level assignment.
+                    <div className="mt-2">
+                      <strong>Fix:</strong> Business Manager → Pages → select your Page → People → Add → assign your user as Admin or Editor.
+                    </div>
+                  </div>
+                ) : (
+                  <ul className="space-y-1 max-h-48 overflow-y-auto">
+                    {diagnostic.pages.map((p) => (
+                      <li key={p.id} className="flex gap-2">
+                        <span className="font-mono text-[10px] text-slate-500 w-32 shrink-0 truncate" title={p.id}>{p.id}</span>
+                        <span className="truncate">{p.name || '(no name)'}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {summary && summary.perAd.some((a) => a.error?.includes('No cached page token')) && (() => {
+                  // Cross-reference: pages the ads asked for vs pages we cached
+                  const missingPageIds = new Set<string>();
+                  for (const a of summary.perAd) {
+                    const match = a.error?.match(/page_id=(\d+)/);
+                    if (match) missingPageIds.add(match[1]);
+                  }
+                  const cachedIds = new Set(diagnostic.pages.map((p) => p.id));
+                  const stillMissing = Array.from(missingPageIds).filter((id) => !cachedIds.has(id));
+                  if (stillMissing.length === 0) return null;
+                  return (
+                    <div className="bg-amber-50 border border-amber-200 rounded p-2">
+                      <div className="font-semibold text-amber-900">
+                        {stillMissing.length} Page{stillMissing.length !== 1 ? 's' : ''} referenced by your ads but NOT in /me/accounts:
+                      </div>
+                      <ul className="mt-1 space-y-0.5">
+                        {stillMissing.slice(0, 10).map((id) => (
+                          <li key={id} className="font-mono text-[10px] text-amber-800">{id}</li>
+                        ))}
+                        {stillMissing.length > 10 && (
+                          <li className="text-[10px] text-amber-700">+{stillMissing.length - 10} more</li>
+                        )}
+                      </ul>
+                      <div className="mt-2 text-[10px] text-amber-800 leading-relaxed">
+                        Assign your user as Admin/Editor on each of these Pages in Business Manager, then re-run the pull.
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        </details>
       )}
     </div>
   );

@@ -393,7 +393,7 @@ async function handlePageTokensList(request, env) {
   if (!isOriginAllowed(request, env)) return jsonResponse({ error: 'Origin not allowed' }, 403);
   const map = await loadPageTokens(env);
   const pages = Object.entries(map).map(([id, info]) => ({ id, name: info.name || null }));
-  return jsonResponse({ pages });
+  return jsonResponse({ pages, page_count: pages.length });
 }
 
 // ───────────────────────────────────────────────────────────────────────

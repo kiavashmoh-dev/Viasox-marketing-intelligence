@@ -115,7 +115,7 @@ export async function refreshPageTokens(): Promise<{ page_count: number }> {
 /**
  * List the cached pages (id + name only — tokens never leave the Worker).
  */
-export async function listCachedPages(): Promise<{ pages: Array<{ id: string; name: string | null }> }> {
+export async function listCachedPages(): Promise<{ pages: Array<{ id: string; name: string | null }>; page_count: number }> {
   const res = await fetch(`${META_PROXY_URL}/meta/page-tokens`);
   if (!res.ok) throw new Error(`Page list HTTP ${res.status}`);
   return res.json();

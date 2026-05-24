@@ -129,13 +129,28 @@ export async function pullAllAdComments(
 
   // 0) Refresh page access tokens up front — page-post comments REQUIRE
   //    a page token, not the user token, so the puller must cache these
-  //    before walking ads.
+  //    before walking ads. If /me/accounts returns zero pages, abort with
+  //    a clear actionable message instead of letting every ad fail.
   reportProgress({ phase: 'discovering-ads', currentAd: 0, totalAds: 0, pulledSoFar: 0 });
+  let pageCount = 0;
   try {
-    await refreshPageTokens();
+    const refreshResult = await refreshPageTokens();
+    pageCount = refreshResult.page_count;
   } catch (err) {
-    console.warn('[commentPuller] Page token refresh failed — comment pulls will likely error', err);
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `Failed to fetch page access tokens: ${message}\n\n` +
+      `This usually means Meta rejected the /me/accounts call. Check that your user has a Page Role (Admin / Editor / Moderator) on at least one Facebook Page.`,
+    );
   }
+  if (pageCount === 0) {
+    throw new Error(
+      `No Facebook Pages were returned for your account.\n\n` +
+      `To pull ad comments, your Meta user needs a direct Page Role (Admin / Editor / Moderator / Analyst) on every page that owns ads you want to scan. Business-Manager-level access alone is not enough — Meta requires page-level role assignment.\n\n` +
+      `Fix: in Business Manager, go to Pages → select the page → People → Add → assign your user as an Admin or Editor. Repeat for every page that runs ads. Then re-run the pull.`,
+    );
+  }
+  console.log(`[commentPuller] Cached access tokens for ${pageCount} page(s)`);
 
   // 1) Discover ad accounts
   const accounts = await paginate<AdAccountRow>('me/adaccounts', {
