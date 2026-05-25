@@ -14,9 +14,23 @@ import {
   type DifferentiationCriticInput,
   type ParsedCritique,
 } from '../prompts/differentiationCriticPrompt';
+import { buildBrainAddendum } from '../brain/contextAssembler';
+import type { BrainProduct } from '../brain/brainTypes';
 
 const OPUS = 'claude-opus-4-6';
 const MAX_TOKENS = 5000;
+
+/** Best-effort mapping from the critic input's freeform product string to a
+ *  BrainProduct key (used for slice selection). Returns undefined if the
+ *  string doesn't match a known product. Brain handles undefined gracefully. */
+function mapProductForBrain(productStr: string | undefined): BrainProduct | undefined {
+  if (!productStr) return undefined;
+  const p = productStr.toLowerCase();
+  if (p.includes('easystretch') || p.includes('easy stretch')) return 'easystretch';
+  if (p.includes('ankle')) return 'ankle';
+  if (p.includes('compression')) return 'compression';
+  return undefined;
+}
 
 export async function runDifferentiationCritic(
   input: DifferentiationCriticInput,
@@ -25,7 +39,21 @@ export async function runDifferentiationCritic(
 ): Promise<ParsedCritique> {
   const { system, user } = buildDifferentiationCriticPrompt(input);
 
-  const raw = await sendMessage(system, user, apiKey, MAX_TOKENS, OPUS, signal);
+  // Brain integration — additive only. When the per-module flag is OFF
+  // (the default), brain.addendum === '' and `finalSystem === system`,
+  // making this a strict no-op. When ON, the brain appends a labeled
+  // VoC section at the end of the existing system prompt.
+  const brain = await buildBrainAddendum(
+    {
+      module: 'differentiationCritic',
+      product: mapProductForBrain(input.product),
+      angle: input.angle,
+    },
+    { apiKey },
+  );
+  const finalSystem = system + brain.addendum;
+
+  const raw = await sendMessage(finalSystem, user, apiKey, MAX_TOKENS, OPUS, signal);
   const parsed = parseDifferentiationCritique(raw);
 
   // Log the batch-level outcome for visibility (non-fatal if nothing matches)

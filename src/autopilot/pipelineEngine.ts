@@ -40,6 +40,20 @@ import { runMemoryCurator, formatAngleHistoryForSelector } from './memoryCurator
 import { saveCompletedBatchToMemory } from './memoryExtractor';
 import { getDeepInspirationContextBlock } from '../inspiration/inspirationInjection';
 import type { ScoredInspiration } from '../inspiration/inspirationSelector';
+import { buildBrainAddendum } from '../brain/contextAssembler';
+import type { BrainProduct } from '../brain/brainTypes';
+
+/** Best-effort mapping from the pipeline's freeform product string to a
+ *  BrainProduct key for the brain's slice selector. Returns undefined if
+ *  unknown — the brain handles undefined gracefully. */
+function mapProductForBrain(productStr: string | undefined): BrainProduct | undefined {
+  if (!productStr) return undefined;
+  const p = productStr.toLowerCase();
+  if (p.includes('easystretch') || p.includes('easy stretch')) return 'easystretch';
+  if (p.includes('ankle')) return 'ankle';
+  if (p.includes('compression')) return 'compression';
+  return undefined;
+}
 import { getItem as getInspirationItem, getFrames as getInspirationFrames, getAllItems as getAllInspirationItems } from '../inspiration/inspirationStore';
 import { getEffectiveTags } from '../engine/inspirationTypes';
 import { runAngleDirectiveProposer } from './angleDirectiveProposer';
@@ -771,8 +785,19 @@ ${task.duration === '1-15 sec' ? `SHORT FORM — single-moment concepts valid, n
 
       const evalThesisBlock = `\n\n## CREATIVE STRATEGIST'S THESIS — APPLY THIS WHEN EVALUATING\n\n${thesis}\n\nWhen evaluating, favor concepts that execute this thesis faithfully over concepts that drift toward generic manifesto patterns, even when the drifting concepts look "strategically sound" in isolation.`;
 
+      // Brain integration — additive only. When 'conceptEvaluator' flag is OFF
+      // (the default), brain.addendum === '' and the system prompt is unchanged.
+      const brainEval1 = await buildBrainAddendum(
+        {
+          module: 'conceptEvaluator',
+          product: mapProductForBrain(task.parsed.product),
+          angle: task.parsed.angle,
+        },
+        { apiKey },
+      );
+
       const evalResponse = await sendMessageWithRetry(
-        evalPrompt.system + directionBlock + evalThesisBlock,
+        evalPrompt.system + directionBlock + evalThesisBlock + brainEval1.addendum,
         evalPrompt.user,
         apiKey,
         9000,
@@ -960,8 +985,18 @@ ${getAngleLanguageBank(task.parsed.angle)}
 
         const evalThesisBlock = `\n\n## CREATIVE STRATEGIST'S THESIS — APPLY THIS WHEN EVALUATING\n\n${thesis}\n\nFavor concepts that execute this thesis faithfully over concepts that drift toward generic manifesto patterns.`;
 
+        // Brain integration (regen path) — see notes on the primary call site.
+        const brainEval2 = await buildBrainAddendum(
+          {
+            module: 'conceptEvaluator',
+            product: mapProductForBrain(task.parsed.product),
+            angle: task.parsed.angle,
+          },
+          { apiKey },
+        );
+
         const evalResponse = await sendMessageWithRetry(
-          evalPrompt.system + directionBlock + evalThesisBlock,
+          evalPrompt.system + directionBlock + evalThesisBlock + brainEval2.addendum,
           evalPrompt.user,
           apiKey,
           9000,

@@ -89,6 +89,11 @@ export async function saveAnalysis(a: SavedAnalysis): Promise<void> {
     req.onsuccess = () => res();
     req.onerror = () => rej(req.error);
   });
+  // Underlying VoC source changed — invalidate the brain's cached index so
+  // the next consumer call rebuilds with the new analysis included.
+  // Imported lazily to avoid a circular dependency at module load time.
+  const { invalidateVoCIndex } = await import('../brain/vocIndex');
+  await invalidateVoCIndex();
 }
 
 export async function getAllAnalyses(): Promise<SavedAnalysis[]> {
@@ -120,6 +125,9 @@ export async function deleteAnalysis(id: string): Promise<void> {
     req.onsuccess = () => res();
     req.onerror = () => rej(req.error);
   });
+  // See saveAnalysis comment — invalidate the brain's VoC cache too.
+  const { invalidateVoCIndex } = await import('../brain/vocIndex');
+  await invalidateVoCIndex();
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
