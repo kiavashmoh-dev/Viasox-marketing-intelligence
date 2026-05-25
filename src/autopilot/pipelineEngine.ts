@@ -505,8 +505,19 @@ export async function runStrategySession(
 ): Promise<StrategySession> {
   const prompt = buildStrategyAnalysisPrompt(tasks, analysis, memoryBriefing);
 
+  // Brain integration — strategySession is in the auto-deep-reasoning module
+  // set, so this call triggers the optional second Claude call when enabled.
+  const brain = await buildBrainAddendum(
+    {
+      module: 'strategySession',
+      isBatch: tasks.length > 1,
+      batchCount: tasks.length,
+    },
+    { apiKey, reviews: analysis },
+  );
+
   const response = await sendMessage(
-    prompt.system,
+    prompt.system + brain.addendum,
     prompt.user,
     apiKey,
     12000,
@@ -549,8 +560,19 @@ export async function synthesizeStrategy(
     memoryBriefing,
   );
 
+  // Brain — same module designation as the analysis call above; auto-deep-
+  // reasoning fires here too when the strategySession flag is on.
+  const brain = await buildBrainAddendum(
+    {
+      module: 'strategySession',
+      isBatch: tasks.length > 1,
+      batchCount: tasks.length,
+    },
+    { apiKey },
+  );
+
   return await sendMessage(
-    prompt.system,
+    prompt.system + brain.addendum,
     prompt.user,
     apiKey,
     14000,
@@ -1155,7 +1177,18 @@ This is the long-form slot — full documentary/narrative arc possible:
 - Frameworks that work here: Documentary, Narrative Arc, Confession Arc, Observation Arc, Contrast/Split, PAS extended
 - Avoid filler — the extra runtime is earned by depth, not padding.`}\n`;
 
-      const scriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective;
+      // Brain integration for the autopilot script-writing step. Module is
+      // 'briefGenerator' because the autopilot pipeline IS the brief
+      // generator — this is the actual brief output Claude is about to write.
+      const brainScript1 = await buildBrainAddendum(
+        {
+          module: 'briefGenerator',
+          product: mapProductForBrain(ts.task.parsed.product),
+          angle: ts.task.parsed.angle,
+        },
+        { apiKey, reviews: analysis },
+      );
+      const scriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective + brainScript1.addendum;
       const scriptTokens = getMaxTokensForDuration(ts.task.duration);
 
       let scriptResult: string;
@@ -1254,7 +1287,17 @@ This is the long-form slot — full documentary/narrative arc possible:
         const scriptAngleDirective = `\n\n## ANGLE ENFORCEMENT: "${ts.task.parsed.angle}"
 This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleLanguageBank(ts.task.parsed.angle)}\n`;
 
-        const retryScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective;
+        // Brain integration for the retry script path (same module / params
+        // as the primary path above).
+        const brainScript2 = await buildBrainAddendum(
+          {
+            module: 'briefGenerator',
+            product: mapProductForBrain(ts.task.parsed.product),
+            angle: ts.task.parsed.angle,
+          },
+          { apiKey, reviews: analysis },
+        );
+        const retryScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective + brainScript2.addendum;
         const retryScriptTokens = getMaxTokensForDuration(ts.task.duration);
 
         let scriptResult: string;
@@ -1717,8 +1760,18 @@ ${getAngleLanguageBank(task.parsed.angle)}
 
     const regenEvalThesisBlock = `\n\n## CREATIVE STRATEGIST'S THESIS — APPLY THIS WHEN EVALUATING\n\n${thesis}\n\nFavor concepts that execute this thesis faithfully AND respond to the user's redo feedback over concepts that drift toward generic manifesto patterns.`;
 
+    // Brain integration — conceptSelector module.
+    const brainSelector = await buildBrainAddendum(
+      {
+        module: 'conceptSelector',
+        product: mapProductForBrain(task.parsed.product),
+        angle: task.parsed.angle,
+      },
+      { apiKey, reviews: analysis },
+    );
+
     const selectorResponse = await sendMessageWithRetry(
-      selectorPrompt.system + directionBlock + regenEvalThesisBlock,
+      selectorPrompt.system + directionBlock + regenEvalThesisBlock + brainSelector.addendum,
       selectorPrompt.user,
       apiKey,
       9000,
@@ -1757,7 +1810,16 @@ ${getAngleLanguageBank(task.parsed.angle)}
     const scriptPrompt = buildScriptPrompt(scriptParams, analysis, memoryBriefing || undefined, regenInspirationCtx, true);
     const regenScriptAngleCtx = `\n\n## ANGLE ENFORCEMENT: "${task.parsed.angle}"\nThis script MUST be specifically about "${task.parsed.angle}".\n\n${getAngleLanguageBank(task.parsed.angle)}\n`;
 
-    const regenScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + regenScriptAngleCtx;
+    // Brain integration for the regenerate path (briefGenerator module).
+    const brainScript3 = await buildBrainAddendum(
+      {
+        module: 'briefGenerator',
+        product: mapProductForBrain(task.parsed.product),
+        angle: task.parsed.angle,
+      },
+      { apiKey, reviews: analysis },
+    );
+    const regenScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + regenScriptAngleCtx + brainScript3.addendum;
     const regenScriptTokens = getMaxTokensForDuration(task.duration);
 
     let scriptResult: string;

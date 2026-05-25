@@ -5,6 +5,16 @@ import { buildHooksPrompt } from '../../prompts/hooksPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
 import ResultsView from '../ResultsView';
+import { buildBrainAddendum } from '../../brain/contextAssembler';
+import type { BrainProduct } from '../../brain/brainTypes';
+
+/** Map ProductCategory → BrainProduct key for slice selection. */
+function brainProduct(p: ProductCategory): BrainProduct | undefined {
+  if (p === 'EasyStretch') return 'easystretch';
+  if (p === 'Compression') return 'compression';
+  if (p === 'Ankle Compression') return 'ankle';
+  return undefined;
+}
 
 interface Props {
   analysis: FullAnalysis;
@@ -82,7 +92,7 @@ export default function HookGenerator({ analysis, apiKey, resourceContext, onBac
     e.target.value = '';
   };
 
-  const handleGenerate = (feedback?: string) => {
+  const handleGenerate = async (feedback?: string) => {
     const { system, user } = buildHooksPrompt(
       {
         product,
@@ -102,7 +112,12 @@ export default function HookGenerator({ analysis, apiKey, resourceContext, onBac
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)
       : user;
-    generate(system + buildResourceContext(resourceContext), finalUser, Math.min(hookTokens, 24000), 'claude-opus-4-6');
+    // Brain integration — additive, off by default per flag.
+    const brain = await buildBrainAddendum(
+      { module: 'hookGenerator', product: brainProduct(product) },
+      { apiKey, reviews: analysis },
+    );
+    generate(system + buildResourceContext(resourceContext) + brain.addendum, finalUser, Math.min(hookTokens, 24000), 'claude-opus-4-6');
   };
 
   if (result || loading || error) {

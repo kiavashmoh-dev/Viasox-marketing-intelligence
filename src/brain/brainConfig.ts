@@ -14,22 +14,35 @@
  */
 import type { BrainModule } from './brainTypes';
 
-/** Default per-module flags. All FALSE by design. Promote a module by
- *  changing its entry to `true` in a code review and deploying. */
+/** Default per-module flags.
+ *
+ * All TRUE — operator chose to enable the brain across every module at once
+ * (rather than the staged rollout the spec recommended) so quality impact
+ * can be observed end-to-end during normal use. If quality drops at any
+ * point, the operator can flip the master kill switch via
+ * `window.__brain.killAll()` (instant, browser-local) or revert this file's
+ * defaults (permanent, redeploy).
+ *
+ * History:
+ *   2026-05-24 — all flags initially set to FALSE per the staged rollout
+ *                in docs/superpowers/specs/2026-05-24-brain-architecture-design.md.
+ *   2026-05-24 — operator opted into all-modules-on after the foundation
+ *                was deployed. Per-stage validation is being deferred to
+ *                "in real use" feedback rather than pre-promotion compare. */
 export const BRAIN_DEFAULT_FLAGS: Record<BrainModule, boolean> = {
-  // Stage 1 — Critics (safest first target)
-  differentiationCritic: false,
-  conceptEvaluator: false,
+  // Stage 1 — Critics
+  differentiationCritic: true,
+  conceptEvaluator: true,
   // Stage 2 — Selectors & small producers
-  hookGenerator: false,
-  conceptSelector: false,
+  hookGenerator: true,
+  conceptSelector: true,
   // Stage 3 — Strategic agents
-  creativeStrategist: false,
-  personaPrompt: false,
-  strategySession: false,
-  // Stage 4 — The actual producers (last)
-  scriptWriter: false,
-  briefGenerator: false,
+  creativeStrategist: true,
+  personaPrompt: true,
+  strategySession: true,
+  // Stage 4 — The actual producers
+  scriptWriter: true,
+  briefGenerator: true,
 };
 
 /** Global master kill switch. When true, `buildBrainAddendum` returns the
@@ -49,17 +62,36 @@ export const BRAIN_DEEP_REASONING_KILL = false;
  *  first, then fall back to the code default. */
 const LS_FLAG_PREFIX = 'viasox_brain_flag.';
 
-/** Returns true if the brain is enabled for the given module. Consults the
- *  master kill switch, the per-module localStorage override, and finally
- *  the code default. */
+/** localStorage key for the master kill switch — overrides per-module flags
+ *  and the code defaults. Set via `window.__brain.killAll()`. */
+const LS_KILL_SWITCH_KEY = 'viasox_brain_kill_switch';
+
+/** Returns true if the brain is enabled for the given module. Consults, in
+ *  order: the code-level master kill switch, the localStorage master kill
+ *  switch, the per-module localStorage override, finally the code default. */
 export function isBrainEnabledFor(module: BrainModule): boolean {
   if (BRAIN_KILL_SWITCH) return false;
   if (typeof localStorage !== 'undefined') {
+    if (localStorage.getItem(LS_KILL_SWITCH_KEY) === 'on') return false;
     const override = localStorage.getItem(LS_FLAG_PREFIX + module);
     if (override === 'on') return true;
     if (override === 'off') return false;
   }
   return BRAIN_DEFAULT_FLAGS[module] ?? false;
+}
+
+/** Flip the localStorage-level master kill switch on or off. Exposed via
+ *  `window.__brain.killAll()` / `window.__brain.unkillAll()`. */
+export function setLocalKillSwitch(value: 'on' | null): void {
+  if (typeof localStorage === 'undefined') return;
+  if (value === null) localStorage.removeItem(LS_KILL_SWITCH_KEY);
+  else localStorage.setItem(LS_KILL_SWITCH_KEY, value);
+}
+
+/** Read the current localStorage kill switch state (for `list()` display). */
+export function getLocalKillSwitchState(): 'on' | null {
+  if (typeof localStorage === 'undefined') return null;
+  return localStorage.getItem(LS_KILL_SWITCH_KEY) === 'on' ? 'on' : null;
 }
 
 /** Returns true if deep reasoning is permitted globally. The per-task

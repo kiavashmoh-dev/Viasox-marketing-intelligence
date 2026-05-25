@@ -34,8 +34,10 @@ import type { BrainModule, BrainTaskDescriptor } from './brainTypes';
 import {
   BRAIN_DEFAULT_FLAGS,
   getAllBrainFlagStates,
+  getLocalKillSwitchState,
   isBrainEnabledFor,
   setLocalBrainFlag,
+  setLocalKillSwitch,
 } from './brainConfig';
 import { buildBrainAddendum } from './contextAssembler';
 import {
@@ -51,6 +53,14 @@ interface BrainDevTools {
   disable(module: BrainModule): void;
   reset(module: BrainModule): void;
   resetAll(): void;
+  /** Flip the master localStorage kill switch ON — disables the brain
+   *  GLOBALLY in this browser regardless of per-module flags or code
+   *  defaults. Use this if quality drops and you want EVERYTHING off in
+   *  one move. Survives reloads. Reverse with unkillAll(). */
+  killAll(): void;
+  /** Clear the master kill switch — brain returns to whatever per-module
+   *  flags + defaults dictate. */
+  unkillAll(): void;
   preview(task: BrainTaskDescriptor, opts?: { apiKey?: string }): Promise<void>;
   rebuildVoCIndex(): Promise<void>;
   showVoCIndex(): Promise<void>;
@@ -83,10 +93,17 @@ export function installBrainDevTools(): void {
   const tools: BrainDevTools = {
     list() {
       const state = getAllBrainFlagStates();
+      const killState = getLocalKillSwitchState();
       // eslint-disable-next-line no-console
       console.table(state);
+      if (killState === 'on') {
+        // eslint-disable-next-line no-console
+        console.warn('[brain] ⚠ MASTER KILL SWITCH is ON — every module returns the empty no-op regardless of the flags above. Use window.__brain.unkillAll() to lift it.');
+      }
       // eslint-disable-next-line no-console
       console.info('[brain] Use enable("module") / disable("module") / reset("module") to override.');
+      // eslint-disable-next-line no-console
+      console.info('[brain] Emergency cut-off: window.__brain.killAll() — disables the brain GLOBALLY in this browser in one move.');
     },
 
     enable(module) {
@@ -114,6 +131,18 @@ export function installBrainDevTools(): void {
       for (const m of ALL_MODULES) setLocalBrainFlag(m, null);
       // eslint-disable-next-line no-console
       console.info('[brain] All overrides cleared. Now using code defaults for every module.');
+    },
+
+    killAll() {
+      setLocalKillSwitch('on');
+      // eslint-disable-next-line no-console
+      console.warn('[brain] 🛑 MASTER KILL SWITCH → ON. The brain is now disabled GLOBALLY in this browser. Every module returns the empty no-op regardless of per-module flags or code defaults. Reverse with window.__brain.unkillAll().');
+    },
+
+    unkillAll() {
+      setLocalKillSwitch(null);
+      // eslint-disable-next-line no-console
+      console.info('[brain] Master kill switch lifted. Per-module flags + code defaults are back in effect.');
     },
 
     async preview(task, opts) {

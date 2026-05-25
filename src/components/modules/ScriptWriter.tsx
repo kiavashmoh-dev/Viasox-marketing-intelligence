@@ -8,6 +8,29 @@ import { useClaudeApi } from '../../hooks/useClaudeApi';
 import { buildScriptPrompt } from '../../prompts/scriptPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
+import { buildBrainAddendum } from '../../brain/contextAssembler';
+import type { BrainProduct, BrainBriefTemplate } from '../../brain/brainTypes';
+
+/** Map ProductCategory → BrainProduct key for slice selection. */
+function brainProduct(p: ProductCategory): BrainProduct | undefined {
+  if (p === 'EasyStretch') return 'easystretch';
+  if (p === 'Compression') return 'compression';
+  if (p === 'Ankle Compression') return 'ankle';
+  return undefined;
+}
+
+/** Map adType → BrainBriefTemplate, best-effort. The standalone script
+ *  writer doesn't always map cleanly to a single template; undefined is fine. */
+function brainTemplateFromAdType(adType: AdType | undefined): BrainBriefTemplate | undefined {
+  if (!adType) return undefined;
+  const t = String(adType).toLowerCase();
+  if (t.includes('agc')) return 'agc';
+  if (t.includes('ecom')) return 'ecom';
+  if (t.includes('ai doc') || t.includes('aidoc')) return 'aidoc';
+  if (t.includes('ugc')) return 'ugc';
+  if (t.includes('editing')) return 'editing';
+  return undefined;
+}
 import { getInspirationContextBlock } from '../../inspiration/inspirationInjection';
 import { downloadBriefForAdType } from '../../utils/downloadUtils';
 import { getAllProducts, getAllAdTypes, getAllFrameworks } from '../../utils/customOptionsRegistry';
@@ -182,7 +205,16 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)
       : user;
-    generate(system + buildResourceContext(resourceContext), finalUser, maxTokens, 'claude-opus-4-6');
+    // Brain integration — additive, off by default per flag.
+    const brain = await buildBrainAddendum(
+      {
+        module: 'scriptWriter',
+        product: brainProduct(product),
+        template: brainTemplateFromAdType(adType),
+      },
+      { apiKey, reviews: analysis },
+    );
+    generate(system + buildResourceContext(resourceContext) + brain.addendum, finalUser, maxTokens, 'claude-opus-4-6');
   };
 
   if (result || loading || error) {

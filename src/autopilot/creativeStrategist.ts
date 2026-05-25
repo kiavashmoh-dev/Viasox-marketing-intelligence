@@ -9,9 +9,22 @@
 
 import { sendMessage } from '../api/claude';
 import { buildCreativeStrategistPrompt, type CreativeStrategistInput } from '../prompts/creativeStrategistPrompt';
+import { buildBrainAddendum } from '../brain/contextAssembler';
+import type { BrainProduct } from '../brain/brainTypes';
 
 const OPUS = 'claude-opus-4-6';
 const MAX_TOKENS = 3000;
+
+/** Best-effort mapping from CreativeStrategistInput's freeform product
+ *  string to a BrainProduct key (used for slice selection). */
+function mapProductForBrain(productStr: string | undefined): BrainProduct | undefined {
+  if (!productStr) return undefined;
+  const p = productStr.toLowerCase();
+  if (p.includes('easystretch') || p.includes('easy stretch')) return 'easystretch';
+  if (p.includes('ankle')) return 'ankle';
+  if (p.includes('compression')) return 'compression';
+  return undefined;
+}
 
 export async function runCreativeStrategist(
   input: CreativeStrategistInput,
@@ -20,7 +33,20 @@ export async function runCreativeStrategist(
 ): Promise<string> {
   const { system, user } = buildCreativeStrategistPrompt(input);
 
-  const thesis = await sendMessage(system, user, apiKey, MAX_TOKENS, OPUS, signal);
+  // Brain integration — additive, off by default per flag. Triggers deep
+  // reasoning automatically (creativeStrategist is in the auto-deep-reason
+  // module set per the spec). Failure falls through to skip deep reasoning,
+  // never aborts the strategist.
+  const brain = await buildBrainAddendum(
+    {
+      module: 'creativeStrategist',
+      product: mapProductForBrain((input as { product?: string }).product),
+    },
+    { apiKey },
+  );
+  const finalSystem = system + brain.addendum;
+
+  const thesis = await sendMessage(finalSystem, user, apiKey, MAX_TOKENS, OPUS, signal);
 
   // Light sanity check — if the model forgot the header, the downstream
   // injection still works but log a warning so we can spot degraded calls.

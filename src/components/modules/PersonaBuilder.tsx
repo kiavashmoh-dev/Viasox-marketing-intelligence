@@ -7,6 +7,16 @@ import PersonaResultsView from '../PersonaResultsView';
 import { IDENTITY_SEGMENTS, MOTIVATION_SEGMENTS, DISPLAY_NAME_MAP } from '../../utils/segmentNames';
 import { getEnrichedSegment, hasSalesEnrichment, salesEnrichment } from '../../data/salesEnrichmentLoader';
 import CrossPurchasePanel from '../persona/CrossPurchasePanel';
+import { buildBrainAddendum } from '../../brain/contextAssembler';
+import type { BrainProduct } from '../../brain/brainTypes';
+
+/** Map ProductCategory → BrainProduct key for slice selection. */
+function brainProduct(p: ProductCategory): BrainProduct | undefined {
+  if (p === 'EasyStretch') return 'easystretch';
+  if (p === 'Compression') return 'compression';
+  if (p === 'Ankle Compression') return 'ankle';
+  return undefined;
+}
 
 type SortOption = 'reviews' | 'revenue' | 'ltv' | 'repeat';
 
@@ -259,7 +269,7 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
     });
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     const selected = Array.from(selectedPersonas);
     if (selected.length === 0) return;
 
@@ -279,7 +289,12 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
     const baseTokens = channel === 'DTC' ? 3500 : 3000;
     const marketTokens = includeMarket ? 3500 : 0;
     const maxTokens = Math.min(selected.length * (baseTokens + marketTokens), 48000);
-    generate(system + buildResourceContext(resourceContext), user, Math.max(maxTokens, 12000), 'claude-opus-4-6');
+    // Brain integration — additive, off by default per flag.
+    const brain = await buildBrainAddendum(
+      { module: 'personaPrompt', product: brainProduct(product) },
+      { apiKey, reviews: analysis },
+    );
+    generate(system + buildResourceContext(resourceContext) + brain.addendum, user, Math.max(maxTokens, 12000), 'claude-opus-4-6');
   };
 
   if (result || loading || error) {
