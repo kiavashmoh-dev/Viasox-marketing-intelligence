@@ -84,9 +84,12 @@ export interface BrainMetadata {
   vocIndexBuiltAt: number | null;
   /** Names of the VoC index slices that fed into the addendum. */
   slicesUsed: string[];
-  /** Whether the optional second Claude call ran. */
+  /** Whether a deep-reasoning Claude call ran on THIS call (fresh). */
   deepReasoningRan: boolean;
-  /** Approximate output tokens from the deep-reasoning call (if it ran). */
+  /** Whether the deep-reasoning output was reused from a session cache
+   *  (set by an earlier call in the same autopilot session). */
+  deepReasoningCacheHit: boolean;
+  /** Approximate token count of the deep-reasoning output (whether ran or cached). */
   deepReasoningTokens?: number;
   /** Channel names that fed into the addendum (e.g. 'voc', 'brandFacts'). */
   channelsConsulted: string[];

@@ -11,6 +11,7 @@ import { sendMessage } from '../api/claude';
 import { buildCreativeStrategistPrompt, type CreativeStrategistInput } from '../prompts/creativeStrategistPrompt';
 import { buildBrainAddendum } from '../brain/contextAssembler';
 import type { BrainProduct } from '../brain/brainTypes';
+import { ensureCurrentBrainSession } from '../brain/brainSession';
 
 const OPUS = 'claude-opus-4-6';
 const MAX_TOKENS = 3000;
@@ -42,7 +43,7 @@ export async function runCreativeStrategist(
       module: 'creativeStrategist',
       product: mapProductForBrain((input as { product?: string }).product),
     },
-    { apiKey },
+    { apiKey, sessionId: ensureCurrentBrainSession() },
   );
   const finalSystem = system + brain.addendum;
 

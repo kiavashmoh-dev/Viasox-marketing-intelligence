@@ -27,12 +27,19 @@ import { ensureFreshVoCIndex } from './vocIndex';
 import { selectSlicesForTask } from './sliceSelector';
 import { renderAddendum, renderDeepReasoningBlock, renderVoCBlock } from './addendumRenderer';
 import { runDeepReasoning, shouldRunDeepReasoning } from './deepReasoning';
+import { cacheDeepReasoning, getCachedDeepReasoning } from './brainSession';
 
 /** Optional per-call inputs — current review analysis (so the VoC index can
  *  include reviews), and the API key (only used if deep reasoning fires). */
 export interface BrainCallOptions {
   reviews?: FullAnalysis | null;
   apiKey?: string;
+  /** When provided, the brain caches its deep-reasoning output under this
+   *  session ID. Subsequent calls with the same sessionId reuse the cached
+   *  output instead of making an additional Claude call. The autopilot
+   *  pipeline uses this so a single deep-reasoning pass is shared across
+   *  every brief in a batch (instead of firing once per brief). */
+  sessionId?: string;
 }
 
 /**
@@ -63,6 +70,7 @@ export async function buildBrainAddendum(
       channelsConsulted: [],
       slicesUsed: [],
       deepReasoningRan: false,
+      deepReasoningCacheHit: false,
       warnings,
     });
   }
@@ -81,6 +89,7 @@ export async function buildBrainAddendum(
       channelsConsulted: [],
       slicesUsed: [],
       deepReasoningRan: false,
+      deepReasoningCacheHit: false,
       warnings,
     });
   }
@@ -98,6 +107,7 @@ export async function buildBrainAddendum(
       channelsConsulted: ['voc'],
       slicesUsed: [],
       deepReasoningRan: false,
+      deepReasoningCacheHit: false,
       warnings,
     });
   }
@@ -106,21 +116,46 @@ export async function buildBrainAddendum(
   const slices = selectSlicesForTask(task, index);
 
   // ── Step 4: optional deep-reasoning Claude call ─────────────────────────
+  //
+  // Session-aware caching: if a sessionId is provided, the brain looks for
+  // a cached deep-reasoning output under that session first. The autopilot
+  // pipeline uses this so the FIRST brain call that fires deep reasoning
+  // (typically the strategy session) populates the cache, and every
+  // subsequent brain call in the same batch reuses that output — turning
+  // N deep-reasoning Claude calls into 1.
   let deepReasoningOutput = '';
   let deepReasoningRan = false;
   let deepReasoningTokens: number | undefined;
+  let deepReasoningCacheHit = false;
   if (shouldRunDeepReasoning(task)) {
-    if (!options.apiKey) {
-      warnings.push('Deep reasoning would have fired but no apiKey was provided — skipping.');
-    } else {
-      try {
-        deepReasoningOutput = await runDeepReasoning(task, slices, options.apiKey);
-        deepReasoningRan = true;
-        // Approximate token count: roughly 1 token per 4 characters of output.
-        deepReasoningTokens = Math.round(deepReasoningOutput.length / 4);
-      } catch (err) {
-        console.warn('[brain] deep reasoning failed — returning addendum without it', err);
-        warnings.push(`Deep reasoning failed: ${err instanceof Error ? err.message : String(err)}`);
+    if (options.sessionId) {
+      const cached = getCachedDeepReasoning(options.sessionId);
+      if (cached) {
+        // Cache hit — use the prior deep-reasoning output without an LLM call.
+        deepReasoningOutput = cached.deepReasoning;
+        deepReasoningTokens = cached.approxTokens;
+        deepReasoningCacheHit = true;
+        warnings.push('Deep reasoning: reused from earlier call in this autopilot session (saved 1 Claude call).');
+      }
+    }
+    if (!deepReasoningCacheHit) {
+      if (!options.apiKey) {
+        warnings.push('Deep reasoning would have fired but no apiKey was provided — skipping.');
+      } else {
+        try {
+          deepReasoningOutput = await runDeepReasoning(task, slices, options.apiKey);
+          deepReasoningRan = true;
+          // Approximate token count: roughly 1 token per 4 characters of output.
+          deepReasoningTokens = Math.round(deepReasoningOutput.length / 4);
+          // Populate the session cache so subsequent brain calls in this
+          // session can reuse instead of firing fresh deep-reasoning calls.
+          if (options.sessionId) {
+            cacheDeepReasoning(options.sessionId, deepReasoningOutput);
+          }
+        } catch (err) {
+          console.warn('[brain] deep reasoning failed — returning addendum without it', err);
+          warnings.push(`Deep reasoning failed: ${err instanceof Error ? err.message : String(err)}`);
+        }
       }
     }
   }
@@ -135,6 +170,7 @@ export async function buildBrainAddendum(
     vocIndexBuiltAt: index.builtAt,
     slicesUsed: slices.sliceNames,
     deepReasoningRan,
+    deepReasoningCacheHit,
     deepReasoningTokens,
     channelsConsulted: ['voc'],
     warnings,
@@ -156,11 +192,16 @@ function emptyContext(metadata: BrainMetadata): BrainContext {
  *  visibility into the brain's behavior. */
 function logBrainActivity(task: BrainTaskDescriptor, meta: BrainMetadata, addendumChars: number): void {
   const approxTokens = Math.round(addendumChars / 4);
+  const drStatus = meta.deepReasoningRan
+    ? 'ran'
+    : meta.deepReasoningCacheHit
+      ? 'cached'
+      : 'skipped';
   // eslint-disable-next-line no-console
   console.info(
     `[brain] ${task.module}${task.template ? ` (${task.template})` : ''} — ` +
       `addendum ~${approxTokens.toLocaleString()} tokens, slices: ${meta.slicesUsed.join(', ') || '(none)'}, ` +
-      `deepReasoning: ${meta.deepReasoningRan ? 'ran' : 'skipped'}, latency: ${meta.latencyMs}ms` +
+      `deepReasoning: ${drStatus}, latency: ${meta.latencyMs}ms` +
       (meta.warnings.length > 0 ? `, warnings: ${meta.warnings.length}` : ''),
   );
   if (meta.warnings.length > 0) {

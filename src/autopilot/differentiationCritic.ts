@@ -16,6 +16,7 @@ import {
 } from '../prompts/differentiationCriticPrompt';
 import { buildBrainAddendum } from '../brain/contextAssembler';
 import type { BrainProduct } from '../brain/brainTypes';
+import { ensureCurrentBrainSession } from '../brain/brainSession';
 
 const OPUS = 'claude-opus-4-6';
 const MAX_TOKENS = 5000;
@@ -49,7 +50,7 @@ export async function runDifferentiationCritic(
       product: mapProductForBrain(input.product),
       angle: input.angle,
     },
-    { apiKey },
+    { apiKey, sessionId: ensureCurrentBrainSession() },
   );
   const finalSystem = system + brain.addendum;
 

@@ -42,6 +42,17 @@ import { getDeepInspirationContextBlock } from '../inspiration/inspirationInject
 import type { ScoredInspiration } from '../inspiration/inspirationSelector';
 import { buildBrainAddendum } from '../brain/contextAssembler';
 import type { BrainProduct } from '../brain/brainTypes';
+import { ensureCurrentBrainSession as ensureBrainSession, endCurrentBrainSession } from '../brain/brainSession';
+
+// `ensureBrainSession` (aliased from the shared module) creates an autopilot
+// brain session on first call and returns the same ID on every subsequent
+// call within the batch. It's referenced from many call sites in this file
+// AND from sibling files (differentiationCritic.ts, creativeStrategist.ts)
+// which import the same function directly — they all share one session per
+// autopilot run.
+//
+// `endCurrentBrainSession` is re-exported under a clearer name for the UI:
+export const endBrainSession = endCurrentBrainSession;
 
 /** Best-effort mapping from the pipeline's freeform product string to a
  *  BrainProduct key for the brain's slice selector. Returns undefined if
@@ -503,6 +514,12 @@ export async function runStrategySession(
   memoryBriefing: string | undefined,
   signal: AbortSignal,
 ): Promise<StrategySession> {
+  // Start a fresh brain session for this autopilot batch. Any stale session
+  // from a previously-interrupted run is cleared first so the new batch's
+  // deep-reasoning cache starts empty.
+  endCurrentBrainSession();
+  ensureBrainSession();
+
   const prompt = buildStrategyAnalysisPrompt(tasks, analysis, memoryBriefing);
 
   // Brain integration — strategySession is in the auto-deep-reasoning module
@@ -513,7 +530,7 @@ export async function runStrategySession(
       isBatch: tasks.length > 1,
       batchCount: tasks.length,
     },
-    { apiKey, reviews: analysis },
+    { apiKey, reviews: analysis, sessionId: ensureBrainSession() },
   );
 
   const response = await sendMessage(
@@ -568,7 +585,7 @@ export async function synthesizeStrategy(
       isBatch: tasks.length > 1,
       batchCount: tasks.length,
     },
-    { apiKey },
+    { apiKey, sessionId: ensureBrainSession() },
   );
 
   return await sendMessage(
@@ -815,7 +832,7 @@ ${task.duration === '1-15 sec' ? `SHORT FORM — single-moment concepts valid, n
           product: mapProductForBrain(task.parsed.product),
           angle: task.parsed.angle,
         },
-        { apiKey },
+        { apiKey, sessionId: ensureBrainSession() },
       );
 
       const evalResponse = await sendMessageWithRetry(
@@ -1014,7 +1031,7 @@ ${getAngleLanguageBank(task.parsed.angle)}
             product: mapProductForBrain(task.parsed.product),
             angle: task.parsed.angle,
           },
-          { apiKey },
+          { apiKey, sessionId: ensureBrainSession() },
         );
 
         const evalResponse = await sendMessageWithRetry(
@@ -1186,7 +1203,7 @@ This is the long-form slot — full documentary/narrative arc possible:
           product: mapProductForBrain(ts.task.parsed.product),
           angle: ts.task.parsed.angle,
         },
-        { apiKey, reviews: analysis },
+        { apiKey, reviews: analysis, sessionId: ensureBrainSession() },
       );
       const scriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective + brainScript1.addendum;
       const scriptTokens = getMaxTokensForDuration(ts.task.duration);
@@ -1295,7 +1312,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
             product: mapProductForBrain(ts.task.parsed.product),
             angle: ts.task.parsed.angle,
           },
-          { apiKey, reviews: analysis },
+          { apiKey, reviews: analysis, sessionId: ensureBrainSession() },
         );
         const retryScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + scriptAngleDirective + brainScript2.addendum;
         const retryScriptTokens = getMaxTokensForDuration(ts.task.duration);
@@ -1456,6 +1473,12 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
 
   state.phase = 'complete';
   onProgress({ ...state });
+
+  // Batch complete — clean up the brain session so the next autopilot run
+  // starts with a fresh deep-reasoning cache. (If the user cancels mid-batch
+  // or an error fires, the next runStrategySession() will clear any stale
+  // session via the endCurrentBrainSession call at its top.)
+  endCurrentBrainSession();
 
   return state;
 }
@@ -1767,7 +1790,7 @@ ${getAngleLanguageBank(task.parsed.angle)}
         product: mapProductForBrain(task.parsed.product),
         angle: task.parsed.angle,
       },
-      { apiKey, reviews: analysis },
+      { apiKey, reviews: analysis, sessionId: ensureBrainSession() },
     );
 
     const selectorResponse = await sendMessageWithRetry(
@@ -1817,7 +1840,7 @@ ${getAngleLanguageBank(task.parsed.angle)}
         product: mapProductForBrain(task.parsed.product),
         angle: task.parsed.angle,
       },
-      { apiKey, reviews: analysis },
+      { apiKey, reviews: analysis, sessionId: ensureBrainSession() },
     );
     const regenScriptSystem = scriptPrompt.system + resourceCtx + directionBlock + regenScriptAngleCtx + brainScript3.addendum;
     const regenScriptTokens = getMaxTokensForDuration(task.duration);

@@ -46,6 +46,7 @@ import {
   invalidateVoCIndex,
   rebuildVoCIndex,
 } from './vocIndex';
+import { endCurrentBrainSession, getAllSessions, getCurrentBrainSession } from './brainSession';
 
 interface BrainDevTools {
   list(): void;
@@ -69,6 +70,14 @@ interface BrainDevTools {
   deepReasoningEnable(): void;
   deepReasoningDisable(): void;
   deepReasoningReset(): void;
+  /** Show the currently-active brain session (if any) + any other cached
+   *  sessions with their deep-reasoning sizes. */
+  showSessions(): void;
+  /** End the currently-active autopilot session and clear its
+   *  deep-reasoning cache. Safe no-op if no session is active. Use this if
+   *  an autopilot run crashes mid-flight and you want to ensure the next
+   *  run starts with a fresh deep-reasoning pass. */
+  endSession(): void;
 }
 
 declare global {
@@ -253,6 +262,32 @@ export function installBrainDevTools(): void {
       localStorage.removeItem('viasox_brain_deep_reasoning');
       // eslint-disable-next-line no-console
       console.info('[brain] deep reasoning override removed.');
+    },
+
+    showSessions() {
+      const current = getCurrentBrainSession();
+      const all = getAllSessions();
+      // eslint-disable-next-line no-console
+      console.info(`[brain] Active session: ${current || '(none)'}`);
+      if (all.length === 0) {
+        // eslint-disable-next-line no-console
+        console.info('[brain] No cached sessions.');
+      } else {
+        // eslint-disable-next-line no-console
+        console.table(all.map((s) => ({
+          sessionId: s.sessionId,
+          cachedAt: new Date(s.cachedAt).toISOString(),
+          deepReasoningTokens: s.approxTokens,
+          deepReasoningPreview: s.deepReasoning.slice(0, 120) + (s.deepReasoning.length > 120 ? '…' : ''),
+        })));
+      }
+    },
+
+    endSession() {
+      const id = getCurrentBrainSession();
+      endCurrentBrainSession();
+      // eslint-disable-next-line no-console
+      console.info(id ? `[brain] ended session ${id}` : '[brain] no active session to end');
     },
   };
 
