@@ -137,6 +137,21 @@ export interface InspirationItem {
   userNotes: string;
   status: InspirationStatus;
   analysisError?: string;
+  /**
+   * User-assigned folder/category memberships beyond the analyzer's
+   * single auto-detected ad type. Each entry is a folder id (an AdType
+   * string, or 'short-form'). Lets the user place an item in MULTIPLE
+   * folders in the Inspiration Bank UI when the analyzer's single
+   * classification doesn't capture the full picture.
+   *
+   * UI-only field — the analyzer, brain, and autopilot inspiration
+   * injection logic all ignore it. Adding/removing entries here only
+   * affects which folder tabs the item appears under in the bank.
+   *
+   * Undefined / missing on existing items — treated as [] (no extra
+   * categories beyond the auto-detected primary).
+   */
+  userCategories?: string[];
 
   // ── Performance tracking (closed feedback loop) ─────────────────────────
   /**

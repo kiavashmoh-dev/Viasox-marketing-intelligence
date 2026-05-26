@@ -10,7 +10,6 @@ import type {
   InspirationItem,
   InspirationKind,
   InspirationTags,
-  InspirationStats,
 } from '../../engine/inspirationTypes';
 import { getEffectiveTags } from '../../engine/inspirationTypes';
 import {
@@ -18,7 +17,6 @@ import {
   putItem,
   updateItem,
   deleteItem,
-  getStats,
   generateId,
   clearAll,
   getBlob,
@@ -134,19 +132,29 @@ const FOLDERS: FolderDef[] = [
 ];
 
 /** Returns true if `item` belongs in the given folder. Used both by the
- *  main filter and by the per-folder count badges in the tab strip. */
+ *  main filter and by the per-folder count badges in the tab strip.
+ *
+ *  An item belongs to folder X if EITHER:
+ *    1. Its effective primary adType (analyzer or user override) equals X, OR
+ *    2. The user has manually assigned the item to X via userCategories
+ *  This lets a single item live in multiple folders when one ad type
+ *  classification doesn't capture the whole story (e.g., an item the
+ *  analyzer tagged as UGC that the user also wants visible under
+ *  Short Form and Founder Style). */
 function itemMatchesFolder(item: InspirationItem, folder: FolderId): boolean {
   if (folder === 'all') return true;
   if (folder === 'starred') return item.starred === true;
   const tags = getEffectiveTags(item);
-  if (folder === 'short-form') return tags.duration === '1-15 sec';
-  if (folder === 'untagged') return tags.adType === 'unknown';
-  return tags.adType === folder;
+  const userCats = item.userCategories ?? [];
+  if (folder === 'short-form') {
+    return tags.duration === '1-15 sec' || userCats.includes('short-form');
+  }
+  if (folder === 'untagged') return tags.adType === 'unknown' && userCats.length === 0;
+  return tags.adType === folder || userCats.includes(folder);
 }
 
 export default function InspirationBank({ apiKey, onBack }: Props) {
   const [items, setItems] = useState<InspirationItem[]>([]);
-  const [stats, setStats] = useState<InspirationStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -162,9 +170,8 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
   const reload = async () => {
     setLoading(true);
     try {
-      const [allItems, statsResult] = await Promise.all([getAllItems(), getStats()]);
+      const allItems = await getAllItems();
       setItems(allItems);
-      setStats(statsResult);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -380,16 +387,6 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
             </div>
           </div>
 
-          {/* Stats row */}
-          {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <StatTile label="Total" value={String(stats.total)} />
-              <StatTile label="Videos" value={String(stats.byKind.video)} />
-              <StatTile label="Briefs" value={String(stats.byKind.brief)} />
-              <StatTile label="Starred" value={String(stats.starredCount)} />
-            </div>
-          )}
-
           {/* Re-analyze progress */}
           {reanalyzeProgress && (
             <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${reanalyzing ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
@@ -516,17 +513,14 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
             await reload();
             setSelectedItem(updated);
           }}
+          onCategoriesChange={async (next) => {
+            const updated = { ...selectedItem, userCategories: next };
+            await updateItem(updated);
+            await reload();
+            setSelectedItem(updated);
+          }}
         />
       )}
-    </div>
-  );
-}
-
-function StatTile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-slate-50 rounded-lg px-4 py-3">
-      <div className="text-2xl font-bold text-slate-800">{value}</div>
-      <div className="text-xs text-slate-500 uppercase tracking-wider">{label}</div>
     </div>
   );
 }
@@ -608,6 +602,15 @@ function InspirationCard({
             {tags.isFullAi && tags.adType !== 'Full AI (Documentary, story, education, etc)' && (
               <TagPill text="Full AI" variant="accent" />
             )}
+            {/* Multi-folder hint: number of additional folders the user has
+                assigned this item to beyond its primary adType. */}
+            {(() => {
+              const extras = (item.userCategories ?? []).filter((c) => c !== tags.adType);
+              if (extras.length === 0) return null;
+              return (
+                <TagPill text={`+${extras.length} folder${extras.length === 1 ? '' : 's'}`} variant="default" />
+              );
+            })()}
           </div>
         )}
       </div>
@@ -800,6 +803,7 @@ function DetailModal({
   onDelete,
   onTagsChange,
   onNotesChange,
+  onCategoriesChange,
 }: {
   item: InspirationItem;
   onClose: () => void;
@@ -807,10 +811,24 @@ function DetailModal({
   onDelete: () => void;
   onTagsChange: (overrides: Partial<InspirationTags>) => void;
   onNotesChange: (notes: string) => void;
+  /** Persist a new userCategories array for this item. Drives which folder
+   *  tabs in the bank surface this item (additive on top of the analyzer's
+   *  primary adType — see itemMatchesFolder). */
+  onCategoriesChange: (next: string[]) => void;
 }) {
   const tags = getEffectiveTags(item);
   const [overrides, setOverrides] = useState<Partial<InspirationTags>>(item.userTagOverrides ?? {});
+  const [userCategories, setUserCategories] = useState<string[]>(item.userCategories ?? []);
   const [notes, setNotes] = useState(item.userNotes);
+
+  // Toggle a folder id in the userCategories list — persists immediately.
+  const toggleCategory = (folderId: string) => {
+    const next = userCategories.includes(folderId)
+      ? userCategories.filter((c) => c !== folderId)
+      : [...userCategories, folderId];
+    setUserCategories(next);
+    onCategoriesChange(next);
+  };
   const [customTagInput, setCustomTagInput] = useState('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
@@ -1092,6 +1110,51 @@ function DetailModal({
                   Add
                 </button>
               </div>
+            </div>
+          </Section>
+
+          {/* Show in folders \u2014 multi-folder assignment beyond the analyzer's
+              single primary ad-type detection. Lets the user surface the
+              same item under multiple folders in the bank without changing
+              its primary tag. Folder match is OR'd: an item appears in any
+              folder whose id is checked here OR whose id matches the
+              primary effective adType. */}
+          <Section title="Show in folders" icon={'\uD83D\uDCC2'} accent="slate">
+            <p className="text-[11px] text-slate-500 mb-2">
+              Check additional folders this item should appear in. The
+              analyzer's primary detection ({shortAdTypeLabel(tags.adType) || 'unknown'})
+              already counts on its own \u2014 these are extras.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+              {FOLDERS.filter((f) => f.id !== 'all' && f.id !== 'starred' && f.id !== 'untagged').map((f) => {
+                const isPrimary = tags.adType === f.id;
+                const checked = isPrimary || userCategories.includes(f.id);
+                const disabled = isPrimary; // can't uncheck the primary auto-detected category
+                return (
+                  <label
+                    key={f.id}
+                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md border text-sm ${
+                      disabled
+                        ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed'
+                        : 'bg-white border-slate-200 hover:bg-slate-50 cursor-pointer'
+                    }`}
+                    title={disabled ? `Primary detection \u2014 to remove, change the Ad Type tag above` : `Toggle ${f.label}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={disabled}
+                      onChange={() => toggleCategory(f.id as string)}
+                      className="w-3.5 h-3.5 accent-blue-600"
+                    />
+                    <span className="text-base leading-none">{f.icon}</span>
+                    <span className="flex-1 truncate">{f.label}</span>
+                    {isPrimary && (
+                      <span className="text-[9px] uppercase tracking-wider text-blue-600 font-semibold">Primary</span>
+                    )}
+                  </label>
+                );
+              })}
             </div>
           </Section>
 
