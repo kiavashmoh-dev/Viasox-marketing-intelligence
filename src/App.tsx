@@ -4,7 +4,8 @@ import PasswordGate from './components/PasswordGate';
 import ApiKeyInput from './components/ApiKeyInput';
 import CsvUploader from './components/CsvUploader';
 import ProcessingView from './components/ProcessingView';
-import OutputSelector from './components/OutputSelector';
+import AppShell from './components/AppShell';
+import Home from './components/Home';
 import SegmentDiscovery from './components/modules/SegmentDiscovery';
 import PersonaBuilder from './components/modules/PersonaBuilder';
 import AnglesGenerator from './components/modules/AnglesGenerator';
@@ -97,52 +98,59 @@ export default function App() {
       );
 
     case 'dashboard':
-      return analysis ? (
-        <OutputSelector
-          analysis={analysis}
-          onSelect={handleModuleSelect}
-          onReset={handleReset}
-        />
-      ) : null;
-
     case 'module': {
       if (!analysis) return null;
+      // The sidebar persists across both Home (dashboard) and any module.
+      // `activeModule` drives both the sidebar's highlight AND which body
+      // component is rendered in the main pane. `null` = show Home.
+      const handleSidebarNav = (target: ModuleId | 'home') => {
+        if (target === 'home') {
+          handleBackToDashboard();
+        } else {
+          handleModuleSelect(target);
+        }
+      };
       const moduleProps = { analysis, apiKey, resourceContext, onBack: handleBackToDashboard };
+      const body =
+        activeModule === null ? (
+          <Home analysis={analysis} onNavigate={handleModuleSelect} />
+        ) : activeModule === 'segments' ? (
+          <SegmentDiscovery {...moduleProps} />
+        ) : activeModule === 'persona' ? (
+          <PersonaBuilder {...moduleProps} />
+        ) : activeModule === 'angles' ? (
+          <AnglesGenerator
+            {...moduleProps}
+            onWriteScript={handleWriteScriptFromAngle}
+          />
+        ) : activeModule === 'hooks' ? (
+          <HookGenerator {...moduleProps} />
+        ) : activeModule === 'script' ? (
+          <ScriptWriter
+            {...moduleProps}
+            conceptAngleContext={conceptAngleContext}
+          />
+        ) : activeModule === 'comments' ? (
+          <CommentIntelligence {...moduleProps} />
+        ) : activeModule === 'product-intelligence' ? (
+          <ProductIntelligence {...moduleProps} />
+        ) : activeModule === 'autopilot' ? (
+          <AutopilotBriefs {...moduleProps} />
+        ) : activeModule === 'inspiration' ? (
+          <InspirationBank apiKey={apiKey} onBack={handleBackToDashboard} />
+        ) : activeModule === 'memory-vault' ? (
+          <MemoryVault onBack={handleBackToDashboard} />
+        ) : null;
 
-      switch (activeModule) {
-        case 'segments':
-          return <SegmentDiscovery {...moduleProps} />;
-        case 'persona':
-          return <PersonaBuilder {...moduleProps} />;
-        case 'angles':
-          return (
-            <AnglesGenerator
-              {...moduleProps}
-              onWriteScript={handleWriteScriptFromAngle}
-            />
-          );
-        case 'hooks':
-          return <HookGenerator {...moduleProps} />;
-        case 'script':
-          return (
-            <ScriptWriter
-              {...moduleProps}
-              conceptAngleContext={conceptAngleContext}
-            />
-          );
-        case 'comments':
-          return <CommentIntelligence {...moduleProps} />;
-        case 'product-intelligence':
-          return <ProductIntelligence {...moduleProps} />;
-        case 'autopilot':
-          return <AutopilotBriefs {...moduleProps} />;
-        case 'inspiration':
-          return <InspirationBank apiKey={apiKey} onBack={handleBackToDashboard} />;
-        case 'memory-vault':
-          return <MemoryVault onBack={handleBackToDashboard} />;
-        default:
-          return null;
-      }
+      return (
+        <AppShell
+          activeModule={activeModule}
+          onNavigate={handleSidebarNav}
+          onResetData={handleReset}
+        >
+          {body}
+        </AppShell>
+      );
     }
 
     default:
