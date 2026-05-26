@@ -770,12 +770,26 @@ ${params.fullAiVisualStyle === 'Story with cohesive characters' ? 'A cohesive ch
 
 **MANDATORY SCRIPT RULES FOR FULL AI:**
 1. Every shot description must be feasible for current AI text-to-video models. Avoid: tight product close-ups with branding, hands manipulating socks with exact detail, multi-person dialogue scenes, complex choreography, real-world locations that demand brand accuracy.
-2. Use the script body to describe SCENES (visual prompts), VOICEOVER (the line spoken), and SHOT NOTES (camera language, mood, lighting). Treat each row as a generation prompt.
-3. The specification (${params.fullAiSpecification ?? 'Documentary'}) and visual style (${params.fullAiVisualStyle ?? 'Story with cohesive characters'}) must FUNDAMENTALLY shape the script structure, pacing, and tone. Do not write a generic script and slap a label on it.
-4. Product presence is MINIMAL and symbolic — a brief product beat near the end, a logo card. The story is the ad; the product is the resolution.
-5. The protagonist (when shown) is a woman 50+. Describe her with enough detail in the first shot for identity-consistent generation: approximate age, hair color/style, build, clothing palette, environment.
-6. Voiceover should be the dominant audio. Music direction matters — describe it (e.g., "warm minimal piano," "ambient strings building to hopeful resolve").
-7. The angle type determines the EMOTIONAL ARC and STORY FLOW. The Full AI specification + visual style determine HOW that story is visually executed. Both must coexist.
+2. **🚨 CRITICAL COLUMN MAPPING — READ BEFORE WRITING THE TABLE 🚨**
+   The output tables (SCRIPT (HOOKS) and SCRIPT (BODY)) have FOUR columns. Each column has ONE specific purpose. Do not merge or confuse them:
+   - **\`#\` column:** Row number (1, 2, 3...).
+   - **\`Shot Type\` column:** The AI shot tag ONLY — short label like "AI Scene," "AI Close-Up," "AI B-Roll," "Animation / Motion Graphics," "Text/Title Card." NO sentences. NO visual descriptions.
+   - **\`Suggested Visual\` column:** The scene description for the AI generator. This is the visual prompt — describe what the viewer SEES (protagonist, environment, action, lighting, mood). 12-40 words.
+   - **\`Script Line\` / \`Hook Line\` column:** THE ACTUAL SPOKEN WORDS — voiceover narration or character dialogue that will be HEARD in the ad audio track. This is the script. Treat it like a screenplay line, NOT a scene description.
+   For shots that have NO audio (pure B-roll, silent text-card moments), write \`(silent — VO continues from previous row)\` or \`(silent — see music direction)\` in the Script Line column. NEVER duplicate the visual description into the Script Line column.
+3. **Example of correct column mapping (Full AI, Documentary mode):**
+   | # | Shot Type | Suggested Visual | Script Line |
+   | 1 | AI Scene | A woman in her 60s, silver hair, sits at a kitchen table at dawn. Soft window light. She wraps her hands around a coffee mug, looking out the window. | "There's a moment in every long day when your body finally tells you the truth." |
+   | 2 | AI Close-Up | Close on her ankles under the table — slight swelling visible above the sock line. Indentations from sock elastic pressed into the skin. | (silent — VO continues) |
+   | 3 | AI Scene | Same woman walking down a hallway in slippers, hand trailing the wall for balance. Warm morning light. | "And for the longest time, I thought that feeling was just… age." |
+   Notice: visuals NEVER appear in the Script Line column. Spoken words NEVER appear in the Suggested Visual column.
+4. Use the script body to TELL a story. Each row pairs ONE visual moment with ONE spoken line (or one silent visual beat between spoken lines). The visual prompts are FOR the AI generator; the script lines are FOR the voiceover artist or AI voice.
+5. The specification (${params.fullAiSpecification ?? 'Documentary'}) and visual style (${params.fullAiVisualStyle ?? 'Story with cohesive characters'}) must FUNDAMENTALLY shape the script structure, pacing, and tone. Do not write a generic script and slap a label on it.
+6. Product presence is MINIMAL and symbolic — a brief product beat near the end, a logo card. The story is the ad; the product is the resolution.
+7. The protagonist (when shown) is a woman 50+. Describe her with enough detail in the FIRST row's Suggested Visual for identity-consistent generation: approximate age, hair color/style, build, clothing palette, environment. Subsequent rows reference back to her ("the same woman from before, now…").
+8. Voiceover should be the dominant audio. Music direction matters — describe it (e.g., "warm minimal piano," "ambient strings building to hopeful resolve") in the EDITING INSTRUCTIONS or a dedicated Music note, NOT in the Script Line column.
+9. The angle type determines the EMOTIONAL ARC and STORY FLOW. The Full AI specification + visual style determine HOW that story is visually executed. Both must coexist.
+10. **SELF-CHECK BEFORE OUTPUTTING THE TABLE:** Scan every row's Script Line column. If any cell describes "what the viewer sees" (e.g., "Close-up of feet," "Same woman walks to door," "Camera pulls back to reveal…"), STOP — you've put a visual in the wrong column. Move it to the Suggested Visual column and write actual spoken words OR \`(silent)\` in the Script Line column.
 
 ${buildFullAiSkillContext({
   specification: params.fullAiSpecification,
