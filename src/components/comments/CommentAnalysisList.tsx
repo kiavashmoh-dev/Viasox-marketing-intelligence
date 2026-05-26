@@ -115,7 +115,7 @@ export default function CommentAnalysisList({
               <p className="text-sm text-slate-500">
                 {analyses.length === 0
                   ? 'No saved analyses yet — run your first one to start the library.'
-                  : `${analyses.length} saved analys${analyses.length === 1 ? 'is' : 'es'} — click any to view, or select 2+ to combine.`}
+                  : `${analyses.length} saved analys${analyses.length === 1 ? 'is' : 'es'} in your library. The module opens by default to your largest analysis; click any below to view a specific one, or select 2+ to combine.`}
               </p>
             </div>
           </div>

@@ -132,11 +132,44 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
     try {
       const all = await getAllAnalyses();
       setSavedAnalyses(all);
+      return all;
     } catch (err) {
       console.warn('[CommentIntelligence] failed to load saved analyses', err);
+      return [] as SavedAnalysis[];
     }
   }, []);
-  useEffect(() => { refreshSavedList(); }, [refreshSavedList]);
+
+  /** True after the first auto-load on mount has run, so subsequent re-renders
+   *  (e.g. from list refreshes) don't keep yanking the user back to the
+   *  biggest analysis when they've intentionally navigated to the list. */
+  const hasAutoLoadedRef = useRef(false);
+
+  // On first mount: load saved analyses, then if any exist, auto-open the
+  // "main dashboard" — the analysis with the most comments (preferring
+  // combined analyses, since combining is the user's explicit merge of
+  // multiple batches and is what they think of as "the maximum-level analysis").
+  // If the bank is empty, stay on the list view so its "Run your first
+  // analysis" empty state shows.
+  useEffect(() => {
+    (async () => {
+      const all = await refreshSavedList();
+      if (hasAutoLoadedRef.current || all.length === 0) return;
+      hasAutoLoadedRef.current = true;
+      // Prefer combined analyses (explicit merges with the most comprehensive
+      // context). If none exist, fall back to the largest single analysis.
+      const combined = all.filter((a) => a.type === 'combined');
+      const pool = combined.length > 0 ? combined : all;
+      const biggest = pool.reduce((a, b) => (a.commentCount >= b.commentCount ? a : b));
+      setActiveAnalysisId(biggest.id);
+      setCategorized(biggest.categorizedComments);
+      setSummary(biggest.summary);
+      setInsightsReport(biggest.insightsReport);
+      setRawComments(biggest.categorizedComments.map((c) => c.original));
+      setActiveTab('dashboard');
+      setError(null);
+      setPhase('results');
+    })();
+  }, [refreshSavedList]);
 
   const handleCommentsReady = useCallback(async (
     comments: RawComment[],
