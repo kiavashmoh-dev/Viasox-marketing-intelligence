@@ -174,13 +174,13 @@ export default function Home({ analysis, onNavigate }: Props) {
       actionTarget: 'memory-vault',
     },
     {
-      icon: '🤖',
+      icon: '🏭',
       iconBg: 'bg-rose-50',
       iconColor: 'text-rose-600',
-      title: 'Autopilot Briefs',
+      title: 'The Factory',
       status: 'completed',
-      statLine: 'Generate concepts, evaluate, write briefs — end-to-end from an Asana batch',
-      actionLabel: 'Start a Batch',
+      statLine: 'Generate concepts, evaluate, write briefs — end-to-end from an Asana batch or a manually-built table',
+      actionLabel: 'Open The Factory',
       actionTarget: 'autopilot',
     },
   ];
@@ -232,7 +232,7 @@ export default function Home({ analysis, onNavigate }: Props) {
             Shortcuts
           </div>
           <div className="flex flex-wrap gap-2">
-            <Shortcut label="Generate a brief" icon="🤖" onClick={() => onNavigate('autopilot')} />
+            <Shortcut label="Open The Factory" icon="🏭" onClick={() => onNavigate('autopilot')} />
             <Shortcut label="Pull new comments" icon="💬" onClick={() => onNavigate('comments')} />
             <Shortcut label="Write a script" icon="🎬" onClick={() => onNavigate('script')} />
             <Shortcut label="Add inspiration" icon="📚" onClick={() => onNavigate('inspiration')} />

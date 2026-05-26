@@ -495,10 +495,10 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
 
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-800 mb-1">
-            Autopilot Brief Generator
+            The Factory
           </h2>
           <p className="text-slate-500 text-sm">
-            Upload your Asana board, strategize with your AI creative team, review concepts, then generate full briefs.
+            Upload an Asana board or build a batch manually, strategize with your AI creative team, review concepts, then generate full briefs end-to-end.
           </p>
         </div>
 
