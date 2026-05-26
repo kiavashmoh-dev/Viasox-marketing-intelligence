@@ -20,7 +20,13 @@
 import type { CategorizedComment, CommentSummary } from '../components/comments/CommentDashboard';
 
 const DB_NAME = 'viasox_comment_analyses';
-const DB_VERSION = 1;
+// IMPORTANT: must stay in sync with src/brain/vocIndex.ts DB_VERSION.
+// Both files open the same database. The brain's vocIndex bumped this to 2
+// when it added the voc_index object store. If this file stays at 1 while
+// vocIndex opens at 2, IndexedDB throws VersionError on the v1 open, the
+// catch block silently logs, and the UI sees an empty analyses list even
+// though the data is still there.
+const DB_VERSION = 2;
 const STORE = 'analyses';
 
 export interface SavedAnalysis {
