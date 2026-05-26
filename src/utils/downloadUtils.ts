@@ -560,8 +560,9 @@ export function downloadBriefForAdType(
   product: string,
   taskName: string,
 ): void {
-  // Two delivery paths, two downloaders. Per the original architecture:
-  //   - Production (Nora films) → AGC CSV
+  // Three delivery paths, three downloaders:
+  //   - Production (Nora films with crew + hired actors) → AGC CSV
+  //   - Creator (regular person filming on phone, often older / non-tech) → UGC Doc
   //   - Editing (existing footage / AI generation) → Ecom Doc
   //   - Static → Ecom Doc (single-image, uses the doc shape)
   switch (adType) {
@@ -571,8 +572,12 @@ export function downloadBriefForAdType(
     case 'Spokesperson':
     case 'Fake Podcast Ads':
     case 'Packaging/Employee':
-    case 'UGC (User Generated Content)':
       downloadProductionBriefCsv(markdown, product, adType, taskName);
+      return;
+
+    // Creator path → UGC Doc (simplified, 3-col body, 5 hooks)
+    case 'UGC (User Generated Content)':
+      downloadUgcBriefDoc(markdown, taskName);
       return;
 
     // Editing path → Ecom Doc
@@ -584,4 +589,172 @@ export function downloadBriefForAdType(
       downloadEcomBriefDoc(markdown, taskName);
       return;
   }
+}
+
+// ─── UGC Creator Brief — DOC (5 hooks, 3-col body) ──────────────────────
+//
+// Reuses the Ecom DOC styling (navy headers, Arial, light-gray table
+// borders) so it feels visually consistent with the other doc briefs. The
+// content is dramatically simpler: only the sections a non-technical
+// creator needs to film their video.
+//
+// Markdown sections expected from the LLM (per buildUgcTemplate in
+// briefTemplates.ts):
+//   - BRIEF INFO       — KV table (Brief ID, Date, Product, Angle,
+//                        Persona, Length, Talent, Location)
+//   - STRATEGY         — KV table (Awareness, Primary Emotion, Avatar)
+//   - VOICE & TONE     — prose paragraph (no table)
+//   - SCRIPT (HOOKS)   — 4-col table: # | Hook Style | Visual | Line
+//   - SCRIPT (BODY)    — 3-col table: Shot Visuals | Shot Type | Lines
+export function downloadUgcBriefDoc(markdownContent: string, overrideBriefId?: string): void {
+  const esc = escapeHtml;
+
+  const briefInfo = parseKvTable(markdownContent, 'BRIEF INFO');
+  const strategy = parseKvTable(markdownContent, 'STRATEGY');
+  const voiceToneSection = extractProseSection(markdownContent, 'VOICE & TONE');
+  const hooks = parseScriptTable(markdownContent, 'SCRIPT \\(HOOKS\\)');
+  const body = parseScriptTable(markdownContent, 'SCRIPT \\(BODY\\)');
+
+  const briefId = overrideBriefId || briefInfo['Brief ID'] || 'UGC_BRIEF';
+
+  // Reuse the Ecom DOC's visual language so the doc style stays consistent
+  // across brief types — just lighter content inside.
+  const NAVY = '#1b365d';
+  const BORDER = '#bfbfbf';
+  const sectionHeaderStyle = `padding:6px 10px;font-weight:bold;font-size:12pt;color:#000;font-family:Arial,sans-serif;`;
+  const labelCellStyle = `background:${NAVY};padding:6px 10px;font-weight:bold;font-size:10pt;color:#ffffff;border:1px solid ${BORDER};width:160px;vertical-align:top;font-family:Arial,sans-serif;`;
+  const valueCellStyle = `padding:6px 10px;font-size:10pt;color:#000;border:1px solid ${BORDER};vertical-align:top;font-family:Arial,sans-serif;`;
+  const scriptHeaderStyle = `background:${NAVY};padding:6px 10px;font-weight:bold;font-size:10pt;color:#ffffff;border:1px solid ${BORDER};text-align:left;font-family:Arial,sans-serif;`;
+  const scriptCellStyle = `padding:6px 10px;font-size:10pt;color:#000;border:1px solid ${BORDER};vertical-align:top;font-family:Arial,sans-serif;`;
+
+  const kvRow = (label: string, value: string) =>
+    `<tr><td style="${labelCellStyle}">${esc(label)}</td><td style="${valueCellStyle}">${esc(value || '—')}</td></tr>`;
+
+  let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(briefId)}</title>
+<style>
+@page { margin: 0.75in; }
+body { font-family: Arial, sans-serif; max-width: 850px; margin: 0 auto; padding: 30px; color: #000; font-size: 11pt; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 16px; page-break-inside: avoid; }
+h1 { text-align: center; }
+.voice-tone { padding:10px 14px;border:1px solid ${BORDER};font-size:10.5pt;color:#000;line-height:1.5;background:#f8f9fb;font-family:Arial,sans-serif;margin-bottom:16px;white-space:pre-wrap; }
+</style></head><body>`;
+
+  // Title
+  html += `<h1 style="font-size:16pt;color:#000;margin:0 0 20px 0;font-weight:bold;font-family:Arial,sans-serif;">UGC Creator Brief</h1>`;
+
+  // 1. BRIEF INFO — UGC-specific fields
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">BRIEF INFO</p>`;
+  html += `<table>`;
+  html += kvRow('Brief ID', briefId);
+  html += kvRow('Date', briefInfo['Date'] || '');
+  html += kvRow('Product', briefInfo['Product'] || '');
+  html += kvRow('Angle', briefInfo['Angle'] || '');
+  html += kvRow('Persona', briefInfo['Persona'] || '');
+  html += kvRow('Length', briefInfo['Length'] || briefInfo['Format'] || '');
+  html += kvRow('Talent', briefInfo['Talent'] || '');
+  html += kvRow('Location', briefInfo['Location'] || '');
+  html += `</table>`;
+
+  // 2. STRATEGY — minimal: awareness, emotion, avatar
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">STRATEGY</p>`;
+  html += `<table>`;
+  html += kvRow('Awareness Level', strategy['Awareness Level'] || '');
+  html += kvRow('Primary Emotion', strategy['Primary Emotion'] || '');
+  html += kvRow('Avatar', strategy['Avatar'] || '');
+  html += `</table>`;
+
+  // 3. VOICE & TONE — prose paragraph, not a table
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">VOICE &amp; TONE</p>`;
+  html += `<div class="voice-tone">${esc(voiceToneSection || '—')}</div>`;
+
+  // 4. SCRIPT (HOOKS) — 4 cols: # | Hook Style | Suggested Visual | Hook Line
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (HOOKS) — 5 Variations</p>`;
+  html += `<table>`;
+  html += `<tr>` +
+    `<th style="${scriptHeaderStyle}width:40px;">#</th>` +
+    `<th style="${scriptHeaderStyle}width:140px;">HOOK STYLE</th>` +
+    `<th style="${scriptHeaderStyle}width:220px;">SUGGESTED VISUAL</th>` +
+    `<th style="${scriptHeaderStyle}">HOOK LINE</th>` +
+    `</tr>`;
+  hooks.forEach((row) => {
+    const [num, style, visual, line] = [row[0] || '', row[1] || '', row[2] || '', row[3] || ''];
+    html += `<tr>` +
+      `<td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td>` +
+      `<td style="${scriptCellStyle}width:140px;">${esc(style)}</td>` +
+      `<td style="${scriptCellStyle}width:220px;">${esc(visual)}</td>` +
+      `<td style="${scriptCellStyle}">${esc(line)}</td>` +
+      `</tr>`;
+  });
+  if (hooks.length === 0) {
+    html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#999;">No hooks parsed</td></tr>`;
+  }
+  html += `</table>`;
+
+  // 5. SCRIPT (BODY) — 3 cols ONLY: Shot Visuals | Shot Type | Lines
+  // (No row number — kept maximally clean for the creator per spec.)
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (BODY)</p>`;
+  html += `<table>`;
+  html += `<tr>` +
+    `<th style="${scriptHeaderStyle}">SHOT VISUALS</th>` +
+    `<th style="${scriptHeaderStyle}width:140px;">SHOT TYPE</th>` +
+    `<th style="${scriptHeaderStyle}">LINES</th>` +
+    `</tr>`;
+  body.forEach((row) => {
+    // The body rows might come from a 3-col markdown table (Shot Visuals |
+    // Shot Type | Lines) OR a 4-col legacy table (# | Shot Type | Visual |
+    // Line). Detect by the first cell — if it parses as a small integer,
+    // the table includes a leading row number we should skip; otherwise
+    // the first cell IS the visual.
+    let visual: string, shotType: string, lines: string;
+    const first = (row[0] || '').trim();
+    const isLeadingNumber = /^\d{1,3}$/.test(first);
+    if (isLeadingNumber) {
+      shotType = row[1] || '';
+      visual = row[2] || '';
+      lines = row[3] || '';
+    } else {
+      visual = row[0] || '';
+      shotType = row[1] || '';
+      lines = row[2] || '';
+    }
+    html += `<tr>` +
+      `<td style="${scriptCellStyle}">${esc(visual)}</td>` +
+      `<td style="${scriptCellStyle}width:140px;">${esc(shotType)}</td>` +
+      `<td style="${scriptCellStyle}">${esc(lines)}</td>` +
+      `</tr>`;
+  });
+  if (body.length === 0) {
+    html += `<tr><td colspan="3" style="${scriptCellStyle}text-align:center;color:#999;">No body rows parsed</td></tr>`;
+  }
+  html += `</table>`;
+
+  html += `<p style="margin-top:30px;font-size:9pt;color:#999;border-top:1px solid #ddd;padding-top:8px;font-family:Arial,sans-serif;">Generated by Viasox Marketing Intelligence</p>`;
+  html += `</body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const safeBriefId = briefId.replace(/[\\/:*?"<>|]/g, '_');
+  a.download = `${safeBriefId}_UGC.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Extract a prose section (no table) from markdown by its header. Returns
+ * everything between the section header and the next `###`/`##` header,
+ * with leading/trailing whitespace trimmed. Used for VOICE & TONE which is
+ * a paragraph, not a table.
+ */
+function extractProseSection(markdown: string, sectionHeader: string): string {
+  const headerPattern = new RegExp(`^#{1,4}\\s*[0-9]*\\.?\\s*${sectionHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/&/g, '&amp;|&')}\\s*$`, 'mi');
+  const match = headerPattern.exec(markdown);
+  if (!match) return '';
+  const startIdx = match.index + match[0].length;
+  const after = markdown.slice(startIdx);
+  // Find the next header (### or ##) to mark the end of this section.
+  const nextHeader = /^#{1,4}\s+/m.exec(after);
+  const sectionBody = nextHeader ? after.slice(0, nextHeader.index) : after;
+  return sectionBody.trim();
 }
