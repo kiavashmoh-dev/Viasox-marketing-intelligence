@@ -43,6 +43,12 @@ const KIND_LABEL: Record<InspirationKind, string> = {
   brief: 'Brief',
 };
 
+// ─── Option lists for the item-detail tag-editor dropdowns ─────────────
+//
+// These power the editable dropdowns in the item detail modal (Ad Type,
+// Angle, Product). The main bank-level filter no longer uses them — the
+// folder tabs below have replaced the filter row.
+
 const AD_TYPES: (AdType | 'all')[] = [
   'all',
   'AGC (Actor Generated Content)',
@@ -80,6 +86,64 @@ const PRODUCT_CATEGORIES: (ProductCategory | 'all')[] = [
   'Other',
 ];
 
+// ─── Folder definitions for the new tabbed nav ──────────────────────────
+//
+// Each "folder" is a virtual category the user can click to filter the
+// bank. Most folders correspond to an ad type, but a few are special:
+//   - 'all'        : show everything
+//   - 'short-form' : duration is 1-15 sec, regardless of ad type. This was
+//                    requested explicitly — short-form is a duration, not an
+//                    ad type, but for the inspiration bank it's a useful
+//                    folder because the visual/pacing patterns are distinct.
+//   - 'starred'    : starred items, regardless of ad type
+//   - 'untagged'   : items whose analyzer didn't resolve an ad type
+//   - any AdType   : items whose effective tags.adType matches
+//
+// Items are ALLOWED to appear in multiple folders (e.g., a UGC short-form
+// item shows up in both 'UGC' and 'Short Form'). Folders are filters, not
+// partitions.
+
+type FolderId =
+  | 'all'
+  | 'short-form'
+  | 'starred'
+  | 'untagged'
+  | AdType;
+
+interface FolderDef {
+  id: FolderId;
+  label: string;
+  icon: string;
+}
+
+const FOLDERS: FolderDef[] = [
+  { id: 'all', label: 'All', icon: '🗂️' },
+  { id: 'short-form', label: 'Short Form (<15s)', icon: '⚡' },
+  { id: 'starred', label: 'Starred', icon: '★' },
+  { id: 'Ecom Style', label: 'Ecom Style', icon: '📦' },
+  { id: 'Full AI (Documentary, story, education, etc)', label: 'Full AI', icon: '🤖' },
+  { id: 'UGC (User Generated Content)', label: 'UGC', icon: '📱' },
+  { id: 'AGC (Actor Generated Content)', label: 'AGC', icon: '🎬' },
+  { id: 'Static', label: 'Static', icon: '🖼️' },
+  { id: 'Founder Style', label: 'Founder Style', icon: '👤' },
+  { id: 'Fake Podcast Ads', label: 'Fake Podcast', icon: '🎙️' },
+  { id: 'AI Podcast', label: 'AI Podcast', icon: '🎧' },
+  { id: 'Spokesperson', label: 'Spokesperson', icon: '🗣️' },
+  { id: 'Packaging/Employee', label: 'Packaging/Employee', icon: '📦' },
+  { id: 'untagged', label: 'Untagged', icon: '❓' },
+];
+
+/** Returns true if `item` belongs in the given folder. Used both by the
+ *  main filter and by the per-folder count badges in the tab strip. */
+function itemMatchesFolder(item: InspirationItem, folder: FolderId): boolean {
+  if (folder === 'all') return true;
+  if (folder === 'starred') return item.starred === true;
+  const tags = getEffectiveTags(item);
+  if (folder === 'short-form') return tags.duration === '1-15 sec';
+  if (folder === 'untagged') return tags.adType === 'unknown';
+  return tags.adType === folder;
+}
+
 export default function InspirationBank({ apiKey, onBack }: Props) {
   const [items, setItems] = useState<InspirationItem[]>([]);
   const [stats, setStats] = useState<InspirationStats | null>(null);
@@ -91,12 +155,8 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
   const [reanalyzing, setReanalyzing] = useState(false);
   const [reanalyzeProgress, setReanalyzeProgress] = useState('');
 
-  // Filters
-  const [filterKind, setFilterKind] = useState<InspirationKind | 'all'>('all');
-  const [filterAdType, setFilterAdType] = useState<string>('all');
-  const [filterAngle, setFilterAngle] = useState<string>('all');
-  const [filterProduct, setFilterProduct] = useState<string>('all');
-  const [filterStarred, setFilterStarred] = useState(false);
+  // ── New tabbed-folder filter (replaces the old multi-dropdown filter row) ──
+  const [activeFolder, setActiveFolder] = useState<FolderId>('all');
   const [searchText, setSearchText] = useState('');
 
   const reload = async () => {
@@ -119,13 +179,9 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
   const filtered = useMemo(() => {
     const search = searchText.trim().toLowerCase();
     return items.filter((item) => {
-      if (filterKind !== 'all' && item.kind !== filterKind) return false;
-      if (filterStarred && !item.starred) return false;
-      const tags = getEffectiveTags(item);
-      if (filterAdType !== 'all' && tags.adType !== filterAdType) return false;
-      if (filterAngle !== 'all' && tags.angleType !== filterAngle) return false;
-      if (filterProduct !== 'all' && tags.productCategory !== filterProduct) return false;
+      if (!itemMatchesFolder(item, activeFolder)) return false;
       if (search) {
+        const tags = getEffectiveTags(item);
         const hay = [
           item.title,
           item.filename,
@@ -140,7 +196,14 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
       }
       return true;
     });
-  }, [items, filterKind, filterAdType, filterAngle, filterProduct, filterStarred, searchText]);
+  }, [items, activeFolder, searchText]);
+
+  /** Per-folder counts for the tab badges. Recomputed when items change. */
+  const folderCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const f of FOLDERS) counts[f.id] = items.filter((it) => itemMatchesFolder(it, f.id)).length;
+    return counts;
+  }, [items]);
 
   const handleUpload = async (
     file: File,
@@ -334,78 +397,66 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
             </div>
           )}
 
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
+          {/* Search box — narrow, sits above the folder tabs */}
+          <div className="mb-3">
             <input
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Search title, summary, learnings…"
-              className="md:col-span-2 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Search across all folders by title, summary, learnings…"
+              className="w-full md:w-96 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <select
-              value={filterKind}
-              onChange={(e) => setFilterKind(e.target.value as InspirationKind | 'all')}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All kinds</option>
-              <option value="video">Videos</option>
-              <option value="brief">Briefs</option>
-            </select>
-            <select
-              value={filterAdType}
-              onChange={(e) => setFilterAdType(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {AD_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t === 'all' ? 'All ad types' : t}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filterAngle}
-              onChange={(e) => setFilterAngle(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {ANGLE_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t === 'all' ? 'All angles' : t}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filterProduct}
-              onChange={(e) => setFilterProduct(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {PRODUCT_CATEGORIES.map((t) => (
-                <option key={t} value={t}>
-                  {t === 'all' ? 'All products' : t}
-                </option>
-              ))}
-            </select>
           </div>
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2 text-slate-600 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={filterStarred}
-                onChange={(e) => setFilterStarred(e.target.checked)}
-              />
-              Starred only
-            </label>
-            <div className="flex items-center gap-3 text-slate-500">
-              <span>{filtered.length} of {items.length} items</span>
-              {items.length > 0 && (
+
+          {/* Folder tabs — horizontal scrollable strip. Stays visible at all
+              times so the user can hop between folders without losing context. */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {FOLDERS.map((f) => {
+              const isActive = activeFolder === f.id;
+              const count = folderCounts[f.id] ?? 0;
+              const isEmpty = count === 0;
+              return (
                 <button
-                  onClick={handleClearAll}
-                  className="text-xs text-red-500 hover:text-red-700"
+                  key={f.id}
+                  onClick={() => setActiveFolder(f.id)}
+                  disabled={isEmpty && f.id !== 'all'}
+                  className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                    isActive
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : isEmpty
+                        ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                  title={isEmpty && f.id !== 'all' ? `No items in ${f.label}` : `Show ${f.label}`}
                 >
-                  Clear bank
+                  <span className="text-sm leading-none">{f.icon}</span>
+                  <span>{f.label}</span>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                    isActive ? 'bg-blue-700/40 text-white' : 'bg-white text-slate-600'
+                  }`}>
+                    {count}
+                  </span>
                 </button>
+              );
+            })}
+          </div>
+
+          {/* Bottom row: result count + clear bank action */}
+          <div className="flex items-center justify-between text-sm mt-3">
+            <div className="text-xs text-slate-500">
+              Showing <strong className="text-slate-700">{filtered.length}</strong> of {items.length} total
+              {activeFolder !== 'all' && (
+                <> in <strong className="text-slate-700">{FOLDERS.find((f) => f.id === activeFolder)?.label}</strong></>
               )}
             </div>
+            {items.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="text-xs text-red-500 hover:text-red-700"
+              >
+                Clear bank
+              </button>
+            )}
           </div>
         </div>
 
@@ -495,15 +546,27 @@ function InspirationCard({
       onClick={onClick}
       className="bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col"
     >
-      {item.thumbnailDataUrl ? (
-        <div className="aspect-video bg-slate-100 overflow-hidden">
+      <div className="aspect-video bg-slate-100 overflow-hidden relative">
+        {item.thumbnailDataUrl ? (
           <img src={item.thumbnailDataUrl} alt={item.title} className="w-full h-full object-cover" />
-        </div>
-      ) : (
-        <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 text-4xl">
-          {item.kind === 'brief' ? '\uD83D\uDCC4' : '\uD83C\uDFAC'}
-        </div>
-      )}
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 text-5xl">
+            {item.kind === 'brief' ? '\uD83D\uDCC4' : '\uD83C\uDFAC'}
+          </div>
+        )}
+        {/* Duration overlay \u2014 bottom-right pill on the thumbnail */}
+        {getEffectiveTags(item).duration !== 'unknown' && (
+          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-semibold">
+            {getEffectiveTags(item).duration}
+          </div>
+        )}
+        {/* Brief-kind badge \u2014 bottom-left */}
+        {item.kind === 'brief' && (
+          <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-700/80 text-white text-[10px] font-semibold">
+            Brief
+          </div>
+        )}
+      </div>
       <div className="p-4 flex-1 flex flex-col">
         <div className="flex items-start justify-between mb-1 gap-2">
           <h3 className="font-semibold text-slate-800 text-sm leading-tight line-clamp-2 flex-1">
@@ -531,15 +594,20 @@ function InspirationCard({
             Analysis failed
           </div>
         )}
-        {item.status === 'ready' && item.summary && (
-          <p className="text-xs text-slate-600 line-clamp-3 mb-2">{item.summary}</p>
-        )}
         {item.status === 'ready' && (
-          <div className="flex flex-wrap gap-1 mt-auto">
-            {tags.adType !== 'unknown' && <TagPill text={tags.adType} />}
-            {tags.angleType !== 'unknown' && <TagPill text={tags.angleType} />}
-            {tags.duration !== 'unknown' && <TagPill text={tags.duration} />}
-            {tags.isFullAi && <TagPill text="Full AI" />}
+          <div className="flex flex-wrap gap-1.5 mt-auto">
+            {shortAdTypeLabel(tags.adType) && (
+              <TagPill text={shortAdTypeLabel(tags.adType)!} variant="primary" />
+            )}
+            {tags.angleType !== 'unknown' && (
+              <TagPill text={shortAngleLabel(tags.angleType)} variant="default" />
+            )}
+            {tags.productCategory && tags.productCategory !== 'unknown' && (
+              <TagPill text={shortProductLabel(tags.productCategory)} variant="muted" />
+            )}
+            {tags.isFullAi && tags.adType !== 'Full AI (Documentary, story, education, etc)' && (
+              <TagPill text="Full AI" variant="accent" />
+            )}
           </div>
         )}
       </div>
@@ -547,12 +615,61 @@ function InspirationCard({
   );
 }
 
-function TagPill({ text }: { text: string }) {
+/** Color-coded tag pill — variant tunes the visual weight per tag class. */
+function TagPill({
+  text,
+  variant = 'default',
+}: {
+  text: string;
+  variant?: 'primary' | 'default' | 'muted' | 'accent';
+}) {
+  const styles: Record<string, string> = {
+    primary: 'bg-blue-50 text-blue-700 border-blue-100',
+    default: 'bg-slate-100 text-slate-700 border-slate-200',
+    muted: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    accent: 'bg-purple-50 text-purple-700 border-purple-100',
+  };
   return (
-    <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] rounded-full">
+    <span className={`inline-block px-2 py-0.5 text-[10px] font-medium rounded-full border ${styles[variant]}`}>
       {text}
     </span>
   );
+}
+
+/** Compress the long ad-type enum strings into short pill labels.
+ *  Returns null when the ad type is unknown so the pill can be omitted. */
+function shortAdTypeLabel(adType: string): string | null {
+  if (!adType || adType === 'unknown') return null;
+  if (adType.startsWith('AGC')) return 'AGC';
+  if (adType.startsWith('UGC')) return 'UGC';
+  if (adType.startsWith('Full AI')) return 'Full AI';
+  if (adType === 'Fake Podcast Ads') return 'Podcast';
+  if (adType === 'AI Podcast') return 'AI Podcast';
+  if (adType === 'Packaging/Employee') return 'Packaging';
+  return adType;
+}
+
+/** Compress angle-type labels for pill display. */
+function shortAngleLabel(angle: string): string {
+  if (angle === 'Problem-Based') return 'Problem';
+  if (angle === 'Emotion-Based') return 'Emotion';
+  if (angle === 'Solution-Based') return 'Solution';
+  if (angle === 'Identity-Based') return 'Identity';
+  if (angle === 'Comparison-Based') return 'Comparison';
+  if (angle === 'Testimonial-Based') return 'Testimonial';
+  if (angle === 'Seasonal/Situational') return 'Seasonal';
+  if (angle === 'Fear-Based') return 'Fear';
+  if (angle === 'Aspiration-Based') return 'Aspiration';
+  if (angle === 'Education-Based') return 'Education';
+  if (angle === '3 Reasons/Signs Why') return '3 Reasons';
+  if (angle === 'Negative Marketing') return 'Negative';
+  return angle;
+}
+
+/** Compress product-category labels for pill display. */
+function shortProductLabel(product: string): string {
+  if (product === 'Ankle Compression') return 'Ankle Comp';
+  return product;
 }
 
 function UploadDialog({
