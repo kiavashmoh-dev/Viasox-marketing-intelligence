@@ -28,6 +28,7 @@ import PipelineProgress from '../autopilot/PipelineProgress';
 import BatchResultsView from '../autopilot/BatchResultsView';
 import StrategySessionUI from '../autopilot/StrategySession';
 import ConceptReview from '../autopilot/ConceptReview';
+import ManualTaskBuilder from '../autopilot/ManualTaskBuilder';
 
 interface Props {
   analysis: FullAnalysis;
@@ -43,6 +44,10 @@ export default function AutopilotBriefs({ analysis, apiKey, resourceContext, onB
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [redoingIndex, setRedoingIndex] = useState<number | null>(null);
+  /** Which entry method the user picked on the idle screen. `null` = chooser
+   *  is showing. `'upload'` = screenshot drop zone. `'manual'` = interactive
+   *  table builder. Only relevant during the 'idle' phase; ignored otherwise. */
+  const [idleMode, setIdleMode] = useState<'chooser' | 'upload' | 'manual'>('chooser');
 
   // Strategy session state
   const [strategySession, setStrategySession] = useState<StrategySessionType | null>(null);
@@ -465,6 +470,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
 
   const handleReset = useCallback(() => {
     setPhase('idle');
+    setIdleMode('chooser'); // return to the two-card entry chooser
     setTasks([]);
     setPipelineState(null);
     setError(null);
@@ -505,36 +511,100 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         )}
 
         {/* Phase: Idle — Screenshot upload */}
-        {phase === 'idle' && (
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer ${
-              dragOver ? 'border-blue-400 bg-blue-50' : 'border-slate-300 bg-white hover:border-blue-300'
-            }`}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileInput}
-              className="hidden"
-            />
-            <div className="text-4xl mb-3">{'\uD83D\uDCF7'}</div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-2">
-              Upload Asana Board Screenshot
-            </h3>
-            <p className="text-sm text-slate-500 mb-4">
-              Drop a screenshot of your Asana board here, or click to browse.
-              <br />
-              Make sure the board shows columns: Task Name, Product, Angle, Medium.
-            </p>
-            <div className="inline-block px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">
-              Choose Screenshot
-            </div>
+        {phase === 'idle' && idleMode === 'chooser' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => setIdleMode('upload')}
+              className="bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-6 text-left transition-colors group"
+            >
+              <div className="text-3xl mb-3">{'\uD83D\uDCF7'}</div>
+              <h3 className="text-base font-semibold text-slate-800 mb-1.5">
+                Upload Asana Screenshot
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                Drop a screenshot of your Asana board. The AI vision analyzer will extract every task and build your batch automatically.
+              </p>
+              <div className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 group-hover:text-blue-700">
+                Upload screenshot {'\u2192'}
+              </div>
+            </button>
+            <button
+              onClick={() => setIdleMode('manual')}
+              className="bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-6 text-left transition-colors group"
+            >
+              <div className="text-3xl mb-3">{'\uD83D\uDCDD'}</div>
+              <h3 className="text-base font-semibold text-slate-800 mb-1.5">
+                Build Batch Manually
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                No screenshot? Add rows by hand in an interactive table {'\u2014'} same columns as Asana, plus an optional inspiration pick per row.
+              </p>
+              <div className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 group-hover:text-blue-700">
+                Start building {'\u2192'}
+              </div>
+            </button>
           </div>
+        )}
+
+        {phase === 'idle' && idleMode === 'upload' && (
+          <>
+            <button
+              onClick={() => setIdleMode('chooser')}
+              className="text-xs text-slate-500 hover:text-slate-700 underline mb-3"
+            >
+              {'\u2190'} Back to chooser
+            </button>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer ${
+                dragOver ? 'border-blue-400 bg-blue-50' : 'border-slate-300 bg-white hover:border-blue-300'
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileInput}
+                className="hidden"
+              />
+              <div className="text-4xl mb-3">{'\uD83D\uDCF7'}</div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                Upload Asana Board Screenshot
+              </h3>
+              <p className="text-sm text-slate-500 mb-4">
+                Drop a screenshot of your Asana board here, or click to browse.
+                <br />
+                Make sure the board shows columns: Task Name, Product, Angle, Medium.
+              </p>
+              <div className="inline-block px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">
+                Choose Screenshot
+              </div>
+            </div>
+          </>
+        )}
+
+        {phase === 'idle' && idleMode === 'manual' && (
+          <ManualTaskBuilder
+            onCancel={() => setIdleMode('chooser')}
+            onComplete={(parsedTasks, pinnedInspirations) => {
+              // Map manually-entered rows through the exact same mapper the
+              // screenshot parser uses, so the downstream pipeline behaves
+              // identically regardless of which entry path was taken.
+              const mapped = parsedTasks.map(mapAsanaTask);
+              setTasks(mapped);
+              // Pre-populate CreativeDirection.pinnedInspirations so the
+              // PlannerView reflects the user's inspiration picks without
+              // requiring them to re-pin in the planner.
+              directionRef.current = {
+                ...directionRef.current,
+                pinnedInspirations: { ...directionRef.current.pinnedInspirations, ...pinnedInspirations },
+              };
+              setPhase('confirming');
+            }}
+          />
         )}
 
         {/* Phase: Parsing */}
