@@ -59,7 +59,7 @@ export default function CommentInsights({ report, onRegenerate, regenerating }: 
             className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-colors ${
               regenerating
                 ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-navy text-cream hover:bg-navy-deep'
             }`}
           >
             {regenerating ? 'Regenerating...' : 'Regenerate Report'}

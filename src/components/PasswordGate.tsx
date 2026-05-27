@@ -24,10 +24,10 @@ export default function PasswordGate({ onSuccess }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen flex items-center justify-center bg-cream">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-800">Viasox Marketing Intelligence</h1>
+          <h1 className="font-display text-2xl font-medium text-navy">Viasox Marketing Intelligence</h1>
           <p className="text-slate-500 mt-2">Enter the team password to continue</p>
         </div>
 
@@ -48,7 +48,7 @@ export default function PasswordGate({ onSuccess }: Props) {
           <button
             type="submit"
             disabled={checking || !password}
-            className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-4 bg-navy text-cream py-3 rounded-lg font-medium hover:bg-navy-deep transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {checking ? 'Checking...' : 'Continue'}
           </button>

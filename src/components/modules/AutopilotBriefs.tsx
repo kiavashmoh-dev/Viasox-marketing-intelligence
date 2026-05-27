@@ -484,7 +484,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-4xl mx-auto">
         <button
           onClick={onBack}
@@ -494,7 +494,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         </button>
 
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-1">
+          <h2 className="font-display text-xl font-medium text-navy mb-1">
             The Factory
           </h2>
           <p className="text-slate-500 text-sm">
@@ -579,7 +579,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
                 <br />
                 Make sure the board shows columns: Task Name, Product, Angle, Medium.
               </p>
-              <div className="inline-block px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">
+              <div className="inline-block px-5 py-2.5 bg-navy text-cream rounded-lg text-sm font-medium">
                 Choose Screenshot
               </div>
             </div>

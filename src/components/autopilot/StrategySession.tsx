@@ -200,7 +200,7 @@ function QuestionCard({
                 <button
                   onClick={handleCustomSubmit}
                   disabled={!customText.trim()}
-                  className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-40 font-medium"
+                  className="text-xs bg-navy text-cream px-3 py-1.5 rounded-lg hover:bg-navy-deep disabled:opacity-40 font-medium"
                 >
                   Use This Answer
                 </button>
@@ -268,7 +268,7 @@ export default function StrategySession({ session, onSubmitAnswers, isSynthesizi
         <div className="flex items-center gap-3">
           <span className="text-3xl">{'\uD83E\uDDE0'}</span>
           <div>
-            <h3 className="text-xl font-bold text-slate-800">Strategy Session</h3>
+            <h3 className="font-display text-xl font-medium text-navy">Strategy Session</h3>
             <p className="text-sm text-slate-500 mt-0.5">
               Your creative strategist analyzed this week's batch and has a few questions before generating briefs.
             </p>
@@ -331,7 +331,7 @@ export default function StrategySession({ session, onSubmitAnswers, isSynthesizi
         ) : (
           <button
             onClick={handleSubmit}
-            className="w-full py-3.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+            className="w-full py-3.5 bg-navy text-cream rounded-lg text-sm font-semibold hover:bg-navy-deep transition-colors"
           >
             {answeredCount > 0
               ? `Continue with ${answeredCount} Answer${answeredCount !== 1 ? 's' : ''} — Generate Strategy Brief`

@@ -326,7 +326,7 @@ export default function BatchChatPanel({ state, apiKey }: Props) {
                 <div
                   className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-wrap ${
                     m.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-br-md'
+                      ? 'bg-navy text-cream rounded-br-md'
                       : 'bg-white border border-slate-200 text-slate-800 rounded-bl-md'
                   }`}
                 >
@@ -368,7 +368,7 @@ export default function BatchChatPanel({ state, apiKey }: Props) {
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || sending}
-                className="bg-blue-600 text-white text-xs font-semibold px-3.5 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                className="bg-navy text-cream text-xs font-semibold px-3.5 py-2 rounded-lg hover:bg-navy-deep disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
               >
                 Send
               </button>

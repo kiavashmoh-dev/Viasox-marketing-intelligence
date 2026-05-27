@@ -66,7 +66,7 @@ export default function CommentUploader({ onCommentsReady, onBack }: Props) {
   const willTruncate = comments.length > MAX_COMMENTS;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-3xl mx-auto">
         <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1">
           {'\u2190'} Back to Dashboard
@@ -75,7 +75,7 @@ export default function CommentUploader({ onCommentsReady, onBack }: Props) {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
           <div className="text-center mb-6">
             <div className="text-4xl mb-3">{'\uD83D\uDCAC'}</div>
-            <h2 className="text-xl font-bold text-slate-800">Ad Comment Intelligence</h2>
+            <h2 className="font-display text-xl font-medium text-navy">Ad Comment Intelligence</h2>
             <p className="text-slate-500 text-sm mt-1">
               Pull comments directly from Meta \u2014 or upload a CSV from any source \u2014 to categorize, analyze sentiment, and extract creative insights
             </p>
@@ -215,7 +215,7 @@ export default function CommentUploader({ onCommentsReady, onBack }: Props) {
               {/* Analyze button */}
               <button
                 onClick={handleAnalyze}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="w-full bg-navy text-cream py-3 rounded-lg font-medium hover:bg-navy-deep transition-colors"
               >
                 Analyze {Math.min(comments.length, MAX_COMMENTS).toLocaleString()} Comments
               </button>

@@ -493,7 +493,7 @@ export default function PersonaChat({
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                 msg.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-br-md'
+                  ? 'bg-navy text-cream rounded-br-md'
                   : 'bg-white border border-slate-100 shadow-sm text-slate-700 rounded-bl-md'
               }`}
             >
@@ -598,7 +598,7 @@ export default function PersonaChat({
             disabled={!input.trim() || isLoading}
             className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
               input.trim() && !isLoading
-                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                ? 'bg-navy text-cream hover:bg-navy-deep shadow-sm'
                 : 'bg-slate-100 text-slate-300 cursor-not-allowed'
             }`}
           >

@@ -51,7 +51,7 @@ export default function CommentDashboard({ comments, summary }: Props) {
       {/* Key Numbers */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4 text-center">
-          <div className="text-2xl font-bold text-slate-800">{summary.totalComments}</div>
+          <div className="font-display text-2xl font-medium text-navy">{summary.totalComments}</div>
           <div className="text-xs text-slate-500 mt-1">Total Comments</div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4 text-center">

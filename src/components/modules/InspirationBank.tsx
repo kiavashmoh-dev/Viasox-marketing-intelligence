@@ -351,7 +351,7 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-6xl mx-auto">
         <button
           onClick={onBack}
@@ -363,7 +363,7 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-6">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-1">Inspiration Bank</h2>
+              <h2 className="font-display text-2xl font-medium text-navy mb-1">Inspiration Bank</h2>
               <p className="text-slate-500 text-sm">
                 Reference ads and briefs the system learns from. Tagged automatically by an
                 expert agent — used by every generator below.
@@ -380,7 +380,7 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
               </button>
               <button
                 onClick={() => setShowUpload(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                className="px-4 py-2 bg-navy text-cream rounded-lg hover:bg-navy-deep text-sm font-medium"
               >
                 + Add Inspiration
               </button>
@@ -419,7 +419,7 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
                   disabled={isEmpty && f.id !== 'all'}
                   className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-navy text-cream shadow-sm'
                       : isEmpty
                         ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
                         : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -718,7 +718,7 @@ function UploadDialog({
                   }}
                   className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                     kind === k
-                      ? 'bg-blue-600 text-white border-blue-600'
+                      ? 'bg-navy text-cream border-blue-600'
                       : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300'
                   }`}
                 >
@@ -786,7 +786,7 @@ function UploadDialog({
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-navy text-cream rounded-lg text-sm font-medium hover:bg-navy-deep disabled:bg-slate-300 disabled:cursor-not-allowed"
           >
             Upload & Analyze
           </button>
@@ -931,7 +931,7 @@ function DetailModal({
         <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-start justify-between gap-4 flex-shrink-0">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold text-slate-800 truncate">{item.title}</h3>
+              <h3 className="font-display text-xl font-medium text-navy truncate">{item.title}</h3>
               <button
                 onClick={onStar}
                 className={`text-2xl leading-none flex-shrink-0 transition-colors ${

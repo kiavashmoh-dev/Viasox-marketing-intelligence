@@ -68,10 +68,10 @@ export default function CsvUploader({ onFiles, error, onBack }: Props) {
   const csvCount = files.filter((f) => f.type === 'csv').length;
   const otherCount = files.filter((f) => f.type === 'other').length;
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-cream p-6">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-slate-800">Upload Resources</h1>
+          <h1 className="font-display text-2xl font-medium text-navy">Upload Resources</h1>
           <p className="text-slate-500 mt-2">
             Drop your review CSVs and any other relevant files
           </p>
@@ -147,7 +147,7 @@ export default function CsvUploader({ onFiles, error, onBack }: Props) {
         <button
           onClick={handleSubmit}
           disabled={csvCount === 0}
-          className="w-full mt-5 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mt-5 bg-navy text-cream py-3 rounded-lg font-medium hover:bg-navy-deep transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {csvCount === 0
             ? 'Add at least one CSV to continue'

@@ -89,7 +89,7 @@ export default function CommentAnalysisList({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-5xl mx-auto">
         {/* Top bar */}
         <div className="flex items-center justify-between mb-6">
@@ -98,7 +98,7 @@ export default function CommentAnalysisList({
           </button>
           <button
             onClick={onRunNew}
-            className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="text-sm bg-navy text-cream px-4 py-2 rounded-lg hover:bg-navy-deep transition-colors font-medium"
           >
             Run new analysis
           </button>
@@ -111,7 +111,7 @@ export default function CommentAnalysisList({
               💬
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-800">Ad Comment Intelligence</h1>
+              <h1 className="font-display text-xl font-medium text-navy">Ad Comment Intelligence</h1>
               <p className="text-sm text-slate-500">
                 {analyses.length === 0
                   ? 'No saved analyses yet — run your first one to start the library.'
@@ -158,7 +158,7 @@ export default function CommentAnalysisList({
             </p>
             <button
               onClick={onRunNew}
-              className="text-sm bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="text-sm bg-navy text-cream px-5 py-2.5 rounded-lg hover:bg-navy-deep transition-colors font-medium"
             >
               Run your first analysis →
             </button>
@@ -216,7 +216,7 @@ export default function CommentAnalysisList({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => onView(a.id)}
-                      className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                      className="text-sm bg-navy text-cream px-4 py-1.5 rounded-lg hover:bg-navy-deep transition-colors font-medium"
                     >
                       View {'▸'}
                     </button>

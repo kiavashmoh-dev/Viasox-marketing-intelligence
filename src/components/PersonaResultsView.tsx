@@ -114,10 +114,10 @@ export default function PersonaResultsView({
   // ── Loading state ──
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-6 animate-pulse">{'\uD83C\uDFAD'}</div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Building Personas...</h2>
+          <h2 className="font-display text-xl font-medium text-navy mb-2">Building Personas...</h2>
           <p className="text-slate-500 text-sm">
             Claude is crafting detailed {channel} personas for {product}
           </p>
@@ -138,16 +138,16 @@ export default function PersonaResultsView({
   // ── Error state ──
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-6">{'\u274C'}</div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Error</h2>
+          <h2 className="font-display text-xl font-medium text-navy mb-2">Error</h2>
           <p className="text-red-500 mb-6 text-sm">{error}</p>
           <div className="flex gap-3 justify-center">
             <button onClick={onBackToBuilder} className="px-4 py-2 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 text-sm">
               Edit Selections
             </button>
-            <button onClick={onRegenerate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+            <button onClick={onRegenerate} className="px-4 py-2 bg-navy text-cream rounded-lg hover:bg-navy-deep text-sm">
               Try Again
             </button>
           </div>
@@ -160,7 +160,7 @@ export default function PersonaResultsView({
   const meta = showSalesIntelligence ? salesEnrichment.meta : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+    <div className="min-h-screen bg-cream p-4 md:p-6">
       <div className="max-w-5xl mx-auto">
 
         {/* ── Header Bar ── */}
@@ -187,7 +187,7 @@ export default function PersonaResultsView({
             <button onClick={() => downloadAsPdf(content, title)} className="px-3 py-1.5 text-xs text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">
               .pdf
             </button>
-            <button onClick={onRegenerate} className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+            <button onClick={onRegenerate} className="px-3 py-1.5 text-xs bg-navy text-cream rounded-lg hover:bg-navy-deep font-medium">
               Regenerate
             </button>
           </div>

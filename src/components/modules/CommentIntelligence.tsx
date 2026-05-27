@@ -453,12 +453,12 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
   // Processing phases
   if (phase === 'categorizing' || phase === 'generating-insights') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-6 animate-pulse">
             {phase === 'categorizing' ? '\uD83D\uDD0D' : '\uD83E\uDDE0'}
           </div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">
+          <h2 className="font-display text-xl font-medium text-navy mb-2">
             {phase === 'categorizing'
               ? 'Categorizing Comments...'
               : (combining ? 'Combining Analyses...' : 'Generating Insights...')}
@@ -549,7 +549,7 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header \u2014 breadcrumb-style nav so the user can quickly hop back
             to their saved-analyses library or all the way out to the
@@ -599,7 +599,7 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
                   {'\uD83D\uDCAC'}
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-xl font-bold text-slate-800 truncate">{title}</h1>
+                  <h1 className="font-display text-xl font-medium text-navy truncate">{title}</h1>
                   <p className="text-sm text-slate-500">
                     {summary?.totalComments.toLocaleString()} comments analyzed
                     {' \u2022 '}
@@ -621,7 +621,7 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-navy text-cream shadow-sm'
                   : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
             >
@@ -653,7 +653,7 @@ export default function CommentIntelligence({ apiKey, onBack }: Props) {
               <button
                 onClick={handleRegenerateInsights}
                 disabled={insightsApi.loading}
-                className="mt-3 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+                className="mt-3 px-4 py-2 bg-navy text-cream text-sm rounded-lg hover:bg-navy-deep"
               >
                 Generate Report
               </button>

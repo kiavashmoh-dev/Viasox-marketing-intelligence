@@ -87,12 +87,12 @@ export default function OutputSelector({ analysis, onSelect, onReset }: Props) {
     : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">
+            <h1 className="font-display text-2xl font-medium text-navy">
               Marketing Intelligence Dashboard
             </h1>
             <p className="text-slate-500 mt-1">
@@ -114,7 +114,7 @@ export default function OutputSelector({ analysis, onSelect, onReset }: Props) {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
-              <p className="text-2xl font-bold text-slate-800">
+              <p className="font-display text-2xl font-medium text-navy">
                 {formatNumber(totalReviews)}
               </p>
               <p className="text-sm text-slate-500">Total Reviews</p>
@@ -122,7 +122,7 @@ export default function OutputSelector({ analysis, onSelect, onReset }: Props) {
             {(['EasyStretch', 'Compression', 'Ankle Compression'] as const).map(
               (cat) => (
                 <div key={cat}>
-                  <p className="text-2xl font-bold text-slate-800">
+                  <p className="font-display text-2xl font-medium text-navy">
                     {formatNumber(breakdown[cat])}
                   </p>
                   <p className="text-sm text-slate-500">{cat}</p>

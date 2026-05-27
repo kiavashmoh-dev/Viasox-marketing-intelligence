@@ -31,7 +31,7 @@ function ConceptCard({
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="flex items-center gap-2">
           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-            isSelected ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'
+            isSelected ? 'bg-navy text-cream' : 'bg-slate-200 text-slate-600'
           }`}>
             #{concept.index}
           </span>
@@ -288,7 +288,7 @@ export default function ConceptReview({ tasks, onApprove, onRegenerateConcepts, 
         <button
           onClick={handleApprove}
           disabled={!allSelected || isRegenerating !== null}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-3 bg-navy text-cream rounded-lg text-sm font-medium hover:bg-navy-deep disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {allSelected
             ? `Approve ${readyIndices.length} Concept${readyIndices.length !== 1 ? 's' : ''} — Generate Briefs`

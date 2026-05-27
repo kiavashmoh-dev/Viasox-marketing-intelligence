@@ -20,10 +20,10 @@ export default function ApiKeyInput({ onSubmit }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen flex items-center justify-center bg-cream">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-800">Claude API Key</h1>
+          <h1 className="font-display text-2xl font-medium text-navy">Claude API Key</h1>
           <p className="text-slate-500 mt-2">
             Enter your Anthropic API key. It will only be stored in this browser session.
           </p>
@@ -46,7 +46,7 @@ export default function ApiKeyInput({ onSubmit }: Props) {
           <button
             type="submit"
             disabled={!key.trim()}
-            className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-4 bg-navy text-cream py-3 rounded-lg font-medium hover:bg-navy-deep transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue
           </button>

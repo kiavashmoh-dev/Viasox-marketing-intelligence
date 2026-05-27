@@ -509,7 +509,7 @@ export default function MemoryVault({ onBack }: Props) {
   }, [batches]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -520,7 +520,7 @@ export default function MemoryVault({ onBack }: Props) {
             >
               {'\u2190'} Back to Dashboard
             </button>
-            <h1 className="text-2xl font-bold text-slate-800">Memory Vault</h1>
+            <h1 className="font-display text-2xl font-medium text-navy">Memory Vault</h1>
             <p className="text-slate-500 mt-1 text-sm">
               Browse past batches, audit scores, and download historic briefs
             </p>
@@ -586,7 +586,7 @@ export default function MemoryVault({ onBack }: Props) {
                 onClick={() => setScoreFilter(opt.val)}
                 className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
                   scoreFilter === opt.val
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-navy text-cream'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >

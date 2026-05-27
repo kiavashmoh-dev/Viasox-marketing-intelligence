@@ -64,10 +64,10 @@ export default function AnglesResultsView({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-6 animate-pulse">{'\u2699\uFE0F'}</div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Generating...</h2>
+          <h2 className="font-display text-xl font-medium text-navy mb-2">Generating...</h2>
           <p className="text-slate-500">Claude is working on your {title.toLowerCase()}</p>
         </div>
       </div>
@@ -76,10 +76,10 @@ export default function AnglesResultsView({
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-6">{'\u274C'}</div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Error</h2>
+          <h2 className="font-display text-xl font-medium text-navy mb-2">Error</h2>
           <p className="text-red-500 mb-6">{error}</p>
           <div className="flex gap-3 justify-center">
             {onBackToBuilder && (
@@ -90,7 +90,7 @@ export default function AnglesResultsView({
             <button onClick={onBack} className="px-4 py-2 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">
               Dashboard
             </button>
-            <button onClick={() => onRegenerate()} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <button onClick={() => onRegenerate()} className="px-4 py-2 bg-navy text-cream rounded-lg hover:bg-navy-deep">
               Try Again
             </button>
           </div>
@@ -105,7 +105,7 @@ export default function AnglesResultsView({
   const preamble = preambleEnd > 0 ? content.slice(0, preambleEnd).trim() : '';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -140,7 +140,7 @@ export default function AnglesResultsView({
               className={`px-4 py-2 text-sm rounded-lg transition-colors ${
                 showFeedback
                   ? 'bg-amber-600 text-white hover:bg-amber-700'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-navy text-cream hover:bg-navy-deep'
               }`}
             >
               {showFeedback ? 'Cancel Feedback' : 'Regenerate'}

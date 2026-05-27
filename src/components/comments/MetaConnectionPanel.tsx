@@ -161,7 +161,7 @@ export default function MetaConnectionPanel({ onChange }: Props) {
         </div>
         <button
           onClick={handleConnect}
-          className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium shrink-0"
+          className="text-sm bg-navy text-cream px-4 py-2 rounded-lg hover:bg-navy-deep transition-colors font-medium shrink-0"
         >
           Connect Meta
         </button>

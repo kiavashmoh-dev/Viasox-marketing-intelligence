@@ -407,7 +407,7 @@ export default function BatchResultsView({ state, apiKey, onReset, onRedoTask, r
             <button
               onClick={handleSaveFeedback}
               disabled={!feedbackText.trim()}
-              className="mt-2 text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="mt-2 text-xs bg-navy text-cream px-4 py-2 rounded-lg hover:bg-navy-deep disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Save Feedback to Memory
             </button>

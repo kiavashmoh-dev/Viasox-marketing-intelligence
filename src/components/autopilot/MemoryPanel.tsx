@@ -76,19 +76,19 @@ export default function MemoryPanel({ onClose }: Props) {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-slate-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-slate-800">{stats.totalBatches}</div>
+              <div className="font-display text-xl font-medium text-navy">{stats.totalBatches}</div>
               <div className="text-[10px] text-slate-500">Batches</div>
             </div>
             <div className="bg-slate-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-slate-800">{stats.totalBriefs}</div>
+              <div className="font-display text-xl font-medium text-navy">{stats.totalBriefs}</div>
               <div className="text-[10px] text-slate-500">Briefs</div>
             </div>
             <div className="bg-slate-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-slate-800">{stats.totalFeedback}</div>
+              <div className="font-display text-xl font-medium text-navy">{stats.totalFeedback}</div>
               <div className="text-[10px] text-slate-500">Feedback</div>
             </div>
             <div className="bg-slate-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-slate-800">{stats.storageSizeKB}KB</div>
+              <div className="font-display text-xl font-medium text-navy">{stats.storageSizeKB}KB</div>
               <div className="text-[10px] text-slate-500">Storage</div>
             </div>
           </div>

@@ -137,7 +137,7 @@ export default function ScoreOverridePanel({ scoring, legacyScore, onOverride }:
             <button
               onClick={handleSubmit}
               disabled={!overrideScore || parseFloat(overrideScore) < 1 || parseFloat(overrideScore) > 10}
-              className="text-[11px] bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="text-[11px] bg-navy text-cream px-3 py-1.5 rounded-lg hover:bg-navy-deep disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Save Override
             </button>

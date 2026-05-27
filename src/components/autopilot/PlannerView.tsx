@@ -290,7 +290,7 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
         <button
           onClick={() => onConfirm(selectedTasks, direction)}
           disabled={selectedTasks.length === 0}
-          className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-5 py-2.5 bg-navy text-cream rounded-lg font-medium hover:bg-navy-deep disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Run Batch ({selectedTasks.length} brief{selectedTasks.length !== 1 ? 's' : ''})
         </button>

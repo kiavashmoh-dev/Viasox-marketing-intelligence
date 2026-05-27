@@ -785,7 +785,7 @@ export default function SegmentDiscovery({ analysis, apiKey, resourceContext, on
   const breakdown = analysis.segmentBreakdown;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-3xl mx-auto">
         <button
           onClick={onBack}
@@ -795,7 +795,7 @@ export default function SegmentDiscovery({ analysis, apiKey, resourceContext, on
         </button>
 
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-1">
+          <h2 className="font-display text-xl font-medium text-navy mb-1">
             Customer Segment Discovery
           </h2>
           <p className="text-slate-500 text-sm">
@@ -886,7 +886,7 @@ export default function SegmentDiscovery({ analysis, apiKey, resourceContext, on
 
           <button
             onClick={handleGenerate}
-            className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="w-full mt-6 bg-navy text-cream py-3 rounded-lg font-medium hover:bg-navy-deep transition-colors"
           >
             Enrich Segments with AI
           </button>

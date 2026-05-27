@@ -702,7 +702,7 @@ export default function ProductIntelligence({ analysis, onBack }: Props) {
   const hasSales = hasSalesEnrichment();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-4xl mx-auto">
         <button
           onClick={onBack}
@@ -712,7 +712,7 @@ export default function ProductIntelligence({ analysis, onBack }: Props) {
         </button>
 
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-1">
+          <h2 className="font-display text-xl font-medium text-navy mb-1">
             Product & Customer Intelligence
           </h2>
           <p className="text-slate-500 text-sm">

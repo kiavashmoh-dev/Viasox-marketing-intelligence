@@ -138,14 +138,14 @@ export default function HookGenerator({ analysis, apiKey, resourceContext, onBac
   const selectClass = 'w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-2xl mx-auto">
         <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1">
           {'\u2190'} Back to Dashboard
         </button>
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <h2 className="text-xl font-bold text-slate-800 mb-1">Hook Generator</h2>
+          <h2 className="font-display text-xl font-medium text-navy mb-1">Hook Generator</h2>
           <p className="text-slate-500 text-sm mb-6">Generate hooks tailored to your script, grounded in review data and marketing frameworks</p>
 
           <div className="space-y-5">
@@ -283,7 +283,7 @@ export default function HookGenerator({ analysis, apiKey, resourceContext, onBac
           </div>
 
           <button onClick={() => handleGenerate()}
-            className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            className="w-full mt-6 bg-navy text-cream py-3 rounded-lg font-medium hover:bg-navy-deep transition-colors">
             {hasScript ? '\uD83C\uDFAF Generate Hooks for Script' : 'Generate Hooks'}
           </button>
 

@@ -348,7 +348,7 @@ export default function ManualTaskBuilder({ onComplete, onCancel }: Props) {
           type="button"
           onClick={handleSubmit}
           disabled={!allReady || hasDuplicates}
-          className="text-sm bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+          className="text-sm bg-navy text-cream px-5 py-2 rounded-lg hover:bg-navy-deep transition-colors font-medium disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Continue to Planner →
         </button>

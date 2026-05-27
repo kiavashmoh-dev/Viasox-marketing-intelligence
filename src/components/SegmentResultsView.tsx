@@ -215,7 +215,7 @@ function SegmentCard({ seg, rank }: { seg: SegmentProfile; rank: number }) {
 
 const markdownComponents = {
   h1: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h1 className="text-xl font-bold text-slate-800 mt-6 mb-3" {...props}>{children}</h1>
+    <h1 className="font-display text-xl font-medium text-navy mt-6 mb-3" {...props}>{children}</h1>
   ),
   h2: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h2 className="text-lg font-bold text-slate-700 mt-5 mb-2 pb-1 border-b border-slate-200" {...props}>{children}</h2>
@@ -288,10 +288,10 @@ export default function SegmentResultsView({
   // ── Loading state ───────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-6 animate-pulse">{'\u{1F4CA}'}</div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Building Segment Dashboard...</h2>
+          <h2 className="font-display text-xl font-medium text-navy mb-2">Building Segment Dashboard...</h2>
           <p className="text-slate-500">Enriching your segments with strategic intelligence</p>
         </div>
       </div>
@@ -301,17 +301,17 @@ export default function SegmentResultsView({
   // ── Error state ─────────────────────────────
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-6">{'\u274C'}</div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Error</h2>
+          <h2 className="font-display text-xl font-medium text-navy mb-2">Error</h2>
           <p className="text-red-500 mb-6">{error}</p>
           <div className="flex gap-3 justify-center">
             {onBackToBuilder && (
               <button onClick={onBackToBuilder} className="px-4 py-2 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Edit Selections</button>
             )}
             <button onClick={onBack} className="px-4 py-2 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Dashboard</button>
-            <button onClick={onRegenerate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Try Again</button>
+            <button onClick={onRegenerate} className="px-4 py-2 bg-navy text-cream rounded-lg hover:bg-navy-deep">Try Again</button>
           </div>
         </div>
       </div>
@@ -325,7 +325,7 @@ export default function SegmentResultsView({
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+    <div className="min-h-screen bg-cream p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
 
         {/* ── Header Bar ──────────────────────────────────────────── */}
@@ -346,7 +346,7 @@ export default function SegmentResultsView({
             <button onClick={() => { const blob = new Blob([content], { type: 'text/markdown' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'segment-analysis.md'; a.click(); URL.revokeObjectURL(url); }} className="px-3 py-1.5 text-xs text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">.md</button>
             <button onClick={() => downloadAsDoc(content, title)} className="px-3 py-1.5 text-xs text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">.doc</button>
             <button onClick={() => downloadAsPdf(content, title)} className="px-3 py-1.5 text-xs text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">.pdf</button>
-            <button onClick={onRegenerate} className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Regenerate</button>
+            <button onClick={onRegenerate} className="px-3 py-1.5 text-xs bg-navy text-cream rounded-lg hover:bg-navy-deep font-medium">Regenerate</button>
           </div>
         </div>
 
@@ -356,7 +356,7 @@ export default function SegmentResultsView({
             <div className="flex items-start gap-3 mb-5">
               <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg shrink-0">{'\u{1F3AF}'}</div>
               <div>
-                <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">{title}</h1>
+                <h1 className="text-xl md:font-display text-2xl font-medium text-navy leading-tight">{title}</h1>
                 <p className="text-slate-500 text-sm mt-1">
                   {breakdown.totalReviews.toLocaleString()} reviews analyzed &bull;{' '}
                   {totalSegmented.toLocaleString()} segmented ({(100 - breakdown.unsegmented.percentage).toFixed(1)}%)

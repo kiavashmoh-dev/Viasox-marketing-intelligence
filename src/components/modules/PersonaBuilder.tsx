@@ -321,7 +321,7 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
   const channelInfo = CHANNELS.find((c) => c.value === channel)!;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-cream p-6">
       <div className="max-w-3xl mx-auto">
         <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1">
           {'\u2190'} Back to Dashboard
@@ -329,7 +329,7 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
 
         {/* ── Header Card ── */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-1">Customer Persona Builder</h2>
+          <h2 className="font-display text-xl font-medium text-navy mb-1">Customer Persona Builder</h2>
           <p className="text-slate-500 text-sm">
             Build data-driven personas from your review segments. Select the personas to generate and the channel context.
           </p>
