@@ -100,6 +100,7 @@ const SECTIONS: SidebarSection[] = [
         icon: '🗂️',
         defaultOpen: true,
         items: [
+          { id: 'customer-reviews', label: 'Customer Reviews', icon: '⭐' },
           { id: 'comments', label: 'Ad Comments', icon: '💬' },
           { id: 'memory-vault', label: 'Memory Vault', icon: '🗃️' },
           { id: 'inspiration', label: 'Inspiration', icon: '📚' },

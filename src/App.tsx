@@ -7,6 +7,7 @@ import ProcessingView from './components/ProcessingView';
 import AppShell from './components/AppShell';
 import Home from './components/Home';
 import SegmentDiscovery from './components/modules/SegmentDiscovery';
+import CustomerReviews from './components/modules/CustomerReviews';
 import PersonaBuilder from './components/modules/PersonaBuilder';
 import AnglesGenerator from './components/modules/AnglesGenerator';
 import HookGenerator from './components/modules/HookGenerator';
@@ -140,6 +141,8 @@ export default function App() {
           <InspirationBank apiKey={apiKey} onBack={handleBackToDashboard} />
         ) : activeModule === 'memory-vault' ? (
           <MemoryVault onBack={handleBackToDashboard} />
+        ) : activeModule === 'customer-reviews' ? (
+          <CustomerReviews {...moduleProps} />
         ) : null;
 
       return (
