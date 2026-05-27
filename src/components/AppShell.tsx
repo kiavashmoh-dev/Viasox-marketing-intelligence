@@ -27,13 +27,13 @@ interface Props {
 
 export default function AppShell({ activeModule, onNavigate, onResetData, children }: Props) {
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-cream">
       <Sidebar
         activeModule={activeModule}
         onNavigate={onNavigate}
         onResetData={onResetData}
       />
-      <main className="flex-1 min-w-0">{children}</main>
+      <main className="flex-1 min-w-0 animate-fade-in">{children}</main>
     </div>
   );
 }

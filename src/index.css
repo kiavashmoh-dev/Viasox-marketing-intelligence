@@ -1,30 +1,109 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ─── Design tokens (Direction B — "Warm premium") ──────────────────────
+ *
+ * Pass 1 of the visual elevation. All custom design values flow through
+ * the @theme block so swapping to a different direction later is a
+ * token-value change in this file, not a hunt through component code.
+ *
+ * Naming convention:
+ *   --color-cream*    warm off-white backgrounds (app, sidebar, borders)
+ *   --color-navy*     primary action / heading color (replaces pure blue
+ *                     on updated surfaces)
+ *   --color-warm-*    accent colors for highlights and emphasis
+ *   --font-display    serif for headings (Newsreader) — gives the tool
+ *                     character at h1/h2/KPI moments without affecting
+ *                     body readability
+ *   --font-sans       Inter for body — modern, exceptional at small sizes
+ *
+ * Tailwind v4 automatically generates utility classes from --color-X and
+ * --font-X tokens, so once declared here, `bg-cream`, `text-navy`,
+ * `font-display`, etc. just work in components.
+ */
+@theme {
+  /* Warm cream palette — the app background, the sidebar, card borders. */
+  --color-cream: #FAF8F4;
+  --color-cream-deep: #F2EDE3;
+  --color-cream-border: #E8E1D3;
+
+  /* Navy primary — replaces blue-600 as the brand action color on new
+   * surfaces. Subsequent passes migrate existing blue-600 to navy too. */
+  --color-navy: #1e3a5f;
+  --color-navy-soft: #2d4970;
+  --color-navy-deep: #15294a;
+
+  /* Warm accents — used sparingly for highlights and emphasis. */
+  --color-warm-amber: #c89b14;
+  --color-warm-terracotta: #c66939;
+  --color-warm-sage: #6b8e63;
+
+  /* Fonts. */
+  --font-display: "Newsreader", "Georgia", "Times New Roman", serif;
+  --font-sans: "Inter", "system-ui", "-apple-system", "Segoe UI", sans-serif;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #f8fafc;
+  font-family: var(--font-sans);
+  background-color: var(--color-cream);
   color: #1e293b;
+  /* Subpixel antialiasing — keeps the smaller text crisp on macOS/Linux. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Slight default letter tightening on body text for the Inter look. */
+  letter-spacing: -0.005em;
 }
 
 #root {
   min-height: 100vh;
 }
 
-/* ── PersonaChat slide-in animation ── */
+/* ─── Animations (semantically named) ─────────────────────────────────── */
 @keyframes slide-in-right {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
 }
 
-.animate-slide-in-right {
-  animation: slide-in-right 0.25s ease-out forwards;
+.animate-slide-in-right { animation: slide-in-right 0.25s ease-out forwards; }
+.animate-fade-in        { animation: fade-in 0.3s ease-out forwards; }
+.animate-slide-up       { animation: slide-up 0.35s ease-out forwards; }
+
+/* ─── Reusable hover patterns ─────────────────────────────────────────── */
+/* hover-lift: card-style components that should feel responsive on hover
+ * without changing color too aggressively. The slight Y translation +
+ * soft shadow growth is what gives the "premium" feel in Direction B. */
+.hover-lift {
+  transition: transform 250ms ease-out, box-shadow 250ms ease-out, border-color 250ms ease-out;
+}
+.hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -8px rgba(30, 58, 95, 0.12);
+}
+
+/* hover-glow: an alternative for surfaces where transform isn't ideal
+ * (e.g., things inside scrollable lists where the lift looks weird).
+ * Adds a soft inner shadow without movement. */
+.hover-glow {
+  transition: box-shadow 250ms ease-out, border-color 250ms ease-out, background-color 250ms ease-out;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.06);
+}
+
+/* font-display: serif for headings/KPI moments. The `letter-spacing`
+ * tweak counteracts Newsreader's default slightly-wide spacing at
+ * heading sizes. */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
 }

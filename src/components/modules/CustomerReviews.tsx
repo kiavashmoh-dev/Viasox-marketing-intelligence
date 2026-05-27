@@ -132,24 +132,24 @@ export default function CustomerReviews({ analysis, onBack }: Props) {
   }, [analysis.segmentBreakdown, productFilter]);
 
   return (
-    <div className="min-h-screen bg-white p-8">
+    <div className="min-h-screen bg-cream p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={onBack}
-            className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1"
+            className="text-sm text-slate-500 hover:text-navy flex items-center gap-1 transition-colors"
           >
             {'←'} Back
           </button>
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-slate-400 italic">
             Live data from your uploaded review set
           </div>
         </div>
 
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Customer Reviews</h1>
-          <p className="text-sm text-slate-500 mt-1">
+        <div className="mb-8">
+          <h1 className="font-display text-4xl font-medium text-navy tracking-tight">Customer Reviews</h1>
+          <p className="text-sm text-slate-500 mt-2">
             Every breakdown the tool consults when generating concepts, scripts, and briefs.
           </p>
         </div>
@@ -395,19 +395,22 @@ function KpiTile({
   suffix?: string;
   tone: 'neutral' | 'emerald' | 'rose' | 'amber';
 }) {
+  // Direction B treatment: KPI values get the display serif for a moment
+  // of personality. Tone maps to the warm-palette accents instead of the
+  // older rainbow-tailwind colors.
   const valueColor = {
-    neutral: 'text-slate-800',
-    emerald: 'text-emerald-700',
-    rose: 'text-rose-700',
-    amber: 'text-amber-600',
+    neutral: 'text-navy',
+    emerald: 'text-warm-sage',
+    rose: 'text-warm-terracotta',
+    amber: 'text-warm-amber',
   }[tone];
   return (
-    <div className="bg-white border border-slate-200 rounded-lg px-3.5 py-3">
-      <div className={`text-xl font-bold ${valueColor} tabular-nums`}>
+    <div className="bg-white border border-cream-border rounded-lg px-4 py-3.5 hover-glow">
+      <div className={`font-display text-2xl font-medium ${valueColor} tabular-nums leading-none`}>
         {value}
-        {suffix && <span className="text-base ml-0.5">{suffix}</span>}
+        {suffix && <span className="text-lg ml-0.5">{suffix}</span>}
       </div>
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mt-0.5">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mt-1.5">
         {label}
       </div>
     </div>
@@ -428,15 +431,15 @@ function FilterPill({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+      className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
         active
-          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+          ? 'bg-navy text-cream border-navy shadow-sm'
+          : 'bg-white text-slate-700 border-cream-border hover:bg-cream-deep hover:border-navy/20'
       }`}
     >
       <span>{label}</span>
-      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-        active ? 'bg-blue-700/40 text-white' : 'bg-slate-100 text-slate-600'
+      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full tabular-nums ${
+        active ? 'bg-navy-deep text-cream' : 'bg-cream-deep text-slate-600'
       }`}>
         {formatNumber(count)}
       </span>
@@ -456,13 +459,13 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+    <div className="bg-white border border-cream-border rounded-xl p-5 hover-glow">
+      <div className="flex items-baseline justify-between mb-4">
+        <h3 className="font-display text-lg font-medium text-navy flex items-center gap-2.5 leading-none">
           <span className="text-base">{icon}</span>
           {title}
         </h3>
-        {subtitle && <span className="text-[11px] text-slate-400">{subtitle}</span>}
+        {subtitle && <span className="text-[11px] text-slate-400 italic">{subtitle}</span>}
       </div>
       {children}
     </div>

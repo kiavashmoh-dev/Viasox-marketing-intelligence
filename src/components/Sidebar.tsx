@@ -180,8 +180,8 @@ export default function Sidebar({ activeModule, onNavigate, onResetData }: Props
             onClick={() => onNavigate(item.id)}
             className={`w-full flex items-center gap-2 pl-9 pr-3 py-1.5 rounded-lg text-[13px] transition-colors text-left ${
               active
-                ? 'bg-blue-600 text-white shadow-sm font-medium'
-                : 'text-slate-500 hover:bg-slate-200/60 hover:text-slate-700'
+                ? 'bg-navy text-cream shadow-sm font-medium'
+                : 'text-slate-500 hover:bg-cream/70 hover:text-navy'
             }`}
           >
             <span className="text-xs leading-none shrink-0 opacity-80">{item.icon}</span>
@@ -196,8 +196,8 @@ export default function Sidebar({ activeModule, onNavigate, onResetData }: Props
           onClick={() => onNavigate(item.id)}
           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${
             active
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-700 hover:bg-slate-200/60'
+              ? 'bg-navy text-cream shadow-sm'
+              : 'text-slate-700 hover:bg-cream/70'
           }`}
         >
           <span className="text-base leading-none shrink-0">{item.icon}</span>
@@ -208,14 +208,15 @@ export default function Sidebar({ activeModule, onNavigate, onResetData }: Props
   };
 
   return (
-    <aside className="w-60 bg-slate-50 border-r border-slate-200 flex flex-col shrink-0 h-screen sticky top-0">
-      {/* Brand mark / logo area */}
-      <div className="px-5 py-5 border-b border-slate-200">
+    <aside className="w-60 bg-cream-deep border-r border-cream-border flex flex-col shrink-0 h-screen sticky top-0">
+      {/* Brand mark / logo area — uses the display serif for "Viasox" to
+          set the tone for the rest of the surface. */}
+      <div className="px-5 py-5 border-b border-cream-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-navy flex items-center justify-center text-cream font-bold text-sm shrink-0 font-display">
             V
           </div>
-          <div className="font-bold text-slate-800 text-lg leading-none tracking-tight">
+          <div className="font-display font-semibold text-navy text-xl leading-none tracking-tight">
             Viasox
           </div>
         </div>
@@ -251,7 +252,7 @@ export default function Sidebar({ activeModule, onNavigate, onResetData }: Props
                     <div key={group.label}>
                       <button
                         onClick={() => toggleGroup(group.label)}
-                        className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-200/60 transition-colors text-left"
+                        className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-slate-700 hover:bg-cream/70 hover:text-navy transition-colors text-left"
                         aria-expanded={isOpen}
                         aria-controls={`group-${group.label}`}
                       >
@@ -279,19 +280,19 @@ export default function Sidebar({ activeModule, onNavigate, onResetData }: Props
       </nav>
 
       {/* Bottom: brand info + reset link */}
-      <div className="border-t border-slate-200 px-3 py-3 space-y-2">
+      <div className="border-t border-cream-border px-3 py-3 space-y-2">
         <div className="flex items-center gap-2.5 px-2 py-1.5">
-          <div className="w-7 h-7 rounded-md bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs shrink-0">
+          <div className="w-7 h-7 rounded-md bg-warm-amber/15 flex items-center justify-center text-warm-amber font-bold text-xs shrink-0">
             V
           </div>
           <div className="min-w-0">
             <div className="text-[10px] uppercase tracking-wider text-slate-400 leading-none">Brand</div>
-            <div className="text-sm font-semibold text-slate-800 truncate leading-tight mt-0.5">Viasox</div>
+            <div className="text-sm font-semibold text-navy truncate leading-tight mt-0.5">Viasox</div>
           </div>
         </div>
         <button
           onClick={onResetData}
-          className="w-full text-[11px] text-slate-500 hover:text-slate-700 text-left px-2 py-1 hover:bg-slate-200/60 rounded-md transition-colors"
+          className="w-full text-[11px] text-slate-500 hover:text-navy text-left px-2 py-1 hover:bg-cream/70 rounded-md transition-colors"
         >
           ↑ Upload new data
         </button>
