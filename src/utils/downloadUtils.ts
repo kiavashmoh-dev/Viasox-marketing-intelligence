@@ -580,15 +580,189 @@ export function downloadBriefForAdType(
       downloadUgcBriefDoc(markdown, taskName);
       return;
 
+    // AI-generation path → Full AI Doc (Visual + Voiceover, no Shot Type)
+    case 'Full AI (Documentary, story, education, etc)':
+      downloadFullAiBriefDoc(markdown, taskName);
+      return;
+
     // Editing path → Ecom Doc
     case 'Ecom Style':
     case 'AI Podcast':
-    case 'Full AI (Documentary, story, education, etc)':
     case 'Static':
     default:
       downloadEcomBriefDoc(markdown, taskName);
       return;
   }
+}
+
+// ─── Full AI Brief — DOC (Visual + Voiceover, no Shot Type column) ──────
+//
+// Full AI ads are 100% AI-generated, so the Ecom template's Shot Type
+// column (built around real footage tags like "Talking Head") doesn't
+// apply. Repeated observation showed the model would dump scene
+// descriptions into both the Visual AND the Script Line columns,
+// leaving the brief with no actual voiceover.
+//
+// This exporter renders the simplified Full AI table shape: just a
+// row number, the visual prompt for the AI generator, and the
+// voiceover line that will be spoken. The "Voiceover" header is
+// chosen deliberately (vs "Script Line") because it can only mean
+// audio, removing any ambiguity.
+//
+// Reuses the same styling as the Ecom DOC (navy section labels,
+// Arial, light-gray borders) so it's visually consistent with the
+// other DOC outputs.
+export function downloadFullAiBriefDoc(markdownContent: string, overrideBriefId?: string): void {
+  const esc = escapeHtml;
+
+  const briefInfo = parseKvTable(markdownContent, 'BRIEF INFO');
+  const strategy = parseKvTable(markdownContent, 'STRATEGY');
+  const offer = parseKvTable(markdownContent, 'OFFER');
+  const editing = parseKvTable(markdownContent, 'EDITING INSTRUCTIONS');
+  const hooks = parseScriptTable(markdownContent, 'SCRIPT \\(HOOKS\\)');
+  const body = parseScriptTable(markdownContent, 'SCRIPT \\(BODY\\)');
+
+  const briefId = overrideBriefId || briefInfo['Brief ID'] || 'FULLAI_BRIEF';
+
+  // Reuse Ecom DOC styling for visual consistency across all DOC outputs.
+  const NAVY = '#1b365d';
+  const BORDER = '#bfbfbf';
+  const sectionHeaderStyle = `padding:6px 10px;font-weight:bold;font-size:12pt;color:#000;font-family:Arial,sans-serif;`;
+  const labelCellStyle = `background:${NAVY};padding:6px 10px;font-weight:bold;font-size:10pt;color:#ffffff;border:1px solid ${BORDER};width:160px;vertical-align:top;font-family:Arial,sans-serif;`;
+  const valueCellStyle = `padding:6px 10px;font-size:10pt;color:#000;border:1px solid ${BORDER};vertical-align:top;font-family:Arial,sans-serif;`;
+  const scriptHeaderStyle = `background:${NAVY};padding:6px 10px;font-weight:bold;font-size:10pt;color:#ffffff;border:1px solid ${BORDER};text-align:left;font-family:Arial,sans-serif;`;
+  const scriptCellStyle = `padding:6px 10px;font-size:10pt;color:#000;border:1px solid ${BORDER};vertical-align:top;font-family:Arial,sans-serif;`;
+
+  const kvRow = (label: string, value: string) =>
+    `<tr><td style="${labelCellStyle}">${esc(label)}</td><td style="${valueCellStyle}">${esc(value || '—')}</td></tr>`;
+
+  let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(briefId)}</title>
+<style>
+@page { margin: 0.75in; }
+body { font-family: Arial, sans-serif; max-width: 850px; margin: 0 auto; padding: 30px; color: #000; font-size: 11pt; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 16px; page-break-inside: avoid; }
+h1 { text-align: center; }
+</style></head><body>`;
+
+  html += `<h1 style="font-size:16pt;color:#000;margin:0 0 20px 0;font-weight:bold;font-family:Arial,sans-serif;">Full AI Brief</h1>`;
+
+  // 1. BRIEF INFO
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">BRIEF INFO</p>`;
+  html += `<table>`;
+  html += kvRow('Brief ID', briefId);
+  html += kvRow('Date', briefInfo['Date'] || '');
+  html += kvRow('Product', briefInfo['Product'] || '');
+  html += kvRow('Collection', briefInfo['Collection'] || '');
+  html += kvRow('Collection Asset', briefInfo['Collection Asset'] || '');
+  html += kvRow('Format', briefInfo['Format'] || '');
+  html += `</table>`;
+
+  // 2. STRATEGY
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">STRATEGY</p>`;
+  html += `<table>`;
+  html += kvRow('Awareness Level', strategy['Awareness Level'] || '');
+  html += kvRow('Primary Emotion', strategy['Primary Emotion'] || '');
+  html += kvRow('Avatar', strategy['Avatar'] || '');
+  html += kvRow('Landing Page', strategy['Landing Page'] || '');
+  html += `</table>`;
+
+  // 3. OFFER
+  if (Object.keys(offer).length > 0) {
+    html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">OFFER</p>`;
+    html += `<table>`;
+    html += kvRow('Promo', offer['Promo'] || '');
+    html += kvRow('Promo Asset', offer['Promo Asset'] || '');
+    html += kvRow('Value Callout', offer['Value Callout'] || '');
+    html += kvRow('Urgency Element', offer['Urgency Element'] || '');
+    html += `</table>`;
+  }
+
+  // 4. EDITING INSTRUCTIONS
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">EDITING INSTRUCTIONS</p>`;
+  html += `<table>`;
+  html += kvRow('Pacing', editing['Pacing'] || '');
+  html += kvRow('Resolution', editing['Resolution'] || '');
+  html += kvRow('Caption & Graphics', editing['Caption & Graphics'] || editing['Captions'] || '');
+  html += kvRow('Transitions', editing['Transitions'] || '');
+  html += kvRow('Music', editing['Music'] || '');
+  html += kvRow('Voiceover', editing['Voiceover'] || '');
+  html += kvRow('Asset', editing['Asset'] || '');
+  html += kvRow('Notes', editing['Notes'] || '');
+  html += `</table>`;
+
+  // Helper — Full AI tables come from the LLM in either the new 3-col
+  // shape (# / Suggested Visual / Voiceover) OR the legacy 4-col shape
+  // (# / Shot Type / Suggested Visual / Script Line) if the model
+  // ignored the directive. Either way we render only 3 columns in the
+  // output and drop the Shot Type cell.
+  const normalizeRow = (row: string[]): { num: string; visual: string; voiceover: string } => {
+    // Strip empty cells from start/end (markdown table parser leftovers)
+    const cells = row.map((c) => (c ?? '').trim());
+    // 3-col: # / Visual / Voiceover
+    if (cells.length === 3) {
+      return { num: cells[0], visual: cells[1], voiceover: cells[2] };
+    }
+    // 4-col legacy: # / Shot Type / Visual / Voiceover|Script Line — drop col 1
+    if (cells.length >= 4) {
+      return { num: cells[0], visual: cells[2], voiceover: cells[3] };
+    }
+    // 2-col fallback: Visual / Voiceover (no # column)
+    return { num: '', visual: cells[0] ?? '', voiceover: cells[1] ?? '' };
+  };
+
+  // 5. SCRIPT (HOOKS)
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (HOOKS)</p>`;
+  html += `<table>`;
+  html += `<tr>` +
+    `<th style="${scriptHeaderStyle}width:40px;">#</th>` +
+    `<th style="${scriptHeaderStyle}">SUGGESTED VISUAL</th>` +
+    `<th style="${scriptHeaderStyle}">VOICEOVER</th>` +
+    `</tr>`;
+  hooks.forEach((row) => {
+    const { num, visual, voiceover } = normalizeRow(row);
+    html += `<tr>` +
+      `<td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td>` +
+      `<td style="${scriptCellStyle}">${esc(visual)}</td>` +
+      `<td style="${scriptCellStyle}">${esc(voiceover)}</td>` +
+      `</tr>`;
+  });
+  if (hooks.length === 0) {
+    html += `<tr><td colspan="3" style="${scriptCellStyle}text-align:center;color:#999;">No hooks parsed</td></tr>`;
+  }
+  html += `</table>`;
+
+  // 6. SCRIPT (BODY)
+  html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (BODY)</p>`;
+  html += `<table>`;
+  html += `<tr>` +
+    `<th style="${scriptHeaderStyle}width:40px;">#</th>` +
+    `<th style="${scriptHeaderStyle}">SUGGESTED VISUAL</th>` +
+    `<th style="${scriptHeaderStyle}">VOICEOVER</th>` +
+    `</tr>`;
+  body.forEach((row) => {
+    const { num, visual, voiceover } = normalizeRow(row);
+    html += `<tr>` +
+      `<td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td>` +
+      `<td style="${scriptCellStyle}">${esc(visual)}</td>` +
+      `<td style="${scriptCellStyle}">${esc(voiceover)}</td>` +
+      `</tr>`;
+  });
+  if (body.length === 0) {
+    html += `<tr><td colspan="3" style="${scriptCellStyle}text-align:center;color:#999;">No body rows parsed</td></tr>`;
+  }
+  html += `</table>`;
+
+  html += `<p style="margin-top:30px;font-size:9pt;color:#999;border-top:1px solid #ddd;padding-top:8px;font-family:Arial,sans-serif;">Generated by Viasox Marketing Intelligence</p>`;
+  html += `</body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const safeBriefId = briefId.replace(/[\\/:*?"<>|]/g, '_');
+  a.download = `${safeBriefId}_FULLAI.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── UGC Creator Brief — DOC (5 hooks, 3-col body) ──────────────────────
