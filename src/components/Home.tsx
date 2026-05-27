@@ -202,6 +202,15 @@ export default function Home({ analysis, onNavigate }: Props) {
           ))}
         </div>
 
+        {/* ── FACTORY ANATOMY SHOWCASE ───────────────────────────────────
+            Curiosity-evoking promo for the visual walkthrough. Sits as
+            the main focal point on the home page — designed to make a
+            first-time viewer want to click through and understand the
+            depth of what's been built. Uses the navy primary surface
+            (inverse of the rest of the cream-themed page) so it visually
+            stands apart and demands attention. */}
+        <FactoryAnatomyPromo onClick={() => onNavigate('factory-tour')} />
+
         {/* Lower sections — placeholders the user will fill in */}
         <SectionPlaceholder
           title="Recent ad performance"
@@ -326,5 +335,92 @@ function Shortcut({ label, icon, onClick }: { label: string; icon: string; onCli
       <span className="text-base">{icon}</span>
       {label}
     </button>
+  );
+}
+
+/**
+ * FactoryAnatomyPromo — the curiosity hook on the home page that pulls
+ * the user into the Factory Anatomy walkthrough.
+ *
+ * Direction B visual treatment, inverted: navy background instead of
+ * cream so this section visually OWNS the page when the user scrolls
+ * past the status grid. Newsreader serif for the hero line, warm-amber
+ * accents to call out the numbers, italic ornament for personality.
+ *
+ * The icon strip at the bottom is a hand-built mini-diagram showing
+ * inputs → factory → output — gives the eye something to land on while
+ * the headline copy does the curiosity-evoking work.
+ */
+function FactoryAnatomyPromo({ onClick }: { onClick: () => void }) {
+  return (
+    <section className="mb-12">
+      <button
+        onClick={onClick}
+        className="group w-full relative overflow-hidden bg-navy rounded-2xl px-8 py-10 md:px-12 md:py-14 text-left hover-lift transition-transform"
+      >
+        {/* Decorative warm radial accent in the top-right corner */}
+        <div
+          className="pointer-events-none absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-30 blur-3xl"
+          style={{ background: 'radial-gradient(circle, #c89b14 0%, transparent 70%)' }}
+        />
+        {/* Subtle decorative dot pattern */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+
+        <div className="relative grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 md:gap-10 items-center">
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-warm-amber mb-4">
+              · A guided tour ·
+            </div>
+            <h2 className="font-display text-4xl md:text-5xl font-medium text-cream leading-[1.05] tracking-tight">
+              There&apos;s more happening{' '}
+              <span className="italic text-warm-amber">behind</span>{' '}
+              every brief.
+            </h2>
+            <p className="font-display italic text-lg md:text-xl text-cream/75 mt-5 leading-relaxed max-w-2xl">
+              Six AI stages. Five knowledge sources. A closed-loop memory that learns from every batch
+              you ship. <span className="not-italic text-cream font-medium">See how the factory operates.</span>
+            </p>
+
+            {/* Mini flow diagram — inputs → factory → output */}
+            <div className="mt-8 flex items-center gap-3 text-cream/60 text-sm">
+              <div className="flex items-center gap-1.5">
+                <FlowIcon emoji="📋" />
+                <FlowIcon emoji="⭐" />
+                <FlowIcon emoji="💬" />
+                <FlowIcon emoji="📚" />
+                <FlowIcon emoji="🎨" />
+              </div>
+              <span className="text-cream/40 text-base mx-1">→</span>
+              <FlowIcon emoji="🏭" big />
+              <span className="text-cream/40 text-base mx-1">→</span>
+              <FlowIcon emoji="📄" />
+            </div>
+          </div>
+
+          {/* CTA pill on the right */}
+          <div className="shrink-0">
+            <div className="inline-flex items-center gap-2.5 px-5 py-3 bg-cream text-navy rounded-full font-semibold text-sm shadow-sm transition-transform group-hover:scale-[1.02]">
+              <span>Take the tour</span>
+              <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+            </div>
+          </div>
+        </div>
+      </button>
+    </section>
+  );
+}
+
+function FlowIcon({ emoji, big }: { emoji: string; big?: boolean }) {
+  const sizeClass = big ? 'w-10 h-10 text-xl' : 'w-7 h-7 text-sm';
+  return (
+    <div className={`${sizeClass} rounded-full bg-cream/10 border border-cream/20 flex items-center justify-center backdrop-blur-sm`}>
+      {emoji}
+    </div>
   );
 }
