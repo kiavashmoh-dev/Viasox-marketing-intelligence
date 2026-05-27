@@ -8,6 +8,7 @@ import AppShell from './components/AppShell';
 import Home from './components/Home';
 import SegmentDiscovery from './components/modules/SegmentDiscovery';
 import CustomerReviews from './components/modules/CustomerReviews';
+import FactoryTour from './components/modules/FactoryTour';
 import PersonaBuilder from './components/modules/PersonaBuilder';
 import AnglesGenerator from './components/modules/AnglesGenerator';
 import HookGenerator from './components/modules/HookGenerator';
@@ -143,6 +144,8 @@ export default function App() {
           <MemoryVault onBack={handleBackToDashboard} />
         ) : activeModule === 'customer-reviews' ? (
           <CustomerReviews {...moduleProps} />
+        ) : activeModule === 'factory-tour' ? (
+          <FactoryTour onBack={handleBackToDashboard} onOpenFactory={() => handleModuleSelect('autopilot')} />
         ) : null;
 
       return (

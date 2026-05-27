@@ -89,6 +89,9 @@ const SECTIONS: SidebarSection[] = [
           { id: 'angles', label: 'Concepts & Angles', icon: '💡', isSubsection: true },
           { id: 'script', label: 'Script Writer', icon: '🎬', isSubsection: true },
           { id: 'hooks', label: 'Hooks', icon: '🎤', isSubsection: true },
+          // Peer to The Factory but visually separate — it's a guided
+          // explainer, not a tool the Factory uses.
+          { id: 'factory-tour', label: 'Factory Anatomy', icon: '🔍' },
         ],
       },
       {

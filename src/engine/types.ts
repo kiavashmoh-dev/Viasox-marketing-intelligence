@@ -160,7 +160,8 @@ export type ModuleId =
   | 'autopilot'
   | 'inspiration'
   | 'memory-vault'
-  | 'customer-reviews';
+  | 'customer-reviews'
+  | 'factory-tour';
 
 export interface AppState {
   view: AppView;
