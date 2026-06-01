@@ -98,6 +98,7 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
   const [expanded, setExpanded] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showRaw, setShowRaw] = useState(false);
   const { task, step, selectedConceptIndex, selectionReasoning, recommendedFramework, scriptResult, error } = taskState;
 
   const isComplete = step === 'complete' && !!scriptResult;
@@ -301,7 +302,38 @@ export default function TaskBriefCard({ taskState, index, onRedo, isRedoing }: P
                     {showFeedback ? 'Cancel' : 'Redo with Feedback'}
                   </button>
                 )}
+                {/* Raw markdown view — the source of truth. If a rendered
+                    column ever looks wrong, this shows EXACTLY what the
+                    script writer produced, so it's clear whether the
+                    content exists (render bug) or is genuinely missing
+                    (generation bug). */}
+                <button
+                  onClick={() => setShowRaw(!showRaw)}
+                  className="text-xs border border-slate-300 text-slate-600 bg-white px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors ml-auto"
+                >
+                  {showRaw ? 'Hide raw' : 'View raw'}
+                </button>
               </div>
+
+              {/* Raw markdown dump */}
+              {showRaw && (
+                <div className="mt-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      Raw script writer output (source of truth)
+                    </span>
+                    <button
+                      onClick={() => navigator.clipboard?.writeText(scriptResult)}
+                      className="text-[10px] text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <pre className="text-[10px] leading-relaxed bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto max-h-96 whitespace-pre-wrap break-words">
+                    {scriptResult}
+                  </pre>
+                </div>
+              )}
 
               {/* Per-brief feedback / redo */}
               {showFeedback && onRedo && (

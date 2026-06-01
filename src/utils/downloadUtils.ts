@@ -355,7 +355,16 @@ export function parseKvTable(markdown: string, sectionHeader: string): Record<st
 }
 
 /**
- * Parse a markdown script table (| # | Shot Type | Visual | Line |) into rows
+ * Parse a markdown script table into rows of cells.
+ *
+ * IMPORTANT: preserves INNER empty cells. A markdown row like
+ * `| 1 |  | Visual | Line |` has an empty 2nd cell; dropping it (as the
+ * old `.filter(c => c.trim())` did) would shift every subsequent cell one
+ * position left and silently corrupt the column alignment. We only strip
+ * the two OUTER empties (the artifacts before the first `|` and after the
+ * last `|`), never inner ones. Column alignment is then preserved exactly
+ * as the model wrote it, and the downstream normalizer handles any
+ * shape drift deterministically.
  */
 export function parseScriptTable(markdown: string, sectionHeader: string): string[][] {
   const rows: string[][] = [];
@@ -371,10 +380,17 @@ export function parseScriptTable(markdown: string, sectionHeader: string): strin
       continue;
     }
     if (/^\|[\s\-:|]+\|$/.test(line.trim())) { inTable = true; continue; }
-    const cells = line.split('|').filter(c => c.trim()).map(c => c.replace(/\*\*/g, '').trim());
-    // Skip header row
-    if (cells[0] === '#' || cells[0] === 'Hook' || cells[0] === 'Line #') { inTable = true; continue; }
-    if (cells.length >= 3) {
+
+    // Split on the pipe delimiter, then strip ONLY the outer empties.
+    const parts = line.split('|');
+    if (parts.length && parts[0].trim() === '') parts.shift();
+    if (parts.length && parts[parts.length - 1].trim() === '') parts.pop();
+    const cells = parts.map(c => c.replace(/\*\*/g, '').trim());
+
+    // Skip header row (the line that names the columns)
+    const c0 = (cells[0] || '').toLowerCase();
+    if (c0 === '#' || c0 === 'hook' || c0 === 'line #' || c0 === 'line#') { inTable = true; continue; }
+    if (cells.length >= 2) {
       inTable = true;
       rows.push(cells);
     }
@@ -432,11 +448,26 @@ function looksLikeLineNumber(s: string): boolean {
 }
 
 /**
- * Normalize a parsed table row into a stable 4-slot shape regardless of
- * the column layout the LLM chose. `expected` controls the target shape's
- * conventions (where line number / visual / shot type belong in the
- * RENDERED output), but the function returns the same record either way —
- * the renderer pulls the slots it cares about.
+ * Normalize a parsed table row into a stable {num, shotType, visual, line}
+ * shape, robust to whatever column layout the LLM produced.
+ *
+ * THE CORE INVARIANT: in every brief template the tool generates, the
+ * SPOKEN LINE (Script Line / Hook Line / Lines / Voiceover) is ALWAYS the
+ * rightmost column, and the VISUAL is always immediately to its left.
+ * This holds whether the model emitted:
+ *   - the canonical Ecom shape   `# | Shot Type | Visual | Line`
+ *   - a UGC shape                `Visual | Shot Type | Line`
+ *   - a Full AI shape            `# | Visual | Voiceover`
+ *   - or a DRIFTED shape with an extra Building-Block / beat column
+ *     `# | Building Block | Shot Type | Visual | Line`  ← the bug case
+ *
+ * So we anchor from the RIGHT: the line is the last cell, the visual is
+ * second-to-last, the shot type is third-to-last (when present). Any extra
+ * columns the model inserted between the row number and the shot type
+ * (e.g. a stray "Building Block" column) sit in the middle and are folded
+ * away — they can NEVER push the spoken line out of the output.
+ *
+ * Returns `null` for rows that should be skipped (header leaks, blanks).
  */
 export function normalizeBodyRow(
   row: string[],
@@ -445,72 +476,37 @@ export function normalizeBodyRow(
 ): NormalizedScriptRow | null {
   const cells = (row || []).map((c) => (c ?? '').trim());
 
-  // Drop fully-empty rows
-  if (cells.every((c) => !c)) return null;
+  // Drop fully-empty rows.
+  if (cells.length === 0 || cells.every((c) => !c)) return null;
 
-  // Drop rows that are obviously the UGC column-header names leaking into
-  // the data (this is the most common drift pattern observed in production).
+  // Drop rows that are the column-header names leaking into the data
+  // (e.g. a literal ["Shot Visuals", "Shot Type", "Lines"] row).
   if (isLeakedHeaderRow(cells)) return null;
 
-  const nonEmpty = cells.filter((c) => c).length;
   const firstIsNumber = looksLikeLineNumber(cells[0] || '');
+  const expectedCols = expected === 'ecom4' ? 4 : 3;
+  // Drift = the model produced a different column count than the template.
+  const driftDetected = cells.length !== expectedCols;
+  const last = cells.length - 1;
 
-  // ── Case 1: 4 cells, first is a number → standard Ecom 4-col format ──
-  if (cells.length >= 4 && firstIsNumber) {
-    return {
-      num: cells[0],
-      shotType: cells[1],
-      visual: cells[2],
-      line: cells[3],
-      driftDetected: false,
-    };
+  // ── NUMBERED TABLE (Ecom / Full AI): first cell is a line number. ──
+  // Right-anchored: line = last cell, visual = second-to-last, shot type =
+  // third-to-last (only when there's room between the number and the
+  // visual). Extra middle columns (Building Block, etc.) are dropped.
+  if (firstIsNumber) {
+    const line = cells[last] || '';
+    const visual = last - 1 >= 1 ? (cells[last - 1] || '') : '';
+    const shotType = last - 2 >= 1 ? (cells[last - 2] || '') : '';
+    return { num: cells[0], shotType, visual, line, driftDetected };
   }
 
-  // ── Case 2: 4 cells, first is NOT a number → drift: actually 3-col
-  //   data with an extra empty column appended. Re-map as UGC-shaped:
-  //   visual | shotType | line (last cell ignored). ──
-  if (cells.length === 4 && !firstIsNumber) {
-    return {
-      num: String(rowIndex + 1),
-      shotType: cells[1],
-      visual: cells[0],
-      line: cells[2],
-      driftDetected: true,
-    };
-  }
-
-  // ── Case 3: 3 cells, first looks like a number → Ecom-with-missing-line:
-  //   # | shotType | visual (line empty). Rare but possible. ──
-  if (nonEmpty === 3 && firstIsNumber && cells.length === 3) {
-    return {
-      num: cells[0],
-      shotType: cells[1],
-      visual: cells[2],
-      line: '',
-      driftDetected: true,
-    };
-  }
-
-  // ── Case 4: 3 cells, first is descriptive → UGC-shaped: visual |
-  //   shotType | line. Synthesize a line number from row index. ──
-  if (cells.length === 3 && !firstIsNumber) {
-    return {
-      num: String(rowIndex + 1),
-      shotType: cells[1],
-      visual: cells[0],
-      line: cells[2],
-      driftDetected: expected === 'ecom4', // drift only if Ecom expected
-    };
-  }
-
-  // ── Default: trust the cell order as-is, padding empty slots. ──
-  return {
-    num: cells[0] || String(rowIndex + 1),
-    shotType: cells[1] || '',
-    visual: cells[2] || '',
-    line: cells[3] || '',
-    driftDetected: false,
-  };
+  // ── NON-NUMBERED TABLE (UGC): first cell is the visual description. ──
+  // visual = first, line = last, shot type = the middle cell (when there
+  // are 3+ columns). Synthesize the row number from the index.
+  const visual = cells[0] || '';
+  const line = last >= 1 ? (cells[last] || '') : '';
+  const shotType = cells.length >= 3 ? (cells[1] || '') : '';
+  return { num: String(rowIndex + 1), shotType, visual, line, driftDetected };
 }
 
 /**
@@ -838,24 +834,16 @@ h1 { text-align: center; }
   html += kvRow('Notes', editing['Notes'] || '');
   html += `</table>`;
 
-  // Helper — Full AI tables come from the LLM in either the new 3-col
-  // shape (# / Suggested Visual / Voiceover) OR the legacy 4-col shape
-  // (# / Shot Type / Suggested Visual / Script Line) if the model
-  // ignored the directive. Either way we render only 3 columns in the
-  // output and drop the Shot Type cell.
-  const normalizeRow = (row: string[]): { num: string; visual: string; voiceover: string } => {
-    // Strip empty cells from start/end (markdown table parser leftovers)
-    const cells = row.map((c) => (c ?? '').trim());
-    // 3-col: # / Visual / Voiceover
-    if (cells.length === 3) {
-      return { num: cells[0], visual: cells[1], voiceover: cells[2] };
-    }
-    // 4-col legacy: # / Shot Type / Visual / Voiceover|Script Line — drop col 1
-    if (cells.length >= 4) {
-      return { num: cells[0], visual: cells[2], voiceover: cells[3] };
-    }
-    // 2-col fallback: Visual / Voiceover (no # column)
-    return { num: '', visual: cells[0] ?? '', voiceover: cells[1] ?? '' };
+  // Full AI rows go through the shared right-anchored normalizer. The
+  // voiceover (= the spoken line) is always the rightmost cell; the visual
+  // is second-to-last. Any Shot Type / Building Block column the model
+  // added sits in the middle and is dropped — Full AI has no Shot Type
+  // column. This is the same logic the Ecom + UGC exporters use, so the
+  // drift behavior is identical across every template.
+  const normalizeRow = (row: string[], i: number): { num: string; visual: string; voiceover: string } => {
+    const r = normalizeBodyRow(row, i, 'ecom4');
+    if (!r) return { num: '', visual: '', voiceover: '' };
+    return { num: r.num, visual: r.visual, voiceover: r.line };
   };
 
   // 5. SCRIPT (HOOKS)
@@ -866,8 +854,8 @@ h1 { text-align: center; }
     `<th style="${scriptHeaderStyle}">SUGGESTED VISUAL</th>` +
     `<th style="${scriptHeaderStyle}">VOICEOVER</th>` +
     `</tr>`;
-  hooks.forEach((row) => {
-    const { num, visual, voiceover } = normalizeRow(row);
+  hooks.forEach((row, i) => {
+    const { num, visual, voiceover } = normalizeRow(row, i);
     html += `<tr>` +
       `<td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td>` +
       `<td style="${scriptCellStyle}">${esc(visual)}</td>` +
@@ -887,8 +875,8 @@ h1 { text-align: center; }
     `<th style="${scriptHeaderStyle}">SUGGESTED VISUAL</th>` +
     `<th style="${scriptHeaderStyle}">VOICEOVER</th>` +
     `</tr>`;
-  body.forEach((row) => {
-    const { num, visual, voiceover } = normalizeRow(row);
+  body.forEach((row, i) => {
+    const { num, visual, voiceover } = normalizeRow(row, i);
     html += `<tr>` +
       `<td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td>` +
       `<td style="${scriptCellStyle}">${esc(visual)}</td>` +

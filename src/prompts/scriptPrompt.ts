@@ -845,6 +845,8 @@ MANDATORY 5-BEAT BODY STRUCTURE — every Unaware script MUST map to these 5 bea
 4. CATEGORY REVEAL (Beat 4, ~65-85%) — reveal that a different CATEGORY of sock exists. Not Viasox yet.
 5. PRODUCT REVEAL + SOFT CTA (Beat 5, ~85-100%) — Viasox is finally named with a curiosity CTA.
 
+⚠️ These 5 beats are a PLANNING tool for the CONTENT of your script lines — they are NOT table columns. Do NOT add a "Building Block", "Beat", or "Phase" column to the body table. The body table keeps EXACTLY the columns the output template defines. The beat each row belongs to is implicit from its position and content, never a separate cell.
+
 TARGET ONE SUB-PERSONA (pick the one that best fits the assigned persona):
 - The Normalizer — attributes discomfort to age/weather/shoes/genetics
 - The Diagnosed Non-Searcher — has the condition, owns pharmacy compression, hasn't connected daily friction to a better category

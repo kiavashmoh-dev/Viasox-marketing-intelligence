@@ -265,6 +265,8 @@ Each hook uses a DIFFERENT approach. Note the principle (e.g., "Hook 1 — Hopki
 
 Row count adapts to concept and duration. Each row = ONE thought, ONE breath.
 
+🚨 **COLUMN RULE — NON-NEGOTIABLE:** Both the HOOKS and BODY tables have **EXACTLY 4 columns** in this exact order: \`# | Shot Type | Suggested Visual | Script Line\`. Do NOT add a "Building Block", "Beat", "Phase", or any fifth column. If your script follows a beat structure (e.g. Identification → Reframe → Mechanism), that structure guides WHICH lines you write — it does NOT become a table column. The **Script Line column (the rightmost) must contain the actual spoken words** the viewer hears, in quotes. Never put a shot tag, a beat name, or a visual description in the Script Line column. Before you finish, re-read your BODY table: every row's last cell must be a spoken line in quotes, not a description.
+
 ### 7. KEY DATA POINTS
 List every statistic and customer quote referenced in the script, with source frequencies.
 

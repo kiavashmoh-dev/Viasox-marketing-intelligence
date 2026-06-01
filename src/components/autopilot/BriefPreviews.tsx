@@ -417,33 +417,26 @@ function ThreeColFullAiTable({
             </tr>
           </thead>
           <tbody>
-            {normalized.map((row, ri) => {
-              // For Full AI, the "line" slot is the Voiceover. If the body
-              // came in as a 3-col Visual | ShotType | Line shape, the
-              // normalizer puts ShotType in the shotType slot — but Full AI
-              // doesn't have one. Merge any non-empty shotType inline into
-              // the visual so no content is lost.
-              const visual = row.shotType && row.shotType !== row.visual
-                ? `${row.visual}${row.visual ? ' · ' : ''}${row.shotType}`
-                : row.visual;
-              return (
-                <tr key={ri}>
-                  {[row.num, visual, row.line].map((cell, ci) => (
-                    <td
-                      key={ci}
-                      className="py-1.5 px-2 text-slate-800 align-top"
-                      style={{
-                        border: `1px solid ${BORDER}`,
-                        fontSize: 11,
-                        textAlign: ci === 0 ? 'center' : 'left',
-                      }}
-                    >
-                      {cell || '—'}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
+            {normalized.map((row, ri) => (
+              // Right-anchored normalizer already put the visual in row.visual
+              // and the voiceover (spoken line) in row.line. Full AI has no
+              // shot-type column, so we render only # / Visual / Voiceover.
+              <tr key={ri}>
+                {[row.num, row.visual, row.line].map((cell, ci) => (
+                  <td
+                    key={ci}
+                    className="py-1.5 px-2 text-slate-800 align-top"
+                    style={{
+                      border: `1px solid ${BORDER}`,
+                      fontSize: 11,
+                      textAlign: ci === 0 ? 'center' : 'left',
+                    }}
+                  >
+                    {cell || '—'}
+                  </td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
