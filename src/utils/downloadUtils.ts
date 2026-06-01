@@ -406,7 +406,7 @@ export function parseScriptTable(markdown: string, sectionHeader: string): strin
 // so the renderer can warn in the console — useful for catching the
 // problem in real time on future briefs.
 
-interface NormalizedScriptRow {
+export interface NormalizedScriptRow {
   num: string;
   shotType: string;
   visual: string;
@@ -438,7 +438,7 @@ function looksLikeLineNumber(s: string): boolean {
  * RENDERED output), but the function returns the same record either way —
  * the renderer pulls the slots it cares about.
  */
-function normalizeBodyRow(
+export function normalizeBodyRow(
   row: string[],
   rowIndex: number,
   expected: 'ecom4' | 'ugc3',
