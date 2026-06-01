@@ -382,6 +382,137 @@ export function parseScriptTable(markdown: string, sectionHeader: string): strin
   return rows;
 }
 
+// ─── Defensive row normalizer ──────────────────────────────────────────
+//
+// Sometimes the LLM produces a table whose column shape doesn't match
+// the brief's actual ad type (e.g., a UGC-shaped 3-col table inside an
+// Ecom-typed brief). When that drift hits a renderer that blindly assumes
+// the expected shape (`row[0] || ''` etc.), the data shifts one column
+// to the wrong side and the LINES column ends up empty even though the
+// model wrote the spoken lines correctly.
+//
+// This helper accepts a parsed row + a target shape and reorders the cells
+// to fill the target slots. It detects drift by:
+//   - looking for UGC column-header values that leaked into a data row
+//     (e.g., a row whose cells are literally "Shot Visuals", "Shot Type",
+//     "Lines") — those rows get skipped
+//   - inspecting whether the first cell looks like a line number (short
+//     digit run) vs a long descriptive sentence. If the first cell is a
+//     description, the row is treated as UGC-shaped (Visual | ShotType |
+//     Lines) instead of Ecom-shaped (# | ShotType | Visual | Lines)
+//
+// Returns `null` for rows that should be skipped (header leaks, blanks).
+// Otherwise returns a normalized 4-slot record. `driftDetected` is set
+// so the renderer can warn in the console — useful for catching the
+// problem in real time on future briefs.
+
+interface NormalizedScriptRow {
+  num: string;
+  shotType: string;
+  visual: string;
+  line: string;
+  driftDetected: boolean;
+}
+
+/** Returns true if the row's cells look like UGC column-header words leaked
+ *  into the table body (e.g. ["Shot Visuals", "Shot Type", "Lines"]). */
+function isLeakedHeaderRow(cells: string[]): boolean {
+  const lowered = cells.map((c) => c.toLowerCase().trim());
+  const set = new Set(lowered);
+  // Any combination of two-or-more UGC header names indicates a leaked header.
+  const ugcHeaderWords = new Set(['shot visuals', 'shot type', 'lines', 'line', 'hook line', 'script line', 'voiceover', 'hook style', 'suggested visual']);
+  let matches = 0;
+  for (const w of set) if (ugcHeaderWords.has(w)) matches++;
+  return matches >= 2 && cells.every((c) => c.trim().length < 25);
+}
+
+/** Returns true if a string looks like a short ordinal/line number (1, 2, 12...). */
+function looksLikeLineNumber(s: string): boolean {
+  return /^\d{1,3}$/.test(s.trim());
+}
+
+/**
+ * Normalize a parsed table row into a stable 4-slot shape regardless of
+ * the column layout the LLM chose. `expected` controls the target shape's
+ * conventions (where line number / visual / shot type belong in the
+ * RENDERED output), but the function returns the same record either way —
+ * the renderer pulls the slots it cares about.
+ */
+function normalizeBodyRow(
+  row: string[],
+  rowIndex: number,
+  expected: 'ecom4' | 'ugc3',
+): NormalizedScriptRow | null {
+  const cells = (row || []).map((c) => (c ?? '').trim());
+
+  // Drop fully-empty rows
+  if (cells.every((c) => !c)) return null;
+
+  // Drop rows that are obviously the UGC column-header names leaking into
+  // the data (this is the most common drift pattern observed in production).
+  if (isLeakedHeaderRow(cells)) return null;
+
+  const nonEmpty = cells.filter((c) => c).length;
+  const firstIsNumber = looksLikeLineNumber(cells[0] || '');
+
+  // ── Case 1: 4 cells, first is a number → standard Ecom 4-col format ──
+  if (cells.length >= 4 && firstIsNumber) {
+    return {
+      num: cells[0],
+      shotType: cells[1],
+      visual: cells[2],
+      line: cells[3],
+      driftDetected: false,
+    };
+  }
+
+  // ── Case 2: 4 cells, first is NOT a number → drift: actually 3-col
+  //   data with an extra empty column appended. Re-map as UGC-shaped:
+  //   visual | shotType | line (last cell ignored). ──
+  if (cells.length === 4 && !firstIsNumber) {
+    return {
+      num: String(rowIndex + 1),
+      shotType: cells[1],
+      visual: cells[0],
+      line: cells[2],
+      driftDetected: true,
+    };
+  }
+
+  // ── Case 3: 3 cells, first looks like a number → Ecom-with-missing-line:
+  //   # | shotType | visual (line empty). Rare but possible. ──
+  if (nonEmpty === 3 && firstIsNumber && cells.length === 3) {
+    return {
+      num: cells[0],
+      shotType: cells[1],
+      visual: cells[2],
+      line: '',
+      driftDetected: true,
+    };
+  }
+
+  // ── Case 4: 3 cells, first is descriptive → UGC-shaped: visual |
+  //   shotType | line. Synthesize a line number from row index. ──
+  if (cells.length === 3 && !firstIsNumber) {
+    return {
+      num: String(rowIndex + 1),
+      shotType: cells[1],
+      visual: cells[0],
+      line: cells[2],
+      driftDetected: expected === 'ecom4', // drift only if Ecom expected
+    };
+  }
+
+  // ── Default: trust the cell order as-is, padding empty slots. ──
+  return {
+    num: cells[0] || String(rowIndex + 1),
+    shotType: cells[1] || '',
+    visual: cells[2] || '',
+    line: cells[3] || '',
+    driftDetected: false,
+  };
+}
+
 /**
  * Download an Ecom brief as a styled .doc matching the Ecom Ad Template format
  */
@@ -481,31 +612,48 @@ h1 { text-align: center; }
     html += `</table>`;
   }
 
-  // 6. SCRIPT (HOOKS)
+  // 6. SCRIPT (HOOKS) — uses the defensive normalizer to handle any LLM
+  //    column-shape drift (UGC-shaped tables landing in an Ecom render etc.)
   html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (HOOKS)</p>`;
   html += `<table>`;
   html += `<tr><th style="${scriptHeaderStyle}width:40px;">LINE #</th><th style="${scriptHeaderStyle}width:100px;">SHOT TYPE</th><th style="${scriptHeaderStyle}width:220px;">SUGGESTED VISUAL</th><th style="${scriptHeaderStyle}">HOOK LINE</th></tr>`;
-  hooks.forEach((row) => {
-    const [num, shotType, visual, line] = [row[0] || '', row[1] || '', row[2] || '', row[3] || ''];
-    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td><td style="${scriptCellStyle}width:100px;">${esc(shotType)}</td><td style="${scriptCellStyle}width:220px;">${esc(visual)}</td><td style="${scriptCellStyle}">${esc(line)}</td></tr>`;
+  let ecomHookDrift = false;
+  let ecomHookRowsRendered = 0;
+  hooks.forEach((row, i) => {
+    const r = normalizeBodyRow(row, i, 'ecom4');
+    if (!r) return; // skip leaked headers / blank rows
+    if (r.driftDetected) ecomHookDrift = true;
+    ecomHookRowsRendered++;
+    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(r.num)}</td><td style="${scriptCellStyle}width:100px;">${esc(r.shotType)}</td><td style="${scriptCellStyle}width:220px;">${esc(r.visual)}</td><td style="${scriptCellStyle}">${esc(r.line)}</td></tr>`;
   });
-  if (hooks.length === 0) {
+  if (ecomHookRowsRendered === 0) {
     html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#999;">No hooks parsed</td></tr>`;
   }
   html += `</table>`;
+  if (ecomHookDrift) {
+    console.warn('[downloadEcomBriefDoc] Hook table column drift detected and auto-corrected during render. The LLM produced a non-Ecom column shape.');
+  }
 
-  // 7. SCRIPT (BODY)
+  // 7. SCRIPT (BODY) — same defensive treatment as the hooks table
   html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (BODY)</p>`;
   html += `<table>`;
   html += `<tr><th style="${scriptHeaderStyle}width:40px;">LINE #</th><th style="${scriptHeaderStyle}width:100px;">SHOT TYPE</th><th style="${scriptHeaderStyle}width:220px;">SUGGESTED VISUAL</th><th style="${scriptHeaderStyle}">SCRIPT LINE</th></tr>`;
-  body.forEach((row) => {
-    const [num, shotType, visual, line] = [row[0] || '', row[1] || '', row[2] || '', row[3] || ''];
-    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(num)}</td><td style="${scriptCellStyle}width:100px;">${esc(shotType)}</td><td style="${scriptCellStyle}width:220px;">${esc(visual)}</td><td style="${scriptCellStyle}">${esc(line)}</td></tr>`;
+  let ecomBodyDrift = false;
+  let ecomBodyRowsRendered = 0;
+  body.forEach((row, i) => {
+    const r = normalizeBodyRow(row, i, 'ecom4');
+    if (!r) return;
+    if (r.driftDetected) ecomBodyDrift = true;
+    ecomBodyRowsRendered++;
+    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${esc(r.num)}</td><td style="${scriptCellStyle}width:100px;">${esc(r.shotType)}</td><td style="${scriptCellStyle}width:220px;">${esc(r.visual)}</td><td style="${scriptCellStyle}">${esc(r.line)}</td></tr>`;
   });
-  if (body.length === 0) {
+  if (ecomBodyRowsRendered === 0) {
     html += `<tr><td colspan="4" style="${scriptCellStyle}text-align:center;color:#999;">No body rows parsed</td></tr>`;
   }
   html += `</table>`;
+  if (ecomBodyDrift) {
+    console.warn('[downloadEcomBriefDoc] Body table column drift detected and auto-corrected during render. Original markdown had a non-Ecom column shape; the SCRIPT LINE column was reconstructed from the right-most content cell.');
+  }
 
   html += `<p style="margin-top:30px;font-size:9pt;color:#999;border-top:1px solid #ddd;padding-top:8px;font-family:Arial,sans-serif;">Generated by Viasox Marketing Intelligence</p>`;
   html += `</body></html>`;
@@ -865,7 +1013,9 @@ h1 { text-align: center; }
   html += `</table>`;
 
   // 5. SCRIPT (BODY) — 3 cols ONLY: Shot Visuals | Shot Type | Lines
-  // (No row number — kept maximally clean for the creator per spec.)
+  // Uses the shared defensive normalizer so column-shape drift from the
+  // LLM (extra leading number, header-name leak into data, etc.) doesn't
+  // produce a doc with empty Lines cells.
   html += `<p style="${sectionHeaderStyle}margin:16px 0 4px 0;">SCRIPT (BODY)</p>`;
   html += `<table>`;
   html += `<tr>` +
@@ -873,34 +1023,26 @@ h1 { text-align: center; }
     `<th style="${scriptHeaderStyle}width:140px;">SHOT TYPE</th>` +
     `<th style="${scriptHeaderStyle}">LINES</th>` +
     `</tr>`;
-  body.forEach((row) => {
-    // The body rows might come from a 3-col markdown table (Shot Visuals |
-    // Shot Type | Lines) OR a 4-col legacy table (# | Shot Type | Visual |
-    // Line). Detect by the first cell — if it parses as a small integer,
-    // the table includes a leading row number we should skip; otherwise
-    // the first cell IS the visual.
-    let visual: string, shotType: string, lines: string;
-    const first = (row[0] || '').trim();
-    const isLeadingNumber = /^\d{1,3}$/.test(first);
-    if (isLeadingNumber) {
-      shotType = row[1] || '';
-      visual = row[2] || '';
-      lines = row[3] || '';
-    } else {
-      visual = row[0] || '';
-      shotType = row[1] || '';
-      lines = row[2] || '';
-    }
+  let ugcBodyDrift = false;
+  let ugcBodyRowsRendered = 0;
+  body.forEach((row, i) => {
+    const r = normalizeBodyRow(row, i, 'ugc3');
+    if (!r) return; // skip leaked-header / blank rows
+    if (r.driftDetected) ugcBodyDrift = true;
+    ugcBodyRowsRendered++;
     html += `<tr>` +
-      `<td style="${scriptCellStyle}">${esc(visual)}</td>` +
-      `<td style="${scriptCellStyle}width:140px;">${esc(shotType)}</td>` +
-      `<td style="${scriptCellStyle}">${esc(lines)}</td>` +
+      `<td style="${scriptCellStyle}">${esc(r.visual)}</td>` +
+      `<td style="${scriptCellStyle}width:140px;">${esc(r.shotType)}</td>` +
+      `<td style="${scriptCellStyle}">${esc(r.line)}</td>` +
       `</tr>`;
   });
-  if (body.length === 0) {
+  if (ugcBodyRowsRendered === 0) {
     html += `<tr><td colspan="3" style="${scriptCellStyle}text-align:center;color:#999;">No body rows parsed</td></tr>`;
   }
   html += `</table>`;
+  if (ugcBodyDrift) {
+    console.warn('[downloadUgcBriefDoc] Body table column drift detected and auto-corrected during render.');
+  }
 
   html += `<p style="margin-top:30px;font-size:9pt;color:#999;border-top:1px solid #ddd;padding-top:8px;font-family:Arial,sans-serif;">Generated by Viasox Marketing Intelligence</p>`;
   html += `</body></html>`;
