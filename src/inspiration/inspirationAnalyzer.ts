@@ -6,14 +6,28 @@
  * resulting tags/summary/learnings back into the store.
  */
 
-import { sendVisionMessage, type ContentBlock } from '../api/claude';
+import { sendVisionMessage, sendMessage, type ContentBlock } from '../api/claude';
 import type { InspirationItem, InspirationAnalysis } from '../engine/inspirationTypes';
+import { getEffectiveTags } from '../engine/inspirationTypes';
 import { buildInspirationAnalyzerPrompt } from './inspirationAnalyzerPrompt';
 import { stripDataUrlPrefix } from './frameExtractor';
 import { updateItem, getItem, getFrames, getAllItems } from './inspirationStore';
 
 const MAX_TOKENS = 8000;
 const MODEL = 'claude-opus-4-6';
+/** Cheap, fast model for the lightweight text-only naming pass. */
+const NAMING_MODEL = 'claude-sonnet-4-20250514';
+
+/** True when an item's title is still just its filename (or empty) — i.e.
+ *  the user never gave it a meaningful name, so we're free to auto-name it. */
+export function titleIsFilenameLike(item: InspirationItem): boolean {
+  const t = (item.title || '').trim();
+  if (!t) return true;
+  if (t === item.filename) return true;
+  // Looks like a filename if it ends with a known media/doc extension.
+  if (/\.(mp4|mov|webm|avi|mkv|m4v|gif|png|jpe?g|docx?|pdf|txt|md)$/i.test(t)) return true;
+  return false;
+}
 
 export interface AnalyzeVideoInput {
   item: InspirationItem;
@@ -32,12 +46,17 @@ export async function analyzeVideoItem(
   apiKey: string,
   signal?: AbortSignal
 ): Promise<InspirationItem> {
+  // Surface any explicit upload-time selections (ad type / short-form) to the
+  // analyzer prompt so it anchors to them instead of guessing.
+  const overrides = input.item.userTagOverrides;
   const prompt = buildInspirationAnalyzerPrompt({
     kind: 'video',
     filename: input.item.filename,
     durationSeconds: input.item.durationSeconds,
     frameCount: input.frames.length,
     attachedScriptText: input.attachedScriptText,
+    knownShortForm: overrides?.duration === '1-15 sec',
+    knownAdType: overrides?.adType && overrides.adType !== 'unknown' ? overrides.adType : undefined,
   });
 
   const content: ContentBlock[] = [];
@@ -69,10 +88,13 @@ export async function analyzeTextItem(
   apiKey: string,
   signal?: AbortSignal
 ): Promise<InspirationItem> {
+  const overrides = input.item.userTagOverrides;
   const prompt = buildInspirationAnalyzerPrompt({
     kind: 'brief',
     filename: input.item.filename,
     textContent: input.textContent,
+    knownShortForm: overrides?.duration === '1-15 sec',
+    knownAdType: overrides?.adType && overrides.adType !== 'unknown' ? overrides.adType : undefined,
   });
 
   const content: ContentBlock[] = [{ type: 'text', text: prompt }];
@@ -132,6 +154,7 @@ function parseAnalyzerResponse(raw: string): InspirationAnalysis {
     : [];
 
   return {
+    suggestedTitle: typeof obj.suggestedTitle === 'string' ? obj.suggestedTitle.trim() : undefined,
     tags: {
       duration: (tagsObj.duration as InspirationAnalysis['tags']['duration']) ?? 'unknown',
       adType: (tagsObj.adType as InspirationAnalysis['tags']['adType']) ?? 'unknown',
@@ -164,8 +187,16 @@ async function persistAnalysis(
   item: InspirationItem,
   analysis: InspirationAnalysis
 ): Promise<InspirationItem> {
+  // Auto-name: if the user never gave this item a meaningful title (it's
+  // still the raw filename), adopt the analyzer's suggestedTitle so the
+  // bank shows a clear, readable name instead of random characters. If the
+  // user DID set a custom title, we never overwrite it.
+  const shouldAutoName = titleIsFilenameLike(item) && !!analysis.suggestedTitle;
+  const nextTitle = shouldAutoName ? analysis.suggestedTitle! : item.title;
+
   const updated: InspirationItem = {
     ...item,
+    title: nextTitle,
     tags: analysis.tags,
     summary: analysis.summary,
     learnings: analysis.learnings,
@@ -181,6 +212,78 @@ async function persistAnalysis(
   };
   await updateItem(updated);
   return updated;
+}
+
+// ─── Lightweight backfill naming (text-only, cheap) ─────────────────────
+//
+// For items already analyzed before auto-naming existed (or any item still
+// showing a filename), generate a clear name WITHOUT re-running the full
+// vision analysis. Uses the stored analysis (summary, tags, hook, key
+// language) as context for a small text-only Claude call.
+
+/** Generate a short clear name for ONE item from its existing analysis.
+ *  Returns the new title, or null if the item has no analysis to work from. */
+export async function generateInspirationTitle(
+  item: InspirationItem,
+  apiKey: string,
+  signal?: AbortSignal,
+): Promise<string | null> {
+  if (item.status !== 'ready') return null;
+  const tags = getEffectiveTags(item);
+  const ctx: string[] = [];
+  if (item.summary) ctx.push(`Summary: ${item.summary}`);
+  if (tags.adType && tags.adType !== 'unknown') ctx.push(`Ad type: ${tags.adType}`);
+  if (tags.duration && tags.duration !== 'unknown') ctx.push(`Duration: ${tags.duration}`);
+  if (tags.angleType && tags.angleType !== 'unknown') ctx.push(`Angle: ${tags.angleType}`);
+  if (tags.hookStyle && tags.hookStyle !== 'unknown') ctx.push(`Hook style: ${tags.hookStyle}`);
+  if (tags.emotionalEntry) ctx.push(`Emotional entry: ${tags.emotionalEntry}`);
+  if (item.hookBreakdown) ctx.push(`Hook: ${item.hookBreakdown.slice(0, 300)}`);
+  if (item.keyLanguage) ctx.push(`Key language: ${item.keyLanguage.slice(0, 300)}`);
+  if (ctx.length === 0) return null;
+
+  const system = `You name advertising references for a creative team's inspiration bank. Given a short analysis of one ad, output ONLY a 4-to-7 word, Title Case name that captures the ad's SUBJECT + ANGLE + (if distinctive) FORMAT. No quotes, no punctuation at the ends, no file extensions, no preamble. Examples: "Nurse Neuropathy Bedtime Confession", "Pharmacy Compression Price Comparison", "Sock-Mark Reveal Short-Form UGC". Output the name and nothing else.`;
+  const user = `Analysis of the ad:\n${ctx.join('\n')}\n\nReturn the name only.`;
+
+  const raw = await sendMessage(system, user, apiKey, 40, NAMING_MODEL, signal);
+  // Clean: strip quotes/fences/trailing punctuation, collapse whitespace.
+  const name = raw
+    .replace(/^```.*$/gm, '')
+    .replace(/^["'\s]+|["'\s.]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Guard against the model returning something silly or empty.
+  if (!name || name.length > 80 || name.split(' ').length > 10) return null;
+  return name;
+}
+
+/** Backfill names across the bank. Only renames items whose title still
+ *  looks like a filename (so user-set names are never touched). Returns the
+ *  count renamed. Runs sequentially with a tiny delay so we don't hammer the
+ *  API; the naming model + tiny output make each call cheap. */
+export async function generateNamesForAll(
+  apiKey: string,
+  signal?: AbortSignal,
+  onProgress?: (done: number, total: number, title: string) => void,
+): Promise<number> {
+  const items = (await getAllItems()).filter(
+    (i) => i.status === 'ready' && titleIsFilenameLike(i),
+  );
+  let renamed = 0;
+  for (let i = 0; i < items.length; i++) {
+    if (signal?.aborted) break;
+    const item = items[i];
+    onProgress?.(i, items.length, item.title);
+    try {
+      const name = await generateInspirationTitle(item, apiKey, signal);
+      if (name) {
+        await updateItem({ ...item, title: name });
+        renamed++;
+      }
+    } catch (err) {
+      console.warn(`[generateNamesForAll] failed for ${item.id}:`, err);
+    }
+  }
+  return renamed;
 }
 
 /**

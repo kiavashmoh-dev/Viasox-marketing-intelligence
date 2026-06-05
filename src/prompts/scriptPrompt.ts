@@ -819,8 +819,20 @@ The pre-loaded concept must deeply shape EVERY section of the AGC production bri
 - **Shot Visuals:** The visual descriptions must paint the world of the concept. Every shot should feel like it belongs in the same story the concept is telling.` : ''}`
     : '';
 
-  const user = `Write a ${params.duration} ${params.adType} ad script for ${params.product} using the ${params.framework} framework.
+  const shortFormDirective = params.duration === '1-15 sec' ? `
 
+**⚡ SHORT-FORM AD (≤15 SECONDS) — THIS IS A DIFFERENT CRAFT. READ FIRST.**
+A ≤15s ad is NOT a shorter version of a long ad — it is its own format with its own rules. Apply ALL of these:
+- **ONE idea, period.** Pick the single sharpest insight from the concept and build the entire ad around it. No second angle, no subplot, no "and also." If you're tempted to make two points, cut one.
+- **Hook in the FIRST SECOND.** The scroll-stop must land in frame one — a striking visual, a pattern interrupt, or a sentence that's already mid-tension by word three. No throat-clearing, no "Have you ever…" wind-ups.
+- **Punch, don't build.** There is no time for a slow documentary arc. Every line advances or it's cut. Compress hook → problem → product → CTA into seconds; the product can appear far earlier than in a long ad.
+- **Spoken words are minimal and load-bearing.** At 150 wpm, 15 seconds ≈ 35-40 words MAX. Every word earns its place. Short sentences. Fragments are fine. Cut adjectives.
+- **The visual carries half the message.** Lean on what's SHOWN so the VO doesn't have to say it. A sock mark on screen needs no description.
+- **CTA is a flash, not a pitch.** One short line at the end. "See why 107K switched." Done.
+Do not pad to fill the table — a tight 5-row short-form body beats a bloated 12-row one.` : '';
+
+  const user = `Write a ${params.duration} ${params.adType} ad script for ${params.product} using the ${params.framework} framework.
+${shortFormDirective}
 **LENGTH TARGET:** ${durationTarget.sweetSpot} (sweet spot) — NEVER exceed ${durationTarget.hardCeiling} words hard ceiling. ⚠️ The tool has historically overshot ${params.duration} targets by 20-30%. Count every spoken word before finalizing, and CUT rather than ADD if unsure.
 
 **VO REQUIREMENT:** ${durationTarget.voRequired ? `MANDATORY — this ${params.duration} brief must have VO or spoken dialogue in every body row. Text-only silent b-roll is FORBIDDEN at this length.` : `OPTIONAL — you may choose text-only/no-VO OR include VO. Both are valid for ${params.duration} short-form.`}

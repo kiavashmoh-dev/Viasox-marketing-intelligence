@@ -127,6 +127,7 @@ const OUTPUT_CONTRACT = `# OUTPUT CONTRACT — strict JSON only
 Return EXACTLY this shape, no extra keys, no markdown:
 
 {
+  "suggestedTitle": "A short, clear, human-readable NAME for this ad — 4 to 7 words, Title Case, no quotes. It must let a strategist scanning the bank instantly understand what this ad IS. Capture the SUBJECT + ANGLE + (when distinctive) the FORMAT. Good: 'Nurse Neuropathy Bedtime Confession', 'Pharmacy Compression Price Comparison', 'Sock-Mark Reveal — Short-Form UGC', 'Diabetic Foot Fear Documentary'. Bad: generic ('Great Sock Ad'), filename-like, or longer than 7 words. Never include the file extension or random characters.",
   "tags": {
     "duration": "...",
     "adType": "...",
@@ -167,7 +168,34 @@ export interface AnalyzerPromptInput {
   durationSeconds?: number;
   /** Number of frames the user is sending in the same message. */
   frameCount?: number;
+  /** When the uploader explicitly flagged this as short-form (≤15s), the
+   *  analyzer is told so directly — it then sets duration to "1-15 sec"
+   *  and analyzes it through the short-form lens (the visual treatment IS
+   *  the ad; the hook lands in the first second; structure is punch not
+   *  build). More reliable than inferring duration from frames. */
+  knownShortForm?: boolean;
+  /** When the uploader explicitly chose an ad type, pass it so the analyzer
+   *  anchors its tagging to that instead of guessing. */
+  knownAdType?: string;
 }
+
+const SHORT_FORM_LENS = `# ⚡ THIS IS A SHORT-FORM AD (≤15 seconds) — ANALYZE IT AS SUCH
+
+The uploader flagged this as short-form. Short-form ads are a FUNDAMENTALLY
+different craft from longer ads, and the bank uses them to teach short-form
+generation. Your analysis must reflect that:
+
+- **Duration:** set "duration": "1-15 sec" (do not second-guess this).
+- **The hook is everything.** In ≤15s there is no slow build — the first
+  1-2 seconds must stop the scroll. Your hookBreakdown must be frame-precise.
+- **The visual treatment IS the ad.** Be EXHAUSTIVE in visualBlueprint:
+  text presentation mode, cut count, pacing, the single sustained element.
+  A short-form ad is reproduced almost entirely from its visual blueprint.
+- **Structure is compression, not omission.** Identify how the ad collapses
+  hook → problem → product → CTA into seconds. What did it CUT to fit? What
+  single idea carries the whole thing?
+- **Learnings must be short-form-specific** — pacing, the one-idea rule,
+  how the product is introduced fast without feeling abrupt.`;
 
 export function buildInspirationAnalyzerPrompt(input: AnalyzerPromptInput): string {
   const lines: string[] = [];
@@ -177,9 +205,22 @@ export function buildInspirationAnalyzerPrompt(input: AnalyzerPromptInput): stri
   lines.push('');
   lines.push(OUTPUT_CONTRACT);
   lines.push('');
+  // Short-form lens goes near the top (high priority) when the uploader
+  // flagged it, so the model reads it before producing the JSON.
+  if (input.knownShortForm) {
+    lines.push(SHORT_FORM_LENS);
+    lines.push('');
+  }
+
   lines.push('# THIS SUBMISSION');
   lines.push(`Kind: ${input.kind}`);
   lines.push(`Filename: ${input.filename}`);
+  if (input.knownAdType) {
+    lines.push(`Ad type (set explicitly by the uploader — anchor your tagging to this): ${input.knownAdType}`);
+  }
+  if (input.knownShortForm) {
+    lines.push('Duration (set explicitly by the uploader): 1-15 sec (short-form).');
+  }
 
   if (input.kind === 'video') {
     if (input.durationSeconds) {

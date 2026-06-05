@@ -43,6 +43,11 @@ export interface InspirationTags {
 /** Output of the analyzer agent for a single inspiration item. */
 export interface InspirationAnalysis {
   tags: InspirationTags;
+  /** A short, clear, human-readable name for this ad (4-7 words) — captures
+   *  the ad's essence (subject + angle + format) so it's identifiable in the
+   *  bank at a glance, instead of a meaningless filename. e.g. "Nurse
+   *  neuropathy bedtime confession", "Pharmacy compression price comparison". */
+  suggestedTitle?: string;
   /** Why this is good — 2-4 sentences */
   summary: string;
   /** Concrete techniques to apply — 3-5 bullets */

@@ -28,6 +28,7 @@ import {
   analyzeTextItem,
   markFailed,
   reanalyzeAllItems,
+  generateNamesForAll,
 } from '../../inspiration/inspirationAnalyzer';
 import type { AdType, AngleType, ProductCategory } from '../../engine/types';
 
@@ -162,6 +163,8 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
   const [showUpload, setShowUpload] = useState(false);
   const [reanalyzing, setReanalyzing] = useState(false);
   const [reanalyzeProgress, setReanalyzeProgress] = useState('');
+  const [naming, setNaming] = useState(false);
+  const [nameProgress, setNameProgress] = useState('');
 
   // ── New tabbed-folder filter (replaces the old multi-dropdown filter row) ──
   const [activeFolder, setActiveFolder] = useState<FolderId>('all');
@@ -217,9 +220,19 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
     kind: InspirationKind,
     title: string,
     attachedScript: string,
+    adType: string,
+    isShortForm: boolean,
   ) => {
     setError(null);
     setUploadStatus(`Preparing ${file.name}…`);
+
+    // Build user tag overrides from the explicit upload selections. These
+    // win over the analyzer's auto-detection (via getEffectiveTags) AND are
+    // surfaced to the analyzer prompt so it anchors to them. The analyzer
+    // also reads these to apply the short-form lens.
+    const userTagOverrides: Partial<InspirationItem['tags']> = {};
+    if (adType) userTagOverrides.adType = adType as InspirationItem['tags']['adType'];
+    if (isShortForm) userTagOverrides.duration = '1-15 sec';
 
     const id = generateId();
     const baseItem: InspirationItem = {
@@ -231,12 +244,13 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
       fileSize: file.size,
       mimeType: file.type,
       tags: {
-        duration: 'unknown',
-        adType: 'unknown',
+        duration: isShortForm ? '1-15 sec' : 'unknown',
+        adType: (adType || 'unknown') as InspirationItem['tags']['adType'],
         angleType: 'unknown',
         isFullAi: false,
         customTags: [],
       },
+      userTagOverrides: Object.keys(userTagOverrides).length > 0 ? userTagOverrides : undefined,
       summary: '',
       learnings: [],
       styleNotes: '',
@@ -325,6 +339,34 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
     await reload();
   };
 
+  const handleGenerateNames = async () => {
+    // Only items still showing a filename get renamed (user-set names are
+    // never touched). Cheap text-only call per item.
+    const candidates = items.filter(
+      (i) => i.status === 'ready' && (!(i.title || '').trim() || i.title === i.filename || /\.(mp4|mov|webm|avi|mkv|m4v|gif|png|jpe?g|docx?|pdf|txt|md)$/i.test(i.title)),
+    );
+    if (candidates.length === 0) {
+      setNameProgress('All items already have clear names.');
+      setTimeout(() => setNameProgress(''), 4000);
+      return;
+    }
+    if (!confirm(`Generate clear names for ${candidates.length} item${candidates.length === 1 ? '' : 's'} that still show a filename? Uses one quick API call each. Items you've already named are left untouched.`)) return;
+    setNaming(true);
+    setNameProgress(`Starting… 0/${candidates.length}`);
+    try {
+      const renamed = await generateNamesForAll(apiKey, undefined, (d, total, title) => {
+        setNameProgress(`${d + 1}/${total}: ${title.slice(0, 40)}`);
+      });
+      setNameProgress(`Done — ${renamed} item${renamed === 1 ? '' : 's'} named`);
+      await reload();
+    } catch (err) {
+      setNameProgress(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setNaming(false);
+      setTimeout(() => setNameProgress(''), 5000);
+    }
+  };
+
   const handleReanalyzeAll = async () => {
     const readyCount = items.filter((i) => i.status === 'ready').length;
     if (readyCount === 0) return;
@@ -371,8 +413,16 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
             </div>
             <div className="flex gap-2">
               <button
+                onClick={handleGenerateNames}
+                disabled={naming || reanalyzing || items.filter((i) => i.status === 'ready').length === 0}
+                className="px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Generate short, clear names for any items still showing a filename"
+              >
+                {naming ? 'Naming…' : '✦ Generate Names'}
+              </button>
+              <button
                 onClick={handleReanalyzeAll}
-                disabled={reanalyzing || items.filter((i) => i.status === 'ready').length === 0}
+                disabled={reanalyzing || naming || items.filter((i) => i.status === 'ready').length === 0}
                 className="px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-100 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Re-analyze all items to extract product bridge, key language, and line flow insights"
               >
@@ -391,6 +441,13 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
           {reanalyzeProgress && (
             <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${reanalyzing ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
               {reanalyzing ? '⏳ ' : '✓ '}{reanalyzeProgress}
+            </div>
+          )}
+
+          {/* Naming progress */}
+          {nameProgress && (
+            <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${naming ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+              {naming ? '⏳ ' : '✓ '}{nameProgress}
             </div>
           )}
 
@@ -680,19 +737,30 @@ function UploadDialog({
   onSubmit,
 }: {
   onClose: () => void;
-  onSubmit: (file: File, kind: InspirationKind, title: string, script: string) => void;
+  onSubmit: (
+    file: File,
+    kind: InspirationKind,
+    title: string,
+    script: string,
+    adType: string,
+    isShortForm: boolean,
+  ) => void;
 }) {
   const [kind, setKind] = useState<InspirationKind>('video');
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [attachedScript, setAttachedScript] = useState('');
+  // Two explicit tags the uploader sets — these seed userTagOverrides so the
+  // analyzer can't mis-tag them, and the item lands in the right folders.
+  const [adType, setAdType] = useState<string>(''); // '' = let the analyzer decide
+  const [isShortForm, setIsShortForm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const accept = kind === 'video' ? 'video/*' : '.docx,.pdf,.txt,.md';
 
   const handleSubmit = () => {
     if (!file) return;
-    onSubmit(file, kind, title, attachedScript);
+    onSubmit(file, kind, title, attachedScript, adType, isShortForm);
   };
 
   return (
@@ -740,6 +808,45 @@ function UploadDialog({
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+          {/* Two explicit tags: Ad Type + Short-form. Both seed
+              userTagOverrides so the analyzer anchors to them instead of
+              guessing, and the item is reliably filed in the right folders. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Ad Type <span className="text-slate-400 font-normal">(recommended)</span>
+              </label>
+              <select
+                value={adType}
+                onChange={(e) => setAdType(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Let the analyzer decide</option>
+                {AD_TYPES.filter((t) => t !== 'all').map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Medium</label>
+              <button
+                type="button"
+                onClick={() => setIsShortForm(!isShortForm)}
+                className={`w-full px-3 py-2 rounded-lg text-sm font-medium border transition-colors flex items-center justify-center gap-2 ${
+                  isShortForm
+                    ? 'bg-warm-amber/15 text-warm-amber border-warm-amber/40'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <span>{isShortForm ? '⚡' : '○'}</span>
+                {isShortForm ? 'Short-form (under 15s)' : 'Mark as short-form?'}
+              </button>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400 -mt-2">
+            Short-form ads (≤15s) flow completely differently. Flagging it here makes the analysis short-form-aware and files it in the Short Form folder — used heavily when generating short-form briefs.
+          </p>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">File</label>
