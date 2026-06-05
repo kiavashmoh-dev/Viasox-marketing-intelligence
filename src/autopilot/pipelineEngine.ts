@@ -645,6 +645,11 @@ export async function runConceptPhase(
       const inspirationCtx = pinned
         ? pinned.richContext
         : (deep && deep.hasContent ? deep.richContext : '');
+      // Tells the strategist whether it's following ONE pinned reference or
+      // curating from the matched palette (or has nothing to work from).
+      const inspirationMode: 'pinned' | 'matched' | 'none' = pinned
+        ? 'pinned'
+        : (deep && deep.hasContent ? 'matched' : 'none');
 
       // ── Pre-compute angle pattern history (what's worked for this angle+product) ──
       const anglePatternTable = formatAnglePatternsForEvaluator(
@@ -669,6 +674,7 @@ export async function runConceptPhase(
           funnelStage: task.scriptParamsBase.funnelStage,
           primaryTalkingPoint: task.anglesParams.primaryTalkingPoint,
           inspirationContext: inspirationCtx,
+          inspirationMode,
           anglePatternTable,
           memoryBriefing,
         },
@@ -908,6 +914,9 @@ ${task.duration === '1-15 sec' ? `SHORT FORM — single-moment concepts valid, n
         const inspirationCtx = pinned
           ? pinned.richContext
           : (deep && deep.hasContent ? deep.richContext : '');
+        const inspirationMode: 'pinned' | 'matched' | 'none' = pinned
+          ? 'pinned'
+          : (deep && deep.hasContent ? 'matched' : 'none');
 
         const anglePatternTableRetry = formatAnglePatternsForEvaluator(
           task.parsed.angle,
@@ -930,6 +939,7 @@ ${task.duration === '1-15 sec' ? `SHORT FORM — single-moment concepts valid, n
             funnelStage: task.scriptParamsBase.funnelStage,
             primaryTalkingPoint: task.anglesParams.primaryTalkingPoint,
             inspirationContext: inspirationCtx,
+            inspirationMode,
             anglePatternTable: anglePatternTableRetry,
             memoryBriefing,
           },
@@ -1610,6 +1620,9 @@ After the diagnosis, proceed to generate the complete new brief.`;
     const regenInspirationCtx = pinned
       ? pinned.richContext
       : (deep && deep.hasContent ? deep.richContext : '');
+    const inspirationMode: 'pinned' | 'matched' | 'none' = pinned
+      ? 'pinned'
+      : (deep && deep.hasContent ? 'matched' : 'none');
 
     const anglePatternTable = formatAnglePatternsForEvaluator(
       task.parsed.angle,
@@ -1632,6 +1645,7 @@ After the diagnosis, proceed to generate the complete new brief.`;
         funnelStage: task.scriptParamsBase.funnelStage,
         primaryTalkingPoint: task.anglesParams.primaryTalkingPoint,
         inspirationContext: regenInspirationCtx,
+        inspirationMode,
         anglePatternTable,
         memoryBriefing: memoryBriefing || undefined,
       },

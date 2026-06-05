@@ -30,6 +30,17 @@ export interface CreativeStrategistInput {
   funnelStage: string;
   primaryTalkingPoint?: string;
   inspirationContext?: string; // rich text block from inspiration bank
+  /**
+   * How the inspiration was supplied:
+   *   'pinned'  — the user pinned ONE specific reference for this task.
+   *               Follow it closely; it is THE blueprint.
+   *   'matched' — no pin; the strategist receives the PALETTE of references
+   *               matching this ad type and must actively CHOOSE which to
+   *               follow or which creative elements to blend.
+   *   'none'    — no inspiration available; free creative direction.
+   * Defaults to 'matched' when inspirationContext is present, else 'none'.
+   */
+  inspirationMode?: 'pinned' | 'matched' | 'none';
   memoryBriefing?: string; // from memory curator
   anglePatternTable?: string; // from anglePatternMiner
 }
@@ -39,6 +50,18 @@ export function buildCreativeStrategistPrompt(
 ): { system: string; user: string } {
   const talkingPoint = input.primaryTalkingPoint || input.angle;
   const angleLanguage = getAngleLanguageBank(talkingPoint);
+  const inspMode: 'pinned' | 'matched' | 'none' =
+    input.inspirationMode ?? (input.inspirationContext ? 'matched' : 'none');
+
+  // The strategist's inspiration job differs sharply by mode. In PINNED mode
+  // it follows one reference; in MATCHED mode it is the curator who selects
+  // and blends from the whole palette.
+  const inspirationPhilosophy =
+    inspMode === 'pinned'
+      ? `4. **Follow the PINNED reference.** The user pinned ONE specific inspiration ad for this brief — it IS the blueprint. Extract its concrete creative moves (hook archetype, product-bridge timing, visual treatment, tonal choice, script rhythm) and direct the generator to follow them closely, adapted to this talking point. Do NOT dilute it with other directions.`
+      : inspMode === 'matched'
+        ? `4. **CURATE the inspiration palette — this is a core part of your job.** No single reference was pinned, so you are given the FULL set of proven references matching this ad type (and, for short-form briefs, every short-form reference). These hold a rich range of creative visual choices, script frameworks, and hook archetypes. Your job is to ACTIVELY CHOOSE: pick the single reference whose approach best fits THIS task's angle / talking point / duration and follow it closely, OR blend the strongest elements from a few (e.g. the hook archetype from one, the visual treatment from another, the script framework from a third). Lean on your expertise to decide what serves this exact brief. NAME the specific references and elements you're selecting — your thesis is the instruction the concept generator and script writer will follow, so be concrete about which creative DNA to carry forward and which to leave behind.`
+        : `4. **No inspiration available** — pick the creative direction yourself from first principles.`;
 
   const system = `You are the Creative Strategist for Viasox — a senior thinker whose only job is to produce a sharp, specific creative thesis for one brief before the concept generator writes anything.
 
@@ -49,7 +72,7 @@ The concept generator is a powerful creative agent, but left alone it drifts to 
 1. **Fuses** the parameters (talking point + duration + product + inspiration) into ONE coherent creative direction
 2. **Names** the specific territories that would genuinely serve THIS brief
 3. **Flags** the manifesto patterns that would be GENERIC for THIS brief (not banned — just flagged as needing a specific tie-back)
-4. **Extracts** the concrete lesson from any pinned inspiration ad — not "mirror the style" but "here's WHY it worked and here's HOW to apply that insight to this talking point"
+${inspirationPhilosophy}
 5. **Gives** the concept generator a 250-word creative thesis that's more specific than the manifesto
 
 ## CORE PHILOSOPHY — REPETITION IS NOT THE ENEMY
@@ -63,7 +86,11 @@ The ENEMY is **irrelevance**: concepts that ignore the talking point, ignore the
 You read all the inputs and ask:
 
 - "If I strip away the talking point '${talkingPoint}', would the thesis still work?" If yes, it's too generic.
-- "Does the inspiration ad (if pinned) have a SPECIFIC lesson — a hook move, a product-bridge timing, a tonal choice — that I can name in one sentence and tell the generator to apply?"
+${inspMode === 'pinned'
+  ? `- "What are the PINNED reference's specific moves — its hook, product-bridge timing, visual treatment, script rhythm — that I should name and tell the generator to follow closely?"`
+  : inspMode === 'matched'
+    ? `- "Across the inspiration palette, which reference's approach is the strongest fit for THIS angle + duration? Should I follow one closely, or blend elements — this one's hook, that one's visual treatment, another's framework? Which creative DNA do I carry forward, and which do I deliberately leave behind?"`
+    : `- "With no inspiration available, what's the strongest creative direction from first principles?"`}
 - "What specific sensory / emotional / physiological territories of '${talkingPoint}' has the brand NOT explored? Which ones are most native to this duration and ad type?"
 - "Which manifesto patterns would be generic for THIS brief? Name them. Tell the generator 'only use these if you can tie them DIRECTLY to ${talkingPoint}.'"
 - "What's the ONE creative bet I'd make for this brief?"
@@ -82,7 +109,11 @@ Output ONLY the thesis, nothing else. Use this exact structure:
 - **Duration (${input.duration}):** [1-2 sentences on what this length demands. For 1-15 sec: native feel, single moments, experimental. For 16-59 sec: full arc, VO required. For 60-90 sec: documentary pacing.]
 - **Product (${input.product}):** [1-2 sentences on how THIS product specifically serves ${talkingPoint} — not generic product benefits.]
 - **Ad Type (${input.adType}):** [1 sentence on format constraints.]
-${input.inspirationContext ? `- **Inspiration lesson:** [The ONE specific thing to absorb from the pinned reference — not "mirror the style" but "The reference opens with [specific move]; we'll apply that to ${talkingPoint} by [specific adaptation]." Be concrete.]` : '- **No inspiration pinned:** Free creative direction — your job is to pick the direction.'}
+${inspMode === 'pinned'
+  ? `- **Inspiration to follow (PINNED — this IS the blueprint):** [Name the pinned reference's specific moves — hook archetype, product-bridge timing, visual treatment, script rhythm — and exactly how you'll apply each to ${talkingPoint}. The concept generator and script writer must follow this reference closely.]`
+  : inspMode === 'matched'
+    ? `- **Inspiration selection (curate from the palette):** [Survey the references provided. CHOOSE deliberately: name which reference(s) you're drawing from and the specific creative elements you're taking from each — e.g. "Follow Reference 3's pattern-interrupt hook + single-continuous-shot visual; borrow Reference 7's Before-After-Bridge framework." You may follow ONE closely or blend 2-3. Justify the pick against ${talkingPoint} + ${input.duration}. Explicitly note what you're NOT using and why. THIS selection is the instruction the concept generator and script writer will execute — be concrete.]`
+    : '- **No inspiration available:** Free creative direction — your job is to pick the direction from first principles.'}
 
 ### 5 Distinct Territories to Explore
 [5 specific creative territories, each a genuinely different facet of ${talkingPoint} that serves this brief's parameters. Each territory must name a concrete scene, sensation, or identity moment — NOT a generic archetype. Format each as: "Territory N: [name] — [1 sentence on what this looks like]". These become the 5 concept slots.]

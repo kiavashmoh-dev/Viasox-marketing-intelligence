@@ -154,18 +154,18 @@ export function buildDeepInspirationContext(picks: ScoredInspiration[]): string 
 
   const lines: string[] = [];
   lines.push('');
-  lines.push('# ⚠️ INSPIRATION BANK — MANDATORY CREATIVE BLUEPRINT (DEEP MIRRORING MODE)');
+  lines.push('# 🎨 INSPIRATION BANK — PROVEN CREATIVE PALETTE FOR THIS AD TYPE');
   lines.push('');
   lines.push(
-    `The following ${picks.length} reference example${picks.length === 1 ? '' : 's'} from the Viasox Inspiration Bank ${picks.length === 1 ? 'was' : 'were'} hand-picked by the user specifically for this brief because ${picks.length === 1 ? 'it matches' : 'they match'} the ad type, angle, product, duration, and format. ${picks.length === 1 ? 'It is' : 'These are'} the proven creative blueprint${picks.length === 1 ? '' : 's'} the user wants you to mirror.`
+    `The following ${picks.length} reference${picks.length === 1 ? '' : 's'} from the Viasox Inspiration Bank match this brief's ad type, angle, product, and duration. Together they are the proven creative PALETTE for this kind of ad — a range of hook archetypes, script frameworks, and visual treatments that have worked. They are NOT all meant to be mirrored at once.`
   );
   lines.push('');
   lines.push(
-    `**THIS IS NOT OPTIONAL INSPIRATION — IT IS THE BLUEPRINT.** Every concept you generate MUST visibly echo the reference${picks.length === 1 ? '' : 's'}: same hook archetype, same emotional entry point, same narrative shape, same pacing rhythm, same product-bridge timing, same key-language register. Do NOT ignore the bank in favor of generic manifesto patterns. The user selected ${picks.length === 1 ? 'this reference' : 'these references'} because ${picks.length === 1 ? 'it represents' : 'they represent'} the creative direction ${picks.length === 1 ? 'they' : 'they'} want — your job is to adapt the blueprint to this brief's specific talking point and product, NOT to invent a different direction.`
+    `**HOW TO USE THE PALETTE — FOLLOW THE CREATIVE STRATEGIST'S SELECTION.** The Creative Strategist's thesis (provided above this block) has already studied this palette and chosen which reference(s) and which specific elements — a hook from one, a visual treatment from another, a framework from a third — to carry into this brief. Your job is to EXECUTE that selection faithfully: mirror the chosen references' hook archetype, emotional entry, narrative shape, pacing, and product-bridge timing at the execution level. Do NOT ignore the bank in favor of generic manifesto patterns, and do NOT try to average all ${picks.length} references together — follow the strategist's specific picks. If the thesis named Reference 3's hook and Reference 6's visual treatment, those are what you reproduce.`
   );
   lines.push('');
   lines.push(
-    `**REJECTION RULE:** If a concept does not visibly echo the reference${picks.length === 1 ? "'s" : "s'"} hook style, narrative structure, AND product-bridge timing, that concept is invalid. A concept is not "done" until you can point to the reference element it mirrors.`
+    `**RELEVANCE RULE:** Every concept must visibly echo the specific reference element(s) the strategist selected — you should be able to point to which reference's hook, structure, or visual treatment a concept is built on. A concept that draws on NONE of the palette has drifted to generic territory and is invalid.`
   );
   lines.push('');
 
