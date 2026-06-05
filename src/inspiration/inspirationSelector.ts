@@ -70,20 +70,31 @@ export async function selectInspiration(
   );
   if (candidates.length === 0) return [];
 
-  // Step 2: HARD FILTERS — drop anything whose ad type or full-AI flag
-  // doesn't match the requested brief. A Full AI brief must NEVER see
-  // live-action references and vice versa, regardless of how well the
-  // other tags align.
-  if (opts.adType) {
-    candidates = candidates.filter((item) => {
-      const tags = getEffectiveTags(item);
-      return tags.adType === opts.adType;
-    });
-  }
+  // Step 2: HARD FILTERS.
+  //
+  // (a) Full-AI boundary is ALWAYS hard. AI-generated and live-action
+  //     references are fundamentally different visual universes and must
+  //     never mix — not even under the short-form exception below.
   if (opts.isFullAi !== undefined) {
     candidates = candidates.filter((item) => {
       const tags = getEffectiveTags(item);
       return tags.isFullAi === opts.isFullAi;
+    });
+  }
+
+  // (b) Ad type is a STRICT hard filter — an Ecom brief sees ONLY Ecom
+  //     references, never UGC / Spokesperson / etc. EXCEPTION: when the
+  //     brief is short-form (1-15 sec), ALL short-form references are
+  //     eligible regardless of ad type. Short-form is its own craft and
+  //     its pacing/structure lessons cross ad types, so every short-form
+  //     reference is in play for any short-form brief.
+  const taskIsShortForm = opts.duration === '1-15 sec';
+  if (opts.adType) {
+    candidates = candidates.filter((item) => {
+      const tags = getEffectiveTags(item);
+      if (tags.adType === opts.adType) return true; // ad-type match
+      if (taskIsShortForm && tags.duration === '1-15 sec') return true; // short-form punch-through
+      return false;
     });
   }
   if (candidates.length === 0) return [];

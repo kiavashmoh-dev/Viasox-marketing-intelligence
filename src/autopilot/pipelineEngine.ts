@@ -166,7 +166,11 @@ export async function loadDeepInspirationForTask(
       fullAiSpec: task.scriptParamsBase.fullAiSpecification,
       fullAiVisualStyle: task.scriptParamsBase.fullAiVisualStyle,
       framework: undefined,
-      maxResults: 5,
+      // Pull up to 10 references per brief (was 5). The context builder
+      // renders the top 5 as deep "mirror this" blueprints and the rest
+      // as a lighter breadth tier — so the brief draws on the variety of
+      // the bank without 10 conflicting full blueprints diluting the signal.
+      maxResults: 10,
     });
 
     if (!picks.length) return empty;

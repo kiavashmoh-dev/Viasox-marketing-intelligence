@@ -139,8 +139,18 @@ export async function getInspirationContextBlock(
  * Use this when the goal is for generated concepts and scripts to genuinely
  * mirror reference DNA, not just take a vague stylistic cue.
  */
+/** How many references get the FULL deep "mirror this exactly" treatment.
+ *  Picks beyond this are rendered as a lighter breadth tier (variety without
+ *  flooding the prompt with conflicting full blueprints). */
+const DEEP_REFERENCE_CAP = 5;
+
 export function buildDeepInspirationContext(picks: ScoredInspiration[]): string {
   if (picks.length === 0) return '';
+
+  // Split into the deep tier (full blueprints) and the breadth tier
+  // (lightweight references that show variety without bloating the prompt).
+  const deepPicks = picks.slice(0, DEEP_REFERENCE_CAP);
+  const breadthPicks = picks.slice(DEEP_REFERENCE_CAP);
 
   const lines: string[] = [];
   lines.push('');
@@ -187,7 +197,7 @@ export function buildDeepInspirationContext(picks: ScoredInspiration[]): string 
   }
   lines.push('');
 
-  picks.forEach((pick, idx) => {
+  deepPicks.forEach((pick, idx) => {
     const item = pick.item;
     const tags = getEffectiveTags(item);
     const tagPills: string[] = [];
@@ -303,6 +313,42 @@ export function buildDeepInspirationContext(picks: ScoredInspiration[]): string 
       lines.push('');
     }
   });
+
+  // ── Breadth tier — lighter references for variety ──────────────────────
+  // These show the generator the BREADTH of relevant references without
+  // flooding the prompt with full "reproduce this exactly" blueprints
+  // (which would conflict). The generator draws fresh hooks, angles, and
+  // language from these to diversify across a batch, while the deep tier
+  // above anchors the core execution.
+  if (breadthPicks.length > 0) {
+    lines.push('');
+    lines.push(`## ADDITIONAL REFERENCES FOR VARIETY (${breadthPicks.length} more — lighter detail)`);
+    lines.push('');
+    lines.push(
+      "These also match this brief's context. They are NOT the primary blueprint, but they show the RANGE of proven approaches available. Pull fresh hook archetypes, emotional entries, and language from these to keep concepts diverse — especially when generating multiple briefs that would otherwise repeat the same few references. Translate STYLE and STRUCTURE, never copy literal content.",
+    );
+    lines.push('');
+    breadthPicks.forEach((pick, idx) => {
+      const item = pick.item;
+      const tags = getEffectiveTags(item);
+      const pills: string[] = [];
+      if (tags.adType && tags.adType !== 'unknown') pills.push(tags.adType);
+      if (tags.angleType && tags.angleType !== 'unknown') pills.push(tags.angleType);
+      if (tags.duration && tags.duration !== 'unknown') pills.push(tags.duration);
+      if (tags.hookStyle && tags.hookStyle !== 'unknown') pills.push(`hook: ${tags.hookStyle}`);
+      if (tags.emotionalEntry) pills.push(`emotion: ${tags.emotionalEntry}`);
+      lines.push(`### Reference ${DEEP_REFERENCE_CAP + idx + 1}: ${item.title}${item.starred ? '  ★' : ''}`);
+      lines.push(`Tags: ${pills.join(' · ')}`);
+      if (item.summary) lines.push(`Why it works: ${item.summary.trim()}`);
+      if (item.learnings.length) {
+        lines.push('Key moves: ' + item.learnings.slice(0, 2).map((l) => l.trim()).join(' | '));
+      }
+      if (item.hookBreakdown) {
+        lines.push(`Hook: ${item.hookBreakdown.trim().slice(0, 220)}`);
+      }
+      lines.push('');
+    });
+  }
 
   lines.push('# END INSPIRATION BANK');
   lines.push('');
