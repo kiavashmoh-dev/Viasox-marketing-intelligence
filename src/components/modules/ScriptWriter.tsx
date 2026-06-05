@@ -32,6 +32,7 @@ function brainTemplateFromAdType(adType: AdType | undefined): BrainBriefTemplate
   return undefined;
 }
 import { getInspirationContextBlock } from '../../inspiration/inspirationInjection';
+import { CREATIVE_MODEL } from '../../config/models';
 import { downloadBriefForAdType } from '../../utils/downloadUtils';
 import { getAllProducts, getAllAdTypes, getAllFrameworks } from '../../utils/customOptionsRegistry';
 import ResultsView from '../ResultsView';
@@ -214,7 +215,7 @@ export default function ScriptWriter({ analysis, apiKey, resourceContext, onBack
       },
       { apiKey, reviews: analysis },
     );
-    generate(system + buildResourceContext(resourceContext) + brain.addendum, finalUser, maxTokens, 'claude-opus-4-6');
+    generate(system + buildResourceContext(resourceContext) + brain.addendum, finalUser, maxTokens, CREATIVE_MODEL);
   };
 
   if (result || loading || error) {

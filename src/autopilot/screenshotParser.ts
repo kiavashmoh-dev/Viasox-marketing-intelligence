@@ -1,5 +1,6 @@
 import { sendVisionMessage } from '../api/claude';
 import type { ParsedAsanaTask } from '../engine/autopilotTypes';
+import { UTILITY_MODEL } from '../config/models';
 
 const EXTRACTION_SYSTEM = `You extract structured task data from Asana board screenshots. Return ONLY valid JSON — no explanation, no markdown fences, no extra text.`;
 
@@ -47,7 +48,7 @@ export async function parseAsanaScreenshot(
     ],
     apiKey,
     6000,
-    'claude-sonnet-4-20250514',
+    UTILITY_MODEL,
     signal,
   );
 

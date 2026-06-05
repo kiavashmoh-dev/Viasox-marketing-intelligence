@@ -12,11 +12,12 @@ import { getEffectiveTags } from '../engine/inspirationTypes';
 import { buildInspirationAnalyzerPrompt } from './inspirationAnalyzerPrompt';
 import { stripDataUrlPrefix } from './frameExtractor';
 import { updateItem, getItem, getFrames, getAllItems } from './inspirationStore';
+import { CREATIVE_MODEL, UTILITY_MODEL } from '../config/models';
 
 const MAX_TOKENS = 8000;
-const MODEL = 'claude-opus-4-6';
+const MODEL = CREATIVE_MODEL;
 /** Cheap, fast model for the lightweight text-only naming pass. */
-const NAMING_MODEL = 'claude-sonnet-4-20250514';
+const NAMING_MODEL = UTILITY_MODEL;
 
 /** True when an item's title is still just its filename (or empty) — i.e.
  *  the user never gave it a meaningful name, so we're free to auto-name it. */

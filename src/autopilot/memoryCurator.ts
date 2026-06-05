@@ -19,8 +19,9 @@ import {
   saveCuratorBriefing,
 } from './memoryStore';
 import type { CreativeIntelligenceBriefing } from './memoryTypes';
+import { CREATIVE_MODEL } from '../config/models';
 
-const OPUS = 'claude-opus-4-6';
+const OPUS = CREATIVE_MODEL;
 
 // ─── Build Curator Input ────────────────────────────────────────────────────
 

@@ -13,7 +13,8 @@ import { buildBrainAddendum } from '../brain/contextAssembler';
 import type { BrainProduct } from '../brain/brainTypes';
 import { ensureCurrentBrainSession } from '../brain/brainSession';
 
-const OPUS = 'claude-opus-4-6';
+import { CREATIVE_MODEL } from '../config/models';
+const OPUS = CREATIVE_MODEL;
 const MAX_TOKENS = 3000;
 
 /** Best-effort mapping from CreativeStrategistInput's freeform product

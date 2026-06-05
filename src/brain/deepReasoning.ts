@@ -11,6 +11,7 @@
 import { sendMessage } from '../api/claude';
 import type { BrainTaskDescriptor, SelectedSlices } from './brainTypes';
 import { isDeepReasoningEnabled } from './brainConfig';
+import { UTILITY_MODEL } from '../config/models';
 
 /** Decide whether the deep-reasoning call should fire for a given task.
  *  Checks the per-task heuristics on top of the global enable flag. */
@@ -83,9 +84,9 @@ export async function runDeepReasoning(
     userMessage,
     apiKey,
     DEEP_REASONING_MAX_TOKENS,
-    // Sonnet is fine here — deep reasoning is structured pattern-matching,
-    // doesn't need Opus. Cost stays low.
-    'claude-sonnet-4-20250514',
+    // Utility model (Sonnet) — deep reasoning is structured pattern-matching,
+    // doesn't need the creative model. Cost stays low.
+    UTILITY_MODEL,
   );
 }
 

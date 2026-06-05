@@ -17,6 +17,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sendChatMessage, type ChatMessage } from '../../api/claude';
+import { CREATIVE_MODEL } from '../../config/models';
 import type { FullAnalysis, ProductCategory, PersonaChannel, MarketRegion } from '../../engine/types';
 import { getProductAnalysis } from '../../prompts/systemBase';
 import { buildMarketContext } from '../../data/marketIntelligence';
@@ -327,7 +328,7 @@ export default function PersonaChat({
         newApiMessages,
         apiKey,
         12000,
-        'claude-opus-4-6',
+        CREATIVE_MODEL,
         controller.signal,
       );
 

@@ -29,6 +29,7 @@ import BatchResultsView from '../autopilot/BatchResultsView';
 import StrategySessionUI from '../autopilot/StrategySession';
 import ConceptReview from '../autopilot/ConceptReview';
 import ManualTaskBuilder from '../autopilot/ManualTaskBuilder';
+import { CREATIVE_MODEL } from '../../config/models';
 
 interface Props {
   analysis: FullAnalysis;
@@ -342,7 +343,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
           visionContent,
           apiKey,
           24000,
-          'claude-opus-4-6',
+          CREATIVE_MODEL,
           controller.signal,
         );
       } else if (deep && deep.primaryFrames.length > 0) {
@@ -352,7 +353,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
           visionContent,
           apiKey,
           24000,
-          'claude-opus-4-6',
+          CREATIVE_MODEL,
           controller.signal,
         );
       } else {
@@ -361,7 +362,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
           anglesPrompt.user,
           apiKey,
           22000,
-          'claude-opus-4-6',
+          CREATIVE_MODEL,
           controller.signal,
         );
       }
@@ -397,7 +398,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         evalPrompt.user,
         apiKey,
         9000,
-        'claude-opus-4-6',
+        CREATIVE_MODEL,
         controller.signal,
       );
 

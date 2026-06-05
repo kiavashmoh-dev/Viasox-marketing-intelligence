@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import type { AutopilotState } from '../../engine/autopilotTypes';
 import { sendChatMessage, type ChatMessage } from '../../api/claude';
 import { buildBriefMeta } from '../../autopilot/briefMeta';
+import { UTILITY_MODEL } from '../../config/models';
 
 interface Props {
   state: AutopilotState;
@@ -202,7 +203,7 @@ export default function BatchChatPanel({ state, apiKey }: Props) {
         apiMessages,
         apiKey,
         4000,
-        'claude-sonnet-4-20250514',
+        UTILITY_MODEL,
         controller.signal,
       );
       if (!controller.signal.aborted) {

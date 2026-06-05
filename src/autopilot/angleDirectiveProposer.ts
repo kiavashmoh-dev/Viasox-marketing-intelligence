@@ -13,8 +13,9 @@
 import { sendMessage } from '../api/claude';
 import type { AngleDirectiveProposal, RedoEvent } from './memoryTypes';
 import { addDirectiveProposal, getRedoEvents } from './memoryStore';
+import { UTILITY_MODEL } from '../config/models';
 
-const SONNET = 'claude-sonnet-4-20250514';
+const SONNET = UTILITY_MODEL;
 const MIN_EVENTS_FOR_PROPOSAL = 3;
 const MAX_EVENTS_TO_ANALYZE = 12;
 

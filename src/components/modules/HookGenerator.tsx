@@ -7,6 +7,7 @@ import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
 import ResultsView from '../ResultsView';
 import { buildBrainAddendum } from '../../brain/contextAssembler';
 import type { BrainProduct } from '../../brain/brainTypes';
+import { CREATIVE_MODEL } from '../../config/models';
 
 /** Map ProductCategory → BrainProduct key for slice selection. */
 function brainProduct(p: ProductCategory): BrainProduct | undefined {
@@ -117,7 +118,7 @@ export default function HookGenerator({ analysis, apiKey, resourceContext, onBac
       { module: 'hookGenerator', product: brainProduct(product) },
       { apiKey, reviews: analysis },
     );
-    generate(system + buildResourceContext(resourceContext) + brain.addendum, finalUser, Math.min(hookTokens, 24000), 'claude-opus-4-6');
+    generate(system + buildResourceContext(resourceContext) + brain.addendum, finalUser, Math.min(hookTokens, 24000), CREATIVE_MODEL);
   };
 
   if (result || loading || error) {

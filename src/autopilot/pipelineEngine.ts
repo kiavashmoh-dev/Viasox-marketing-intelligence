@@ -13,7 +13,7 @@
  *   5. Generate Briefs — Full script prompt with Opus per task
  *   6. Batch Review — Expert reviewer with complete knowledge stack
  *
- * All creative agents use claude-opus-4-6.
+ * All creative agents use CREATIVE_MODEL (see src/config/models.ts).
  * Framework diversity is enforced across the batch.
  * Tasks may be pinned to a specific Inspiration Bank item — when pinned, the
  * full frames + tags + summary + learnings + script of that ad are injected
@@ -43,6 +43,7 @@ import type { ScoredInspiration } from '../inspiration/inspirationSelector';
 import { buildBrainAddendum } from '../brain/contextAssembler';
 import type { BrainProduct } from '../brain/brainTypes';
 import { ensureCurrentBrainSession as ensureBrainSession, endCurrentBrainSession } from '../brain/brainSession';
+import { CREATIVE_MODEL } from '../config/models';
 
 // `ensureBrainSession` (aliased from the shared module) creates an autopilot
 // brain session on first call and returns the same ID on every subsequent
@@ -74,9 +75,9 @@ import { formatCalibrationForReviewer } from './scoreCalibration';
 import { runCreativeStrategist } from './creativeStrategist';
 import { runDifferentiationCritic } from './differentiationCritic';
 
-// ─── All creative agents use Opus ────────────────────────────────────────────
+// ─── All creative agents use the centralized creative model ──────────────────
 
-const OPUS = 'claude-opus-4-6';
+const OPUS = CREATIVE_MODEL;
 const INTER_CALL_DELAY = 8000;
 
 const VALID_FRAMEWORKS: ScriptFramework[] = [

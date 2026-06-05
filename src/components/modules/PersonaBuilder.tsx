@@ -9,6 +9,7 @@ import { getEnrichedSegment, hasSalesEnrichment, salesEnrichment } from '../../d
 import CrossPurchasePanel from '../persona/CrossPurchasePanel';
 import { buildBrainAddendum } from '../../brain/contextAssembler';
 import type { BrainProduct } from '../../brain/brainTypes';
+import { CREATIVE_MODEL } from '../../config/models';
 
 /** Map ProductCategory → BrainProduct key for slice selection. */
 function brainProduct(p: ProductCategory): BrainProduct | undefined {
@@ -294,7 +295,7 @@ export default function PersonaBuilder({ analysis, apiKey, resourceContext, onBa
       { module: 'personaPrompt', product: brainProduct(product) },
       { apiKey, reviews: analysis },
     );
-    generate(system + buildResourceContext(resourceContext) + brain.addendum, user, Math.max(maxTokens, 12000), 'claude-opus-4-6');
+    generate(system + buildResourceContext(resourceContext) + brain.addendum, user, Math.max(maxTokens, 12000), CREATIVE_MODEL);
   };
 
   if (result || loading || error) {
