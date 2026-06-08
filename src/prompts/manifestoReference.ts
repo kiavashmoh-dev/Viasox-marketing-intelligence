@@ -1225,6 +1225,45 @@ STRUCTURE: Assumes they know the solution category. Leads with DIFFERENTIATION �
 
 export function getAngleLanguageBank(angle: string): string {
   const banks: Record<string, string> = {
+    'Gas Prices': `## ANGLE EXECUTION DIRECTIVE: GAS PRICES (TOPICAL RELIEF OFFER)
+
+⚠️ This is a TOPICAL, OFFER-LED angle — NOT a pain-condition angle. It dictates HOW THE AD OPENS AND FLOWS, and it OVERRIDES the default awareness-level script architecture for THIS brief. Specifically:
+- Do NOT open with the product's pain point or a slow problem build, even if the awareness level is Unaware or Problem Aware.
+- This ad behaves like a Most-Aware / offer-led spot regardless of the tagged awareness level. The price and offer ARE allowed (and required) in the hook — any "no price / no offer in the opening" rule from the awareness architecture is SUSPENDED for this angle.
+- Open with the gas-prices hook, pivot fast to the offer, then land one product benefit. The offer is the star.
+
+### THE BIG IDEA
+A culturally-topical hook that rides current events — gas prices are painfully high across Canada and the US right now — to deliver a RELIEF message: "We can't fix gas prices, but as a Canadian company we're keeping shipping free to help — plus Buy 2 Get 3 Free, so it's a no-brainer." This is a spin-off of the tariffs / "Canada Strong" topical playbook: relatable, of-the-moment, lightly patriotic, never political.
+
+### MANDATORY 3-PART STRUCTURE
+1. **HOOK (the very first line):** Acknowledge high gas prices in a relatable, conversational way. Canadian-leaning framing is welcome ("As a Canadian brand, we know gas prices are brutal right now"). Wry, empathetic, "we're all feeling it" energy — never preachy.
+2. **OFFER PIVOT (the core message — give it the MOST weight):** Turn on the relief:
+   - **FREE SHIPPING on orders over $35** (evergreen — always on).
+   - **BUY 2 GET 3 FREE** (B2G3 = 5 pairs for $60, $12 a pair).
+   Frame both as "our way of helping while everything else costs more" and as a genuine no-brainer. Hammer this. It is the heart of the ad.
+3. **PRODUCT BENEFIT (quick, specific to THIS ad's product):** In one or two tight sentences, tie in ONE pain point + ONE benefit of the product this ad is about (Compression / Ankle Compression / EasyStretch). Keep it short — the offer is the star, the product is the payoff.
+
+### THE OFFERS — USE THESE EXACT TERMS (evergreen, always available)
+- Free shipping on orders over $35.
+- Buy 2 Get 3 Free (B2G3) = 5 pairs for $60 ($12 per pair).
+
+### TONE
+- Relatable, warm, a little wry. "We're all feeling it" energy.
+- Lightly Canadian-proud is fine; a gentle nod to cross-border cost pressure is fine.
+- 🚫 NEVER political, never inflammatory, never name-call or blame any country, government, or "neighbor." (Internally the idea was joked about as blaming "neighbors" — that is the SPIRIT of the relatability, but it must NOT appear in the ad. Keep it tasteful: "with everything going up," "with prices climbing everywhere" — never blame.)
+- Don't dwell on gas prices — it's the HOOK, not the subject. Pivot to the offer within the first few seconds.
+
+### WHAT TO AVOID
+- Don't make the ad ABOUT gas prices or politics — it's a hook to land the offer.
+- Don't imply Viasox sells anything gas/car-related — the only connection is "everything's expensive, here's relief on socks."
+- Don't bury or soften the offer — free shipping + B2G3 must be loud and clear.
+- Don't skip the product beat — one sharp pain+benefit keeps it a product ad, not just an offer announcement.
+
+### EXAMPLE OPENING LINES (adapt to the product + duration — never copy verbatim)
+- "Gas prices are insane right now. We can't fix that — but as a Canadian company, we CAN keep your shipping free."
+- "Filling up shouldn't cost a fortune… but it does. So here's one thing that won't: free shipping on your Viasox, plus Buy 2 Get 3 Free."
+- "Everything's gone up — except our shipping. Still free over $35, still Buy 2 Get 3 Free. Our little way of helping while gas prices sting."`,
+
     'Neuropathy': `## ANGLE LANGUAGE BANK: NEUROPATHY
 
 ### How Customers Describe Their Pain (Use These EXACT Phrases)
@@ -1483,7 +1522,28 @@ export function getAngleLanguageBank(angle: string): string {
 
 Focus on the specific symptoms, daily impact, emotional weight, and customer vocabulary associated with ${angle}. Use sensory details — what does this condition LOOK like, FEEL like, and how does it change someone's daily routine? What socks have they tried and why did those fail? What words do THEY use (not medical terms)?`;
 
-  return banks[angle] ?? defaultBank;
+  // 1) Exact match (original behavior, fastest path).
+  if (banks[angle]) return banks[angle];
+
+  // 2) Alias + case-insensitive match. The Asana angle column is freeform,
+  //    so the same intent arrives in many spellings ("Gas prices",
+  //    "gas prices", "High Gas Prices"). Normalize and map known aliases to
+  //    their canonical bank key so the directive fires reliably.
+  const normalized = angle.trim().toLowerCase();
+  const aliases: Record<string, string> = {
+    'gas prices': 'Gas Prices',
+    'gas price': 'Gas Prices',
+    'high gas prices': 'Gas Prices',
+    'gas price angle': 'Gas Prices',
+  };
+  if (aliases[normalized] && banks[aliases[normalized]]) {
+    return banks[aliases[normalized]];
+  }
+  // Case-insensitive match against any bank key.
+  const ciKey = Object.keys(banks).find((k) => k.toLowerCase() === normalized);
+  if (ciKey) return banks[ciKey];
+
+  return defaultBank;
 }
 
 /* ------------------------------------------------------------------ */
