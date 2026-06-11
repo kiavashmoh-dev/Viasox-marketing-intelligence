@@ -75,6 +75,13 @@ ${hasInspiration ? `### B. Inspiration Mirroring
 - **BORDERLINE:** The concept is functional but not distinctive.
 - **WEAK:** The concept is generic, sprawling, or strategically muddled.
 
+### ${hasInspiration ? 'E' : 'D'}. Visual Treatment Judgment (advisory — flag, don't auto-reject)
+For production ad types (AGC, Founder, Spokesperson, Podcast, Packaging) and UGC, check whether the concept's visual ideas show DELIBERATE treatment choices:
+- Does the hook's visual match what the hook line is doing (POV for identification, talk-to-camera for testimony, a prop/demonstration only where a claim or mechanism EARNS it)?
+- Is the visual realistic for the format (household props, one videographer / one creator — no TV-commercial production)?
+- If every visual across all 5 concepts is "person talking" or "generic B-roll of feet," NOTE it in your reasoning — the generator defaulted instead of deciding. A concept that legitimately wants raw simplicity (e.g., a confessional UGC) is FINE; the failure is sameness without intent, not simplicity itself.
+This dimension flags issues in your reasoning; it does not by itself flip a KEEP to REJECT.
+
 ## VERDICT LOGIC
 
 For each concept: mark **KEEP** or **REJECT**.

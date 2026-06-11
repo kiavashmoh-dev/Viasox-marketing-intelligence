@@ -2,27 +2,34 @@
  * Centralized model configuration.
  *
  * One place to change which Claude model each tier of work uses, instead of
- * hunting through a dozen files. Two tiers:
+ * hunting through a dozen files. Three tiers:
  *
- *   CREATIVE_MODEL — the high-reasoning model for every step where reasoning
- *     quality becomes OUTPUT quality: the Factory's Creative Strategist,
- *     Concept Generator, Differentiation Critic, Concept Evaluator, Concept
- *     Selector, Script Writer, Strategy Session, Memory Curator — plus the
- *     standalone creative modules (Concepts & Angles, Hooks, Script Writer,
- *     Personas) and the Inspiration Bank analyzer (better analysis = better
- *     references feeding the Factory).
+ *   IDEATION_MODEL — the frontier model for the steps that INVENT: the
+ *     Creative Strategist (per-brief thesis + inspiration curation + visual
+ *     treatment decisions), the Concept Generator, the Differentiation
+ *     Critic, and the standalone Hook Generator / Concepts & Angles modules.
+ *     These are the lateral-creative-leap steps where a smarter model
+ *     directly converts into more original hooks, concepts, and visual
+ *     ideas. Currently Fable 5.
+ *
+ *   CREATIVE_MODEL — the high-reasoning EXECUTION model: the Script Writer
+ *     (faithful execution of the chosen concept into strict templates),
+ *     Concept Evaluator, Concept Selector, Strategy Session, Memory
+ *     Curator, Persona Builder/Chat, and the Inspiration Bank analyzer.
+ *     Proven on format-following; kept stable on Opus 4.8.
  *
  *   UTILITY_MODEL — the fast/cheap model for steps that don't need deep
- *     reasoning: Asana screenshot parsing, the angle-directive proposer, and
- *     the brain's deep-reasoning pass. Opus on these would be wasted cost +
- *     latency.
+ *     reasoning: Asana screenshot parsing, the angle-directive proposer,
+ *     the brain's deep-reasoning pass, batch chat, inspiration naming.
  *
- * To change the creative model everywhere, edit CREATIVE_MODEL below.
- * To roll back, set it to 'claude-opus-4-6'. If the API/proxy rejects an
- * ID you'll see an immediate "400 invalid model" — the fix is one line here.
+ * Rollback for any tier is one line here. If the API/proxy rejects an ID
+ * you'll see an immediate "400 invalid model" — fix the string below.
  */
 
-/** High-reasoning creative model. Bumped to Opus 4.8. */
+/** Frontier ideation model — the steps that invent. Fable 5. */
+export const IDEATION_MODEL = 'claude-fable-5';
+
+/** High-reasoning execution model. Opus 4.8. */
 export const CREATIVE_MODEL = 'claude-opus-4-8';
 
 /** Fast/cheap utility model. Sonnet — unchanged. */

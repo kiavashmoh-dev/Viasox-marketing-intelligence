@@ -7,7 +7,7 @@ import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
 import ResultsView from '../ResultsView';
 import { buildBrainAddendum } from '../../brain/contextAssembler';
 import type { BrainProduct } from '../../brain/brainTypes';
-import { CREATIVE_MODEL } from '../../config/models';
+import { IDEATION_MODEL } from '../../config/models';
 
 /** Map ProductCategory → BrainProduct key for slice selection. */
 function brainProduct(p: ProductCategory): BrainProduct | undefined {
@@ -118,7 +118,7 @@ export default function HookGenerator({ analysis, apiKey, resourceContext, onBac
       { module: 'hookGenerator', product: brainProduct(product) },
       { apiKey, reviews: analysis },
     );
-    generate(system + buildResourceContext(resourceContext) + brain.addendum, finalUser, Math.min(hookTokens, 24000), CREATIVE_MODEL);
+    generate(system + buildResourceContext(resourceContext) + brain.addendum, finalUser, Math.min(hookTokens, 24000), IDEATION_MODEL);
   };
 
   if (result || loading || error) {

@@ -43,7 +43,7 @@ import type { ScoredInspiration } from '../inspiration/inspirationSelector';
 import { buildBrainAddendum } from '../brain/contextAssembler';
 import type { BrainProduct } from '../brain/brainTypes';
 import { ensureCurrentBrainSession as ensureBrainSession, endCurrentBrainSession } from '../brain/brainSession';
-import { CREATIVE_MODEL } from '../config/models';
+import { CREATIVE_MODEL, IDEATION_MODEL } from '../config/models';
 
 // `ensureBrainSession` (aliased from the shared module) creates an autopilot
 // brain session on first call and returns the same ID on every subsequent
@@ -731,14 +731,15 @@ ${task.duration === '1-15 sec' ? `SHORT FORM — single-moment concepts valid, n
         const angleDirective = buildAngleDirective(regenGuidance);
         const conceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
 
+        // Concept generation is ideation-tier work — frontier model.
         if (pinned && pinned.frames.length > 0) {
           const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
-          return sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, OPUS, signal);
+          return sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, IDEATION_MODEL, signal);
         } else if (deep && deep.primaryFrames.length > 0) {
           const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
-          return sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, OPUS, signal);
+          return sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, IDEATION_MODEL, signal);
         } else {
-          return sendMessageWithRetry(conceptSystem, anglesPrompt.user, apiKey, 22000, OPUS, signal);
+          return sendMessageWithRetry(conceptSystem, anglesPrompt.user, apiKey, 22000, IDEATION_MODEL, signal);
         }
       };
 
@@ -982,12 +983,12 @@ ${getAngleLanguageBank(task.parsed.angle)}
         let conceptsRaw: string;
         if (pinned && pinned.frames.length > 0) {
           const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
-          conceptsRaw = await sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, OPUS, signal);
+          conceptsRaw = await sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, IDEATION_MODEL, signal);
         } else if (deep && deep.primaryFrames.length > 0) {
           const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
-          conceptsRaw = await sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, OPUS, signal);
+          conceptsRaw = await sendVisionMessageWithRetry(conceptSystem, visionContent, apiKey, 24000, IDEATION_MODEL, signal);
         } else {
-          conceptsRaw = await sendMessageWithRetry(conceptSystem, anglesPrompt.user, apiKey, 22000, OPUS, signal);
+          conceptsRaw = await sendMessageWithRetry(conceptSystem, anglesPrompt.user, apiKey, 22000, IDEATION_MODEL, signal);
         }
         ts.conceptsRaw = conceptsRaw;
         onProgress({ ...state });
@@ -1686,14 +1687,15 @@ ${getAngleLanguageBank(task.parsed.angle)}
     const runRegenConceptGeneration = async (regenGuidance?: string) => {
       const angleDirective = buildRegenAngleDirective(regenGuidance);
       const regenConceptSystem = anglesPrompt.system + resourceCtx + directionBlock + angleDirective;
+      // Concept generation is ideation-tier work — frontier model.
       if (pinned && pinned.frames.length > 0) {
         const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
-        return sendVisionMessageWithRetry(regenConceptSystem, visionContent, apiKey, 24000, OPUS, signal);
+        return sendVisionMessageWithRetry(regenConceptSystem, visionContent, apiKey, 24000, IDEATION_MODEL, signal);
       } else if (deep && deep.primaryFrames.length > 0) {
         const visionContent = buildDeepInspirationVisionContent(deep, anglesPrompt.user);
-        return sendVisionMessageWithRetry(regenConceptSystem, visionContent, apiKey, 24000, OPUS, signal);
+        return sendVisionMessageWithRetry(regenConceptSystem, visionContent, apiKey, 24000, IDEATION_MODEL, signal);
       } else {
-        return sendMessageWithRetry(regenConceptSystem, anglesPrompt.user, apiKey, 22000, OPUS, signal);
+        return sendMessageWithRetry(regenConceptSystem, anglesPrompt.user, apiKey, 22000, IDEATION_MODEL, signal);
       }
     };
 

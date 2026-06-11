@@ -29,7 +29,7 @@ import BatchResultsView from '../autopilot/BatchResultsView';
 import StrategySessionUI from '../autopilot/StrategySession';
 import ConceptReview from '../autopilot/ConceptReview';
 import ManualTaskBuilder from '../autopilot/ManualTaskBuilder';
-import { CREATIVE_MODEL } from '../../config/models';
+import { CREATIVE_MODEL, IDEATION_MODEL } from '../../config/models';
 
 interface Props {
   analysis: FullAnalysis;
@@ -335,6 +335,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
         directionBlock +
         (strategyBrief ? `\n\nSTRATEGY BRIEF:\n${strategyBrief}` : '');
 
+      // Concept generation is ideation-tier work — frontier model.
       let conceptsRaw: string;
       if (pinned && pinned.frames.length > 0) {
         const visionContent = buildPinnedVisionContent(pinned, anglesPrompt.user);
@@ -343,7 +344,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
           visionContent,
           apiKey,
           24000,
-          CREATIVE_MODEL,
+          IDEATION_MODEL,
           controller.signal,
         );
       } else if (deep && deep.primaryFrames.length > 0) {
@@ -353,7 +354,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
           visionContent,
           apiKey,
           24000,
-          CREATIVE_MODEL,
+          IDEATION_MODEL,
           controller.signal,
         );
       } else {
@@ -362,7 +363,7 @@ Generate COMPLETELY DIFFERENT concepts. Do NOT repeat themes, hooks, or angles f
           anglesPrompt.user,
           apiKey,
           22000,
-          CREATIVE_MODEL,
+          IDEATION_MODEL,
           controller.signal,
         );
       }

@@ -13,8 +13,9 @@ import { buildBrainAddendum } from '../brain/contextAssembler';
 import type { BrainProduct } from '../brain/brainTypes';
 import { ensureCurrentBrainSession } from '../brain/brainSession';
 
-import { CREATIVE_MODEL } from '../config/models';
-const OPUS = CREATIVE_MODEL;
+import { IDEATION_MODEL } from '../config/models';
+// The strategist is the head of the ideation tier — frontier model.
+const OPUS = IDEATION_MODEL;
 const MAX_TOKENS = 3000;
 
 /** Best-effort mapping from CreativeStrategistInput's freeform product

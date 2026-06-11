@@ -326,6 +326,14 @@ First describe each Visual approach and each Verbal hook strategy:
 **Visual A:** [Description of first camera setup/location/opening visual]
 **Visual B:** [Description of second — genuinely DIFFERENT from A]
 **Visual C:** [Description of third — genuinely DIFFERENT from A and B]
+
+The 3 Visuals must use DISTINCT treatments from the visual palette — not three
+flavors of the same setup. A solid default mix: one identification visual
+(POV or talk-to-camera), one action/B-roll visual, and one
+demonstration/prop visual IF the concept earns it (realistic, same-day-
+obtainable props only — see the earn-it test; if no hook line earns a prop,
+substitute a dynamic or contrast visual instead). Three talking heads in
+different rooms is NOT three visuals.
 **Verbal 1:** [First hook line strategy]
 **Verbal 2:** [Second hook line strategy — different emotional trigger]
 **Verbal 3:** [Third hook line strategy — different emotional trigger]

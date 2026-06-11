@@ -5,6 +5,7 @@ import { getAwarenessScriptGuide } from './awarenessGuide';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
 import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
 import { buildBriefTemplateOutputFormat } from './briefTemplates';
+import { getVisualCraftGuide } from './visualCraftGuide';
 import {
   buildBuildingBlocksReference,
   buildShotTypesReference,
@@ -819,6 +820,26 @@ The pre-loaded concept must deeply shape EVERY section of the AGC production bri
 - **Shot Visuals:** The visual descriptions must paint the world of the concept. Every shot should feel like it belongs in the same story the concept is telling.` : ''}`
     : '';
 
+  // Visual craft guide — non-empty only for production ad types + UGC.
+  // Installs the treatment palette (talk-to-camera / simple B-roll / dynamic
+  // B-roll / POV / earned prop moments) so Shot Type and Shot Visual choices
+  // are deliberate decisions per line, not defaults. The Creative Strategist's
+  // thesis (when present) carries the Visual Treatment Plan — execute it.
+  const visualCraftBlock = (() => {
+    const guide = getVisualCraftGuide(params.adType, 'writer');
+    if (!guide) return '';
+    return `
+
+**VISUAL TREATMENT — CHOOSE DELIBERATELY, NOT BY DEFAULT:**
+${guide}
+
+**EXECUTION RULES FOR THE BRIEF TABLES:**
+- Pick each row's Shot Type by asking what the LINE is doing (identify → POV; testify → talk to camera; claim/mechanism → consider a prop; bridge → simple B-roll is CORRECT).
+- If a Creative Strategist thesis with a Visual Treatment Plan is present above, execute ITS treatment decisions — including its prop moment (or its decision to use none).
+- Maximum 1-2 prop/demonstration moments per ad. Every prop must pass the earn-it test and the realism constraints. Simple B-roll on a quiet line is professional judgment, not a failure of creativity.
+`;
+  })();
+
   const shortFormDirective = params.duration === '1-15 sec' ? `
 
 **⚡ SHORT-FORM AD (≤15 SECONDS) — THIS IS A DIFFERENT CRAFT. READ FIRST.**
@@ -913,6 +934,7 @@ ${params.agcTalentDescription ? `Talent: ${params.agcTalentDescription}` : ''}
 ${params.agcPacing ? `Pacing: ${params.agcPacing === 'fast' ? 'Fast (15-30s, punchy cuts)' : params.agcPacing === 'deliberate' ? 'Deliberate (60-90s, documentary rhythm)' : 'Standard (30-45s, balanced)'}` : ''}
 ${params.agcMusicDirection ? `Music: ${params.agcMusicDirection}` : ''}` : ''}
 A ${params.adType} script and a different ad type script for the same awareness level should be completely different productions — different talent, different visuals, different delivery style.
+${visualCraftBlock}
 
 **CRITICAL — PRODUCT LINE IS ${params.product.toUpperCase()}:**
 ${params.product === 'EasyStretch' ? 'This is the EasyStretch line — NON-BINDING, NON-COMPRESSION comfort socks. Stretches up to 30 inches with no elastic band. NEVER call these compression socks. Lead with: no sock marks, easy to put on, bamboo softness, beautiful patterns. The independence angle (putting on socks alone) and style angle (not "medical" looking) are the strongest script moments for this product.' : ''}${params.product === 'Compression' ? 'This is the Compression line — graduated compression at 12-15 mmHg (the "sweet spot" — strong enough to actually work, gentle enough to wear all day). Lead with: real compression that doesn\'t feel like a tourniquet, survives 12-hour shifts, reduces swelling. Differentiate from pharmacy compression (which is typically 20-30 mmHg). Healthcare worker insider language is powerful here: shifts, scrubs, break room, charting.' : ''}${params.product === 'Ankle Compression' ? 'This is the Ankle Compression line — uniform compression around the ankle and arch (NOT graduated; uniform pressure on the specific zones that need support) in ankle-length format. Lead with: versatile, discreet, works with any shoe, targeted support exactly where it matters. Position as modern and active. "Invisible compression" is the strongest script moment. Avoid heavy medical messaging.' : ''}${params.product === 'Other' ? 'Focus on universal Viasox value propositions: comfort, no sock marks, beautiful designs, **over 1 million pairs sold and 107,000+ positive reviews**.' : ''}

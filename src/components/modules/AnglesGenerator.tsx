@@ -5,7 +5,7 @@ import { buildAnglesPrompt } from '../../prompts/anglesPrompt';
 import { buildResourceContext } from '../../prompts/systemBase';
 import { buildRegenerationPrompt } from '../../prompts/regenerationPrompt';
 import { getInspirationContextBlock } from '../../inspiration/inspirationInjection';
-import { CREATIVE_MODEL } from '../../config/models';
+import { IDEATION_MODEL } from '../../config/models';
 import { getAllAngleTypes, getAllAdTypes, getAllProducts } from '../../utils/customOptionsRegistry';
 import AnglesResultsView from '../AnglesResultsView';
 
@@ -119,7 +119,7 @@ export default function AnglesGenerator({ analysis, apiKey, resourceContext, onB
     const finalUser = feedback && result
       ? buildRegenerationPrompt(user, result, feedback)
       : user;
-    generate(system + buildResourceContext(resourceContext), finalUser, 20000, CREATIVE_MODEL);
+    generate(system + buildResourceContext(resourceContext), finalUser, 20000, IDEATION_MODEL);
   };
 
   if (result || loading || error) {

@@ -18,6 +18,7 @@
  */
 
 import { getAngleLanguageBank } from './manifestoReference';
+import { getVisualCraftGuide } from './visualCraftGuide';
 
 export interface CreativeStrategistInput {
   taskName: string;
@@ -52,6 +53,9 @@ export function buildCreativeStrategistPrompt(
   const angleLanguage = getAngleLanguageBank(talkingPoint);
   const inspMode: 'pinned' | 'matched' | 'none' =
     input.inspirationMode ?? (input.inspirationContext ? 'matched' : 'none');
+  // Visual craft guide — non-empty only for production ad types + UGC
+  // (the formats where treatment decisions and props are in play).
+  const visualCraft = getVisualCraftGuide(input.adType, 'strategist');
 
   // The strategist's inspiration job differs sharply by mode. In PINNED mode
   // it follows one reference; in MATCHED mode it is the curator who selects
@@ -123,13 +127,16 @@ ${inspMode === 'pinned'
 
 ### Creative Bet
 [2-3 sentences on the single biggest creative bet for this brief. What's the one strategic move, tonal choice, or structural decision that makes this brief distinctive vs just being "a ${talkingPoint} ad"? This is the thing the generator should lean into hardest.]
+${visualCraft ? `
+### Visual Treatment Plan
+[Map the ad's beats to visual treatments using the palette from the Visual Craft Guide: which beats are talk-to-camera, where simple B-roll is the CORRECT call, where POV lands the identification, where dynamic B-roll carries a transition. Then the prop decision: IF one line earns a prop/demonstration moment, name the specific realistic prop, the exact claim or mechanism it demonstrates, and why it passes the earn-it test. If no line earns one, say "No prop moment — this concept lives on [treatments]" — that is a correct professional decision, not a failure. Max 1-2 prop moments, household-realistic only, no TV-commercial production.]` : ''}
 
 ### Relevance Test for the Generator
 [One sentence the generator must satisfy for every concept. Customize this — don't use a template. Example for Neuropathy: "Every concept must make a viewer with numb/tingling feet think 'that's me — and I've never seen an ad that showed the specific sensation of nerve pain before.'" This is the gate.]
 
 ---
 
-Keep the thesis under 400 words. Every line earns its place. No manifesto quoting. No strategic theory. You are setting up the generator to produce specific, relevant, non-generic concepts — that's the whole job.`;
+Keep the thesis under ${visualCraft ? '480' : '400'} words. Every line earns its place. No manifesto quoting. No strategic theory. You are setting up the generator to produce specific, relevant, non-generic concepts — that's the whole job.`;
 
   const parts: string[] = [];
   parts.push(`# BRIEF PARAMETERS`);
@@ -148,6 +155,13 @@ Keep the thesis under 400 words. Every line earns its place. No manifesto quotin
     parts.push(`# ANGLE LANGUAGE BANK — ${talkingPoint}`);
     parts.push('');
     parts.push(angleLanguage);
+    parts.push('');
+  }
+
+  if (visualCraft) {
+    parts.push(`# VISUAL CRAFT GUIDE — ${input.adType}`);
+    parts.push('');
+    parts.push(visualCraft);
     parts.push('');
   }
 
