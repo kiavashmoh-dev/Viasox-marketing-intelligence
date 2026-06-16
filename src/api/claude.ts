@@ -24,7 +24,7 @@ export async function sendMessage(
   userMessage: string,
   apiKey: string,
   maxTokens = 12000,
-  model = 'claude-sonnet-4-20250514',
+  model = 'claude-sonnet-4-6',
   signal?: AbortSignal,
 ): Promise<string> {
   const body = JSON.stringify({
@@ -191,7 +191,7 @@ export async function sendVisionMessage(
   content: ContentBlock[],
   apiKey: string,
   maxTokens = 12000,
-  model = 'claude-sonnet-4-20250514',
+  model = 'claude-sonnet-4-6',
   signal?: AbortSignal,
 ): Promise<string> {
   const body = JSON.stringify({
@@ -288,7 +288,7 @@ export async function sendChatMessage(
   messages: ChatMessage[],
   apiKey: string,
   maxTokens = 8000,
-  model = 'claude-sonnet-4-20250514',
+  model = 'claude-sonnet-4-6',
   signal?: AbortSignal,
 ): Promise<string> {
   const body = JSON.stringify({

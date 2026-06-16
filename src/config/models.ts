@@ -32,5 +32,5 @@ export const IDEATION_MODEL = 'claude-fable-5';
 /** High-reasoning execution model. Opus 4.8. */
 export const CREATIVE_MODEL = 'claude-opus-4-8';
 
-/** Fast/cheap utility model. Sonnet — unchanged. */
-export const UTILITY_MODEL = 'claude-sonnet-4-20250514';
+/** Fast/cheap utility model. Sonnet 4.6 (the dated Sonnet 4 ID was retired). */
+export const UTILITY_MODEL = 'claude-sonnet-4-6';
