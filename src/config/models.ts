@@ -26,8 +26,19 @@
  * you'll see an immediate "400 invalid model" — fix the string below.
  */
 
-/** Frontier ideation model — the steps that invent. Fable 5. */
-export const IDEATION_MODEL = 'claude-fable-5';
+/**
+ * Frontier ideation model — the steps that INVENT (Creative Strategist,
+ * Concept Generator, Differentiation Critic, standalone Concepts/Hooks).
+ *
+ * Target is Fable 5 ('claude-fable-5'), but that model is GATED — this API
+ * key does NOT have Fable access yet (the API returns 404 "Claude Fable 5
+ * is not available; please use Opus 4.8"). So the ideation tier runs on
+ * Opus 4.8 for now. ALL of the ideation prompt work (Visual Craft Guide,
+ * treatment judgment, AGC visual divergence, critic checks) is unaffected —
+ * only the model behind this tier changes. When Fable access is granted,
+ * flip this one line back to 'claude-fable-5'.
+ */
+export const IDEATION_MODEL = 'claude-opus-4-8'; // TODO: 'claude-fable-5' once Fable access is granted
 
 /** High-reasoning execution model. Opus 4.8. */
 export const CREATIVE_MODEL = 'claude-opus-4-8';
