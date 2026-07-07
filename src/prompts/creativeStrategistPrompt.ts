@@ -19,6 +19,7 @@
 
 import { getAngleLanguageBank } from './manifestoReference';
 import { getVisualCraftGuide } from './visualCraftGuide';
+import { getMarketingBrainBlock } from './marketingBrain';
 
 export interface CreativeStrategistInput {
   taskName: string;
@@ -193,5 +194,8 @@ Keep the thesis under ${visualCraft ? '480' : '400'} words. Every line earns its
   );
 
   const user = parts.join('\n');
-  return { system, user };
+  // Marketing Brain — the strategist's governing sources at full depth:
+  // Schwartz (angles/awareness/sophistication — the cornerstone), the Meta
+  // creative-strategy masterclass (the system), Neumeier (differentiation).
+  return { system: system + '\n\n' + getMarketingBrainBlock('creativeStrategist'), user };
 }

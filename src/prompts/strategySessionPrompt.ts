@@ -9,6 +9,7 @@
 import type { AutopilotTask } from '../engine/autopilotTypes';
 import type { FullAnalysis } from '../engine/types';
 import { buildSystemBase } from './systemBase';
+import { getMarketingBrainBlock } from './marketingBrain';
 import {
   getBrandPersonality,
   getSegmentProductMatrix,
@@ -159,7 +160,10 @@ Format your response as:
 </q>
 </questions>`;
 
-  return { system, user };
+  // Marketing Brain — batch-strategy governing sources at full depth:
+  // the Meta creative-strategy masterclass (the system) + the 8-years
+  // operator lessons (prioritization, economics, judgment).
+  return { system: system + '\n\n' + getMarketingBrainBlock('strategySession'), user };
 }
 
 // ─── Strategy Synthesis Prompt ──────────────────────────────────────────────
@@ -227,7 +231,10 @@ Any constraints or non-negotiables from the director's answers that apply batch-
 
 Be extremely specific. "Make it emotional" is useless. "Lead with the moment a nurse takes off her shoes after a 14-hour shift and realizes the pain is gone — that's the emotional core" is useful.`;
 
-  return { system, user };
+  // Same brain block as the analysis phase — the synthesis writes the
+  // strategy brief that governs the whole batch, so it must be grounded
+  // in the same studied system.
+  return { system: system + '\n\n' + getMarketingBrainBlock('strategySession'), user };
 }
 
 // ─── Parse Strategy Analysis Response ───────────────────────────────────────

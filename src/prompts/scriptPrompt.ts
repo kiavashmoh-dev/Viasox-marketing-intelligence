@@ -6,6 +6,7 @@ import { buildFullAiSkillContext } from './fullAiSkillContext';
 import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
 import { buildBriefTemplateOutputFormat } from './briefTemplates';
 import { getVisualCraftGuide } from './visualCraftGuide';
+import { getMarketingBrainBlock } from './marketingBrain';
 import {
   buildBuildingBlocksReference,
   buildShotTypesReference,
@@ -976,5 +977,11 @@ Then write the complete brief below the outline, executing the plan faithfully.
   // Inject inspiration bank context if available
   const inspirationSection = inspirationContext ? `\n\n${inspirationContext}` : '';
 
-  return { system: system + memorySection + inspirationSection, user };
+  // Marketing Brain — the writer's governing sources at full depth:
+  // Bly parts 1+2 (headlines, 4 U's, BDF, motivating sequence, VSL spec,
+  // online creative) + Schwartz (gradualization, intensification, ad
+  // architecture). Routed per the Brain's trigger map.
+  const brainSection = '\n\n' + getMarketingBrainBlock('scriptWriter');
+
+  return { system: system + memorySection + inspirationSection + brainSection, user };
 }

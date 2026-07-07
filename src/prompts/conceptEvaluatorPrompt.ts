@@ -9,6 +9,7 @@
 import type { ConceptOption } from '../engine/autopilotTypes';
 import type { AwarenessLevel } from '../engine/types';
 import { getDurationTarget, isShortFormDuration } from './creativeConstraints';
+import { getMarketingBrainBlock } from './marketingBrain';
 
 export function buildConceptEvaluatorPrompt(
   conceptsRaw: string,
@@ -147,7 +148,10 @@ For EACH concept (typically 3-5), provide your evaluation in this exact format:
 
 Be honest and differentiated in your ratings. Not every concept is a 4. Identify the clear winner(s) and explain why.${isUnaware ? ' For Unaware briefs, err on the side of HARSHER ratings — if the concept smells even slightly like a Problem Aware pitch, rate it lower.' : ''}`;
 
-  return { system, user };
+  // Marketing Brain — the evaluator's governing sources at full depth:
+  // Hopkins (specificity, testing discipline, cost-per-result judgment) +
+  // the Meta masterclass (hit-rate statistics, kill/scale judgment).
+  return { system: system + '\n\n' + getMarketingBrainBlock('conceptEvaluator'), user };
 }
 
 // ─── Parse Evaluator Response ───────────────────────────────────────────────

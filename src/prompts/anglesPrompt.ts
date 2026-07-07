@@ -4,6 +4,7 @@ import { buildAdTypeGuideFull } from './adTypeGuides';
 import { getAwarenessConceptGuide } from './awarenessGuide';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
 import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
+import { getMarketingBrainBlock } from './marketingBrain';
 import {
   getProductPurchaseTriggers,
   getProductStrategicInsights,
@@ -927,5 +928,10 @@ A reference ad has been provided in the system instructions (look for "PINNED RE
   // Inject inspiration bank context if available
   const inspirationSection = inspirationContext ? `\n\n${inspirationContext}` : '';
 
-  return { system: system + memorySection + inspirationSection, user };
+  // Marketing Brain — concept generation's governing sources at full depth:
+  // Schwartz (mass desire, awareness-matched hook strategy, verbalization
+  // patterns) + Bly part 1 (headline craft, 4 U's, BDF).
+  const brainSection = '\n\n' + getMarketingBrainBlock('conceptGeneration');
+
+  return { system: system + memorySection + inspirationSection + brainSection, user };
 }

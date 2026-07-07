@@ -17,6 +17,8 @@
  * guidance. Otherwise it PROCEEDs and lets the selector pick the best.
  */
 
+import { getMarketingBrainBlock } from './marketingBrain';
+
 export interface DifferentiationCriticInput {
   taskName: string;
   angle: string; // talking point
@@ -179,7 +181,10 @@ If verdict is PROCEED, skip this section entirely.`}`;
   );
 
   const user = parts.join('\n');
-  return { system, user };
+  // Marketing Brain — the critic's governing sources at full depth:
+  // Neumeier (focus test, zig/zag differentiation) + the 8-years operator
+  // lessons (contrast as the master variable, sanity checks).
+  return { system: system + '\n\n' + getMarketingBrainBlock('differentiationCritic'), user };
 }
 
 // ─── Parser ──────────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@ import type { HooksParams, HookStyle, FullAnalysis } from '../engine/types';
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { getAwarenessHookGuide } from './awarenessGuide';
 import { getHookDonts, getAwarenessMessagingTechniques } from './manifestoReference';
+import { getMarketingBrainBlock } from './marketingBrain';
 
 /* ------------------------------------------------------------------ */
 /*  Hook-style micro-guides (marketing-book grounded)                 */
@@ -403,15 +404,20 @@ export function buildHooksPrompt(
 ): { system: string; user: string } {
   const hasScript = params.scriptContext && params.scriptContext.trim().length > 0;
 
+  // Marketing Brain — full-depth studied sources for hook craft
+  // (Schwartz awareness/headline strategy + Bly 4 U's/headline types +
+  // Meta masterclass hook system), routed per the Brain's trigger map.
+  const brainBlock = '\n\n' + getMarketingBrainBlock('hookGenerator');
+
   if (hasScript) {
     return {
-      system: buildScriptModeSystem(params, analysis),
+      system: buildScriptModeSystem(params, analysis) + brainBlock,
       user: buildScriptModeUser(params),
     };
   }
 
   return {
-    system: buildStandaloneModeSystem(params, analysis),
+    system: buildStandaloneModeSystem(params, analysis) + brainBlock,
     user: buildStandaloneModeUser(params),
   };
 }
