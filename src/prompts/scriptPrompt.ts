@@ -7,6 +7,7 @@ import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } fr
 import { buildBriefTemplateOutputFormat } from './briefTemplates';
 import { getVisualCraftGuide } from './visualCraftGuide';
 import { getMarketingBrainBlock } from './marketingBrain';
+import { getClaimBoundaryBlock } from './claimBoundary';
 import {
   buildBuildingBlocksReference,
   buildShotTypesReference,
@@ -501,6 +502,8 @@ ${buildScriptProductGuide(params.product)}
 ${getProductPurchaseTriggers(params.product)}
 
 ${getProductStrategicInsights(params.product)}
+
+${getClaimBoundaryBlock(params.product)}
 
 ${getScriptFrameworks()}
 

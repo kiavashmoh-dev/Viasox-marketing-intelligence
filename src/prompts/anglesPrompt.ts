@@ -5,6 +5,7 @@ import { getAwarenessConceptGuide } from './awarenessGuide';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
 import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
 import { getMarketingBrainBlock } from './marketingBrain';
+import { getClaimBoundaryBlock } from './claimBoundary';
 import {
   getProductPurchaseTriggers,
   getProductStrategicInsights,
@@ -712,6 +713,8 @@ ${getProductPurchaseTriggers(params.product)}
 
 ${getProductStrategicInsights(params.product)}
 
+${getClaimBoundaryBlock(params.product)}
+
 ${getEmotionalPainPatterns()}
 
 ${getEmergingSegments()}
@@ -870,11 +873,11 @@ Before writing any concepts, you MUST produce a brief territory map that commits
 For each of the 5 concept slots, declare:
 1. **Territory:** The specific facet of ${params.primaryTalkingPoint ? `"${params.primaryTalkingPoint}"` : `${params.product}`} this concept will explore (e.g., for Diabetes: "the morning blood sugar ritual," "the feet your doctor warned you about," "the invisible neuropathy no one sees," etc.). Each territory must be DIFFERENT — if two territories could describe the same ad, merge them and find a new one.
 2. **Emotional Entry:** The specific emotion the viewer feels in the first 3 seconds (frustration, fear, recognition, curiosity, hope, etc.). No two concepts should share the same emotional entry.
-3. **Proof Anchor:** The specific data point or customer quote from the review data that this concept is built on. Each concept MUST have a unique proof anchor.
+3. **Proof Anchor:** The specific data point or customer quote from the review data that this concept is built on. Each concept MUST have a unique proof anchor. **The anchor must be REAL — a statistic or quote you can actually see in the review data or the recorded product truth above. Writing a plausible-sounding number or quote you cannot see in the provided data is fabrication and invalidates the concept.** If the recorded claim space doesn't contain 5 distinct anchors, two concepts may share a pain point with DIFFERENT real anchors (different quotes/stats for the same pain), or reuse an anchor while differentiating persona/moment/format — per the CLAIM BOUNDARY.
 4. **Hook Archetype:** question / statement / revelation / action / statistic / scene. Distribute across the 5 concepts — no archetype may appear more than twice.
 5. **Framework Lean:** Which script framework this concept naturally lends itself to. Spread across at least 3 different frameworks.
 
-**SELF-CHECK:** After mapping, verify: (1) all 5 territories are genuinely distinct facets of ${params.primaryTalkingPoint ? `"${params.primaryTalkingPoint}"` : `the assigned angle`}, not generic comfort/lifestyle topics, (2) no two concepts share the same emotional entry, (3) hook archetypes are distributed, (4) every proof anchor is unique. If any check fails, revise the map before writing concepts.
+**SELF-CHECK:** After mapping, verify: (1) all 5 territories are genuinely distinct facets of ${params.primaryTalkingPoint ? `"${params.primaryTalkingPoint}"` : `the assigned angle`}, not generic comfort/lifestyle topics, (2) no two concepts share the same emotional entry, (3) hook archetypes are distributed, (4) every proof anchor is unique, AND (5) — the most important check — every territory's central pain/benefit exists in the CLAIM BOUNDARY's approved space. A territory built on an invented pain fails this check no matter how distinct it is: distinctness earned by fabrication is the exact failure this pipeline is designed to prevent. When the approved space is smaller than 5 distinct pains, territories differentiate by persona/life-moment/scene/format on REUSED recorded pains — that passes check (1); invented pains never do. If any check fails, revise the map before writing concepts.
 
 Then write the 5 concepts below the territory map, executing each territory as planned.
 

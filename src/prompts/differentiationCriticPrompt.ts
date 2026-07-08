@@ -18,6 +18,9 @@
  */
 
 import { getMarketingBrainBlock } from './marketingBrain';
+import { getClaimBoundaryBlock } from './claimBoundary';
+import { getProductPurchaseTriggers } from './manifestoReference';
+import type { ProductCategory } from '../engine/types';
 
 export interface DifferentiationCriticInput {
   taskName: string;
@@ -54,6 +57,7 @@ You have:
 2. The talking point (${talkingPoint})
 3. The inspiration${hasInspiration ? ' (pinned reference ad)' : ' (none pinned)'}
 4. The duration / ad type / product
+5. The PRODUCT TRUTH for ${input.product} (recorded purchase triggers + claim boundary — provided below)
 
 For each of the 5 concepts, grade:
 
@@ -61,6 +65,12 @@ For each of the 5 concepts, grade:
 - **STRONG:** The concept would FAIL if you removed ${talkingPoint}. The talking point is the subject, not a label. Someone living with ${talkingPoint} would instantly recognize themselves.
 - **BORDERLINE:** The talking point is mentioned, but the concept would still work if swapped to a different talking point. The scenario, language, or insight is generic.
 - **IRRELEVANT:** The concept is a manifesto-default scenario (shoe size / sock marks / 3pm ache / drawer purge / etc.) with ${talkingPoint} mentioned in passing. The talking point could be removed without breaking anything.
+
+### A2. Claim Grounding — HARD GATE (equal in force to A)
+Check the concept's CENTRAL pain and CENTRAL benefit against the PRODUCT TRUTH section below:
+- **GROUNDED:** The central pain/benefit is the assigned talking point, appears in the recorded purchase triggers / strategic messaging, or is directly supported by the review data cited in the concept's proof anchor.
+- **UNSUPPORTED:** The central pain/benefit does NOT appear in the approved claim space — it was invented, most often to satisfy a diversity quota (each-concept-different-problem, unique territories). This is the single worst failure this pipeline produces: a distinct-sounding concept built on a pain the product's customers never report. Watch hardest on products with a SMALL recorded claim space (Ankle Compression especially — see the boundary's product rider). Also mark UNSUPPORTED if the proof anchor cites a statistic or quote that does not actually appear in the provided data (fabricated evidence).
+A concept that reuses a recorded pain another concept also uses is NOT a grounding failure — execution-level overlap is acceptable; invention is not.
 
 ${hasInspiration ? `### B. Inspiration Mirroring
 - **STRONG:** The concept visibly echoes the reference's hook archetype, narrative shape, AND product-bridge timing. You can point to the specific inspiration element being adapted.
@@ -88,14 +98,14 @@ This dimension flags issues in your reasoning; it does not by itself flip a KEEP
 
 For each concept: mark **KEEP** or **REJECT**.
 
-- KEEP = Talking-Point Relevance is STRONG or BORDERLINE AND at least 2 of the other dimensions are STRONG
-- REJECT = Talking-Point Relevance is IRRELEVANT, OR the concept is WEAK on the thesis AND the inspiration (if any)
+- KEEP = Claim Grounding is GROUNDED AND Talking-Point Relevance is STRONG or BORDERLINE AND at least 2 of the other dimensions are STRONG
+- REJECT = Claim Grounding is UNSUPPORTED (automatic — no other dimension can rescue an invented claim), OR Talking-Point Relevance is IRRELEVANT, OR the concept is WEAK on the thesis AND the inspiration (if any)
 
 ### Overall Batch Verdict
 - **PROCEED:** 3+ of 5 concepts are KEEP. The selector has enough to work with.
 - **REGENERATE:** 3+ of 5 concepts are REJECT. The generator drifted — give specific guidance for a redo.
 
-${input.isRegenerationAttempt ? `**THIS IS A REGENERATION ATTEMPT.** The previous batch was already rejected once. Even if this batch isn't perfect, verdict PROCEED unless it's catastrophically off — we're avoiding infinite loops. If it's still weak, note the issues in your reasoning but PROCEED.
+${input.isRegenerationAttempt ? `**THIS IS A REGENERATION ATTEMPT.** The previous batch was already rejected once. Even if this batch isn't perfect, verdict PROCEED unless it's catastrophically off — we're avoiding infinite loops. If it's still weak, note the issues in your reasoning but PROCEED. EXCEPTION: individual concepts with UNSUPPORTED claim grounding are still marked REJECT even on a regeneration attempt — the selector must never receive an invented-claim concept as a valid option.
 
 ` : ''}## OUTPUT CONTRACT — STRICT FORMAT
 
@@ -105,6 +115,7 @@ Output exactly this structure. No extra commentary before or after.
 
 ### Concept 1
 - Talking-Point Relevance: [STRONG / BORDERLINE / IRRELEVANT] — [one sentence why]
+- Claim Grounding: [GROUNDED / UNSUPPORTED] — [name the recorded trigger/quote it rests on, or name the invented claim]
 ${hasInspiration ? '- Inspiration Mirroring: [STRONG / BORDERLINE / WEAK] — [one sentence why]\n' : ''}- Thesis Alignment: [STRONG / BORDERLINE / WEAK] — [one sentence why]
 - Strategic Merit: [STRONG / BORDERLINE / WEAK] — [one sentence why]
 - Verdict: [KEEP / REJECT]
@@ -181,10 +192,15 @@ If verdict is PROCEED, skip this section entirely.`}`;
   );
 
   const user = parts.join('\n');
+  // Product truth + claim boundary — what the A2 hard gate checks against.
+  const productTruth = `# PRODUCT TRUTH — ${input.product} (the approved claim space for gate A2)\n\n${getProductPurchaseTriggers(input.product as ProductCategory)}\n\n${getClaimBoundaryBlock(input.product)}`;
   // Marketing Brain — the critic's governing sources at full depth:
   // Neumeier (focus test, zig/zag differentiation) + the 8-years operator
   // lessons (contrast as the master variable, sanity checks).
-  return { system: system + '\n\n' + getMarketingBrainBlock('differentiationCritic'), user };
+  return {
+    system: system + '\n\n' + productTruth + '\n\n' + getMarketingBrainBlock('differentiationCritic'),
+    user,
+  };
 }
 
 // ─── Parser ──────────────────────────────────────────────────────────────

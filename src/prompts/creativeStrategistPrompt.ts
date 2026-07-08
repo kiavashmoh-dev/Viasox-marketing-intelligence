@@ -17,9 +17,15 @@
  *     removing any one would break the concept.
  */
 
-import { getAngleLanguageBank } from './manifestoReference';
+import {
+  getAngleLanguageBank,
+  getProductPurchaseTriggers,
+  getProductStrategicInsights,
+} from './manifestoReference';
+import type { ProductCategory } from '../engine/types';
 import { getVisualCraftGuide } from './visualCraftGuide';
 import { getMarketingBrainBlock } from './marketingBrain';
+import { getClaimBoundaryBlock } from './claimBoundary';
 
 export interface CreativeStrategistInput {
   taskName: string;
@@ -128,6 +134,9 @@ ${inspMode === 'pinned'
 
 ### Creative Bet
 [2-3 sentences on the single biggest creative bet for this brief. What's the one strategic move, tonal choice, or structural decision that makes this brief distinctive vs just being "a ${talkingPoint} ad"? This is the thing the generator should lean into hardest.]
+
+### Claim Grounding
+[1-2 lines. Name the RECORDED pain/benefit this brief is built on, with its source from the PRODUCT TRUTH section (e.g. "localized ankle swelling — 12.0% of ACS reviews" or a specific review quote). If the recorded claim space for this product is smaller than the concept quota, say so here and instruct the generator to differentiate concepts by persona/moment/format while REUSING recorded claims — never by inventing new pains or benefits.]
 ${visualCraft ? `
 ### Visual Treatment Plan
 [Map the ad's beats to visual treatments using the palette from the Visual Craft Guide: which beats are talk-to-camera, where simple B-roll is the CORRECT call, where POV lands the identification, where dynamic B-roll carries a transition. Then the prop decision: IF one line earns a prop/demonstration moment, name the specific realistic prop, the exact claim or mechanism it demonstrates, and why it passes the earn-it test. If no line earns one, say "No prop moment — this concept lives on [treatments]" — that is a correct professional decision, not a failure. Max 1-2 prop moments, household-realistic only, no TV-commercial production.]` : ''}
@@ -137,7 +146,7 @@ ${visualCraft ? `
 
 ---
 
-Keep the thesis under ${visualCraft ? '480' : '400'} words. Every line earns its place. No manifesto quoting. No strategic theory. You are setting up the generator to produce specific, relevant, non-generic concepts — that's the whole job.`;
+Keep the thesis under ${visualCraft ? '520' : '440'} words. Every line earns its place. No manifesto quoting. No strategic theory. You are setting up the generator to produce specific, relevant, non-generic concepts — that's the whole job.`;
 
   const parts: string[] = [];
   parts.push(`# BRIEF PARAMETERS`);
@@ -150,6 +159,20 @@ Keep the thesis under ${visualCraft ? '480' : '400'} words. Every line earns its
   parts.push(`- **Ad Type:** ${input.adType}`);
   parts.push(`- **Awareness Level:** ${input.awarenessLevel}`);
   parts.push(`- **Funnel Stage:** ${input.funnelStage}`);
+  parts.push('');
+
+  // Product truth — the recorded reasons people actually buy THIS product,
+  // with frequencies, plus the claim boundary. The strategist's thesis and
+  // creative bet must be built INSIDE this space; this is the fix for the
+  // invented-pains failure (worst on Ankle Compression, whose recorded
+  // claim space is small).
+  parts.push(`# PRODUCT TRUTH — ${input.product}`);
+  parts.push('');
+  parts.push(getProductPurchaseTriggers(input.product as ProductCategory));
+  parts.push('');
+  parts.push(getProductStrategicInsights(input.product as ProductCategory));
+  parts.push('');
+  parts.push(getClaimBoundaryBlock(input.product));
   parts.push('');
 
   if (angleLanguage) {
