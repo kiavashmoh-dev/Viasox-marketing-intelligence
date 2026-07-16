@@ -1,5 +1,5 @@
 # The Brand Gap — Marty Neumeier (study distillation)
-*Part of The Marketing Brain (Portable) — a universal knowledge base. Full book studied; all frameworks preserved.*
+*Part of The Marketing Brain (Portable) — a universal knowledge base. Studied from Neumeier's official 2003 visual-presentation edition of The Brand Gap (162 slides, Neutron LLC); all frameworks in that edition preserved. The full trade book adds expanded prose and end matter not present in this source.*
 
 **Source type / When to consult:** Brand strategy and differentiation. This is THE authority when the task is: defining what a brand *is*, deciding positioning vs. competitors, judging whether a brand extension/new offer fits, naming something, testing a concept cheaply before spending, or arbitrating between "strategy people" and "creative people." It is NOT a copywriting or media-buying source — it sits above those.
 

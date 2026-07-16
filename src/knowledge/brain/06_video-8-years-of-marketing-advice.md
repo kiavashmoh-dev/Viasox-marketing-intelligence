@@ -1,5 +1,5 @@
 # 8 Years of Marketing Advice in 70 Minutes — study distillation
-*Part of The Marketing Brain (Portable) — a universal knowledge base. Full 71-minute video studied; all 49 lessons preserved.*
+*Part of The Marketing Brain (Portable) — a universal knowledge base. Full ~70-minute video studied; all 49 lessons preserved.*
 
 **Speaker & credibility markers:** Mark (@markbuildsbrands on Instagram), 8 years of paid-ads experience working "10 to 14 hours every single day basically without exception." Claims: tens of millions in total spend; $2M+ revenue in the last 30 days in one brand, profitably; just under $4M spent in a single ad account over the last few years; ~20,000 hours in "general marketing land." Runs the Brand Builders Academy (BBA) mentorship (e-commerce + AI). Early failure story: lost ~$9,000 over ~9 months testing 50 dropshipping products — all 50 failed — then made it all back plus multiples within 2–3 months. Studied under pre-AI copywriting mentors; cites Eugene Schwartz, Gary Halbert, Dan Kennedy, Peter Thiel, David Hawkins.
 
@@ -91,7 +91,7 @@ The video is structured in four sections: (1) How to Think, (2) How to Create, (
 
 38. **LTV:CAC targets: minimum 3:1; high-ticket should shoot for 7:1–10:1.** At 3:1, a $300 LTV means never spending more than $100 to acquire. "One of the most basic baseline measurements of how healthy your business really is." (KPIs differ by model — high-ticket ≠ e-com ≠ affiliate.)
 
-39. **Don't trust ad-platform data — post-iOS 14 it lies.** Misattribution runs 5–10% on the low side, 30–50% on the high side; a recent iOS update made landing-page views and content views "completely inaccurate." Without a source-of-truth attribution layer (he names Triple Whale for e-com, Hyros, Wicked Reports, WeTrack) you will "optimize your ad account around shitty ads... and tell Facebook, hey, go spend on all those shitty ads." Know your numbers with 20/20 clarity; most marketers are flying blind. "I'm psychotic about my data."
+39. **Don't trust ad-platform data — post-iOS 14 it lies.** Misattribution runs 5–10% on the low side, 30–50% on the high side; a recent iOS update made landing-page views and content views "completely inaccurate." Without a source-of-truth attribution layer (he names Triple Whale for e-com, Hyros (the transcript garbles this as 'Highrise'), Wicked Reports, WeTrack) you will "optimize your ad account around shitty ads... and tell Facebook, hey, go spend on all those shitty ads." Know your numbers with 20/20 clarity; most marketers are flying blind. "I'm psychotic about my data."
 
 40. **Entropy: everything breaks as you scale — inject energy.** Scaling doesn't make things easier; the challenges change (CAC rises, creative demand rises). Businesses, like the universe, drift from order toward chaos (second law of thermodynamics); winning ads, offers, and copy all eventually die — "everything that is created and has life eventually is going to die." The only counter is injecting energy, in exactly three forms: (1) your own hours (finite), (2) human capital (hires), (3) systems and AI. Bonus: business partners who poke holes in your operation are injecting energy — they find problems before they blow up in your face.
 
@@ -159,7 +159,7 @@ The video is structured in four sections: (1) How to Think, (2) How to Create, (
 
 1. "If you start to think like a marketer, you've actually already lost. Instead, you should be thinking like a mad scientist." — the master frame: deconstruct and test variables instead of following convention.
 2. "The question you need to answer is not how do I market better? It's literally how do I look nothing like anybody else?" — contrast as the entry question for any market or creative batch.
-3. "Mass desire cannot be created. It can only be transferred." — Schwartz's law, his stated most fundamental rule; kills "educate the market" plans instantly.
+3. "Mass desire cannot be created. It can only be transferred." — Schwartz's law, one of his "most fundamental rules of marketing of all time"; kills "educate the market" plans instantly.
 4. "If you're trying to educate your market, just give up." — the blunt corollary; channel existing desire instead.
 5. "Being able to create marketing content that doesn't look like marketing content is a superpower." — the Halbert principle behind advertorials, native ads, quiz funnels, and UGC.
 6. "Money loves speed." — team-enforced rule; the operational edge is cycle time, not brilliance.

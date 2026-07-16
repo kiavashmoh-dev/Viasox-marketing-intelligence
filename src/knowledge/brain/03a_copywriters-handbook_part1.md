@@ -32,13 +32,13 @@ The first thing seen decides success: print ad = headline + visual; website = ho
 2. **Indirect** — curiosity first, answer in the body copy (double meanings that force reading).
 3. **News** — announce something new/improved.
 4. **How-to** — "magic" words; the promise of solid information and solutions. When stuck, start typing "How to…"
-5. **Question** — must be a question the reader empathizes with or wants answered; focused on the READER's self-interest, never the advertiser's ("Do You Know What the XYZ Company Is Up to?" = "Who cares?").
+5. **Question** — must be a question the reader empathizes with or wants answered; focused on the READER's self-interest, never the advertiser's ("Do You Know What the XYZ Company Is Up to These Days?" = "Who cares?").
 6. **Command** — start with a strong verb demanding action ("Try Burning This Coupon").
 7. **Reason-why** — "5 Reasons Why…", "7 steps", "6 ways" — pairs with listicle body copy; numbers attract the eye and should be written as numerals.
 8. **Testimonial** — customers do the selling; use their own unpolished words in quotation marks. **The "unattributed testimonial" trick:** quotation marks around any strong headline catch the eye and make it read as factual even without attribution.
 
 ### 6. The 38 swipe-file headline approaches (condensed)
-Ask a question; tie into current events; create new terminology; give news; command; use numbers/statistics; promise useful info; highlight the offer; tell a story; make a recommendation; state a benefit; make a comparison; use visualization words; use a testimonial; offer a free report/catalog; state the proposition plainly; arouse curiosity; promise a secret; be specific ("At 60 Miles an Hour, the Loudest Noise in This New Rolls-Royce Comes from the Electric Clock"); target a reader type; add a time element; stress savings/value; give good news; offer an alternative; issue a challenge; stress the guarantee; state the price; set up a seeming contradiction ("Profit from 'Insider Trading' — 100% Legal!"); offer an exclusive; address the reader's concern; "crazy as it sounds…"; make a big promise; show ROI; reasons-why; answer key questions; stress premium value; help achieve a goal; make a contradictory promise ("Cool Any Room Fast — Without Air Conditioning!"). Keep a swipe file; mark ads you see repeatedly (repetition = profitability).
+Ask a question; tie into current events; create new terminology; give news; command; use numbers/statistics; promise useful info; highlight the offer; tell a story; make a recommendation; state a benefit; make a comparison; use visualization words; use a testimonial; offer a free report/catalog; state the proposition plainly; arouse curiosity; promise a secret; be specific ("At 60 Miles an Hour, the Loudest Noise in This New Rolls-Royce Comes from the Electric Clock"); target a reader type; add a time element; stress savings/value; give good news; offer an alternative; issue a challenge; stress the guarantee; state the price; set up a seeming contradiction ("Profit from 'Insider Trading' — 100% Legal!"); offer an exclusive; address the reader's concern; "crazy as it sounds…"; make a big promise; show ROI; reasons-why; answer key questions; stress premium value; help achieve a goal; make a contradictory promise ("Cool Any Room in Your House Fast — Without Air Conditioning!"). Keep a swipe file; mark ads you see repeatedly (repetition = profitability).
 
 ### 7. The 4 U's formula (Mark Ford)
 Strong headlines/subject lines are **Urgent, Unique, Ultra-specific, Useful**. Rate every headline 1–4 on each U; if it doesn't score 3–4 on at least three U's, rewrite. Worked example: "Free Special Report" scores 1-2-2-2 → fix by specifying topic and benefit ("Free special report reveals how to cut training costs up to 90% with e-learning"). Apply to headlines, e-mail subject lines, envelope teasers, leads, subheads, and bullets. Never defend a weak headline by pointing to good response — imagine the response with a strong one.
@@ -53,7 +53,7 @@ Ask four questions: (1) Who is my customer? (2) What are the important product f
 4. **Use short sentences** — best average for business writing: **14–16 words**; above 40 = unreadable. Vary length for rhythm. Break long sentences in two; use dashes and ellipses.
 5. **Use small, simple words** — "utilize" → "use"; "optimum" → "best". Caples: even the best-educated don't resent simple words, and they're the only ones many people understand.
 6. **Avoid jargon** — two rules: don't use a technical term unless 95%+ of readers understand it, and don't use it unless it precisely communicates your meaning.
-7. **Be concise** — rewriting is the key; kill redundancies ("free gift," "advance planning," "whether or not").
+7. **Be concise** — rewriting is the key; kill redundancies ("free gift," "whether or not," "most unique").
 8. **Be specific** — "the surest way to arouse and hold attention is by being specific, definite, and concrete" (Strunk & White). Collect twice as much material as you'll use.
 9. **Go straight to the point** — start selling with the first line. Delete warm-up paragraphs from the final draft.
 10. **Write in a friendly, conversational style** — "write like you talk" (Ann Landers). Use pronouns, colloquialisms, contractions. Test: would you ever SAY this to the reader? If natural conflicts with grammatical, write naturally.
@@ -97,7 +97,7 @@ Copy length = f(product, audience, purpose). The grid's two axes: **emotion** (h
 
 ### 18. Getting ready to write (Ch. 5)
 - **Research:** Get ALL previously published material from the client (ads, brochures, testimonials, competitor files, reviews, specs); it supplies ~90% of what you need; interviews fill the last 10%.
-- **The four question sets:** product questions (features/benefits, differentiation, proof, guarantee), audience questions (who buys, why now, main concern, buying influences), objective of the copy (leads, sales, conversions, etc.).
+- **The three question sets (Steps 2–4 of Bly's four-step prep procedure; Step 1 = collect all published material, per the Research bullet above):** product questions (features/benefits, differentiation, proof, guarantee), audience questions (who buys, why now, main concern, buying influences), objective of the copy (leads, sales, conversions, etc.).
 - **Interviews:** phone is fine; e-mail questions in advance; keep notes and sources 6–12 months; document every factual claim (footnotes).
 - **Copy platform:** show the client a working headline + outline of theme/contents and get approval BEFORE the first draft.
 - **Three-stage writing process:** (1) get it all down, no self-editing; (2) edit for flow, cut needless words, read aloud; (3) clean up — proofread, verify facts, enforce consistency. "The key to writing great copy is rewriting."
@@ -105,7 +105,7 @@ Copy length = f(product, audience, purpose). The grid's two axes: **emotion** (h
 
 ### 19. The 9 criteria of a successful print ad (Ch. 6)
 1. Headline contains benefit, news, curiosity, or promised reward.
-2. Visual (if any) illustrates the headline's main benefit (before/after photos are the strongest form). Words, not pictures, do most of the selling.
+2. Visual (if any) illustrates the headline's main benefit (before/after photos are one of the most effective techniques). Words, not pictures, do most of the selling.
 3. Lead paragraph expands the headline's theme.
 4. Layout draws the reader in: one central visual, bold headline, readable type, black on white, short lead paragraph (<3 lines), no reverse type/slanted copy/tiny type.
 5. Body copy covers all sales points in logical sequence (inverted pyramid; list format; problem/solution; chronological for case histories).

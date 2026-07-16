@@ -19,7 +19,7 @@
 7. **Jingles** — slogan set to music.
 8. **Visual as hero** — filmmaking, not selling; Bly has never seen a case study proving it sells.
 9. **Humor** — viewers enjoy it but often can't recall the product; "unless you are 99.9 percent sure that you are funny… avoid."
-10. **Continuing characters** — fictional recurring character or the owner/founder as the face (Jimmy Dean, My Pillow).
+10. **Continuing characters** — fictional recurring character or the owner/founder as the face (Jimmy Dean, the Purdue family; cf. My Pillow's owner-demonstrator spots, cited earlier in the chapter as straight-sell demonstration).
 11. **Reason-why** — list the reasons to buy; works better in print than on air.
 12. **Emotion** — nostalgia/sentiment; memorable but hard to write. Bly's steer: most writers do better sticking to demonstrations, pitchmen, testimonials — "straight-sell" formats.
 
