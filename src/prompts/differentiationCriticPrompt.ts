@@ -29,6 +29,10 @@ export interface DifferentiationCriticInput {
   medium: string;
   duration: string;
   adType: string;
+  /** Schwartz awareness level for this task — calibrates the A3 opening gate
+   *  (what "specific" is allowed to mean) and keeps the critic judging
+   *  concepts against the same rules every other stage uses. */
+  awarenessLevel: string;
   concepts: string; // raw concept generator output
   thesis: string; // creative strategist thesis
   inspirationContext?: string; // pinned or deep inspiration
@@ -56,7 +60,7 @@ You have:
 1. The creative thesis (the strategist's direction for THIS brief)
 2. The talking point (${talkingPoint})
 3. The inspiration${hasInspiration ? ' (pinned reference ad)' : ' (none pinned)'}
-4. The duration / ad type / product
+4. The duration / ad type / product / awareness level (${input.awarenessLevel})
 5. The PRODUCT TRUTH for ${input.product} (recorded purchase triggers + claim boundary — provided below)
 
 For each of the 5 concepts, grade:
@@ -71,6 +75,20 @@ Check the concept's CENTRAL pain and CENTRAL benefit against the PRODUCT TRUTH s
 - **GROUNDED:** The central pain/benefit is the assigned talking point, appears in the recorded purchase triggers / strategic messaging, or is directly supported by the review data cited in the concept's proof anchor.
 - **UNSUPPORTED:** The central pain/benefit does NOT appear in the approved claim space — it was invented, most often to satisfy a diversity quota (each-concept-different-problem, unique territories). This is the single worst failure this pipeline produces: a distinct-sounding concept built on a pain the product's customers never report. Watch hardest on products with a SMALL recorded claim space (Ankle Compression especially — see the boundary's product rider). Also mark UNSUPPORTED if the proof anchor cites a statistic or quote that does not actually appear in the provided data (fabricated evidence).
 A concept that reuses a recorded pain another concept also uses is NOT a grounding failure — execution-level overlap is acceptable; invention is not.
+
+### A3. Concrete Opening — 10-Second Self-Selection HARD GATE (equal in force to A2)
+The most reported failure of past batches: openings so vague the viewer can't tell for 20+ seconds whether the ad is even for them. Schwartz's own test applies: the opening "must pick out the product's logical prospects — and reject as many people as it attracts."
+
+Check each concept's OPENING (hook + first beat):
+- **CONCRETE:** Within the first ~10 seconds of projected runtime, the RIGHT viewer recognizes "this is about me" — because the opening contains at least TWO specific, filmable details (a time of day, a place, an object, a named micro-behavior, a physical sensation described the way a real person would say it). The WRONG viewer can tell it's not for them and scrolls — that is a feature, not a flaw.
+- **GENERIC:** The opening could start an ad for any product or any person — abstract storytelling ("she was struggling," "life felt harder"), unanchored emotion, mood-setting that selects nobody. A story opening is NOT automatically generic; it becomes generic when its details are interchangeable.
+
+Awareness calibration for this gate (this task is **${input.awarenessLevel}**):
+- **Unaware:** specifics must be SCENES and BEHAVIORS — product, category, and symptom labels stay banned in the opening. Vague claims are banned; vague scenes are banned too. Concrete-but-compliant is the entire craft.
+- **Problem Aware:** specifics should be the symptom experience itself, named plainly and early.
+- **Solution / Product / Most Aware:** specifics may include category, product, proof, or offer per the level's rules — vagueness has no excuse at these levels.
+
+POV note: first-person testimonial, second-person direct address, and third-person observation are ALL legitimate executions (including for Ecom voiceover). But third-person ("she…") earns extra scrutiny: the character's moments must be as concrete as a first-person testimonial would be, and the narration must pass a read-aloud naturalness test. Third-person storytelling that floats above its character ("she was having trouble with her ankles") = GENERIC.
 
 ${hasInspiration ? `### B. Inspiration Mirroring
 - **STRONG:** The concept visibly echoes the reference's hook archetype, narrative shape, AND product-bridge timing. You can point to the specific inspiration element being adapted.
@@ -98,8 +116,8 @@ This dimension flags issues in your reasoning; it does not by itself flip a KEEP
 
 For each concept: mark **KEEP** or **REJECT**.
 
-- KEEP = Claim Grounding is GROUNDED AND Talking-Point Relevance is STRONG or BORDERLINE AND at least 2 of the other dimensions are STRONG
-- REJECT = Claim Grounding is UNSUPPORTED (automatic — no other dimension can rescue an invented claim), OR Talking-Point Relevance is IRRELEVANT, OR the concept is WEAK on the thesis AND the inspiration (if any)
+- KEEP = Claim Grounding is GROUNDED AND Opening Specificity is CONCRETE AND Talking-Point Relevance is STRONG or BORDERLINE AND at least 2 of the other dimensions are STRONG
+- REJECT = Claim Grounding is UNSUPPORTED (automatic — no other dimension can rescue an invented claim), OR Opening Specificity is GENERIC (automatic — a vague opening wastes the only seconds that decide whether anyone keeps watching), OR Talking-Point Relevance is IRRELEVANT, OR the concept is WEAK on the thesis AND the inspiration (if any)
 
 ### Overall Batch Verdict
 - **PROCEED:** 3+ of 5 concepts are KEEP. The selector has enough to work with.
@@ -116,6 +134,7 @@ Output exactly this structure. No extra commentary before or after.
 ### Concept 1
 - Talking-Point Relevance: [STRONG / BORDERLINE / IRRELEVANT] — [one sentence why]
 - Claim Grounding: [GROUNDED / UNSUPPORTED] — [name the recorded trigger/quote it rests on, or name the invented claim]
+- Opening Specificity: [CONCRETE / GENERIC] — [quote the concrete details that pass the 10-second test, or name exactly what is interchangeable]
 ${hasInspiration ? '- Inspiration Mirroring: [STRONG / BORDERLINE / WEAK] — [one sentence why]\n' : ''}- Thesis Alignment: [STRONG / BORDERLINE / WEAK] — [one sentence why]
 - Strategic Merit: [STRONG / BORDERLINE / WEAK] — [one sentence why]
 - Verdict: [KEEP / REJECT]
@@ -155,6 +174,7 @@ If verdict is PROCEED, skip this section entirely.`}`;
   parts.push(`- **Product:** ${input.product}`);
   parts.push(`- **Medium / Duration:** ${input.medium} (${input.duration})`);
   parts.push(`- **Ad Type:** ${input.adType}`);
+  parts.push(`- **Awareness Level:** ${input.awarenessLevel}`);
   parts.push('');
 
   parts.push(`# CREATIVE THESIS (the strategist's direction for this brief)`);

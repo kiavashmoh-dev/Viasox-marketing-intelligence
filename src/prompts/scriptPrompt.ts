@@ -2,6 +2,7 @@ import type { ScriptParams, FullAnalysis, FunnelStage, MarketingBookReference, P
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideCompact } from './adTypeGuides';
 import { getAwarenessScriptGuide } from './awarenessGuide';
+import { getSchwartzStateBlock } from './schwartzStates';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
 import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
 import { buildBriefTemplateOutputFormat } from './briefTemplates';
@@ -497,6 +498,8 @@ ${buildFunnelGuide(params.funnelStage)}
 
 ${getAwarenessScriptGuide(params.awarenessLevel)}
 
+${getSchwartzStateBlock(params.awarenessLevel)}
+
 ${buildScriptProductGuide(params.product)}
 
 ${getProductPurchaseTriggers(params.product)}
@@ -959,14 +962,17 @@ Before writing any brief tables, you MUST produce a concise strategic outline. T
 
 ### STRATEGIC OUTLINE
 - **Framework Rationale:** Why ${params.framework} is the right framework for ${params.awarenessLevel} × ${params.adType} × ${params.product}. One sentence connecting the framework's arc to the awareness level's requirements.
-- **Beat Map:** Plan each beat against the time budget (target ${durationTarget.sweetSpot}, hard ceiling ${durationTarget.hardCeiling}). For each beat: what happens, approximate word count, primary emotion.${params.conceptAngleContext ? `
+- **Beat Map:** Plan each beat against the time budget (target ${durationTarget.sweetSpot}, hard ceiling ${durationTarget.hardCeiling}). For each beat: what happens, approximate word count, primary emotion, AND the ${params.framework} stage it executes (e.g., for PAS: which beat is Problem, which Agitate, which Solution). If a beat cannot be labeled with a stage of ${params.framework}, the script has drifted from its framework — restructure before writing.
+- **POV Declaration:** Name the narration POV — first-person testimonial / second-person direct address / third-person observation — and hold it consistently. All three are valid; third-person carries a burden: the character's moments must be as concrete as a first-person testimonial (the moment, the object, the time of day), and every narrated line must pass the read-aloud test. Floating story-summary narration ("she was having trouble with her ankles") is banned — if third-person can't get concrete, switch POV.
+- **10-Second Test:** Write out the exact words the viewer hears in the first ~10 seconds (hook + first body line). Verify they contain at least TWO concrete, filmable details AND that the target viewer would recognize "this is about me" — while the wrong viewer can tell it isn't for them.${params.awarenessLevel === 'Unaware' ? " For Unaware: the details are SCENES and BEHAVIORS — product, category, and symptom labels stay banned this early. Concrete AND compliant is the entire craft; vague scenes fail exactly like vague claims." : ''}
+- **Halfway Comprehension Check:** State in one sentence what the viewer understands at the 50% mark of the runtime.${params.awarenessLevel === 'Unaware' ? ' For Unaware: by halfway the viewer must at minimum have self-recognized (Beat 1) AND felt the reframe ("wait — that isn\'t normal?"). If at 50% the viewer could not say what this story has to do with THEM, tighten Beats 1-2 before writing.' : ' If the viewer could not say what is being shown or claimed by 50%, restructure.'}${params.conceptAngleContext ? `
 - **Concept Execution Plan:** How the pre-loaded concept's hypothesis, angle, and emotional core will be threaded through each beat. Name the specific concept element that drives each beat.` : ''}
 - **Talking Point Threading:** Where exactly does the assigned talking point surface in each beat? Name the beat and the specific language you'll use. The talking point must appear in at least 3 beats — if your outline shows it in fewer, revise the plan before proceeding.
 - **Visual Pacing Plan:** List your planned shot type sequence beat-by-beat. Flag any two consecutive same-type shots (e.g., two Talking Head rows back-to-back). For Ecom: verify every shot exists in the available footage library.
 - **Hook Strategy:** For each of your ${params.hookVariations} hooks: the hook archetype (question / statement / revelation / action / statistic / scene), the emotional entry point, and the first 5-6 words. No two hooks may share an archetype.
 - **Word Budget:** Estimate the word count per beat. Sum them. If the total exceeds ${durationTarget.hardCeiling}, cut beats or tighten language BEFORE writing the full brief. Do not proceed with an outline that exceeds the ceiling.
 
-**SELF-CHECK BEFORE PROCEEDING:** After outlining, verify: (1) talking point appears in ≥3 beats, (2) no two hooks share an archetype, (3) total word estimate is within ${durationTarget.sweetSpot}, (4) ${params.awarenessLevel === 'Unaware' ? 'Schwartz\'s Three Elimination Rules are honored in Beats 1-2' : 'the awareness level\'s structural requirements are met in the beat map'}, (5) every visual is producible for ${params.adType}. If any check fails, fix the outline first.
+**SELF-CHECK BEFORE PROCEEDING:** After outlining, verify: (1) talking point appears in ≥3 beats, (2) no two hooks share an archetype, (3) total word estimate is within ${durationTarget.sweetSpot}, (4) ${params.awarenessLevel === 'Unaware' ? 'Schwartz\'s Three Elimination Rules are honored in Beats 1-2' : 'the awareness level\'s structural requirements are met in the beat map'}, (5) every visual is producible for ${params.adType}, (6) the first ~10 seconds pass the 10-Second Test with concrete details quoted, (7) every beat carries a ${params.framework} stage label. If any check fails, fix the outline first.
 
 Then write the complete brief below the outline, executing the plan faithfully.
 

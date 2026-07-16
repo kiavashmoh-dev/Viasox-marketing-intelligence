@@ -1,6 +1,7 @@
 import type { HooksParams, HookStyle, FullAnalysis } from '../engine/types';
 import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { getAwarenessHookGuide } from './awarenessGuide';
+import { getSchwartzStateBlock } from './schwartzStates';
 import { getHookDonts, getAwarenessMessagingTechniques } from './manifestoReference';
 import { getMarketingBrainBlock } from './marketingBrain';
 
@@ -217,6 +218,8 @@ Apply these principles from the 4 marketing books to EVERY hook, while keeping i
 
 ${getAwarenessHookGuide(params.awarenessLevel)}
 
+${getSchwartzStateBlock(params.awarenessLevel)}
+
 ## SCRIPT-MODE HOOK RULES
 1. **Tone lock:** The hook MUST be written in the same voice, vocabulary level, and emotional register as the script. If the script says "y'all" the hook can say "y'all." If the script is measured and professional, the hook is measured and professional.
 2. **Persona lock:** The hook must sound like it comes from the SAME person (or same type of narrator) as the script. Don't write a third-person hook for a first-person script.
@@ -320,6 +323,8 @@ ${buildHookStyleGuides(params.hookStyles)}
 - Onlyness test — could this hook ONLY be for Viasox? If not, it's too generic
 
 ${getAwarenessHookGuide(params.awarenessLevel)}
+
+${getSchwartzStateBlock(params.awarenessLevel)}
 
 ## SEGMENT-AWARE HOOK TARGETING
 - **Motivation Segments** (Why They Buy): Comfort Seeker, Pain & Symptom Relief, Style Conscious, Quality & Value, Daily Wear Convert, Skeptic Converted, Emotional Transformer, Repeat Loyalist

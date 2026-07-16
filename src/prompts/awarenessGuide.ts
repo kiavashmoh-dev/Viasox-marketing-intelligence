@@ -744,6 +744,7 @@ The opening. Uses one of: Scene Identification / Mundane Reframe / False Cause F
 - Honors Schwartz's Three Elimination Rules (no price, no product name, no problem/solution statement)
 - Targets ONE sub-persona and writes to them specifically
 - 2-5 seconds of visual before voiceover often maximizes identification
+- ⚠️ **CONCRETE OR DEAD (the 10-second rule):** Identification only works when it is SPECIFIC. Within ~10 seconds the right viewer must recognize "this is about me" from at least TWO concrete, filmable details — a time of day, a place, an object, a named micro-behavior ("she waits until everyone's left the kitchen before sitting down"). Zero product/category/symptom language does NOT mean zero specificity: **vague claims are banned AND vague scenes are banned.** An opening that could start any brand's ad has failed Schwartz's own test — the identification opening "must pick out the product's logical prospects — and reject as many people as it attracts." A stranger's story that takes 20 seconds to mean anything is not identification; it is dead air with a plot.
 
 **BEAT 2 — REFRAME (~25-45% of runtime)**
 The "wait..." moment. The normalized experience is named as NOT normal. The viewer's wrong attribution is gently overturned.
@@ -842,6 +843,8 @@ Only NOW do we name Viasox. And only with a curiosity-driving, soft CTA.
 **SCRIPT STRUCTURE RULES (Problem Aware):**
 Problem Aware scripts are the AGITATION scripts. The viewer knows their pain — your job is to make it feel MORE URGENT, then reveal the path to relief. This is Schwartz's "intensification" in full force.
 
+**⚠️ CONCRETE OR DEAD (the 10-second rule):** Within ~10 seconds the viewer must hear their OWN symptom named with real-person specificity — not "foot discomfort" but "the burning that starts in your toes by 3pm." Minimum two concrete details in the opening: the sensation itself + when/where it strikes. At Problem Aware you are ALLOWED to be explicit about the problem — use that permission; vague pain language ("she was struggling with her feet") is an unforced error here.
+
 **TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 pain hook → 0:03-0:08 agitate → 0:08-0:12 solution bridge → 0:12-0:15 CTA
 - 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 pain hook → 0:05-0:20 deep agitation → 0:20-0:35 solution reveal + mechanism → 0:35-0:50 proof cascade → 0:50-0:58 CTA
@@ -877,6 +880,8 @@ Problem Aware scripts are the AGITATION scripts. The viewer knows their pain —
 
 **SCRIPT STRUCTURE RULES (Solution Aware):**
 Solution Aware scripts are DIFFERENTIATION scripts. They already know the problem AND that solutions exist. Your script must answer ONE question: "Why THIS solution and not the others?"
+
+**⚠️ CONCRETE OR DEAD (the 10-second rule):** Within ~10 seconds the viewer must know this is about a BETTER VERSION of something they already shop for — name the category and the differentiator early ("compression socks that don't strangle your calves by noon"). Minimum two concrete details in the opening: the failed-solution moment + the mechanism promise. Generic "there's a better way" openings fail — the mechanism IS the hook at this level (Schwartz Stage 3: mechanism in the headline, claim restated after).
 
 **TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 differentiation hook → 0:03-0:08 mechanism → 0:08-0:12 proof → 0:12-0:15 CTA
@@ -914,6 +919,8 @@ Solution Aware scripts are DIFFERENTIATION scripts. They already know the proble
 **SCRIPT STRUCTURE RULES (Product Aware):**
 Product Aware scripts are PROOF INTENSIFICATION scripts. They know Viasox. They need ONE MORE THING to tip them over the edge. Your script provides that thing — deeper proof, a fresh angle, or an irresistible demonstration.
 
+**⚠️ CONCRETE OR DEAD (the 10-second rule):** The brand lands in the first 3 seconds — the 10-second job is the NEW thing: one specific new proof point, story, or angle ("the ICU nurse who wore the same pair through four 16-hour shifts"). If by 10 seconds the viewer has heard brand recognition but no new concrete information, the ad is a rerun — and a Product Aware viewer scrolls reruns. Never re-introduce the product from zero; per Schwartz, this level's headline job is superiority, new proof, or new mechanism — not introduction.
+
 **TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 brand recognition + new info hook → 0:03-0:10 deep proof point → 0:10-0:15 CTA
 - 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 brand recognition + new info hook → 0:05-0:20 deep customer story → 0:20-0:35 proof cascade → 0:35-0:47 mechanism deep-dive → 0:47-0:54 offer → 0:54-0:58 CTA
@@ -947,6 +954,8 @@ Product Aware scripts are PROOF INTENSIFICATION scripts. They know Viasox. They 
 
 **SCRIPT STRUCTURE RULES (Most Aware):**
 Most Aware scripts are the SHORTEST, MOST DIRECT scripts. No education, no proof cascade, no awareness building. Just: recognition → offer/news → CTA. Get out of the way and let them buy.
+
+**⚠️ CONCRETE OR DEAD (the 10-second rule):** Product + exact offer in the first sentence — "5 pairs for $60" beats "an amazing deal" every time (Schwartz: at Most Aware the headline is name + bargain; price IS the news). By 10 seconds the viewer knows the deal, the deadline, and where to click. Any warm-up, mood-setting, or storytelling at this level is vagueness wearing a costume.
 
 **TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 product + offer → 0:03-0:10 urgency/details → 0:10-0:15 CTA

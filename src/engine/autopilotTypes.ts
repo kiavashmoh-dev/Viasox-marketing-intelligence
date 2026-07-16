@@ -14,6 +14,13 @@ export interface ParsedAsanaTask {
    * When absent, the mapper falls back to the heuristic which defaults to Ecom Style.
    */
   adType?: string;
+  /**
+   * Optional explicit awareness level (Schwartz). Set by the Planner dropdown
+   * when the user overrides the angle-based heuristic. When present, it is
+   * normalized and used directly; when absent, the mapper falls back to the
+   * heuristic (condition angles → Problem Aware, everything else → Unaware).
+   */
+  awarenessLevel?: string;
 }
 
 // ─── Mapped Task ─────────────────────────────────────────────────────────────

@@ -25,6 +25,40 @@ import {
   getAwarenessMessagingTechniques,
 } from './manifestoReference';
 
+/**
+ * Describe the ACTUAL composition of the batch under review instead of
+ * assuming it (the preamble previously hardcoded "Every brief targets TOF…
+ * most are UNAWARE… All use the B2G3 offer and are Ecom/Editing style",
+ * which became false once awareness became selectable per task). The
+ * reviewer must judge each brief against the rules of ITS OWN awareness
+ * level — penalizing a Product Aware brief for naming the product early
+ * would be as wrong as letting an Unaware brief lead with price.
+ */
+function buildBatchCompositionBlock(
+  briefs: Array<{ awarenessLevel?: string; medium: string }>,
+): string {
+  const counts = new Map<string, number>();
+  for (const b of briefs) {
+    const level = b.awarenessLevel || 'Unaware';
+    counts.set(level, (counts.get(level) ?? 0) + 1);
+  }
+  const composition = [...counts.entries()]
+    .map(([level, n]) => `${n}× ${level}`)
+    .join(', ');
+
+  return `You are reviewing a batch of ${briefs.length} video ad brief${briefs.length === 1 ? '' : 's'}. Batch composition by awareness level: ${composition}.
+
+**JUDGE EVERY BRIEF AGAINST THE RULES OF ITS OWN AWARENESS LEVEL** (stated per brief below):
+- **Unaware** — must honor Schwartz's Three Elimination Rules in the opening (no price, no product name, no direct problem/solution statement) and the 5-beat structure. No offer language anywhere.
+- **Problem Aware** — may name the problem/symptoms immediately; product enters after the problem is dramatized. Soft offer mentions acceptable late.
+- **Solution Aware** — may name the solution category early; the job is proving OUR mechanism. Offer acceptable in the close.
+- **Product Aware** — the viewer already knows Viasox: the brief must NOT re-introduce the product from zero. Lead with superiority, new proof, or new mechanism. Offer is expected.
+- **Most Aware** — name + deal. Leading with the offer (e.g., B2G3) is CORRECT here, not a violation.
+Do NOT penalize a brief for obeying its assigned level, and DO auto-flag a brief that obeys the wrong level (e.g., a Product Aware brief spending 30 seconds pretending the viewer never heard of Viasox).
+
+The standing offer is B2G3 (Buy 2 Get 3 Free — 5 pairs/$60); whether the ad may VOICE it depends on the awareness level above.`;
+}
+
 export function buildBatchReviewerPrompt(
   briefs: Array<{
     taskName: string;
@@ -54,7 +88,7 @@ export function buildBatchReviewerPrompt(
 
 You are the Head of Creative Quality at Viasox. Nothing gets to production without your approval. You are METICULOUS, CRITICAL, and UNCOMPROMISING. You have 20 years of DTC performance marketing experience and you have seen thousands of briefs — you know exactly what separates a brief that will perform from one that will waste production budget.
 
-You are reviewing a batch of Ecom-style video ad briefs. Every brief targets TOF (Top of Funnel) audiences. IMPORTANT: The awareness level varies per brief — most are UNAWARE TOF (the majority of our TOF creative should be Unaware), while medical-condition angles (Neuropathy, Diabetes, Varicose Veins) use PROBLEM AWARE TOF. All use the B2G3 offer and are Ecom/Editing style.
+${buildBatchCompositionBlock(briefs)}
 
 **Your mindset:** You are NOT looking for reasons to approve. You are looking for weaknesses. Every brief is guilty until proven excellent. A "fine" brief is a FAIL — only genuinely strong, differentiated, strategically sound briefs pass your review.
 

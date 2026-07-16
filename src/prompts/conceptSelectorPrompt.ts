@@ -180,6 +180,15 @@ ${shortForm
 - If ALL concepts in the pool have this problem, pick the one CLOSEST to having a clear voice and in your reasoning explicitly note that the script writer must add VO to make it shippable at ${duration}.
 - LENGTH GATE: any concept that pitches more spoken content than ${durationTarget.hardCeiling} words will break the length budget. Downrate and prefer concepts that fit ${durationTarget.sweetSpot}.
 - Remember: the tool has historically overshot length by 20-30%. Do not select sprawling concepts.`}
+
+## OPENING SPECIFICITY GATE — HARD REJECTION FILTER (all awareness levels)
+
+Apply the 10-second self-selection test to every concept's opening (hook + first beat) BEFORE scoring:
+- **PASS:** within the first ~10 seconds of projected runtime, the RIGHT viewer recognizes "this is about me" from at least TWO concrete, filmable details (a time of day, a place, an object, a named micro-behavior, a sensation described the way a real person says it) — and the WRONG viewer can tell it isn't for them.
+- **REJECT:** the opening could start an ad for any product or any person — abstract storytelling ("she was struggling"), unanchored emotion, interchangeable scene-setting. A story opening is not automatically generic; it is generic when its details are interchangeable. Do NOT select a concept with a generic opening no matter how strong its remaining beats are — the opening is the only part most viewers will ever see.
+
+POV: first-person testimonial, second-person direct address, and third-person observation are ALL acceptable (including for Ecom voiceover). Third-person gets extra scrutiny: floating story-summary narration ("she was having trouble with her ankles") = REJECT; the character's moments must be concrete and every line natural when read aloud.
+${isUnaware ? `For this Unaware brief, the concrete details must be SCENES and BEHAVIORS — product/category/symptom labels stay banned per the UNAWARE GATE below. Both gates apply independently: compliant-but-vague fails THIS gate; concrete-but-rule-breaking fails THAT one.` : ''}
 ${isUnaware ? `
 
 ## UNAWARE GATE — HARD REJECTION FILTER (applied BEFORE scoring)

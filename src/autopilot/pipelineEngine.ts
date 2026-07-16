@@ -113,6 +113,15 @@ function matchFramework(suggestion: string): ScriptFramework {
     if (matchCount >= 2) return f;
   }
   const partial = VALID_FRAMEWORKS.find((f) => lower.includes(f.toLowerCase().split(' ')[0].replace('(', '')));
+  if (!partial) {
+    // Loud fallback: a silent default to PAS hides framework drift — the
+    // selector suggested something we couldn't resolve, and the script then
+    // gets written against a framework nobody chose. Surface it.
+    console.warn(
+      `[pipeline] Unrecognized framework suggestion ${JSON.stringify(suggestion)} — falling back to 'PAS (Problem-Agitate-Solution)'. ` +
+      'If this suggestion is a real framework, add it to VALID_FRAMEWORKS (and FRAMEWORK_DETAILS in scriptPrompt.ts).',
+    );
+  }
   return partial ?? 'PAS (Problem-Agitate-Solution)';
 }
 
@@ -761,6 +770,7 @@ ${task.duration === '1-15 sec' ? `SHORT FORM — single-moment concepts valid, n
           medium: task.parsed.medium,
           duration: task.duration,
           adType: task.scriptParamsBase.adType,
+          awarenessLevel: task.scriptParamsBase.awarenessLevel,
           concepts: conceptsRaw,
           thesis,
           inspirationContext: inspirationCtx,
@@ -796,6 +806,7 @@ ${task.duration === '1-15 sec' ? `SHORT FORM — single-moment concepts valid, n
             medium: task.parsed.medium,
             duration: task.duration,
             adType: task.scriptParamsBase.adType,
+            awarenessLevel: task.scriptParamsBase.awarenessLevel,
             concepts: conceptsRaw,
             thesis,
             inspirationContext: inspirationCtx,
@@ -1005,6 +1016,7 @@ ${getAngleLanguageBank(task.parsed.angle)}
             medium: task.parsed.medium,
             duration: task.duration,
             adType: task.scriptParamsBase.adType,
+            awarenessLevel: task.scriptParamsBase.awarenessLevel,
             concepts: conceptsRaw,
             thesis,
             inspirationContext: inspirationCtx,
@@ -1716,6 +1728,7 @@ ${getAngleLanguageBank(task.parsed.angle)}
         medium: task.parsed.medium,
         duration: task.duration,
         adType: task.scriptParamsBase.adType,
+        awarenessLevel: task.scriptParamsBase.awarenessLevel,
         concepts: conceptsRaw,
         thesis,
         inspirationContext: regenInspirationCtx,
@@ -1748,6 +1761,7 @@ ${getAngleLanguageBank(task.parsed.angle)}
           medium: task.parsed.medium,
           duration: task.duration,
           adType: task.scriptParamsBase.adType,
+          awarenessLevel: task.scriptParamsBase.awarenessLevel,
           concepts: conceptsRaw,
           thesis,
           inspirationContext: regenInspirationCtx,

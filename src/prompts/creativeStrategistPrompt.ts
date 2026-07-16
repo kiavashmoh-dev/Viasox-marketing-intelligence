@@ -26,6 +26,7 @@ import type { ProductCategory } from '../engine/types';
 import { getVisualCraftGuide } from './visualCraftGuide';
 import { getMarketingBrainBlock } from './marketingBrain';
 import { getClaimBoundaryBlock } from './claimBoundary';
+import { getSchwartzStateBlock } from './schwartzStates';
 
 export interface CreativeStrategistInput {
   taskName: string;
@@ -158,6 +159,15 @@ Keep the thesis under ${visualCraft ? '520' : '440'} words. Every line earns its
   parts.push(`- **Duration:** ${input.duration}`);
   parts.push(`- **Ad Type:** ${input.adType}`);
   parts.push(`- **Awareness Level:** ${input.awarenessLevel}`);
+  {
+    // Schwartz's actual playbook for this awareness state — the thesis must
+    // be built on the state's headline job, not just the level's name.
+    const stateBlock = getSchwartzStateBlock(input.awarenessLevel);
+    if (stateBlock) {
+      parts.push('');
+      parts.push(stateBlock);
+    }
+  }
   parts.push(`- **Funnel Stage:** ${input.funnelStage}`);
   parts.push('');
 

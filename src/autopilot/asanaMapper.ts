@@ -1,4 +1,4 @@
-import type { ProductCategory, AngleType, AwarenessLevel, ScriptParams, AdType, FullAiSpecification, FullAiVisualStyle } from '../engine/types';
+import type { ProductCategory, AngleType, AwarenessLevel, FunnelStage, ScriptParams, AdType, FullAiSpecification, FullAiVisualStyle } from '../engine/types';
 import type { ParsedAsanaTask, AutopilotTask } from '../engine/autopilotTypes';
 // Custom directives are read in pipelineEngine.ts, not here
 
@@ -112,6 +112,60 @@ function mapAwarenessLevel(angle: string, _medium: string): AwarenessLevel {
   // worth solving, or they've normalized their discomfort.
   // This is the majority of our TOF creative.
   return 'Unaware';
+}
+
+/**
+ * All five Schwartz awareness levels, in funnel order. Mirrors the
+ * AwarenessLevel union in src/engine/types.ts — any change there must be
+ * reflected here so the Planner dropdown and normalizer stay in sync.
+ */
+export const AWARENESS_OPTIONS: readonly AwarenessLevel[] = [
+  'Unaware',
+  'Problem Aware',
+  'Solution Aware',
+  'Product Aware',
+  'Most Aware',
+] as const;
+
+/**
+ * Normalize a free-text awareness string (Planner dropdown value or a
+ * future Asana column) into a strict AwarenessLevel. Returns `undefined`
+ * when the input cannot be confidently resolved — callers fall back to
+ * the angle-based heuristic in mapAwarenessLevel.
+ */
+export function normalizeAwarenessLevel(raw: string | undefined | null): AwarenessLevel | undefined {
+  if (!raw || typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  const exact = AWARENESS_OPTIONS.find(
+    (opt) => opt.toLowerCase() === trimmed.toLowerCase(),
+  );
+  if (exact) return exact;
+  // Tolerate compact variants like "problem-aware" / "productaware"
+  const compact = trimmed.toLowerCase().replace(/[\s_-]+/g, '');
+  return AWARENESS_OPTIONS.find(
+    (opt) => opt.toLowerCase().replace(/\s+/g, '') === compact,
+  );
+}
+
+/**
+ * Funnel stage follows the awareness level. Unaware/Problem Aware are cold
+ * TOF traffic; Solution/Product Aware audiences already know solutions or
+ * the product (retargeting territory = MOF); Most Aware is ready-to-buy
+ * BOF. Previously funnelStage was hardcoded 'TOF' — this mapping preserves
+ * that for the two historically reachable levels.
+ */
+function mapFunnelStage(awarenessLevel: AwarenessLevel): FunnelStage {
+  switch (awarenessLevel) {
+    case 'Unaware':
+    case 'Problem Aware':
+      return 'TOF';
+    case 'Solution Aware':
+    case 'Product Aware':
+      return 'MOF';
+    case 'Most Aware':
+      return 'BOF';
+  }
 }
 
 /**
@@ -419,7 +473,12 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
   const product = mapProduct(parsed.product);
   const duration = mapDuration(parsed.medium);
   const angleType = mapAngleType(parsed.angle);
-  const awarenessLevel = mapAwarenessLevel(parsed.angle, parsed.medium);
+  // Explicit awareness override (Planner dropdown) takes precedence over
+  // the angle-based heuristic — mirrors the adType override pattern below.
+  const awarenessLevel =
+    normalizeAwarenessLevel(parsed.awarenessLevel) ??
+    mapAwarenessLevel(parsed.angle, parsed.medium);
+  const funnelStage = mapFunnelStage(awarenessLevel);
   const persona = mapPersona(parsed.angle, product, awarenessLevel);
 
   // Explicit ad type override takes precedence; otherwise default to Ecom.
@@ -434,7 +493,7 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
     product,
     persona,
     duration,
-    funnelStage: 'TOF',
+    funnelStage,
     awarenessLevel,
     adType,
     promoPeriod: 'None',
@@ -456,7 +515,7 @@ export function mapAsanaTask(parsed: ParsedAsanaTask): AutopilotTask {
       product,
       awarenessLevel,
       angleType,
-      funnelStage: 'TOF',
+      funnelStage,
       adType,
       primaryTalkingPoint: parsed.angle,
       duration,

@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { AutopilotTask, CreativeDirection } from '../../engine/autopilotTypes';
 import type { InspirationItem } from '../../engine/inspirationTypes';
-import type { AdType } from '../../engine/types';
+import type { AdType, AwarenessLevel } from '../../engine/types';
 import { getMemoryStats } from '../../autopilot/memoryStore';
 import { getAllItems } from '../../inspiration/inspirationStore';
-import { mapAsanaTask, AD_TYPE_OPTIONS } from '../../autopilot/asanaMapper';
+import { mapAsanaTask, AD_TYPE_OPTIONS, AWARENESS_OPTIONS } from '../../autopilot/asanaMapper';
 import MemoryPanel from './MemoryPanel';
 
 interface Props {
@@ -18,6 +18,15 @@ interface Props {
  * dropdown so the column stays compact. The canonical enum value is
  * preserved under the hood.
  */
+/** Compact labels for the Planner's Awareness dropdown. */
+const AWARENESS_LABELS: Record<AwarenessLevel, string> = {
+  'Unaware': 'Unaware',
+  'Problem Aware': 'Problem Aw.',
+  'Solution Aware': 'Solution Aw.',
+  'Product Aware': 'Product Aw.',
+  'Most Aware': 'Most Aware',
+};
+
 const AD_TYPE_LABELS: Record<AdType, string> = {
   'Ecom Style': 'Ecom Style',
   'AGC (Actor Generated Content)': 'AGC',
@@ -44,6 +53,13 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
   // style) all stay in sync with the selected ad type.
   const [adTypeByIndex, setAdTypeByIndex] = useState<AdType[]>(() =>
     tasks.map((t) => t.scriptParamsBase.adType),
+  );
+  // Per-task awareness override. Initialized from each task's heuristic-mapped
+  // level (condition angles → Problem Aware, else Unaware). Changing the
+  // dropdown re-maps the task so anglesParams + scriptParamsBase (including
+  // the awareness-derived funnelStage) stay in sync — same pattern as adType.
+  const [awarenessByIndex, setAwarenessByIndex] = useState<AwarenessLevel[]>(() =>
+    tasks.map((t) => t.scriptParamsBase.awarenessLevel),
   );
   const memStats = getMemoryStats();
 
@@ -93,6 +109,14 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
     });
   };
 
+  const setAwareness = (taskIndex: number, level: AwarenessLevel) => {
+    setAwarenessByIndex((prev) => {
+      const next = [...prev];
+      next[taskIndex] = level;
+      return next;
+    });
+  };
+
   /**
    * The tasks we actually pass to the pipeline. Each task is re-mapped
    * via `mapAsanaTask` with the user-selected ad type injected into
@@ -104,16 +128,21 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
     () =>
       tasks.map((task, i) => {
         const overrideAdType = adTypeByIndex[i];
-        if (overrideAdType === task.scriptParamsBase.adType) {
+        const overrideAwareness = awarenessByIndex[i];
+        if (
+          overrideAdType === task.scriptParamsBase.adType &&
+          overrideAwareness === task.scriptParamsBase.awarenessLevel
+        ) {
           // No change — return original to preserve reference equality
           return task;
         }
         return mapAsanaTask({
           ...task.parsed,
           adType: overrideAdType,
+          awarenessLevel: overrideAwareness,
         });
       }),
-    [tasks, adTypeByIndex],
+    [tasks, adTypeByIndex, awarenessByIndex],
   );
 
   const selectedTasks = remappedTasks.filter((_, i) => included[i]);
@@ -160,6 +189,7 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
                 <th className="py-2 px-2 text-slate-600 font-semibold">Medium</th>
                 <th className="py-2 px-2 text-slate-600 font-semibold">Duration</th>
                 <th className="py-2 px-2 text-slate-600 font-semibold">Ad Type</th>
+                <th className="py-2 px-2 text-slate-600 font-semibold">Awareness</th>
                 <th className="py-2 px-2 text-slate-600 font-semibold">Pinned Inspiration (optional)</th>
               </tr>
             </thead>
@@ -201,6 +231,25 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
                       {AD_TYPE_OPTIONS.map((opt) => (
                         <option key={opt} value={opt}>
                           {AD_TYPE_LABELS[opt]}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="py-2 px-2">
+                    <select
+                      value={awarenessByIndex[i]}
+                      onChange={(e) => setAwareness(i, e.target.value as AwarenessLevel)}
+                      disabled={!included[i]}
+                      className={`text-xs border rounded px-2 py-1 bg-white max-w-[120px] focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                        awarenessByIndex[i] === tasks[i].scriptParamsBase.awarenessLevel
+                          ? 'border-slate-200 text-slate-700'
+                          : 'border-amber-300 text-amber-800 bg-amber-50 font-medium'
+                      }`}
+                      title={`${awarenessByIndex[i]} — funnel: ${task.scriptParamsBase.funnelStage}`}
+                    >
+                      {AWARENESS_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {AWARENESS_LABELS[opt]}
                         </option>
                       ))}
                     </select>
