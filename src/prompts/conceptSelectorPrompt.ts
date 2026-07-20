@@ -42,6 +42,7 @@ export function buildConceptSelectorPrompt(
   funnelStage: string = 'TOF',
 ): { system: string; user: string } {
   const isUnaware = awarenessLevel === 'Unaware';
+  const isBrandForward = awarenessLevel === 'Product Aware' || awarenessLevel === 'Most Aware';
   const isFullAi = adType === 'Full AI (Documentary, story, education, etc)';
   const normalizedFullAiDuration: FullAiDuration = (['1-15 sec', '16-59 sec', '60-90 sec'] as const).includes(
     duration as FullAiDuration,
@@ -188,6 +189,14 @@ Apply the 10-second self-selection test to every concept's opening (hook + first
 - **REJECT:** the opening could start an ad for any product or any person — abstract storytelling ("she was struggling"), unanchored emotion, interchangeable scene-setting. A story opening is not automatically generic; it is generic when its details are interchangeable. Do NOT select a concept with a generic opening no matter how strong its remaining beats are — the opening is the only part most viewers will ever see.
 
 POV: first-person testimonial, second-person direct address, and third-person observation are ALL acceptable (including for Ecom voiceover). Third-person gets extra scrutiny: floating story-summary narration ("she was having trouble with her ankles") = REJECT; the character's moments must be concrete and every line natural when read aloud.
+
+## PRODUCT CONVICTION GATE (all awareness levels)
+
+Do not select a concept whose product/solution moment is a placeholder or timid existence claim ("a type of sock built for exactly this," "a completely different kind of sock") — if the product moment would survive unchanged on a generic competitor's sock, the concept fails the SWAP TEST and must not be selected while any concept with a real committed attribute (no elastic band / 30-inch stretch / seamless toe / graduated 12-15 mmHg / uniform ankle compression / ankle-height invisibility / non-medical patterns / wide-calf fit range — per THIS product line) is available. EXCEPTION: a concept explicitly declared as an engagement/awareness-goal short-form (1-15 sec) piece is judged on brand-recall craft instead — there the brand may be carried by a visual element (pattern close-up, stretch demo, logo moment) rather than a sold claim.
+${isBrandForward ? `
+## BRAND-FORWARD GATE — HARD REJECTION FILTER (${awarenessLevel.toUpperCase()})
+
+This viewer already knows Viasox${awarenessLevel === 'Most Aware' ? ' and already wants it' : ''}. The brand/product name must appear within the FIRST ~3 SECONDS of the concept (hook or opening beat). REJECT any concept that hides the brand, re-introduces the product from zero, or spends the opening on problem-education — that is a lower-awareness ad wearing the wrong label. ${awarenessLevel === 'Most Aware' ? 'The offer belongs in the first sentence WITH the name — name + deal IS the concept.' : "The opening's job is brand recognition + the NEW thing (fresh proof, story, or mechanism)."}` : ''}
 ${isUnaware ? `For this Unaware brief, the concrete details must be SCENES and BEHAVIORS — product/category/symptom labels stay banned per the UNAWARE GATE below. Both gates apply independently: compliant-but-vague fails THIS gate; concrete-but-rule-breaking fails THAT one.` : ''}
 ${isUnaware ? `
 
@@ -205,8 +214,8 @@ This is an **UNAWARE** brief. The audience does NOT know they have a problem wor
 1. **Identification** — a specific sensory moment the Unaware viewer recognizes as "me" (sock marks, ankles tight by 3pm, morning numbness, line across the calf).
 2. **Reframe** — reveal that the normalized moment isn't normal, or isn't caused by what they think. This is the "wait, what?" beat.
 3. **Mechanism** — the invisible physiological cause (circulation, elastic compression, nerve pressure) — brief, credible, curiosity-building.
-4. **Category Reveal** — "There's a type of sock built to prevent this" — the CATEGORY appears, not the brand.
-5. **Product Reveal** — Viasox appears ONLY here, at the end. Soft CTA.
+4. **Category Reveal** — the CATEGORY appears (not the brand) WITH a concrete attribute: "There's a sock with no elastic band at the top — it stretches to 30 inches and never leaves a mark." Timid existence claims ("a type of sock built for this," "socks built differently exist") are placeholder reveals — treat them as a weakness, not a pass.
+5. **Product Reveal** — Viasox appears ONLY here, at the end, named PROPERLY: spoken in the VO with the product line, one concrete attribute, and one proof anchor. Soft but CONFIDENT CTA.
 
 If a concept cannot cleanly map to these 5 beats OR if it compresses identification into "you have neuropathy" → REJECT.
 
@@ -279,8 +288,8 @@ FIVE_BEAT_MAPPING: [One line per beat showing how the selected concept maps to t
 - Beat 1 (Identification): [what the viewer sees in the opening 0-3s]
 - Beat 2 (Reframe): [the "wait, what?" moment]
 - Beat 3 (Mechanism): [the invisible cause revealed]
-- Beat 4 (Category Reveal): [when/how "a type of sock built for this" appears]
-- Beat 5 (Product Reveal): [when Viasox actually appears]
+- Beat 4 (Category Reveal): [when/how the category is revealed WITH its concrete attribute]
+- Beat 5 (Product Reveal): [when Viasox is named in the VO, with which attribute + proof anchor]
 ]
 
 REASONING: [5-7 sentences of deep analysis. Explain WHY this concept wins AND why it passes Schwartz's Three Elimination Rules. Reference the specific identification beat, the reframe, and how it avoids the banned Unaware vocabulary. Be specific about why the others failed the Unaware gate — did they name the condition in the hook? Did they open with the product? Did they skip the mechanism beat?]` : `REASONING: [4-6 sentences of deep analysis. Explain WHY this concept wins on the criteria. Reference specific elements of the concept. Explain why the others fell short. Be specific — "Concept 3's hook about morning numbness is stronger than Concept 1's generic pain opening because it names the EXACT sensation and time of day, which creates instant recognition for neuropathy sufferers."]`}
@@ -306,7 +315,7 @@ The audience does NOT know they have a problem. They've normalized sock marks, t
 - Hooks that show a SCENE the viewer recognizes BEFORE recognition ("the line across your calf when you take off your socks")
 - Reframes that overturn a normalized assumption ("you thought that was just what your ankles looked like")
 - Mechanism beats that reveal an invisible cause ("your socks are compressing the exact veins that drain your ankles")
-- Category reveals BEFORE product reveals ("there's a type of sock built to prevent this")
+- Category reveals BEFORE product reveals — carried by a concrete attribute ("there's a sock with no elastic band at the top — it stretches to 30 inches"), never a bare existence claim
 
 Reject pitchy openings. Reject medical vocabulary in Beat 1. Reject any concept where the product appears before Beat 5.` : ''}
 

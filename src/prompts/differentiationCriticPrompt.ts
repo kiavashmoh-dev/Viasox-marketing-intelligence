@@ -87,8 +87,14 @@ Awareness calibration for this gate (this task is **${input.awarenessLevel}**):
 - **Unaware:** specifics must be SCENES and BEHAVIORS — product, category, and symptom labels stay banned in the opening. Vague claims are banned; vague scenes are banned too. Concrete-but-compliant is the entire craft.
 - **Problem Aware:** specifics should be the symptom experience itself, named plainly and early.
 - **Solution / Product / Most Aware:** specifics may include category, product, proof, or offer per the level's rules — vagueness has no excuse at these levels.
+- **Product / Most Aware brand timing:** the brand itself belongs in the opening — Viasox must appear within the first ~3 seconds. A concept that hides the brand or re-introduces the product from zero is obeying the wrong level = GENERIC (reject).
 
 POV note: first-person testimonial, second-person direct address, and third-person observation are ALL legitimate executions (including for Ecom voiceover). But third-person ("she…") earns extra scrutiny: the character's moments must be as concrete as a first-person testimonial would be, and the narration must pass a read-aloud naturalness test. Third-person storytelling that floats above its character ("she was having trouble with her ankles") = GENERIC.
+
+### A4. Product Conviction — SWAP TEST HARD GATE
+The backlog audit's sharpest finding: scripts where ~80% is emotional problem and the product gets placeholder language ("a type of sock built for exactly this," "a completely different kind of sock") that describes nothing. Check each concept's product/solution moment:
+- **SELLS:** the concept commits to at least one CONCRETE product attribute FOR THIS PRODUCT LINE (EasyStretch: no elastic band / 30-inch stretch / seamless toe / wide-calf fit range; Compression: graduated 12-15 mmHg / non-medical patterns; Ankle Compression: uniform gentle ankle-and-arch compression — never "graduated" — / ankle-height invisibility) and proposes the solution with conviction — ideally with a proof moment (demo, testimonial, specific review anchor).
+- **SWAPPABLE:** the product moment is a placeholder or timid existence claim — the concept would work unchanged for a generic competitor's sock. = REJECT. Awareness level does not excuse this: an Unaware concept still ends in a category/product reveal, and that reveal must carry a real attribute. EXCEPTION: a concept explicitly declared as an engagement/awareness-goal short-form (1-15 sec) piece is judged on brand-recall craft — the brand may be carried by a visual element (pattern close-up, stretch demo, logo moment) instead of a sold claim; A4 remains a hard gate for every conversion-goal concept.
 
 ${hasInspiration ? `### B. Inspiration Mirroring
 - **STRONG:** The concept visibly echoes the reference's hook archetype, narrative shape, AND product-bridge timing. You can point to the specific inspiration element being adapted.
@@ -116,8 +122,8 @@ This dimension flags issues in your reasoning; it does not by itself flip a KEEP
 
 For each concept: mark **KEEP** or **REJECT**.
 
-- KEEP = Claim Grounding is GROUNDED AND Opening Specificity is CONCRETE AND Talking-Point Relevance is STRONG or BORDERLINE AND at least 2 of the other dimensions are STRONG
-- REJECT = Claim Grounding is UNSUPPORTED (automatic — no other dimension can rescue an invented claim), OR Opening Specificity is GENERIC (automatic — a vague opening wastes the only seconds that decide whether anyone keeps watching), OR Talking-Point Relevance is IRRELEVANT, OR the concept is WEAK on the thesis AND the inspiration (if any)
+- KEEP = Claim Grounding is GROUNDED AND Opening Specificity is CONCRETE AND Product Conviction is SELLS AND Talking-Point Relevance is STRONG or BORDERLINE AND at least 2 of the other dimensions are STRONG
+- REJECT = Claim Grounding is UNSUPPORTED (automatic — no other dimension can rescue an invented claim), OR Opening Specificity is GENERIC (automatic — a vague opening wastes the only seconds that decide whether anyone keeps watching), OR Product Conviction is SWAPPABLE (automatic — an ad that never really sells the product is brand-building for the whole category, paid for by us), OR Talking-Point Relevance is IRRELEVANT, OR the concept is WEAK on the thesis AND the inspiration (if any)
 
 ### Overall Batch Verdict
 - **PROCEED:** 3+ of 5 concepts are KEEP. The selector has enough to work with.
@@ -135,6 +141,7 @@ Output exactly this structure. No extra commentary before or after.
 - Talking-Point Relevance: [STRONG / BORDERLINE / IRRELEVANT] — [one sentence why]
 - Claim Grounding: [GROUNDED / UNSUPPORTED] — [name the recorded trigger/quote it rests on, or name the invented claim]
 - Opening Specificity: [CONCRETE / GENERIC] — [quote the concrete details that pass the 10-second test, or name exactly what is interchangeable]
+- Product Conviction: [SELLS / SWAPPABLE] — [name the concrete attribute the concept commits to, or quote the placeholder it hides behind]
 ${hasInspiration ? '- Inspiration Mirroring: [STRONG / BORDERLINE / WEAK] — [one sentence why]\n' : ''}- Thesis Alignment: [STRONG / BORDERLINE / WEAK] — [one sentence why]
 - Strategic Merit: [STRONG / BORDERLINE / WEAK] — [one sentence why]
 - Verdict: [KEEP / REJECT]

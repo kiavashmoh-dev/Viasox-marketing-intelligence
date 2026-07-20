@@ -33,6 +33,7 @@ export function buildConceptEvaluatorPrompt(
   awarenessLevel: AwarenessLevel = 'Problem Aware',
 ): { system: string; user: string } {
   const isUnaware = awarenessLevel === 'Unaware';
+  const isBrandForward = awarenessLevel === 'Product Aware' || awarenessLevel === 'Most Aware';
   // Duration-aware constraints for the evaluator. Used to downrate concepts
   // that break the VO-by-length rule (16-59 sec / 60-90 sec without VO) or
   // the length calibration rule (concepts that pitch too much story for a
@@ -53,7 +54,12 @@ You are opinionated and specific. You don't rate everything 4/5. You differentia
 **CRITICAL EVALUATION CRITERIA — ANGLE SPECIFICITY:**
 The most important evaluation criterion is whether the concept is SPECIFICALLY about the assigned angle. If the task says "Neuropathy" and the concept is generic "foot discomfort" without mentioning neuropathy, nerve pain, or diabetic neuropathy — that concept gets a 1/5 regardless of how well-written it is. The angle must be the SOUL of the concept, not a backdrop.
 
-**OPENING SPECIFICITY — 10-SECOND SELF-SELECTION (HARD RATING CAP, all awareness levels):**
+**PRODUCT CONVICTION — SWAP TEST (HARD RATING CAP, all awareness levels):**
+A concept whose product/solution moment is a placeholder or timid existence claim ("a type of sock built for exactly this," "a completely different kind of sock") — i.e., it would survive unchanged on a generic competitor's sock — **rate 2/5 max** and name the placeholder in your reasoning. The product moment must commit to a concrete attribute for THIS product line. EXCEPTION: a concept explicitly declared as an engagement/awareness-goal short-form (1-15 sec) piece is judged on brand-recall craft (the brand may be carried visually) instead of the swap test.
+
+${isBrandForward ? `**BRAND-FORWARD TIMING (HARD RATING CAP — ${awarenessLevel.toUpperCase()}):** this viewer already knows Viasox. If a concept does not put the brand name within the first ~3 seconds (hook/opening beat), or re-introduces the product from zero, **rate it 2/5 max** — it is a lower-awareness ad mislabeled.${awarenessLevel === 'Most Aware' ? ' At Most Aware the offer belongs in the first sentence with the name.' : ''}
+
+` : ''}**OPENING SPECIFICITY — 10-SECOND SELF-SELECTION (HARD RATING CAP, all awareness levels):**
 The most reported failure of past batches: openings so vague the viewer can't tell for 20+ seconds whether the ad is even for them. Within the first ~10 seconds the RIGHT viewer must recognize "this is about me" from at least TWO concrete, filmable details (a time of day, a place, an object, a named micro-behavior). A concept whose opening could start any brand's ad — abstract storytelling ("she was struggling"), unanchored emotion, interchangeable scene-setting — **rate 2/5 max** regardless of its other strengths, and name the interchangeable element in your reasoning. POV note: first-, second-, and third-person narration are all valid executions; third-person that floats above its character ("she was having trouble with her ankles") without concrete, naturally-spoken moments takes the same cap.
 ${isUnaware ? `
 
@@ -88,7 +94,7 @@ Concepts that target no sub-persona or lump them together score **2/5 max**.
 - False Cause Flip ("you've been blaming your long days for this. look again.")
 - "Doctor Said Watch Your Feet" (medical authority triggers curiosity, not pitch)
 - Micro-Behavior (tiny unconscious action the viewer recognizes as their own)
-- Hidden Math ("your sock elastic is pressing on ~4 lbs of tissue per square inch")
+- Hidden Math ("16 hours. That's how long the same elastic presses the same inch of your leg every day.") — the math must be REAL and checkable, never an invented physiological statistic
 
 Concepts using these hook styles = rate HIGHER. Concepts using "Pain Agitation," "Bold Claim," or "Direct Address" in Unaware context = rate LOWER (those are Problem Aware / Solution Aware hooks).` : ''}
 

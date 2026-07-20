@@ -119,6 +119,7 @@ Analyze this batch deeply. Think about:
 - How should we differentiate between briefs with similar angles or products?
 - What emotional territories should each brief own?
 - Are there any gaps or missed opportunities in this batch?
+- **PORTFOLIO COMPOSITION (mandatory):** Look at the batch as a portfolio, not a list. (a) NEAR-DUPLICATES: if two or more tasks would produce essentially the same ad (same angle + product + audience), SAY SO by name and either assign each a genuinely different execution or recommend the director differentiate/merge them — a past 44-script backlog collapsed into ~7 concepts because nobody flagged this. (b) MONOTONY: if one awareness level, one avatar, one opening technique, one emotional register, or one format would carry most of the batch, name the imbalance and what it costs (a batch that is 100% Unaware withholds the brand until the final beat of every single ad — the account never leads with its own name; one avatar everywhere means the account only ever talks to one woman; one emotional register — wistful recognition → relief — everywhere means no humor, confidence, pride, or delight anywhere). (c) TECHNIQUE QUOTA: no single opening technique (e.g., the "it's not X, it's Y" reframe) should carry more than ~40% of the batch — assign varied structures per brief.
 
 Write your analysis as a senior strategist would — with conviction, specificity, and actionable insight. Not generic advice.
 
@@ -220,11 +221,15 @@ For EACH task (by name), provide:
 - **Key differentiator:** What makes this brief different from others in the batch
 - **Tone & style:** Specific guidance (not just "conversational" — be specific about WHAT KIND)
 - **Must-hit points:** 2-3 non-negotiable elements based on the director's input
+- **Product truth to sell:** The ONE concrete product attribute this brief commits to, drawn from ITS OWN product line (EasyStretch: no elastic band / 30-inch stretch / seamless toe / wide-calf fit range; Compression: graduated 12-15 mmHg / non-medical patterns; Ankle Compression: uniform gentle ankle-and-arch compression — never "graduated" — / ankle-height invisibility) and the proof moment that backs it — no brief ships on placeholder product language
 - **Avoid:** What this brief should NOT do (based on the discussion)
 - **Recommended framework direction:** Which script frameworks would serve this brief best and why
 
 ### DIVERSITY RULES
-How to ensure creative diversity across the batch (hook variety, framework variety, tone variety, visual variety).
+How to ensure creative diversity across the batch (hook variety, framework variety, tone variety, visual variety). Enforce the portfolio findings from your analysis: assign avatars across the batch's REAL segments (healthcare worker, caregiver/daughter-buying-for-mom, senior, style-conscious, skeptic — not one persona everywhere), cap any single opening technique at ~40% of the batch, and give near-duplicate tasks explicitly different executions by name.
+
+### TEST DESIGN (LEARNING AGENDA)
+Structure the batch as an experiment, not just a set of ads. For each brief (by name): the ONE variable it isolates versus the rest of the batch (hook archetype / angle / format / avatar / awareness level / opening technique) and which other brief is its closest comparison — ideally one brief per batch is the "control": a proven-winner structure rerun with only the tested variable changed. If the batch cannot isolate variables cleanly (everything differs everywhere), say so plainly and name what to hold constant next week. The goal: when results come back, we can say WHY a winner won instead of shipping look-alikes and guessing.
 
 ### CREATIVE GUARDRAILS
 Any constraints or non-negotiables from the director's answers that apply batch-wide.

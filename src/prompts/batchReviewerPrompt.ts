@@ -143,6 +143,7 @@ Short-form (1-15 sec) ads follow a fundamentally different creative philosophy. 
 
 **1. scriptVagueness — Script Specificity (NEVER be vague)**
 Does the script use SPECIFIC, CONCRETE language throughout? Every line should paint a picture. "Experience comfort like never before" = 2/10. "The numbness that starts in your toes by 3pm and crawls up past your ankles" = 9/10. Check every beat — even one vague line in an otherwise specific script brings this score down. Data points must be specific ("89% reported reduced marks" not "most customers noticed a difference").
+THE PRODUCT BEAT is where vagueness costs the most. It must: (a) name at least 2 concrete product attributes FOR THE BRIEF'S OWN PRODUCT LINE (EasyStretch: no elastic band / stretches to 30 inches / seamless toe / wide-calf fit range / bamboo feel; Compression: graduated 12-15 mmHg / non-medical patterns; Ankle Compression: uniform gentle ankle-and-arch compression — never "graduated" — / ankle-height invisibility); (b) pass the SWAP TEST — if the product lines would survive unchanged on a generic competitor's sock, cap this criterion at 4/10; (c) contain ZERO banned placeholder phrases ("a type of sock built for exactly this," "a completely different kind of sock," "socks built differently exist," "a special sock") — each occurrence is an automatic deduction; (d) include a real proof moment (demo, testimonial line, or specific review anchor — a FABRICATED physiology explainer or invented statistic does not count as proof; a true, checkable mechanism is fine but is education, not proof); and (e) name the brand PROPERLY for its awareness level — Unaware: "Viasox" spoken in the VO in the final beat with the product line named, not just an end card; Product/Most Aware: named within the first ~3 seconds (Most Aware: with the offer) — a Product/Most Aware brief that buries the brand is an automatic FAIL on this criterion. SHORT-FORM (1-15 sec) ADAPTATION: require 1 concrete attribute (spoken OR clearly shown); on-screen text satisfies the brand-naming requirement; declared engagement/awareness-goal briefs are exempt from the swap-test cap and judged on brand-recall craft per the short-form philosophy above.
 
 **2. confusionFactor — Clarity for Cold Audience (1.5x WEIGHT)**
 Could a cold audience member who knows NOTHING about Viasox follow this ad? By the halfway point, does the viewer understand what the ad is about? An Unaware script should not ASSUME the audience knows their problem — it should SHOW the problem through identification scenes. The viewer should never feel lost or wonder "what is this for?" If someone would need to rewatch to understand = FAIL. For Unaware briefs: the 5-beat structure must guide the viewer from recognition to revelation naturally. Schwartz's Three Elimination Rules must be honored in Beats 1-2 (no price, no product name, no direct problem/solution statement). Banned vocabulary in hook/Beat 1: "neuropathy," "edema," "compression sock," "Viasox," "offer," "buy."
@@ -187,7 +188,7 @@ If a reference/inspiration ad was provided for this brief, how closely does the 
 **11. frameworkExecution — Framework Execution**
 Does the brief actually FOLLOW the assigned framework's structure, or just name it? PAS must have clear Problem → Agitate → Solution arc. Before-After-Bridge must show the before state, the after state, and the bridge. The Gradualization must map to the 5-beat Unaware structure. A brief where the framework is named but the body doesn't structurally match = 3/10. A brief where every beat maps cleanly to the framework and you could annotate each section = 9/10. Check that the framework was well-chosen for this awareness level — PAS with the problem statement up front is wrong for Unaware.
 
-## BATCH-LEVEL CHECKS (4):
+## BATCH-LEVEL CHECKS (5):
 
 **1. Angle Diversity**
 Even briefs with the SAME assigned angle must have distinct creative worlds. Two neuropathy briefs should NOT both open with "morning foot pain" — they should explore different facets of the condition. Briefs with DIFFERENT angles should feel like they're for completely different audiences.
@@ -200,6 +201,9 @@ Different creative scenarios, emotional entry points, and narrative approaches a
 
 **4. Persona Spread**
 Not all briefs targeting the exact same customer archetype. The batch should reach different segments — healthcare workers, seniors, gift-buying caregivers, style-conscious women, skeptical first-timers, etc. If every brief targets "woman with foot pain" = FLAG.
+
+**5. Emotional Register Spread**
+Does the whole batch run one emotional register (wistful recognition → relief)? The palette also includes humor, confidence, pride, and delight. If every brief lands the same register = FLAG and name which briefs could have carried a different one.
 
 ## SYSTEMIC PATTERN ANALYSIS (MANDATORY — PRODUCE AFTER BATCH-LEVEL CHECKS)
 
@@ -218,6 +222,8 @@ Look for these specific systemic patterns:
 **5. Visual Pacing Monotony** — Do briefs stack the same shot types consecutively (3 Talking Head rows in a row, 2 Product Close-ups back-to-back)? Count instances across the batch. This produces boring visual rhythm in the final edit.
 
 **6. Awareness Level Bleed** — Do Unaware briefs accidentally use Problem Aware vocabulary, or do Problem Aware briefs accidentally use Solution Aware framing? Name the specific bleed pattern and which briefs it affects.
+
+**7. Self-Cloning / Template Collapse** — The most expensive systemic failure (a prior 44-script backlog collapsed into ~7 concepts with one reframe trick used ~20 times). Check: (a) verbatim or near-verbatim phrases reused ACROSS briefs — recognizable canned lines ("and seriously look how cute," "got these from @viasox btw," identical category-reveal sentences) — quote each and count; (b) the same opening TECHNIQUE (e.g., the "it's not X, it's Y" reframe) carrying more than half the batch — the technique is legitimate, its monopoly is not; (c) one avatar doing every brief when the batch's angles support different segments. Name the phrases, techniques, and counts.
 
 For each systemic pattern detected, output:
 

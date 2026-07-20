@@ -138,6 +138,9 @@ ${inspMode === 'pinned'
 
 ### Claim Grounding
 [1-2 lines. Name the RECORDED pain/benefit this brief is built on, with its source from the PRODUCT TRUTH section (e.g. "localized ankle swelling — 12.0% of ACS reviews" or a specific review quote). If the recorded claim space for this product is smaller than the concept quota, say so here and instruct the generator to differentiate concepts by persona/moment/format while REUSING recorded claims — never by inventing new pains or benefits.]
+
+### Product Conviction
+[1-2 lines. Name the ONE concrete product attribute this brief will actually SELL, drawn from THIS product line's truths (EasyStretch: no elastic band / stretches to 30 inches / seamless toe / wide-calf fit range / bamboo feel; Compression: graduated 12-15 mmHg / non-medical patterns; Ankle Compression: uniform gentle ankle-and-arch compression — never "graduated" — / ankle-height invisibility) and the proof moment (demo / testimonial / review anchor) that backs it. The product must not be a vague afterthought: if the finished ad's product moment could be swapped onto a competitor's sock unchanged, this thesis failed.]
 ${visualCraft ? `
 ### Visual Treatment Plan
 [Map the ad's beats to visual treatments using the palette from the Visual Craft Guide: which beats are talk-to-camera, where simple B-roll is the CORRECT call, where POV lands the identification, where dynamic B-roll carries a transition. Then the prop decision: IF one line earns a prop/demonstration moment, name the specific realistic prop, the exact claim or mechanism it demonstrates, and why it passes the earn-it test. If no line earns one, say "No prop moment — this concept lives on [treatments]" — that is a correct professional decision, not a failure. Max 1-2 prop moments, household-realistic only, no TV-commercial production.]` : ''}

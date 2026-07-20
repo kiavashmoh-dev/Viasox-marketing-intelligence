@@ -639,9 +639,9 @@ Every Unaware script maps to these 5 beats:
 
 3. **MECHANISM (~45-65%)** — Short plain-English explanation of WHY. Not a medical lecture. "What you're putting on your legs every morning is cutting off circulation slightly. Not enough to alarm you. Just enough to make every hour of your day a little harder."
 
-4. **CATEGORY REVEAL (~65-85%)** — There is a different CATEGORY of sock. Not Viasox yet. "Socks designed for legs that change shape through the day exist. Most people don't know they're out there."
+4. **CATEGORY REVEAL (~65-85%)** — There is a different CATEGORY of sock. Not Viasox yet — revealed with conviction and a concrete attribute: "There's a sock with no elastic band at the top — it stretches to 30 inches and never leaves a mark." Never a timid existence claim ("socks built differently exist," "most people don't know they're out there") — placeholder reveals are banned.
 
-5. **PRODUCT REVEAL + SOFT CTA (~85-100%)** — Viasox is named, but only with a curiosity-driving CTA. No price, no offer, no direct buy. "See what 107,000+ people found." / "Learn more." / "See if it's for you."
+5. **PRODUCT REVEAL + SOFT CTA (~85-100%)** — Viasox is named PROPERLY: spoken in the VO with the product line, one concrete attribute, and one proof anchor — not just an end card. Curiosity-driving CTA, confident but soft. No price, no offer, no direct buy. "See what 107,000+ people found." / "Learn more." / "See if it's for you."
 
 ---
 
@@ -1858,7 +1858,7 @@ Hooks (3 variations):
 1. "I bought 2 pairs. They sent me 5. This wasn't a mistake..."
 2. "This is the only time you should be buying socks because of this one fact..."
 3. "I almost didn't buy. Now I have 5 pairs. Let me explain..."
-- Script arc: Shock/excitement at B2G3 → explain the deal math → "That's $90 worth of free socks" → callback to swelling problem → "Those balloon ankles" → put on compression easily → "14 mmHg compression, only where you need it" → "Not those knee-high torture devices" → social proof (3,847 people, review quotes) → pattern selection → skeptic-to-believer → "The swelling stops at the source" → daily rotation → CTA
+- Script arc: Shock/excitement at B2G3 → explain the deal math → "That's $90 worth of free socks" → callback to swelling problem → "Those balloon ankles" → put on compression easily → "gentle, uniform compression, only where you need it" [NOTE: the original ad said "14 mmHg" — that is NOT a citable Viasox spec; canonical facts are 12-15 mmHg graduated (Compression) and uniform non-graduated (Ankle)] → "Not those knee-high torture devices" → social proof (3,847 people, review quotes) → pattern selection → skeptic-to-believer → "The swelling stops at the source" → daily rotation → CTA
 - WHY IT PERFORMED: The B2G3 hooks are IRRESISTIBLE curiosity triggers — "they sent me 5, this wasn't a mistake" makes the viewer need to know why. The deal math ($90 worth of free socks, $12 per pair) is SPECIFIC and calculable. "Balloon ankles" and "knee-high torture devices" are vivid, memorable phrases. Reading real reviews on camera builds trust.
 
 **PRINCIPLE TO APPLY:** For AGC scripts, use offer math as a HOOK (not just a CTA). Make the deal CALCULABLE ("$90 worth of free socks"). Compare against the bad alternative with vivid language ("torture devices," "squeeze the life out of you"). Include at least one real review read on camera. Build a skeptic-to-believer arc within the testimonial.

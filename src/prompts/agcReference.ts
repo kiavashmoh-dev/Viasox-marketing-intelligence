@@ -173,8 +173,8 @@ Map the Unaware body to this **5-beat structure**:
 1. **Beat 1 — Identification** — A specific sensory moment the Unaware viewer recognizes as "me" (the line across the calf when socks come off, the 3pm ankle ache, morning numbness). SENSORY, not diagnostic. NO condition name.
 2. **Beat 2 — Reframe** — Reveal the normalized thing isn't normal, or isn't caused by what they think. The "wait, what?" beat. Overturn a belief.
 3. **Beat 3 — Mechanism** — The invisible physiological cause (circulation, elastic compression pressure, nerve compression). Brief, credible, curiosity-building — NOT a lecture.
-4. **Beat 4 — Category Reveal** — "There's a type of sock built to prevent this" — the CATEGORY appears, not the brand yet. Bridges from education to product.
-5. **Beat 5 — Product Reveal + Soft CTA** — Viasox name + product visual appears ONLY HERE, at the end. Soft CTA ("learn more", "see how", "discover why") — no hard sell, no urgency at Unaware.
+4. **Beat 4 — Category Reveal** — the CATEGORY appears, not the brand yet — revealed with a concrete attribute ("There's a sock with no elastic band at the top — it stretches to 30 inches and never leaves a mark"), never a bare existence claim. Bridges from education to product.
+5. **Beat 5 — Product Reveal + Soft CTA** — Viasox named PROPERLY: spoken in the VO with the product line + one attribute + one proof anchor; product visual appears ONLY HERE, at the end. Soft but confident CTA ("learn more", "see how", "discover why") — no hard sell, no urgency at Unaware.
 
 **The 3 Unaware sub-personas** every Unaware AGC brief must target one of:
 - **The Normalizer** ("my ankles have always been like that")

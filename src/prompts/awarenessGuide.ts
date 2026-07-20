@@ -108,9 +108,9 @@ Every Unaware concept must be buildable into this 5-beat structure in the script
 
 3. **MECHANISM (~45-65% of runtime)** — A SHORT, plain-English explanation of WHY the thing they're doing/feeling is happening. Not a medical lecture. A 1-2 sentence "here's what's actually going on." (Example: "What you're putting on your legs every morning is cutting off circulation slightly. Not enough to alarm you. Just enough to make every hour of your day a little harder.")
 
-4. **CATEGORY REVEAL (~65-85% of runtime)** — Only NOW do we reveal that there is a category of sock designed differently. Not Viasox yet. The category. "Socks that don't do that exist. They've been around for years. Most people don't know they're out there."
+4. **CATEGORY REVEAL (~65-85% of runtime)** — Only NOW do we reveal that there is a category of sock designed differently. Not Viasox yet. The category — revealed with CONVICTION and a concrete attribute: "There's a sock with no elastic band at the top — it stretches to 30 inches and never leaves a mark." NEVER a timid existence claim ("socks that don't do that exist," "a type of sock built for exactly this") — placeholder reveals describe nothing and are banned.
 
-5. **PRODUCT REVEAL (~85-100% of runtime)** — Only NOW do we name Viasox. And only with a soft, curiosity-driving CTA. Never a direct "buy now." Never a price. Never an offer. The CTA is about DISCOVERY: "See what 107K people found." / "Learn more." / "See if it's for you."
+5. **PRODUCT REVEAL (~85-100% of runtime)** — Only NOW do we name Viasox — PROPERLY: the brand spoken in the VO (not just an end card), the product line named, one concrete attribute repeated, one proof anchor. Soft, curiosity-driving CTA — confident, never apologetic. Never a direct "buy now." Never a price. Never an offer. The CTA is about DISCOVERY: "See what 107K people found." / "Learn more." / "See if it's for you."
 
 **This 5-beat structure is NON-NEGOTIABLE.** If a concept cannot be mapped to these 5 beats, it is not a proper Unaware concept — it's mislabeled and should be rejected.
 
@@ -758,15 +758,18 @@ A SHORT, plain-English explanation of WHY the thing they're feeling is happening
 - "What you're putting on your legs every morning is cutting off circulation slightly. Not enough to alarm you. Just enough to make every hour of your day a little harder."
 - "Most socks have an elastic band at the top that wasn't designed for legs that change shape through the day. Yours do."
 - Now the viewer can say the word "sock" — because you just EARNED it.
+- ⚠️ The mechanism must be the REAL product-relevant cause (the elastic band digging in, pressure where there shouldn't be any) — never invented physiology filler ("gravity pulls fluid down, the sock pushes back"). Fake science reads as filler and burns trust; a true, checkable cause builds it.
 
 **BEAT 4 — CATEGORY REVEAL (~65-85% of runtime)**
-Only NOW do we reveal that there is a different CATEGORY of sock. Not Viasox yet — the category.
-- "Socks built differently exist. They've been around for years. Most people don't know they're out there."
-- "There's a type of sock for people whose legs aren't the same size at 8 AM and 5 PM."
+Only NOW do we reveal that there is a different CATEGORY of sock. Not Viasox yet — the category. Reveal it with CONVICTION and a concrete differentiator, never a timid existence claim.
+- "There's a sock with no elastic band at the top — it stretches to 30 inches and never leaves a mark."
+- "There's a type of sock made for legs that aren't the same size at 8 AM and 5 PM — nothing digs in, nothing rings."
+- ⚠️ BANNED: "socks built differently exist," "a type of sock built for exactly this," "a completely different kind of sock" — placeholder reveals that describe nothing. The category earns belief through the specific attribute, not through the announcement that it exists.
 - The viewer now understands the ad's world and is leaning in.
 
 **BEAT 5 — PRODUCT REVEAL + SOFT CTA (~85-100% of runtime)**
-Only NOW do we name Viasox. And only with a curiosity-driving, soft CTA.
+Only NOW do we name Viasox. Name it PROPERLY: the brand spoken aloud in the VO (not just an end card), the product line named (EasyStretch / Ankle Compression), at least one concrete attribute repeated, and one proof anchor (the demo moment, a testimonial line, or "107K reviews"). Withholding the name for 85% of the ad is the strategy — mumbling it at the end is not.
+- Soft CTA, but CONFIDENT soft — curiosity with conviction, not an apology.
 - No direct "Buy now." No price. No offer. No discount.
 - Approved CTAs: "See what 107K people found." / "Learn more." / "See if it's for you." / "Watch what happens next." / "Discover it."
 - The CTA moves them from Unaware to Problem-Aware — not from scroll to checkout.

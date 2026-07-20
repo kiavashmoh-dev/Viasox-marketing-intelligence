@@ -3,6 +3,7 @@ import { buildSystemBase, getProductAnalysis } from './systemBase';
 import { buildAdTypeGuideFull } from './adTypeGuides';
 import { getAwarenessConceptGuide } from './awarenessGuide';
 import { getSchwartzStateBlock } from './schwartzStates';
+import { getProductTruthBlock } from './productTruth';
 import { buildFullAiSkillContext } from './fullAiSkillContext';
 import { buildBriefConstraintsBlock, getDurationTarget, isShortFormDuration } from './creativeConstraints';
 import { getMarketingBrainBlock } from './marketingBrain';
@@ -684,6 +685,8 @@ ${getAwarenessConceptGuide(params.awarenessLevel)}
 
 ${getSchwartzStateBlock(params.awarenessLevel)}
 
+${getProductTruthBlock(params.product)}
+
 ${buildAngleTypeMandate(params.angleType)}
 
 ${params.primaryTalkingPoint ? `## ⚠️ PRIMARY TALKING POINT: "${params.primaryTalkingPoint.toUpperCase()}"
@@ -880,6 +883,7 @@ For each of the 5 concept slots, declare:
 4. **Hook Archetype:** question / statement / revelation / action / statistic / scene. Distribute across the 5 concepts — no archetype may appear more than twice.
 5. **Framework Lean:** Which script framework this concept naturally lends itself to. Spread across at least 3 different frameworks.
 6. **Opening Concrete Details (10-second self-selection):** Name the 2+ specific, filmable details (a time of day, a place, an object, a named micro-behavior, a physical sensation in real-person words) that the viewer gets within the first ~10 seconds. The test: the RIGHT viewer thinks "this is about me" and the WRONG viewer can tell it isn't for them.${params.awarenessLevel === 'Unaware' ? ' For Unaware: the details must be SCENES and BEHAVIORS — product, category, and symptom labels stay banned in the opening. Zero product language does NOT mean zero specificity: vague claims are banned AND vague scenes are banned.' : ''}
+7. **Product Truth to Sell:** The specific concrete attribute (from the PRODUCT CONVICTION bank) this concept's product/solution moment will commit to, and the proof moment (demo / testimonial / review anchor) that backs it. A concept whose product moment would survive the SWAP TEST unchanged on a competitor's sock fails before it's written.${params.awarenessLevel === 'Unaware' ? ' For Unaware: this attribute lands in Beats 3-5 (the reveal) — product concreteness there does not loosen the elimination rules in the opening.' : ''} EXCEPTION: a short-form concept explicitly aimed at ENGAGEMENT or AWARENESS (per the short-form philosophy) may declare "Product Truth: carried visually — [pattern close-up / stretch demo / logo moment]" instead of a sold claim.
 
 **SELF-CHECK:** After mapping, verify: (1) all 5 territories are genuinely distinct facets of ${params.primaryTalkingPoint ? `"${params.primaryTalkingPoint}"` : `the assigned angle`}, not generic comfort/lifestyle topics, (2) no two concepts share the same emotional entry, (3) hook archetypes are distributed, (4) every proof anchor is unique, AND (5) — the most important check — every territory's central pain/benefit exists in the CLAIM BOUNDARY's approved space. A territory built on an invented pain fails this check no matter how distinct it is: distinctness earned by fabrication is the exact failure this pipeline is designed to prevent. When the approved space is smaller than 5 distinct pains, territories differentiate by persona/life-moment/scene/format on REUSED recorded pains — that passes check (1); invented pains never do. AND (6) every concept's opening passes the 10-SECOND SELF-SELECTION TEST: its declared concrete details could not be swapped into another brand's ad unchanged. An opening built on interchangeable details ("she was struggling," "life felt harder," an unnamed woman in an unnamed room) fails no matter how well the rest of the concept reads. If any check fails, revise the map before writing concepts.
 
