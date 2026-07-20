@@ -100,6 +100,16 @@ function mapAngleType(raw: string): AngleType {
 function mapAwarenessLevel(angle: string, _medium: string): AwarenessLevel {
   const lower = angle.toLowerCase();
 
+  // Most Aware: explicitly offer-led / deal-led topical angles (e.g. "Gas
+  // Prices"). These lead with the deal by design — Schwartz State 1: name +
+  // bargain. Routing them to Unaware (the old behavior) produced offer ads
+  // bolted onto brand-withholding structures. Planner dropdown can override.
+  if (lower.includes('gas price') || lower.includes('sale') ||
+      lower.includes('discount') || lower.includes('b2g3') ||
+      lower.includes('promo') || lower.includes('offer') ||
+      lower.includes('deal'))
+    return 'Most Aware';
+
   // Problem Aware: people who KNOW they have a specific medical condition
   // They're searching for solutions — they just don't know about Viasox
   if (lower.includes('neuropath') || lower.includes('diabet') ||

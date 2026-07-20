@@ -24,6 +24,7 @@ import { sendMessage, sendVisionMessage } from '../api/claude';
 import type { ContentBlock } from '../api/claude';
 import { buildAnglesPrompt } from '../prompts/anglesPrompt';
 import { buildScriptPrompt } from '../prompts/scriptPrompt';
+import { BANNED_PLACEHOLDERS, BANNED_TICS } from '../prompts/productTruth';
 import { buildResourceContext } from '../prompts/systemBase';
 import { buildConceptSelectorPrompt, parseSelectorResponse } from '../prompts/conceptSelectorPrompt';
 import { buildBatchReviewerPrompt } from '../prompts/batchReviewerPrompt';
@@ -324,6 +325,20 @@ function validateScriptResult(result: string): void {
   if (!result.includes('|')) {
     throw new Error('Brief generation returned no table content. Retrying...');
   }
+  // Deterministic banned-phrase scan (non-fatal — the reviewer scores it;
+  // this guarantees the violation is at least SEEN even if the LLM review
+  // misses it). Prompt compliance can drift; a string scan cannot.
+  const lower = result.toLowerCase().replace(/’/g, "'");
+  const hits = [...BANNED_PLACEHOLDERS, ...BANNED_TICS].filter((p) =>
+    lower.includes(p.toLowerCase().replace(/’/g, "'")),
+  );
+  if (hits.length > 0) {
+    console.warn(
+      `[pipeline] Generated brief contains ${hits.length} banned placeholder/tic phrase(s): ` +
+      hits.map((h) => `"${h}"`).join(', ') +
+      ' — the batch reviewer is instructed to deduct for these; consider a redo if they survive review.',
+    );
+  }
 }
 
 // ─── Creative Direction Block ────────────────────────────────────────────────
@@ -349,7 +364,29 @@ ${direction.instructions}
 </creative_direction>`);
   }
 
+  if (direction.bannedTechniques && direction.bannedTechniques.length > 0) {
+    parts.push(`## BATCH-WIDE TECHNIQUE BANS — HARD CONSTRAINT (HIGHEST PRIORITY)
+
+The creative director has BANNED the following technique(s) for this ENTIRE batch. They are worn out from overuse and must not appear in ANY concept, hook, or script this round — in any phrasing or disguise:
+${direction.bannedTechniques.map((t) => `- ${t}`).join('\n')}
+
+This ban exists to force new structures. Reach for the other frameworks and opening techniques in the toolkit instead — treat the ban as a creative constraint that makes the work better, not an obstacle.`);
+  }
+
   return parts.length > 0 ? '\n\n' + parts.join('\n\n') : '';
+}
+
+/**
+ * Reviewer-facing variant of the direction instructions: appends an
+ * auto-flag directive for any batch-wide technique bans so the reviewer
+ * polices the constraint rather than merely knowing about it.
+ */
+function directionInstructionsForReviewer(direction: CreativeDirection): string {
+  if (!direction.bannedTechniques || direction.bannedTechniques.length === 0) {
+    return direction.instructions;
+  }
+  const banNote = `\n\nBATCH-WIDE TECHNIQUE BAN IN EFFECT: ${direction.bannedTechniques.join('; ')}. Any brief that uses a banned technique (in any disguise) must be explicitly flagged in its review notes and its uniquenessCreativity score capped at 4/10.`;
+  return direction.instructions + banNote;
 }
 
 // ─── Pinned Inspiration Loader ──────────────────────────────────────────────
@@ -1434,7 +1471,7 @@ This script MUST be specifically about "${ts.task.parsed.angle}".\n\n${getAngleL
           },
         ],
         analysis,
-        direction.instructions,
+        directionInstructionsForReviewer(direction),
         memoryBriefing,
         pastFailures.length > 0 ? pastFailures : undefined,
         calibrationBlock,

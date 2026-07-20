@@ -106,6 +106,15 @@ export interface CreativeDirection {
   /** Free-text instructions: "Focus on X", "Avoid Y", "This week lean into Z" */
   instructions: string;
   /**
+   * Batch-wide technique bans (descriptive strings, e.g. the "it's not X,
+   * it's Y" reframe). Set from the Planner's checkbox(es). Injected as a
+   * HARD CONSTRAINT into every generation prompt this batch and auto-flagged
+   * by the batch reviewer. Forces structural variety when a technique has
+   * worn out from overuse — per the CMO audit's "ban the reframe for one
+   * batch" proposal.
+   */
+  bannedTechniques?: string[];
+  /**
    * Optional per-task pinned inspiration overrides.
    * Keyed by AutopilotTask.parsed.name → InspirationItem.id.
    * When set for a task, that exact inspiration's full frames + script + tags + learnings + summary

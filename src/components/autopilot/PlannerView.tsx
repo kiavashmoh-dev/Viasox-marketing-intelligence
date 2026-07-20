@@ -43,6 +43,10 @@ const AD_TYPE_LABELS: Record<AdType, string> = {
 export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
   const [included, setIncluded] = useState<boolean[]>(tasks.map(() => true));
   const [instructions, setInstructions] = useState('');
+  // Batch-wide technique ban (CMO-audit feature: "ban the reframe for one
+  // batch to force new structures"). Injected as a hard constraint into every
+  // generation prompt and auto-flagged by the batch reviewer.
+  const [banReframe, setBanReframe] = useState(false);
   const [showMemory, setShowMemory] = useState(false);
   const [inspirationItems, setInspirationItems] = useState<InspirationItem[]>([]);
   const [pinnedByIndex, setPinnedByIndex] = useState<Record<number, string>>({});
@@ -158,6 +162,11 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
   const direction: CreativeDirection = {
     instructions: instructions.trim(),
     pinnedInspirations,
+    ...(banReframe && {
+      bannedTechniques: [
+        'The "it\'s not X, it\'s Y" reframe — any opening or beat whose move is overturning a false attribution ("it\'s not your shoes, it\'s your socks", "that isn\'t age, that\'s circulation"). Use a different structural engine this batch: confession arc, skeptic journey, contrast/split, day-in-the-life, demonstration, testimonial.',
+      ],
+    }),
   };
 
   const pinnedCount = Object.keys(pinnedInspirations).length;
@@ -165,6 +174,48 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
     if (!included[i]) return acc;
     return task.scriptParamsBase.adType !== 'Ecom Style' ? acc + 1 : acc;
   }, 0);
+
+  // Portfolio-composition summary: counts by awareness level over INCLUDED
+  // tasks. A batch that runs one level end-to-end is a legitimate choice,
+  // but it should be a choice — a 100%-Unaware batch never speaks the
+  // brand's name, so we surface the composition rather than silently
+  // defaulting into it.
+  const awarenessComposition = remappedTasks.reduce<Record<string, number>>((acc, task, i) => {
+    if (!included[i]) return acc;
+    const lv = task.scriptParamsBase.awarenessLevel;
+    acc[lv] = (acc[lv] ?? 0) + 1;
+    return acc;
+  }, {});
+  const adTypeComposition = remappedTasks.reduce<Record<string, number>>((acc, task, i) => {
+    if (!included[i]) return acc;
+    const at = AD_TYPE_LABELS[task.scriptParamsBase.adType] ?? task.scriptParamsBase.adType;
+    acc[at] = (acc[at] ?? 0) + 1;
+    return acc;
+  }, {});
+  const includedCount = included.filter(Boolean).length;
+  // Warn when one level dominates (≥70%) or the whole batch is brand-withholding
+  // TOF (Unaware + Problem Aware both hide the brand until late).
+  const awarenessEntries = Object.entries(awarenessComposition).sort((a, b) => b[1] - a[1]);
+  const dominant = awarenessEntries[0];
+  const tofOnly =
+    includedCount >= 4 &&
+    awarenessEntries.every(([lv]) => lv === 'Unaware' || lv === 'Problem Aware');
+  const dominantWarning =
+    includedCount >= 4 && dominant && dominant[1] / includedCount >= 0.7 ? dominant[0] : null;
+  // Deterministic near-duplicate detection: same angle + product would brief
+  // the same ad twice — a past 44-script backlog shipped 4 identical gas-price
+  // ads because nothing surfaced this at planning time.
+  const duplicateGroups = (() => {
+    const groups: Record<string, string[]> = {};
+    remappedTasks.forEach((task, i) => {
+      if (!included[i]) return;
+      const key = `${task.parsed.angle.trim().toLowerCase()}|${task.product}`;
+      (groups[key] ??= []).push(task.parsed.name);
+    });
+    return Object.entries(groups)
+      .filter(([, names]) => names.length >= 2)
+      .map(([key, names]) => ({ label: key.split('|')[0], names }));
+  })();
 
   return (
     <div className="space-y-5">
@@ -288,6 +339,38 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
             <strong>{pinnedCount}</strong> task{pinnedCount !== 1 ? 's have' : ' has'} a pinned inspiration. The full frames, tags, summary, learnings, and script of {pinnedCount !== 1 ? 'each pin' : 'that pin'} will guide concept and script generation for those tasks specifically.
           </div>
         )}
+        {includedCount > 0 && (
+          <div className="mt-3 text-xs text-slate-500 space-y-1">
+            <div>
+              Awareness mix:{' '}
+              {awarenessEntries.map(([lv, n]) => `${n}× ${lv}`).join(' · ')}
+              {'  ·  '}Format mix:{' '}
+              {Object.entries(adTypeComposition)
+                .map(([at, n]) => `${n}× ${at}`)
+                .join(' · ')}
+            </div>
+            {(dominantWarning || tofOnly) && (
+              <div className="text-amber-700">
+                {dominantWarning && (
+                  <>⚠ {awarenessComposition[dominantWarning]} of {includedCount} tasks run {dominantWarning}. </>
+                )}
+                {tofOnly && (
+                  <>This batch is 100% TOF (Unaware/Problem Aware) — every ad withholds the brand until its final beats, and nothing serves warm or retargeting audiences. </>
+                )}
+                A concentrated batch is a valid choice — but make it a choice: the Awareness dropdown per task changes this.
+              </div>
+            )}
+            {duplicateGroups.length > 0 && (
+              <div className="text-amber-700">
+                ⚠ Near-duplicate tasks (same angle + product):{' '}
+                {duplicateGroups
+                  .map((g) => `"${g.label}" ×${g.names.length} (${g.names.join(', ')})`)
+                  .join(' · ')}
+                {' '}— these will brief essentially the same ad. Differentiate them in the strategy session or drop extras.
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Instructions */}
@@ -303,6 +386,19 @@ export default function PlannerView({ tasks, onConfirm, onCancel }: Props) {
           placeholder="e.g., Focus more on the emotional relief angle this week. Avoid opening with questions — use statements instead. For the long-form ads, lean into storytelling with a slow build. Make sure neuropathy briefs mention tingling and numbness specifically, not just general pain."
           className="w-full h-32 px-4 py-3 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder-slate-400 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
+        <label className="flex items-start gap-2 mt-3 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={banReframe}
+            onChange={(e) => setBanReframe(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span className="text-xs text-slate-600">
+            <strong>Ban the &ldquo;it&rsquo;s not X, it&rsquo;s Y&rdquo; reframe for this batch.</strong>{' '}
+            Hard-bans the reframe opening in every concept and script this round and tells the reviewer
+            to flag any brief that sneaks it in — forces new structures when the technique is worn out.
+          </span>
+        </label>
         <p className="text-[10px] text-slate-400 mt-1">
           Leave empty for default behavior. Your instructions override default agent decision-making.
         </p>
