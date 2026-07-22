@@ -731,13 +731,13 @@ const SCRIPT_GUIDES: Record<AwarenessLevel, string> = {
 Unaware is the DEFAULT awareness level for Viasox TOF ads. Every Unaware script must:
 1. Target one of three sub-personas: Normalizer, Diagnosed Non-Searcher, Incidental Sufferer
 2. Honor Schwartz's Three Elimination Rules in the first beat: NO price, NO product name, NO direct problem/solution statement
-3. Follow the 5-beat body structure: Identification → Reframe → Mechanism → Category Reveal → Product Reveal
+3. Honor the 5 INFORMATION-RELEASE GATES in order: Identification → Reframe → Mechanism → Category Reveal → Product Reveal. These gates govern WHAT MAY BE SAID WHEN — they are not the plot. The chosen script FRAMEWORK supplies the plot (the narrative engine that moves the viewer through the gates): a Confession Arc, a Skeptic's Journey, a Contrast/Split, and a Gradualization all pass through the same gates with completely different storytelling.
 4. Use one of the approved techniques: Scene Identification, Mundane Reframe, or False Cause Flip
 5. Never lift hooks verbatim from review data (reviews are post-education vocabulary)
 
 ---
 
-**THE 5-BEAT UNAWARE BODY STRUCTURE (MANDATORY for every Unaware script):**
+**THE 5 UNAWARE RELEASE GATES (the ORDER is mandatory; the storytelling inside each is the framework's job):**
 
 **BEAT 1 — IDENTIFICATION (first ~25% of runtime)**
 The opening. Uses one of: Scene Identification / Mundane Reframe / False Cause Flip. Zero product, zero category, zero symptom label. Pure scene, behavior, or attribution. The viewer sees themselves.
@@ -774,11 +774,11 @@ Only NOW do we name Viasox. Name it PROPERLY: the brand spoken aloud in the VO (
 - Approved CTAs: "See what 107K people found." / "Learn more." / "See if it's for you." / "Watch what happens next." / "Discover it."
 - The CTA moves them from Unaware to Problem-Aware — not from scroll to checkout.
 
-**⚠️ This 5-beat structure is NON-NEGOTIABLE.** If a script cannot be mapped to these 5 beats, it is not a proper Unaware script.
+**⚠️ What is NON-NEGOTIABLE is the release ORDER** — identification before reframe, understanding earned before category, category before brand, product last, elimination rules in the opening. What is NOT mandated is the storytelling that carries the viewer through those gates: that is the assigned framework's job, and different frameworks should produce structurally different Unaware scripts. A Skeptic's Journey Unaware ad and a Confession Arc Unaware ad must NOT sound like the same ad with different labels. If a script violates the release order, it is not a proper Unaware script; if it merely tells its story differently than Gradualization would, that is the system working as intended.
 
 ---
 
-**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+**TIME ALLOCATION (guideline pacing, NOT a fixed plot — the chosen framework's arc may shift beats within the duration cap; the level's information-release rules and the hard duration ceiling never change):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:04 Identification → 0:04-0:07 Reframe → 0:07-0:10 Mechanism → 0:10-0:12 Category Reveal → 0:12-0:15 Product Reveal + soft CTA
 - 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:15 deep Identification → 0:15-0:25 Reframe → 0:25-0:38 Mechanism → 0:38-0:48 Category Reveal → 0:48-0:58 Product Reveal + soft CTA
 - 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:22 deep Identification → 0:22-0:38 Reframe → 0:38-0:58 Mechanism → 0:58-0:75 Category Reveal → 0:75-0:90 Product Reveal + soft CTA
@@ -848,7 +848,7 @@ Problem Aware scripts are the AGITATION scripts. The viewer knows their pain —
 
 **⚠️ CONCRETE OR DEAD (the 10-second rule):** Within ~10 seconds the viewer must hear their OWN symptom named with real-person specificity — not "foot discomfort" but "the burning that starts in your toes by 3pm." Minimum two concrete details in the opening: the sensation itself + when/where it strikes. At Problem Aware you are ALLOWED to be explicit about the problem — use that permission; vague pain language ("she was struggling with her feet") is an unforced error here.
 
-**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+**TIME ALLOCATION (guideline pacing, NOT a fixed plot — the chosen framework's arc may shift beats within the duration cap; the level's information-release rules and the hard duration ceiling never change):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 pain hook → 0:03-0:08 agitate → 0:08-0:12 solution bridge → 0:12-0:15 CTA
 - 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 pain hook → 0:05-0:20 deep agitation → 0:20-0:35 solution reveal + mechanism → 0:35-0:50 proof cascade → 0:50-0:58 CTA
 - 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:06 pain hook → 0:06-0:28 deep agitation → 0:28-0:52 solution reveal + mechanism → 0:52-0:78 proof cascade → 0:78-0:90 CTA
@@ -886,7 +886,7 @@ Solution Aware scripts are DIFFERENTIATION scripts. They already know the proble
 
 **⚠️ CONCRETE OR DEAD (the 10-second rule):** Within ~10 seconds the viewer must know this is about a BETTER VERSION of something they already shop for — name the category and the differentiator early ("compression socks that don't strangle your calves by noon"). Minimum two concrete details in the opening: the failed-solution moment + the mechanism promise. Generic "there's a better way" openings fail — the mechanism IS the hook at this level (Schwartz Stage 3: mechanism in the headline, claim restated after).
 
-**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+**TIME ALLOCATION (guideline pacing, NOT a fixed plot — the chosen framework's arc may shift beats within the duration cap; the level's information-release rules and the hard duration ceiling never change):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 differentiation hook → 0:03-0:08 mechanism → 0:08-0:12 proof → 0:12-0:15 CTA
 - 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 differentiation hook → 0:05-0:10 failed-solution acknowledgment → 0:10-0:25 new mechanism deep-dive → 0:25-0:40 proof cascade → 0:40-0:52 transformation story → 0:52-0:58 CTA
 - 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:06 differentiation hook → 0:06-0:14 failed-solution acknowledgment → 0:14-0:36 new mechanism deep-dive → 0:36-0:58 proof cascade → 0:58-0:78 transformation story → 0:78-0:90 CTA
@@ -924,7 +924,7 @@ Product Aware scripts are PROOF INTENSIFICATION scripts. They know Viasox. They 
 
 **⚠️ CONCRETE OR DEAD (the 10-second rule):** The brand lands in the first 3 seconds — the 10-second job is the NEW thing: one specific new proof point, story, or angle ("the ICU nurse who wore the same pair through four 16-hour shifts"). If by 10 seconds the viewer has heard brand recognition but no new concrete information, the ad is a rerun — and a Product Aware viewer scrolls reruns. Never re-introduce the product from zero; per Schwartz, this level's headline job is superiority, new proof, or new mechanism — not introduction.
 
-**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+**TIME ALLOCATION (guideline pacing, NOT a fixed plot — the chosen framework's arc may shift beats within the duration cap; the level's information-release rules and the hard duration ceiling never change):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 brand recognition + new info hook → 0:03-0:10 deep proof point → 0:10-0:15 CTA
 - 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 brand recognition + new info hook → 0:05-0:20 deep customer story → 0:20-0:35 proof cascade → 0:35-0:47 mechanism deep-dive → 0:47-0:54 offer → 0:54-0:58 CTA
 - 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:07 brand recognition + new info hook → 0:07-0:28 deep customer story → 0:28-0:50 proof cascade → 0:50-0:70 mechanism deep-dive → 0:70-0:82 offer → 0:82-0:90 CTA
@@ -960,7 +960,7 @@ Most Aware scripts are the SHORTEST, MOST DIRECT scripts. No education, no proof
 
 **⚠️ CONCRETE OR DEAD (the 10-second rule):** Product + exact offer in the first sentence — "5 pairs for $60" beats "an amazing deal" every time (Schwartz: at Most Aware the headline is name + bargain; price IS the news). By 10 seconds the viewer knows the deal, the deadline, and where to click. Any warm-up, mood-setting, or storytelling at this level is vagueness wearing a costume.
 
-**TIME ALLOCATION (all ranges peg to the MAX of the Asana Medium column — final cut must not exceed the cap):**
+**TIME ALLOCATION (guideline pacing, NOT a fixed plot — the chosen framework's arc may shift beats within the duration cap; the level's information-release rules and the hard duration ceiling never change):**
 - 1-15 sec (final cut MUST be ≤ 15s): 0:00-0:03 product + offer → 0:03-0:10 urgency/details → 0:10-0:15 CTA
 - 16-59 sec (final cut MUST be ≤ 59s): 0:00-0:05 product + offer → 0:05-0:15 quick proof/social → 0:15-0:25 offer details → 0:25-0:35 urgency → 0:35-0:50 product showcase → 0:50-0:58 CTA
 - 60-90 sec (final cut MUST be ≤ 90s): 0:00-0:06 product + offer → 0:06-0:20 quick proof/social → 0:20-0:36 offer details → 0:36-0:50 urgency → 0:50-0:78 product showcase → 0:78-0:90 CTA

@@ -73,7 +73,7 @@ This brief targets Unaware viewers — people who have NOT yet recognized that t
 
 **RULE 3 — NO DIRECT PROBLEM OR SOLUTION STATEMENT IN OPENING.** If a concept's hook names a medical condition ("neuropathy," "edema," "swelling," "varicose veins," "diabetic neuropathy"), directly tells the viewer they have a problem ("Do you suffer from X?", "If you have Y..."), or promises a solution in Beat 1, **rate it 1/5**. The opening must feel like a SCENE the viewer sees themselves in, not a pitch.
 
-**RULE 4 — MUST MAP TO THE 5-BEAT UNAWARE BODY STRUCTURE** (Identification → Reframe → Mechanism → Category Reveal → Product Reveal). Concepts that compress identification into "you have neuropathy" or skip the Reframe or Mechanism beats should be rated **2/5 max**.
+**RULE 4 — MUST HONOR THE UNAWARE RELEASE ORDER** (identification first → understanding earned → category before brand → product last). The 5 beats are information-release GATES, not a fixed plot — ANY framework may carry the story through them. Rate **2/5 max** for concepts that violate the order (compress identification into "you have neuropathy," reveal category/product early, skip earning the reveal) — NEVER for concepts that simply tell the story with a different narrative engine than Gradualization.
 
 **RULE 5 — MUST TARGET ONE OF THE 3 UNAWARE SUB-PERSONAS:**
 - The Normalizer — "my ankles have always been like that"
@@ -86,7 +86,7 @@ Concepts that target no sub-persona or lump them together score **2/5 max**.
 
 **RULE 7 — BANNED WORDS IN HOOK / BEAT 1:** "neuropathy", "diabetic neuropathy", "edema", "varicose veins", "compression sock", "Viasox", "our socks", "these socks", "buy", "offer", "discount", "shop now", "B2G3", "sale", "solution", "treatment", "cure", "symptoms", "condition", "suffer from", "if you have". Any of these in the opening = **rate 1/5**.
 
-**PREFERRED UNAWARE FRAMEWORKS:** "The Gradualization (Schwartz)" framework maps natively to the 5-beat Unaware structure. Strongly prefer it. Also strong: "Contrast Framework" (if it builds to the reveal) and "Discovery Narrative" style story openings.
+**UNAWARE FRAMEWORK FIT:** Judge each concept's framework on whether it moves the viewer through the Unaware release gates (identification → understanding → category → product) — NOT on whether it is Gradualization. Gradualization maps natively to the gates, but a Confession Arc, Skeptic's Journey, Contrast/Split, or Discovery Narrative that honors the release order is EQUALLY valid and often fresher. Framework variety across the batch is a strength — do not converge every task onto one engine.
 
 **PREFERRED UNAWARE HOOK STYLES (from Manifesto 4.1 April 2026 update):**
 - Scene Identification ("the line across your calf after taking off your socks")

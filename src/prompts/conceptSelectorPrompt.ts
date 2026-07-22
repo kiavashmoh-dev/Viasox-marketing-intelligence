@@ -210,7 +210,7 @@ This is an **UNAWARE** brief. The audience does NOT know they have a problem wor
 
 **RULE 3 — NO DIRECT PROBLEM OR SOLUTION STATEMENT IN THE OPENING.** Any concept whose hook directly names a medical condition ("neuropathy," "edema," "swelling," "varicose veins," "diabetic neuropathy"), directly tells the viewer they have a problem ("Do you suffer from X?", "If you have Y..."), or promises a solution in the first beat = REJECT. The opening must feel like a SCENE the viewer sees themselves in, not a pitch.
 
-**RULE 4 — MUST MAP TO THE 5-BEAT UNAWARE BODY STRUCTURE:**
+**RULE 4 — MUST HONOR THE UNAWARE RELEASE ORDER** (the 5 beats below are information-release GATES, not a plot — any framework may carry the story through them; judge the ORDER, not the narrative engine):
 1. **Identification** — a specific sensory moment the Unaware viewer recognizes as "me" (sock marks, ankles tight by 3pm, morning numbness, line across the calf).
 2. **Reframe** — reveal that the normalized moment isn't normal, or isn't caused by what they think. This is the "wait, what?" beat.
 3. **Mechanism** — the invisible physiological cause (circulation, elastic compression, nerve pressure) — brief, credible, curiosity-building.
@@ -284,7 +284,7 @@ SUB_PERSONA: [Name the Unaware sub-persona the selected concept targets: "The No
 
 UNAWARE_TECHNIQUE: [Name the Unaware technique the selected concept uses: "Scene Identification" OR "The Mundane Reframe" OR "The False Cause Flip"]
 
-FIVE_BEAT_MAPPING: [One line per beat showing how the selected concept maps to the 5-beat Unaware Body Structure:
+FIVE_BEAT_MAPPING: [One line per gate showing how the selected concept passes through the 5 Unaware release gates — any framework can satisfy this mapping; you are checking the ORDER of information release, not demanding a Gradualization plot:
 - Beat 1 (Identification): [what the viewer sees in the opening 0-3s]
 - Beat 2 (Reframe): [the "wait, what?" moment]
 - Beat 3 (Mechanism): [the invisible cause revealed]
@@ -294,7 +294,7 @@ FIVE_BEAT_MAPPING: [One line per beat showing how the selected concept maps to t
 
 REASONING: [5-7 sentences of deep analysis. Explain WHY this concept wins AND why it passes Schwartz's Three Elimination Rules. Reference the specific identification beat, the reframe, and how it avoids the banned Unaware vocabulary. Be specific about why the others failed the Unaware gate — did they name the condition in the hook? Did they open with the product? Did they skip the mechanism beat?]` : `REASONING: [4-6 sentences of deep analysis. Explain WHY this concept wins on the criteria. Reference specific elements of the concept. Explain why the others fell short. Be specific — "Concept 3's hook about morning numbness is stronger than Concept 1's generic pain opening because it names the EXACT sensation and time of day, which creates instant recognition for neuropathy sufferers."]`}
 
-FRAMEWORK_SUGGESTION: [Full framework name from the list above — e.g., "The Contrast Framework"${isUnaware ? '. NOTE: For Unaware briefs, strongly prefer "The Gradualization (Schwartz)" framework — it maps natively to the 5-beat Unaware structure.' : ''}${shortForm ? '. NOTE: For short-form (1-15 sec), you may suggest "No Framework (Pure Moment)" if the concept works better without a traditional narrative arc. This is a valid choice for short-form only.' : ''}]
+FRAMEWORK_SUGGESTION: [Full framework name from the list above — e.g., "The Contrast Framework"${isUnaware ? '. NOTE: For Unaware briefs, suggest the framework that best fits THIS concept\'s natural storytelling while honoring the Unaware release order. Gradualization maps natively to the gates but is ONE option among many — a Confession Arc, Skeptic\'s Journey, Contrast/Split, or Discovery Narrative that respects the release order is equally valid and often fresher. Do not default to Gradualization; vary engines across the batch.' : ''}${shortForm ? '. NOTE: For short-form (1-15 sec), you may suggest "No Framework (Pure Moment)" if the concept works better without a traditional narrative arc. This is a valid choice for short-form only.' : ''}]
 
 FRAMEWORK_REASONING: [2-3 sentences explaining why this specific framework best serves the selected concept's narrative arc and the "${angle}" angle${isUnaware ? ', AND how it supports the 5-beat Unaware body structure' : ''}${shortForm ? '. For short-form, if you chose "No Framework", explain what structural approach the concept uses instead (single moment, visual contrast, provocation, native clip, etc.)' : ''}]`;
 

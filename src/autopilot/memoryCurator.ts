@@ -260,7 +260,7 @@ STRUCTURE YOUR BRIEFING EXACTLY AS:
 [Bullet list derived from reviewer FLAG/FAIL patterns. If "Angle Alignment" fails often, say so with counts. If "Hook Differentiation" is a recurring weakness, call it out with specifics about what went wrong.]
 
 ### Proven Strengths — BUILD ON THESE
-[Bullet list of patterns that consistently score well in reviews. Include which angle/framework/hook combos produced the highest scores.]
+[Bullet list of patterns that consistently score well in reviews. Include which angle/framework/hook combos produced the highest scores. Frame these as available equity, not defaults: these scores are our OWN reviewer's opinions, not market results — they earn weight, never a monopoly. "Build on these" must never crowd out the Underexplored Territory above; the strategy session's exploration quota (1-2 briefs per batch on untried frameworks) depends on that territory staying genuinely open.]
 
 ### Failure Mode Intelligence — CONDITIONAL WARNINGS
 [This is the most actionable section. Analyze the failure context correlation data to extract SPECIFIC failure modes — patterns that predict when quality drops. Format each as a conditional warning that agents can act on. Examples of the format:

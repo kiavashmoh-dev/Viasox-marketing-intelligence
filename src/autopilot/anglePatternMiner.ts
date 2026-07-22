@@ -38,9 +38,21 @@ function bucketKey(brief: BriefMemoryRecord): string {
   ].join('::');
 }
 
-/** Re-derive AnglePatternRecord[] from the full brief history. */
+/**
+ * Rolling recency window for pattern mining. Patterns are mined from the
+ * most recent N briefs only — NOT all-time history. Rationale (July 2026
+ * convergence fix): all-time mining meant the table's "verdicts" grew
+ * stronger and stronger as history accumulated, freezing the system's taste
+ * at whatever the reviewer favored months ago. A window lets old preference
+ * decay while still surfacing genuinely recent signal.
+ */
+const MINING_WINDOW_BRIEFS = 50;
+
+/** Re-derive AnglePatternRecord[] from the most recent briefs (rolling window). */
 export function mineAnglePatterns(): AnglePatternRecord[] {
-  const briefs = getAllBriefs();
+  // getAllBriefs flattens batches in chronological insertion order, so the
+  // tail of the array is the most recent work.
+  const briefs = getAllBriefs().slice(-MINING_WINDOW_BRIEFS);
   if (briefs.length === 0) return [];
 
   const buckets = new Map<string, PatternBucket>();
@@ -96,7 +108,11 @@ export function recomputeAndSaveAnglePatterns(): AnglePatternRecord[] {
 
 // ─── Prompt Formatting ──────────────────────────────────────────────────────
 
-const MIN_SAMPLE_FOR_PROMPT = 1; // even a single data point is signal-rich vs nothing
+// Minimum samples before a combination appears in the prompt table AT ALL.
+// Was 1 ("even a single data point is signal-rich") — that turned single
+// lucky/unlucky briefs into table rows that herded every future selection
+// for that angle×product. Three samples is the floor for showing anything.
+const MIN_SAMPLE_FOR_PROMPT = 3;
 const TOP_N_FOR_PROMPT = 8;
 
 /**
@@ -134,10 +150,10 @@ export function formatAnglePatternsForEvaluator(
 
   const lines: string[] = [];
   lines.push('');
-  lines.push(`### 📊 PROVEN PATTERN DATA — "${angle}" × ${product}`);
+  lines.push(`### 📊 OBSERVED HISTORY — "${angle}" × ${product} (advisory context, NOT verdicts)`);
   lines.push('');
   lines.push(
-    'Hard data from past briefs in this exact angle+product combination. Use these as the empirical baseline when scoring concepts. Combinations with 2+ samples and avg ≥7.5 are PROVEN — concepts that fit them should score higher. Combinations with avg <6 are KNOWN UNDERPERFORMERS — concepts that resemble them should score lower.',
+    'Internal review scores from recent past briefs in this angle+product combination. Read this correctly: these are OUR OWN reviewer\'s scores, not market results — treat them as context, never as a veto. A combination with consistently low recent scores deserves skepticism; a combination with strong recent scores deserves weight WHEN a concept genuinely fits it. But a framework or hook style with NO history here is an OPPORTUNITY, not a risk — never penalize a concept for lacking history, and never nudge a concept toward a listed pattern it doesn\'t naturally fit. Framework variety across the batch is a strength.',
   );
   lines.push('');
   lines.push('| Framework | Hook Styles | Avg Score | Samples | Verdict |');
@@ -145,37 +161,37 @@ export function formatAnglePatternsForEvaluator(
 
   for (const r of matched) {
     const verdict =
-      r.avgScore >= 8 && r.sampleSize >= 2
-        ? '✅ PROVEN STRONG'
+      r.avgScore >= 8 && r.sampleSize >= 3
+        ? '✅ Consistently strong (internal)'
         : r.avgScore >= 7
           ? '🟢 Solid'
           : r.avgScore >= 6
             ? '🟡 Mixed'
-            : '🔴 UNDERPERFORMER';
+            : '🔴 Weak so far';
     const hooks = r.hookStyles.length > 0 ? r.hookStyles.join(', ') : '(none)';
     lines.push(
       `| ${r.framework} | ${hooks} | ${r.avgScore.toFixed(1)}/10 | ${r.sampleSize} | ${verdict} |`,
     );
   }
 
-  // Top recommendations narrative
-  const winners = matched.filter((r) => r.avgScore >= 8 && r.sampleSize >= 2);
-  const losers = matched.filter((r) => r.avgScore < 6 && r.sampleSize >= 2);
+  // History narrative — context, not commands
+  const winners = matched.filter((r) => r.avgScore >= 8 && r.sampleSize >= 3);
+  const losers = matched.filter((r) => r.avgScore < 6 && r.sampleSize >= 3);
 
   if (winners.length > 0) {
     lines.push('');
     lines.push(
-      `**PROVEN WINNERS for this angle+product:** ${winners
+      `**Consistently strong here (internal scores):** ${winners
         .map((w) => `${w.framework} + ${w.hookStyles.join('/') || 'any hook'} (${w.avgScore.toFixed(1)}/10 across ${w.sampleSize})`)
-        .join('; ')}. Concepts that fit one of these patterns get a clear scoring bonus.`,
+        .join('; ')}. Give weight when a concept genuinely fits one of these — do not bend concepts toward them.`,
     );
   }
   if (losers.length > 0) {
     lines.push('');
     lines.push(
-      `**KNOWN UNDERPERFORMERS for this angle+product — AVOID:** ${losers
+      `**Weak so far here (internal scores):** ${losers
         .map((l) => `${l.framework} + ${l.hookStyles.join('/') || 'any hook'} (${l.avgScore.toFixed(1)}/10 across ${l.sampleSize})`)
-        .join('; ')}. Concepts that resemble these get a clear scoring penalty.`,
+        .join('; ')}. Apply skepticism to concepts that closely resemble these — but judge each on its own execution; a fresh take on a weak-so-far framework can absolutely win.`,
     );
   }
 
@@ -186,7 +202,7 @@ export function formatAnglePatternsForEvaluator(
 /** Format a global "top-performing patterns" overview across all angles. */
 export function formatGlobalTopPatterns(patterns: AnglePatternRecord[], limit = 10): string {
   const ranked = [...patterns]
-    .filter((p) => p.sampleSize >= 2)
+    .filter((p) => p.sampleSize >= 3)
     .sort((a, b) => b.avgScore - a.avgScore)
     .slice(0, limit);
   if (ranked.length === 0) return '';

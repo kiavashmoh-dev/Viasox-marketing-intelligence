@@ -115,7 +115,7 @@ What remains is the market itself — the **identification opening**: "You are c
 
 **The cardinal rule:** "Your prospect must identify with your headline before he can buy from it… It must pick out the product's logical prospects — and reject as many people as it attracts." Never a mere startler, joke, or pretty picture — Schwartz calls that the easiest headline type to write emptily. This is exactly why the 10-second concreteness rule exists: identification demands specific scenes, and an opening whose details are interchangeable selects nobody. Styles (verse, confession, comic strip) go stale and then laughable — "though styles may change, strategy does not."
 
-**The playbook:** the 5-beat Unaware structure in the awareness guide operationalizes this state — execute it with concrete, filmable scene details and the sub-persona named.
+**The playbook:** the 5 Unaware release gates in the awareness guide operationalize this state — what may be said when. The chosen script framework supplies the storytelling that carries the viewer through the gates; execute it with concrete, filmable scene details and the sub-persona named.
 
 ${SOPHISTICATION_FOOTER}`,
 };
