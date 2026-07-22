@@ -146,7 +146,7 @@ For EACH concept (typically 3-5), provide your evaluation in this exact format:
 <concept index="1">
 <title>[Short descriptive title, 3-6 words]</title>
 <summary>[2-3 sentence summary of the concept's approach, hook, and emotional territory]</summary>
-<framework>[Best script framework for this concept${isUnaware ? ' — strongly prefer "The Gradualization (Schwartz)" for Unaware' : ', e.g., "PAS (Problem-Agitate-Solution)"'}]</framework>
+<framework>[Best script framework for this concept${isUnaware ? " — the one that best fits THIS concept's natural storytelling while honoring the Unaware release order; Gradualization is one valid option among many, never the default — vary engines across concepts" : ', e.g., "PAS (Problem-Agitate-Solution)"'}]</framework>
 <rating>[1-5 integer]</rating>
 <reasoning>[2-3 sentences: why this rating? What makes it strong/weak for this specific task?${isUnaware ? ' For Unaware briefs, explicitly state whether the concept passes Schwartz\'s Three Elimination Rules and whether it maps cleanly to the 5-beat structure.' : ' How does it align with the strategy brief?'}]</reasoning>
 </concept>
