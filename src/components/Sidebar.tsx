@@ -86,6 +86,7 @@ const SECTIONS: SidebarSection[] = [
         defaultOpen: true,
         items: [
           { id: 'autopilot', label: 'The Factory', icon: '🏭' },
+          { id: 'factory2', label: 'The Factory V2', icon: '⚡' },
           { id: 'angles', label: 'Concepts & Angles', icon: '💡', isSubsection: true },
           { id: 'script', label: 'Script Writer', icon: '🎬', isSubsection: true },
           { id: 'hooks', label: 'Hooks', icon: '🎤', isSubsection: true },

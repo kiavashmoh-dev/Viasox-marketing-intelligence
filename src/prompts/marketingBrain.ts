@@ -49,7 +49,12 @@ export type BrainKnowledgeStep =
   | 'differentiationCritic'
   | 'conceptEvaluator'
   | 'scriptWriter'
-  | 'hookGenerator';
+  | 'hookGenerator'
+  // Factory V2 (UGC) steps — same sources, routed for V2's leaner pipeline
+  | 'v2Brainstorm'
+  | 'v2FrameworkSelect'
+  | 'v2Writer'
+  | 'v2Regen';
 
 // ─── Cross-source synthesis (extracted from the master index) ────────────
 // The "one machine" decision order + where sources tension and how to
@@ -118,6 +123,18 @@ const ROUTING: Record<BrainKnowledgeStep, (keyof typeof DOCS)[]> = {
   conceptEvaluator: ['hopkins', 'metaMasterclass'],
   scriptWriter: ['blyPart1', 'blyPart2', 'schwartz'],
   hookGenerator: ['schwartz', 'blyPart1', 'metaMasterclass'],
+  // Factory V2: brainstorm thinks in Schwartz (angle/awareness diagnosis) +
+  // the Meta masterclass (what actually performs); framework selection is a
+  // Schwartz+Bly judgment; the writer gets the full copywriting canon; line
+  // regeneration keeps Bly's craft + Schwartz's doctrine in the room.
+  v2Brainstorm: ['schwartz', 'metaMasterclass'],
+  v2FrameworkSelect: ['schwartz', 'blyPart1'],
+  v2Writer: ['blyPart1', 'blyPart2', 'schwartz'],
+  // Regen fires on every hover-edit: Bly's craft alone — the context pack's
+  // awareness guide + Schwartz state block already carry the Schwartz
+  // doctrine a single-line edit needs (full Schwartz would triple the cost
+  // of every click for marginal gain).
+  v2Regen: ['blyPart1'],
 };
 
 /**

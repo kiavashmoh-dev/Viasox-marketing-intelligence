@@ -1,0 +1,699 @@
+/**
+ * Factory V2 — module root.
+ *
+ * UGC-only interactive brief production. Reuses the universal intake layer
+ * (Asana screenshot parser + ManualTaskBuilder + asanaMapper heuristics)
+ * and runs the lean V2 pipeline: brainstorm → your answers → concepts →
+ * your pick → structured brief → the interactive editor.
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { FullAnalysis, AwarenessLevel, ProductCategory } from '../../engine/types';
+import type { ParsedAsanaTask } from '../../engine/autopilotTypes';
+import { parseAsanaScreenshot, fileToBase64 } from '../../autopilot/screenshotParser';
+import { mapAsanaTask, AWARENESS_OPTIONS } from '../../autopilot/asanaMapper';
+import ManualTaskBuilder from '../autopilot/ManualTaskBuilder';
+import type { InspirationItem } from '../../engine/inspirationTypes';
+import { getAllItems } from '../../inspiration/inspirationStore';
+import type {
+  UgcBriefV2,
+  V2Brainstorm,
+  V2SessionState,
+  V2Task,
+  V2TaskState,
+} from '../../factory2/v2Types';
+import {
+  generateConcepts,
+  runBrainstorm,
+  selectFramework,
+  synthesizeDirection,
+  writeBrief,
+  matchReferencesSafe,
+  interCallDelay,
+} from '../../factory2/v2Engine';
+import { saveBrief, getBrief, getAllBriefs, deleteBrief } from '../../factory2/v2Store';
+import BriefEditorV2 from './BriefEditorV2';
+
+const PRODUCTS: ProductCategory[] = ['EasyStretch', 'Compression', 'Ankle Compression'];
+const DURATIONS: V2Task['duration'][] = ['1-15 sec', '16-59 sec', '60-90 sec'];
+
+interface Props {
+  analysis: FullAnalysis;
+  apiKey: string;
+  onBack: () => void;
+}
+
+function toV2Task(parsed: ParsedAsanaTask, pinned?: string): V2Task {
+  const mapped = mapAsanaTask(parsed);
+  return {
+    parsed,
+    product: mapped.product,
+    awarenessLevel: mapped.scriptParamsBase.awarenessLevel,
+    talkingPoint: parsed.angle,
+    duration: mapped.duration,
+    pinnedInspirationId: pinned,
+  };
+}
+
+export default function Factory2({ apiKey, onBack }: Props) {
+  const [session, setSession] = useState<V2SessionState>({ phase: 'idle', tasks: [] });
+  const [entryMode, setEntryMode] = useState<'chooser' | 'manual'>('chooser');
+  const [inspirations, setInspirations] = useState<InspirationItem[]>([]);
+  const [direction, setDirection] = useState('');
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [openBriefId, setOpenBriefId] = useState<string | null>(null);
+  const [library, setLibrary] = useState<UgcBriefV2[]>(() => getAllBriefs());
+  const [busyLabel, setBusyLabel] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const refreshLibrary = useCallback(() => setLibrary(getAllBriefs()), []);
+
+  const loadInspirations = useCallback(async () => {
+    try {
+      const items = await getAllItems();
+      setInspirations(items.filter((it) => it.status === 'ready'));
+    } catch {
+      /* bank unavailable — pins just won't be offered */
+    }
+  }, []);
+
+  // ── Intake ─────────────────────────────────────────────────────────────
+
+  const startWithTasks = useCallback(
+    (parsedTasks: ParsedAsanaTask[], pins: Record<string, string>) => {
+      const tasks: V2TaskState[] = parsedTasks.map((p) => ({
+        task: toV2Task(p, pins[p.name]),
+        status: 'pending',
+        concepts: [],
+      }));
+      setSession({ phase: 'confirming', tasks });
+      void loadInspirations();
+    },
+    [loadInspirations],
+  );
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith('image/')) {
+        setSession((s) => ({ ...s, error: 'Please upload an image file (PNG, JPG, etc.)' }));
+        return;
+      }
+      setSession({ phase: 'parsing', tasks: [] });
+      try {
+        const { base64, mediaType } = await fileToBase64(file);
+        const parsed = await parseAsanaScreenshot(base64, mediaType, apiKey);
+        if (parsed.length === 0) {
+          setSession({ phase: 'idle', tasks: [], error: 'No tasks found in the screenshot.' });
+          return;
+        }
+        startWithTasks(parsed, {});
+      } catch (err) {
+        setSession({ phase: 'idle', tasks: [], error: err instanceof Error ? err.message : String(err) });
+      }
+    },
+    [apiKey, startWithTasks],
+  );
+
+  const updateTask = useCallback((i: number, patch: Partial<V2Task>) => {
+    setSession((s) => ({
+      ...s,
+      tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, task: { ...t.task, ...patch } } : t)),
+    }));
+  }, []);
+
+  const removeTask = useCallback((i: number) => {
+    setSession((s) => ({ ...s, tasks: s.tasks.filter((_, idx) => idx !== i) }));
+  }, []);
+
+  // ── Pipeline ───────────────────────────────────────────────────────────
+
+  const startBrainstorm = useCallback(async () => {
+    abortRef.current = new AbortController();
+    setBusyLabel('The strategist is reading your batch…');
+    setSession((s) => ({ ...s, phase: 'brainstorm', error: undefined }));
+    try {
+      const { analysis, questions } = await runBrainstorm(
+        session.tasks.map((t) => t.task),
+        apiKey,
+        abortRef.current.signal,
+      );
+      setAnswers({});
+      setSession((s) => ({
+        ...s,
+        brainstorm: { analysis, questions, answers: {}, direction: '' },
+      }));
+    } catch (err) {
+      setSession((s) => ({ ...s, phase: 'confirming', error: err instanceof Error ? err.message : String(err) }));
+    } finally {
+      setBusyLabel('');
+    }
+  }, [apiKey, session.tasks]);
+
+  const submitAnswers = useCallback(async () => {
+    if (!session.brainstorm) return;
+    abortRef.current = new AbortController();
+    setBusyLabel('Synthesizing your direction…');
+    const brainstorm: V2Brainstorm = { ...session.brainstorm, answers };
+    try {
+      const dir = await synthesizeDirection(
+        session.tasks.map((t) => t.task),
+        brainstorm,
+        apiKey,
+        abortRef.current.signal,
+      );
+      setDirection(dir);
+      setSession((s) => ({ ...s, phase: 'concepting', brainstorm: { ...brainstorm, direction: dir } }));
+      // Generate concepts per task, sequentially with spacing (rate-limit friendly).
+      for (let i = 0; i < session.tasks.length; i++) {
+        if (abortRef.current?.signal.aborted) break;
+        if (i > 0) await interCallDelay(abortRef.current?.signal);
+        setBusyLabel(`Generating concepts for ${session.tasks[i].task.parsed.name} (${i + 1}/${session.tasks.length})…`);
+        setSession((s) => ({
+          ...s,
+          tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'working' } : t)),
+        }));
+        try {
+          const concepts = await generateConcepts(session.tasks[i].task, dir, apiKey, abortRef.current?.signal);
+          setSession((s) => ({
+            ...s,
+            tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'awaiting-user', concepts } : t)),
+          }));
+        } catch (err) {
+          setSession((s) => ({
+            ...s,
+            tasks: s.tasks.map((t, idx) =>
+              idx === i ? { ...t, status: 'error', error: err instanceof Error ? err.message : String(err) } : t,
+            ),
+          }));
+        }
+      }
+      setSession((s) => ({ ...s, phase: 'concept-review' }));
+    } catch (err) {
+      setSession((s) => ({ ...s, error: err instanceof Error ? err.message : String(err) }));
+    } finally {
+      setBusyLabel('');
+    }
+  }, [answers, apiKey, session.brainstorm, session.tasks]);
+
+  const pickConcept = useCallback((taskIdx: number, conceptId: string) => {
+    setSession((s) => ({
+      ...s,
+      tasks: s.tasks.map((t, idx) => (idx === taskIdx ? { ...t, selectedConceptId: conceptId } : t)),
+    }));
+  }, []);
+
+  /** Framework → write → save IMMEDIATELY → match references (non-fatal) →
+   *  save again. A vision failure can never discard a completed brief. */
+  const produceBriefForTask = useCallback(
+    async (i: number, ts: V2TaskState, signal?: AbortSignal) => {
+      const concept = ts.concepts.find((c) => c.id === ts.selectedConceptId);
+      if (!concept) return;
+      setSession((s) => ({
+        ...s,
+        tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'working', error: undefined } : t)),
+      }));
+      try {
+        setBusyLabel(`Selecting framework for ${ts.task.parsed.name}…`);
+        const framework = await selectFramework(ts.task, concept, apiKey, signal);
+        setBusyLabel(`Writing brief for ${ts.task.parsed.name}…`);
+        let brief = await writeBrief(ts.task, concept, framework, direction, apiKey, signal);
+        saveBrief(brief);
+        refreshLibrary();
+        setBusyLabel(`Matching storyboard references for ${ts.task.parsed.name}…`);
+        brief = await matchReferencesSafe(brief, apiKey, signal);
+        saveBrief(brief);
+        refreshLibrary();
+        setSession((s) => ({
+          ...s,
+          tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'complete', brief } : t)),
+        }));
+      } catch (err) {
+        setSession((s) => ({
+          ...s,
+          tasks: s.tasks.map((t, idx) =>
+            idx === i ? { ...t, status: 'error', error: err instanceof Error ? err.message : String(err) } : t,
+          ),
+        }));
+      }
+    },
+    [apiKey, direction, refreshLibrary],
+  );
+
+  const writeBriefs = useCallback(async () => {
+    abortRef.current = new AbortController();
+    setSession((s) => ({ ...s, phase: 'writing' }));
+    for (let i = 0; i < session.tasks.length; i++) {
+      if (abortRef.current?.signal.aborted) break;
+      if (i > 0) await interCallDelay(abortRef.current?.signal);
+      await produceBriefForTask(i, session.tasks[i], abortRef.current?.signal);
+    }
+    setBusyLabel('');
+    setSession((s) => ({ ...s, phase: 'editor' }));
+  }, [produceBriefForTask, session.tasks]);
+
+  /** Per-task retry after an error — reuses the stored direction/concepts. */
+  const retryTask = useCallback(
+    async (i: number) => {
+      const ts = session.tasks[i];
+      abortRef.current = new AbortController();
+      if (ts.selectedConceptId) {
+        await produceBriefForTask(i, ts, abortRef.current.signal);
+      } else if (direction) {
+        // Concept generation failed earlier — retry that step.
+        setSession((s) => ({
+          ...s,
+          tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'working', error: undefined } : t)),
+        }));
+        try {
+          setBusyLabel(`Generating concepts for ${ts.task.parsed.name}…`);
+          const concepts = await generateConcepts(ts.task, direction, apiKey, abortRef.current.signal);
+          setSession((s) => ({
+            ...s,
+            phase: 'concept-review',
+            tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'awaiting-user', concepts } : t)),
+          }));
+        } catch (err) {
+          setSession((s) => ({
+            ...s,
+            tasks: s.tasks.map((t, idx) =>
+              idx === i ? { ...t, status: 'error', error: err instanceof Error ? err.message : String(err) } : t,
+            ),
+          }));
+        }
+      }
+      setBusyLabel('');
+    },
+    [apiKey, direction, produceBriefForTask, session.tasks],
+  );
+
+  const cancelWork = useCallback(() => {
+    abortRef.current?.abort();
+    setBusyLabel('');
+  }, []);
+
+  // Abort in-flight work when the module unmounts (navigation away).
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
+
+  // ── Open brief in editor ───────────────────────────────────────────────
+  // Fallback to the store directly: a brief saved mid-loop exists in
+  // localStorage before the library state refreshes.
+
+  const openBrief =
+    library.find((b) => b.id === openBriefId) ?? (openBriefId ? getBrief(openBriefId) ?? null : null);
+  if (openBrief) {
+    return (
+      <BriefEditorV2
+        brief={openBrief}
+        apiKey={apiKey}
+        onClose={() => {
+          setOpenBriefId(null);
+          refreshLibrary();
+        }}
+        onSaved={(b) => {
+          saveBrief(b);
+          refreshLibrary();
+        }}
+      />
+    );
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold font-display text-navy">The Factory V2</h2>
+          <p className="text-sm text-slate-500">
+            Interactive UGC brief production — brainstorm, concepts, and a brief you can edit line by line.
+          </p>
+        </div>
+        <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-700 underline">
+          ← Dashboard
+        </button>
+      </div>
+
+      {session.error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3">{session.error}</div>
+      )}
+      {busyLabel && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg px-4 py-3 flex items-center justify-between">
+          <span className="animate-pulse">{busyLabel}</span>
+          <button onClick={cancelWork} className="text-xs text-blue-700 underline hover:text-blue-900 ml-4">
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Phase: idle — chooser + library */}
+      {session.phase === 'idle' && entryMode === 'chooser' && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-white border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50/40 transition-colors"
+            >
+              <div className="text-3xl mb-2">📸</div>
+              <div className="font-semibold text-slate-700">Upload Asana screenshot</div>
+              <div className="text-xs text-slate-500 mt-1">Same parser as V1 — tasks extracted automatically</div>
+            </button>
+            <button
+              onClick={() => setEntryMode('manual')}
+              className="bg-white border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50/40 transition-colors"
+            >
+              <div className="text-3xl mb-2">⌨️</div>
+              <div className="font-semibold text-slate-700">Build tasks manually</div>
+              <div className="text-xs text-slate-500 mt-1">Same table builder as V1</div>
+            </button>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => e.target.files?.[0] && void handleFile(e.target.files[0])}
+          />
+
+          {library.length > 0 && (
+            <div className="bg-white rounded-xl border border-slate-200 p-5">
+              <h3 className="font-semibold text-slate-800 mb-3">Saved V2 briefs</h3>
+              <div className="space-y-2">
+                {library.map((b) => (
+                  <div key={b.id} className="flex items-center justify-between border border-slate-100 rounded-lg px-3 py-2">
+                    <div>
+                      <span className="font-medium text-slate-700">{b.taskName}</span>
+                      <span className="text-xs text-slate-400 ml-2">
+                        {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
+                      </span>
+                    </div>
+                    <div className="flex gap-3">
+                      <button onClick={() => setOpenBriefId(b.id)} className="text-xs text-blue-600 hover:underline">
+                        Open editor
+                      </button>
+                      <button
+                        onClick={() => {
+                          deleteBrief(b.id);
+                          refreshLibrary();
+                        }}
+                        className="text-xs text-slate-400 hover:text-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {session.phase === 'idle' && entryMode === 'manual' && (
+        <ManualTaskBuilder
+          onComplete={(tasks, pins) => {
+            setEntryMode('chooser');
+            startWithTasks(tasks, pins);
+          }}
+          onCancel={() => setEntryMode('chooser')}
+        />
+      )}
+
+      {session.phase === 'parsing' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-500 animate-pulse">
+          Reading your Asana screenshot…
+        </div>
+      )}
+
+      {/* Phase: confirming — the V2 planner (UGC-locked) */}
+      {session.phase === 'confirming' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+          <div>
+            <h3 className="font-semibold text-slate-800">Confirm your UGC tasks</h3>
+            <p className="text-xs text-slate-500">
+              Every V2 task is UGC. Adjust the fields that drive the creative — talking point, product,
+              awareness, duration — and pin an inspiration where you want one followed closely.
+            </p>
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <th className="py-2 pr-2">Task</th>
+                <th className="py-2 pr-2">Talking point / angle</th>
+                <th className="py-2 pr-2">Product</th>
+                <th className="py-2 pr-2">Awareness</th>
+                <th className="py-2 pr-2">Duration</th>
+                <th className="py-2 pr-2">Pinned inspiration</th>
+                <th className="py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {session.tasks.map((t, i) => (
+                <tr key={t.task.parsed.name + i} className="border-b border-slate-100 align-top">
+                  <td className="py-2 pr-2 font-medium text-slate-700">{t.task.parsed.name}</td>
+                  <td className="py-2 pr-2">
+                    <input
+                      value={t.task.talkingPoint}
+                      onChange={(e) => updateTask(i, { talkingPoint: e.target.value })}
+                      className="w-full border border-slate-200 rounded px-2 py-1 text-sm"
+                    />
+                  </td>
+                  <td className="py-2 pr-2">
+                    <select
+                      value={t.task.product}
+                      onChange={(e) => updateTask(i, { product: e.target.value as ProductCategory })}
+                      className="border border-slate-200 rounded px-2 py-1 text-xs bg-white"
+                    >
+                      {PRODUCTS.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="py-2 pr-2">
+                    <select
+                      value={t.task.awarenessLevel}
+                      onChange={(e) => updateTask(i, { awarenessLevel: e.target.value as AwarenessLevel })}
+                      className="border border-slate-200 rounded px-2 py-1 text-xs bg-white"
+                    >
+                      {AWARENESS_OPTIONS.map((a) => (
+                        <option key={a} value={a}>{a}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="py-2 pr-2">
+                    <select
+                      value={t.task.duration}
+                      onChange={(e) => updateTask(i, { duration: e.target.value as V2Task['duration'] })}
+                      className="border border-slate-200 rounded px-2 py-1 text-xs bg-white"
+                    >
+                      {DURATIONS.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="py-2 pr-2">
+                    <select
+                      value={t.task.pinnedInspirationId ?? ''}
+                      onChange={(e) => updateTask(i, { pinnedInspirationId: e.target.value || undefined })}
+                      className="border border-slate-200 rounded px-2 py-1 text-xs bg-white max-w-[160px]"
+                      disabled={inspirations.length === 0}
+                    >
+                      <option value="">{inspirations.length === 0 ? '(bank empty)' : '(none)'}</option>
+                      {inspirations.map((it) => (
+                        <option key={it.id} value={it.id}>
+                          {it.starred ? '★ ' : ''}{it.title || it.filename}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="py-2 text-right">
+                    <button onClick={() => removeTask(i)} className="text-xs text-slate-400 hover:text-red-600">
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setSession({ phase: 'idle', tasks: [] })}
+              className="text-sm text-slate-500 hover:text-slate-700 underline"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => void startBrainstorm()}
+              disabled={session.tasks.length === 0}
+              className="text-sm bg-navy text-cream px-5 py-2 rounded-lg hover:bg-navy-deep font-medium disabled:opacity-40"
+            >
+              Start brainstorm →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Phase: brainstorm — analysis + questions */}
+      {session.phase === 'brainstorm' && session.brainstorm && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
+          <div>
+            <h3 className="font-semibold text-slate-800 mb-2">The strategist's read</h3>
+            <p className="text-sm text-slate-600 whitespace-pre-wrap">{session.brainstorm.analysis}</p>
+          </div>
+          <div className="space-y-4">
+            {session.brainstorm.questions.map((q) => (
+              <div key={q.id} className="border border-slate-100 rounded-lg p-4">
+                <div className="text-sm font-medium text-slate-700 mb-2">{q.question}</div>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {q.options.map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
+                      className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                        answers[q.id] === opt
+                          ? 'bg-navy text-cream border-navy'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-400'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  placeholder="…or answer in your own words"
+                  value={q.options.includes(answers[q.id] ?? '') ? '' : (answers[q.id] ?? '')}
+                  onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+                  className="w-full border border-slate-200 rounded px-3 py-1.5 text-sm"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={() => void submitAnswers()}
+              disabled={!!busyLabel}
+              className="text-sm bg-navy text-cream px-5 py-2 rounded-lg hover:bg-navy-deep font-medium disabled:opacity-40"
+            >
+              Submit answers → generate concepts
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Phase: concepting/concept-review */}
+      {(session.phase === 'concepting' || session.phase === 'concept-review') && (
+        <div className="space-y-4">
+          {session.tasks.map((t, i) => (
+            <div key={t.task.parsed.name + i} className="bg-white rounded-xl border border-slate-200 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-semibold text-slate-800">
+                  {t.task.parsed.name}
+                  <span className="text-xs text-slate-400 ml-2">
+                    {t.task.product} · {t.task.talkingPoint} · {t.task.awarenessLevel}
+                  </span>
+                </div>
+                <span className="text-xs text-slate-400">
+                  {t.status === 'working' ? 'generating…' : t.status === 'error' ? 'error' : ''}
+                </span>
+              </div>
+              {t.error && <div className="text-xs text-red-600 mb-2">{t.error}</div>}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {t.concepts.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => pickConcept(i, c.id)}
+                    className={`text-left border rounded-lg p-3 transition-colors ${
+                      t.selectedConceptId === c.id
+                        ? 'border-navy bg-cream/60 ring-1 ring-navy'
+                        : 'border-slate-200 hover:border-slate-400'
+                    }`}
+                  >
+                    <div className="font-medium text-sm text-slate-800 mb-1">{c.title}</div>
+                    <div className="text-xs text-slate-600 mb-2">{c.summary}</div>
+                    <div className="text-[10px] text-slate-400">
+                      {c.productEntry === 'product-forward' ? 'Product-forward' : 'Earned entry'} · sells: {c.productTruth}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+          {session.phase === 'concept-review' && (
+            <div className="flex justify-end">
+              <button
+                onClick={() => void writeBriefs()}
+                disabled={!session.tasks.some((t) => t.selectedConceptId)}
+                className="text-sm bg-navy text-cream px-5 py-2 rounded-lg hover:bg-navy-deep font-medium disabled:opacity-40"
+              >
+                Write briefs for selected concepts →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Phase: writing / editor — task cards linking into the editor */}
+      {(session.phase === 'writing' || session.phase === 'editor') && (
+        <div className="space-y-3">
+          {session.tasks.map((t, i) => (
+            <div key={t.task.parsed.name} className="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between">
+              <div>
+                <div className="font-medium text-slate-800">{t.task.parsed.name}</div>
+                <div className={`text-xs ${t.status === 'error' ? 'text-red-600' : 'text-slate-400'}`}>
+                  {t.status === 'complete' && t.brief
+                    ? `${t.brief.framework.name} · ${t.brief.storyboard.length} clips${t.brief.rippleFlags.length > 0 ? ` · ${t.brief.rippleFlags.length} QA flag${t.brief.rippleFlags.length === 1 ? '' : 's'}` : ''}`
+                    : t.status === 'error'
+                      ? t.error
+                      : t.status === 'working'
+                        ? 'writing…'
+                        : !t.selectedConceptId
+                          ? 'no concept selected — skipped'
+                          : 'queued…'}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {t.status === 'error' && (
+                  <button
+                    onClick={() => void retryTask(i)}
+                    disabled={!!busyLabel}
+                    className="text-sm border border-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-50 disabled:opacity-40"
+                  >
+                    Retry
+                  </button>
+                )}
+                {session.phase === 'editor' && !t.selectedConceptId && t.concepts.length > 0 && (
+                  <button
+                    onClick={() => setSession((s) => ({ ...s, phase: 'concept-review' }))}
+                    className="text-sm border border-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-50"
+                  >
+                    Pick concept
+                  </button>
+                )}
+                {t.brief && (
+                  <button
+                    onClick={() => setOpenBriefId(t.brief!.id)}
+                    className="text-sm bg-navy text-cream px-4 py-1.5 rounded-lg hover:bg-navy-deep"
+                  >
+                    Open editor
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          {session.phase === 'editor' && (
+            <div className="flex justify-end">
+              <button
+                onClick={() => setSession({ phase: 'idle', tasks: [] })}
+                className="text-sm text-slate-500 hover:text-slate-700 underline"
+              >
+                Start a new batch
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

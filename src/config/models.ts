@@ -45,3 +45,18 @@ export const CREATIVE_MODEL = 'claude-opus-4-8';
 
 /** Fast/cheap utility model. Sonnet 4.6 (the dated Sonnet 4 ID was retired). */
 export const UTILITY_MODEL = 'claude-sonnet-4-6';
+
+// ─── Factory V2 tiers ───────────────────────────────────────────────────────
+//
+// V2's thinking seats (brainstorm, framework selection, concept generation,
+// brief writing, line regeneration) TARGET Fable 5. Unlike the V1 ideation
+// tier, V2 does not hard-pin the fallback here: the V2 engine tries
+// V2_THINKING_MODEL first and degrades to V2_HEAVY_MODEL automatically on a
+// model-access error (then remembers for the session). So when the API key
+// gains Fable access, V2 upgrades itself with zero code changes.
+
+/** V2 thinking/writing model — tried first, auto-falls back if gated. */
+export const V2_THINKING_MODEL = 'claude-fable-5';
+
+/** V2 floor model — heavy lifting never runs below Opus 4.8. */
+export const V2_HEAVY_MODEL = 'claude-opus-4-8';

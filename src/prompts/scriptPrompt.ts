@@ -218,7 +218,7 @@ Write this script as Bly would. Direct response craft at its finest:
 }
 
 
-const FRAMEWORK_DETAILS: Record<string, string> = {
+export const FRAMEWORK_DETAILS: Record<string, string> = {
   'PAS (Problem-Agitate-Solution)': `**PAS (Problem-Agitate-Solution)** — Hopkins (specificity) + Schwartz (intensification)
 Structure: Problem (0-20%) → Agitate (20-50%) → Solve (50-85%) → CTA (85-100%)
 Execution:

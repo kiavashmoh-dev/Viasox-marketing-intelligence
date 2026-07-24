@@ -16,6 +16,7 @@ import ScriptWriter from './components/modules/ScriptWriter';
 import CommentIntelligence from './components/modules/CommentIntelligence';
 import ProductIntelligence from './components/modules/ProductIntelligence';
 import AutopilotBriefs from './components/modules/AutopilotBriefs';
+import Factory2 from './components/factory2/Factory2';
 import InspirationBank from './components/modules/InspirationBank';
 import MemoryVault from './components/modules/MemoryVault';
 import { useAnalysis } from './hooks/useAnalysis';
@@ -138,6 +139,8 @@ export default function App() {
           <ProductIntelligence {...moduleProps} />
         ) : activeModule === 'autopilot' ? (
           <AutopilotBriefs {...moduleProps} />
+        ) : activeModule === 'factory2' ? (
+          <Factory2 {...moduleProps} />
         ) : activeModule === 'inspiration' ? (
           <InspirationBank apiKey={apiKey} onBack={handleBackToDashboard} />
         ) : activeModule === 'memory-vault' ? (

@@ -158,6 +158,7 @@ export type ModuleId =
   | 'comments'
   | 'product-intelligence'
   | 'autopilot'
+  | 'factory2'
   | 'inspiration'
   | 'memory-vault'
   | 'customer-reviews'
