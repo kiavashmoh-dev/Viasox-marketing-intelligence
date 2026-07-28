@@ -14,7 +14,7 @@ import type { ScriptFramework } from '../../engine/types';
 import { getFrames } from '../../inspiration/inspirationStore';
 import type { UgcBriefV2, V2RegenTarget } from '../../factory2/v2Types';
 import { UGC_FRAMEWORKS } from '../../factory2/v2Types';
-import { applyRegen } from '../../factory2/v2Engine';
+import { applyRegen, deleteRow } from '../../factory2/v2Engine';
 import { exportBriefDoc } from '../../factory2/v2Export';
 import { INTRO_CALLOUT } from '../../factory2/templateBoilerplate';
 import { getUgcStyle } from '../../factory2/ugcStyles';
@@ -126,7 +126,9 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
           ? 'Rewriting the brief under the new framework…'
           : target.type === 'framework-regenerate'
             ? 'Restructuring the framework…'
-            : 'Regenerating…',
+            : target.type === 'row-insert'
+              ? 'Writing the new line to bridge its neighbors…'
+              : 'Regenerating…',
       );
       setError('');
       setPopover(null);
@@ -153,6 +155,30 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
       setFeedback('');
     },
     [busy],
+  );
+
+  // Deletion is a human edit — no generation call, but the engine renumbers
+  // clips, repairs references, patches the prose, and runs a ripple check.
+  const runDelete = useCallback(
+    async (rowId: string, clipLabel: string) => {
+      if (busy) return;
+      if (!window.confirm(`Delete clip ${clipLabel}? Clips renumber automatically and a ripple check will flag any continuity break.`)) return;
+      abortRef.current = new AbortController();
+      setBusy(`Deleting clip ${clipLabel} and checking the flow around it…`);
+      setError('');
+      try {
+        const updated = await deleteRow(brief, rowId, apiKey, abortRef.current.signal);
+        setBrief(updated);
+        onSaved(updated);
+      } catch (err) {
+        if (!/cancelled/i.test(String(err))) {
+          setError(err instanceof Error ? err.message : String(err));
+        }
+      } finally {
+        setBusy('');
+      }
+    },
+    [apiKey, brief, busy, onSaved],
   );
 
   const thumbFor = useCallback(
@@ -369,12 +395,34 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             </tr>
           </thead>
           <tbody>
-            {brief.storyboard.map((r) => {
+            {brief.storyboard.map((r, i) => {
               const thumb = r.reference.kind === 'frame' ? thumbFor(r.id) : null;
+              const endIdx = brief.storyboard.findIndex((x) => x.clipNumber === 'end-card');
+              const isMainRow = typeof r.clipNumber === 'number' && (endIdx === -1 || i < endIdx);
               return (
-                <tr key={r.id} className={`border-b border-slate-100 align-top ${r.clipNumber === 'end-card' ? 'bg-slate-50' : ''}`}>
+                <tr key={r.id} className={`group/row border-b border-slate-100 align-top ${r.clipNumber === 'end-card' ? 'bg-slate-50' : ''}`}>
                   <td className="py-2 pr-2 font-medium text-slate-700">
                     {r.clipNumber === 'end-card' ? 'End Card' : r.clipNumber}
+                    {isMainRow && (
+                      <div className="flex flex-col gap-1 mt-1.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => openPopover({ type: 'row-insert', afterRowId: r.id }, `a new line after clip ${r.clipNumber}`)}
+                          title={`Insert a new line after clip ${r.clipNumber} — written to bridge the lines around it`}
+                          className="text-[11px] leading-none bg-navy text-cream rounded px-1.5 py-1 w-fit"
+                        >
+                          ＋
+                        </button>
+                        {!r.mirrorsLineId && (
+                          <button
+                            onClick={() => void runDelete(r.id, String(r.clipNumber))}
+                            title={`Delete clip ${r.clipNumber}`}
+                            className="text-[11px] leading-none bg-slate-200 text-slate-600 hover:bg-red-100 hover:text-red-700 rounded px-1.5 py-1 w-fit"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="py-2 pr-2 text-slate-500">{r.audioType}</td>
                   <td className="py-2 pr-2">
@@ -427,9 +475,13 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
       {popover && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={() => setPopover(null)}>
           <div className="bg-white rounded-xl shadow-xl p-5 w-[480px] max-w-[92vw]" onClick={(e) => e.stopPropagation()}>
-            <div className="font-semibold text-slate-800 mb-1">Regenerate {popover.label}</div>
+            <div className="font-semibold text-slate-800 mb-1">
+              {popover.target.type === 'row-insert' ? `Insert ${popover.label}` : `Regenerate ${popover.label}`}
+            </div>
             <p className="text-xs text-slate-500 mb-3">
-              Your feedback becomes law for this brief — it binds this regeneration and every one after it.
+              {popover.target.type === 'row-insert'
+                ? 'The new line is written to bridge the line before and the line after seamlessly — your note steers what it says.'
+                : 'Your feedback becomes law for this brief — it binds this regeneration and every one after it.'}
             </p>
             <textarea
               value={feedback}
@@ -437,7 +489,9 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               placeholder={
                 popover.target.type === 'row-reference'
                   ? "What's wrong with this reference? (e.g. 'need a closer selfie angle', 'should show the product in hand')"
-                  : "What should change? (leave empty for a fresh take)"
+                  : popover.target.type === 'row-insert'
+                    ? "What should this new line do or emphasize? (leave empty and it writes whatever most strengthens the bridge)"
+                    : "What should change? (leave empty for a fresh take)"
               }
               className="w-full h-24 border border-slate-200 rounded-lg px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-300"
               autoFocus
@@ -450,7 +504,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                 onClick={() => void runRegen(popover.target, feedback)}
                 className="text-sm bg-navy text-cream px-4 py-1.5 rounded-lg hover:bg-navy-deep font-medium"
               >
-                Regenerate
+                {popover.target.type === 'row-insert' ? 'Write & insert' : 'Regenerate'}
               </button>
             </div>
           </div>

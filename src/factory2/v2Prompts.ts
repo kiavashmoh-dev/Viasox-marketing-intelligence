@@ -511,6 +511,81 @@ Write the brief for "${task.parsed.name}".`;
 
 // ─── Step 5: Regeneration (the interactive editor's engine) ─────────────────
 
+/** Main-edit rows: numeric clips before the End Card spacer (alternate-take
+ *  rows are excluded — they are variation coverage, not the script's flow). */
+export function mainEditRows(brief: UgcBriefV2) {
+  const endIdx = brief.storyboard.findIndex((r) => r.clipNumber === 'end-card');
+  const rows = endIdx >= 0 ? brief.storyboard.slice(0, endIdx) : brief.storyboard;
+  return rows.filter((r) => typeof r.clipNumber === 'number');
+}
+
+/**
+ * THE FLOW CONTEXT — the line before and the line after the target, quoted
+ * front and center. The regenerating model must see its neighbors as
+ * first-class inputs, not buried in the full serialization: a regenerated
+ * or inserted line receives the baton from the line before and hands it to
+ * the line after.
+ */
+function renderNeighborContext(brief: UgcBriefV2, target: V2RegenTarget): string {
+  const rows = mainEditRows(brief);
+  let idx = -1;
+  let mode: 'rewrite' | 'insert' | 'shot' | null = null;
+
+  if (target.type === 'row-script') {
+    idx = rows.findIndex((r) => r.id === target.rowId);
+    mode = 'rewrite';
+  } else if (target.type === 'row-shot') {
+    idx = rows.findIndex((r) => r.id === target.rowId);
+    mode = 'shot';
+  } else if (target.type === 'row-insert') {
+    idx = rows.findIndex((r) => r.id === target.afterRowId);
+    mode = 'insert';
+  } else if (target.type === 'hook') {
+    const hookIdx = brief.hooks.findIndex((h) => h.id === target.lineId);
+    if (hookIdx === 0) {
+      idx = rows.findIndex((r) => r.mirrorsLineId === target.lineId);
+      if (idx === -1) idx = 0;
+      mode = 'rewrite';
+    }
+  } else if (target.type === 'cta') {
+    const ctaIdx = brief.ctas.findIndex((c) => c.id === target.lineId);
+    if (ctaIdx === 0) {
+      idx = rows.findIndex((r) => r.mirrorsLineId === target.lineId);
+      mode = idx >= 0 ? 'rewrite' : null;
+    }
+  }
+  if (mode === null || idx === -1) return '';
+
+  const before = mode === 'insert' ? rows[idx] : rows[idx - 1];
+  const current = mode === 'insert' ? undefined : rows[idx];
+  const after = rows[idx + 1];
+
+  const line = (r: (typeof rows)[number] | undefined, fallback: string) =>
+    r ? `clip ${r.clipNumber} [${r.audioType}/${r.shotType}]: "${mode === 'shot' ? r.shotDescription : r.scriptLine}"` : fallback;
+
+  const header =
+    mode === 'insert'
+      ? 'YOU ARE WRITING ONE NEW LINE BETWEEN THESE TWO LINES — it must bridge them seamlessly:'
+      : mode === 'shot'
+        ? 'THE SHOT DESCRIPTIONS AROUND THE TARGET (vary the camera setup vs both neighbors):'
+        : 'THE LINES AROUND THE TARGET:';
+
+  return `
+## FLOW CONTEXT — CRITICAL. ${header}
+
+- THE LINE BEFORE: ${line(before, '— none: this is the OPENING of the script (it must work as the first thing the viewer hears)')}
+${current ? `- THE LINE YOU ARE REWRITING: ${line(current, '')}` : ''}
+- THE LINE AFTER: ${line(after, '— none: this is the CLOSE of the script (it must land as the final word)')}
+
+**MANDATORY FLOW SELF-CHECK before you answer:** read LINE BEFORE → YOUR NEW LINE → LINE AFTER as
+one spoken sequence. Your line must take the baton from the line before and hand it to the line
+after: continuity of scene, props, tense, pronouns, and emotional register; no repeated
+information, no leaps, no disconnect, no vagueness. This is ONE script — the ${mode === 'insert' ? 'inserted' : 'rewritten'}
+line must sit in its place as if it had always been there. If the sequence does not flow
+seamlessly, rewrite it until it does — only then answer.
+`;
+}
+
 export function buildRegenPrompt(
   task: V2Task,
   brief: UgcBriefV2,
@@ -520,12 +595,15 @@ export function buildRegenPrompt(
   const targetLabel = describeTarget(target, brief);
   const isStructural =
     target.type === 'framework-regenerate' || target.type === 'framework-switch';
+  const isInsert = target.type === 'row-insert';
 
   const scopeRules = isStructural
     ? `You are ${target.type === 'framework-switch' ? `SWITCHING the framework to "${(target as { newFramework: string }).newFramework}"` : 'RESTRUCTURING the framework per the feedback'}. You rewrite: framework rationale, hooks, ctas, scriptProse, and the storyboard's main-edit rows. You HOLD CONSTANT: the concept, its product truth, the header fields, and every entry in the feedback ledger. Return the full JSON shape below.`
-    : target.type === 'header-field' && target.field === 'instructions'
-      ? `You are regenerating the per-brief filming instructions. Return 3-5 instructions, ONE PER LINE inside newValue, no bullet prefixes, no numbering. Everything else in the brief stays exactly as it is.`
-      : `You are regenerating ONE element: ${targetLabel} (its current text is quoted in the user message). Everything else in the brief stays EXACTLY as it is — your output must fit seamlessly into the surrounding lines (read them; match rhythm and continuity). Return ONLY the JSON shape below.`;
+    : isInsert
+      ? `You are writing ONE NEW clip to be inserted between the two lines quoted in the FLOW CONTEXT below, following the director's instructions for what it should do. It must BRIDGE those lines seamlessly — as if the script had always contained it. Keep it to one thought (this script has a hard word ceiling; a new line must earn its words — write tight). Also write its filming direction in the same coaching voice as the surrounding shot descriptions, varying the camera setup vs its neighbors. Return ONLY the JSON shape below.`
+      : target.type === 'header-field' && target.field === 'instructions'
+        ? `You are regenerating the per-brief filming instructions. Return 3-5 instructions, ONE PER LINE inside newValue, no bullet prefixes, no numbering. Everything else in the brief stays exactly as it is.`
+        : `You are regenerating ONE element: ${targetLabel} (its current text is quoted in the user message). Everything else in the brief stays EXACTLY as it is — your output must fit seamlessly into the surrounding lines per the FLOW CONTEXT below. Return ONLY the JSON shape below.`;
 
   const jsonShape = isStructural
     ? `{
@@ -535,7 +613,15 @@ export function buildRegenPrompt(
   "scriptProse": "...",
   "storyboard": [ { "clipNumber": 1, "audioType": "F2C"|"VO", "role": "hook"|"body"|"cta", "scriptLine": "...", "shotType": "Talk to Camera"|"B-Roll"|"Visual Hook", "shotDescription": "...", "editorNotes": "" } ]
 }`
-    : `{ "newValue": "the regenerated ${target.type === 'header-field' ? 'field value' : 'text'} as plain text" }`;
+    : isInsert
+      ? `{
+  "scriptLine": "the new spoken line (one thought, tight)",
+  "audioType": "F2C" | "VO",
+  "shotType": "Talk to Camera" | "B-Roll" | "Visual Hook",
+  "shotDescription": "second-person coaching for filming this clip — vary the camera setup vs the neighboring clips",
+  "editorNotes": "editor-facing instruction, or empty string"
+}`
+      : `{ "newValue": "the regenerated ${target.type === 'header-field' ? 'field value' : 'text'} as plain text" }`;
 
   const system = `${buildV2ContextPack(task, 'script')}
 
@@ -560,9 +646,9 @@ ${getMarketingBrainBlock('v2Regen')}`;
 ${renderBriefState(brief)}
 ${renderLedger(brief)}
 # THE TARGET: ${targetLabel}
-${currentText ? `Current text (you are replacing exactly this):\n"""\n${currentText}\n"""\n` : ''}
-# THE DIRECTOR'S FEEDBACK (LAW — this is why you were called)
-${feedback || (target.type === 'framework-switch' ? '(no additional feedback — execute the framework switch faithfully)' : '(no specific feedback — produce a meaningfully better take on this element)')}
+${currentText ? `Current text (you are replacing exactly this):\n"""\n${currentText}\n"""\n` : ''}${renderNeighborContext(brief, target)}
+# THE DIRECTOR'S ${isInsert ? 'INSTRUCTIONS FOR THE NEW LINE' : 'FEEDBACK'} (LAW — this is why you were called)
+${feedback || (target.type === 'framework-switch' ? '(no additional feedback — execute the framework switch faithfully)' : isInsert ? '(no specific instructions — write the line that most strengthens the bridge between its neighbors)' : '(no specific feedback — produce a meaningfully better take on this element)')}
 
 Produce the output.`;
 

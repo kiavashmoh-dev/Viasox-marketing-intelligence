@@ -480,6 +480,30 @@ function appendAlternateTakes(
   return out;
 }
 
+/**
+ * Re-number all numeric clips sequentially in array order (skipping the
+ * End Card spacer) and remap same-as references through the old→new map.
+ * References to a clip that no longer exists become honest 'none' states.
+ */
+function renumberStoryboard(rows: V2Row[]): V2Row[] {
+  const map = new Map<number, number>();
+  let next = 0;
+  const renumbered = rows.map((r) => {
+    if (typeof r.clipNumber !== 'number') return r;
+    next += 1;
+    map.set(r.clipNumber, next);
+    return { ...r, clipNumber: next };
+  });
+  return renumbered.map((r) => {
+    if (r.reference.kind !== 'same-as') return r;
+    const remapped = map.get(r.reference.clipNumber);
+    if (remapped === undefined) {
+      return { ...r, reference: { kind: 'none' as const, reason: 'referenced clip was deleted — re-match from the editor' } };
+    }
+    return { ...r, reference: { kind: 'same-as' as const, clipNumber: remapped } };
+  });
+}
+
 // ─── Deterministic QA (no model — cannot hallucinate) ───────────────────────
 
 const BRAND_FACT_CHECKS: Array<{ pattern: RegExp; issue: string }> = [
@@ -844,6 +868,54 @@ export async function applyRegen(
     };
     // Storyboard changed wholesale — re-match, non-fatally.
     updated = await matchReferencesSafe(updated, apiKey, signal);
+  } else if (target.type === 'row-insert') {
+    const parsed = parseJson<{
+      scriptLine: string;
+      audioType?: string;
+      shotType?: string;
+      shotDescription?: string;
+      editorNotes?: string;
+    }>(raw, 'line insertion');
+    const newRow = toRow({ clipNumber: 0, ...parsed });
+    if (!newRow || !newRow.scriptLine.trim()) {
+      throw new Error('Factory V2: line insertion returned an empty line.');
+    }
+    const idx = withLedger.storyboard.findIndex((r) => r.id === target.afterRowId);
+    if (idx === -1) throw new Error('Factory V2: insertion anchor row not found.');
+    const beforeLine = withLedger.storyboard[idx]?.scriptLine ?? '';
+    const spliced = [...withLedger.storyboard];
+    spliced.splice(idx + 1, 0, newRow);
+    updated = {
+      ...withLedger,
+      storyboard: renumberStoryboard(spliced),
+      version: withLedger.version + 1,
+      updatedAt: new Date().toISOString(),
+    };
+    // Best-effort prose insertion: place the new line right after the
+    // before-line when it occurs exactly once; otherwise flag the prose.
+    if (beforeLine.trim() && updated.scriptProse.split(beforeLine).length - 1 === 1) {
+      // Function replacer: script lines may contain "$" (pricing), which a
+      // string replacement would misread as a substitution pattern.
+      updated = { ...updated, scriptProse: updated.scriptProse.replace(beforeLine, () => `${beforeLine} ${newRow.scriptLine}`) };
+    } else {
+      updated = {
+        ...updated,
+        rippleFlags: [
+          ...updated.rippleFlags,
+          {
+            id: genId('flag'),
+            target: 'script prose',
+            issue: 'A line was inserted but could not be auto-patched into the prose read-through',
+            suggestion: 'Regenerate the script prose so it matches the storyboard.',
+          },
+        ],
+      };
+    }
+    // Auto-match a reference for the new clip (non-fatal).
+    const insertedClip = updated.storyboard.find((r) => r.id === newRow.id)?.clipNumber;
+    if (typeof insertedClip === 'number') {
+      updated = await matchReferencesSafe(updated, apiKey, signal, { onlyClipNumber: insertedClip });
+    }
   } else {
     const parsed = parseJson<{ newValue: string }>(raw, `regenerate ${targetLabel}`);
     const v = (parsed.newValue ?? '').trim();
@@ -916,4 +988,71 @@ export async function applyRegen(
 
   const checked = await runRippleCheck(updated, targetLabel, apiKey, signal);
   return { brief: checked, rippleChecked: true };
+}
+
+/**
+ * Delete a storyboard row (human edit — no generation call). Clips are
+ * renumbered, orphaned same-as references become honest 'none' states, the
+ * prose read-through is patched when possible, and a ripple check runs so
+ * any continuity break the deletion causes is flagged immediately.
+ */
+export async function deleteRow(
+  brief: UgcBriefV2,
+  rowId: string,
+  apiKey: string,
+  signal?: AbortSignal,
+): Promise<UgcBriefV2> {
+  const row = brief.storyboard.find((r) => r.id === rowId);
+  if (!row) return brief;
+  const endIdx = brief.storyboard.findIndex((r) => r.clipNumber === 'end-card');
+  const mainCount = (endIdx >= 0 ? brief.storyboard.slice(0, endIdx) : brief.storyboard).filter(
+    (r) => typeof r.clipNumber === 'number',
+  ).length;
+  const rowIdx = brief.storyboard.findIndex((r) => r.id === rowId);
+  const isMainEdit = endIdx === -1 || rowIdx < endIdx;
+  if (isMainEdit && mainCount <= 3) {
+    throw new Error('Factory V2: the main edit needs at least 3 clips — regenerate lines instead of deleting further.');
+  }
+  if (row.mirrorsLineId) {
+    throw new Error('Factory V2: this clip mirrors a hook/CTA line — regenerate that line instead of deleting its clip.');
+  }
+
+  const deletedClip = row.clipNumber;
+  let remaining = brief.storyboard.filter((r) => r.id !== rowId);
+  // Orphan any same-as references to the deleted clip BEFORE renumbering.
+  if (typeof deletedClip === 'number') {
+    remaining = remaining.map((r) =>
+      r.reference.kind === 'same-as' && r.reference.clipNumber === deletedClip
+        ? { ...r, reference: { kind: 'none' as const, reason: 'referenced clip was deleted — re-match from the editor' } }
+        : r,
+    );
+  }
+
+  let updated: UgcBriefV2 = {
+    ...brief,
+    storyboard: renumberStoryboard(remaining),
+    version: brief.version + 1,
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Best-effort prose removal.
+  const line = row.scriptLine.trim();
+  if (line && updated.scriptProse.split(line).length - 1 === 1) {
+    updated = { ...updated, scriptProse: updated.scriptProse.replace(line, '').replace(/\s{2,}/g, ' ').trim() };
+  } else if (line) {
+    updated = {
+      ...updated,
+      rippleFlags: [
+        ...updated.rippleFlags,
+        {
+          id: genId('flag'),
+          target: 'script prose',
+          issue: 'A line was deleted but could not be auto-removed from the prose read-through',
+          suggestion: 'Regenerate the script prose so it matches the storyboard.',
+        },
+      ],
+    };
+  }
+
+  return runRippleCheck(updated, `deleted clip ${String(deletedClip)}`, apiKey, signal);
 }

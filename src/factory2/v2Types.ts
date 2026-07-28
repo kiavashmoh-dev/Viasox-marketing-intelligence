@@ -256,6 +256,9 @@ export type V2RegenTarget =
   | { type: 'row-script'; rowId: string }
   | { type: 'row-shot'; rowId: string }
   | { type: 'row-reference'; rowId: string }
+  /** Insert a NEW clip immediately after the given row — generated to
+   *  bridge the lines around it seamlessly. */
+  | { type: 'row-insert'; afterRowId: string }
   | { type: 'script-prose' }
   | { type: 'header-field'; field: keyof V2StrategicHeader }
   | { type: 'framework-regenerate' }
@@ -280,6 +283,7 @@ export function describeTarget(t: V2RegenTarget, brief?: UgcBriefV2): string {
     case 'row-script': return `clip ${clipOf(t.rowId)} script line`;
     case 'row-shot': return `clip ${clipOf(t.rowId)} shot description`;
     case 'row-reference': return `clip ${clipOf(t.rowId)} reference screenshot`;
+    case 'row-insert': return `new clip inserted after clip ${clipOf(t.afterRowId)}`;
     case 'script-prose': return 'the full script prose';
     case 'header-field': return `header field "${t.field}"`;
     case 'framework-regenerate': return 'the framework structure';
@@ -295,6 +299,7 @@ export function currentTargetText(brief: UgcBriefV2, t: V2RegenTarget): string {
     case 'cta': return brief.ctas.find((c) => c.id === t.lineId)?.text ?? '';
     case 'row-script': return brief.storyboard.find((r) => r.id === t.rowId)?.scriptLine ?? '';
     case 'row-shot': return brief.storyboard.find((r) => r.id === t.rowId)?.shotDescription ?? '';
+    case 'row-insert': return '';
     case 'script-prose': return brief.scriptProse;
     case 'header-field':
       return t.field === 'instructions'
