@@ -11,6 +11,7 @@
 import type { UgcBriefV2 } from './v2Types';
 import { getFrames } from '../inspiration/inspirationStore';
 import { AUDIO_TYPES, GUIDELINES, INTRO_CALLOUT, SHOT_TYPES, type BoilerplateRow } from './templateBoilerplate';
+import { getUgcStyle } from './ugcStyles';
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -96,6 +97,7 @@ ${kvTable('Brand Overview', [
   ['Product', esc(brief.task.product)],
   ['Concept', esc(brief.header.concept)],
   ['Angle', esc(brief.header.angle)],
+  ['UGC Style', `<b>${esc(getUgcStyle(brief.task.ugcStyle).name)}</b> — <i>${esc(getUgcStyle(brief.task.ugcStyle).oneLiner)}</i>`],
   ['Awareness level', esc(brief.header.awarenessLevel)],
   ['Framework', `${esc(brief.framework.name)} — <i>${esc(brief.framework.rationale)}</i>`],
   ['Website', '<a href="https://viasox.com">https://viasox.com</a>'],

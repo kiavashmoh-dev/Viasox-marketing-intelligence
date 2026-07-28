@@ -17,6 +17,7 @@ import { UGC_FRAMEWORKS } from '../../factory2/v2Types';
 import { applyRegen } from '../../factory2/v2Engine';
 import { exportBriefDoc } from '../../factory2/v2Export';
 import { INTRO_CALLOUT } from '../../factory2/templateBoilerplate';
+import { getUgcStyle } from '../../factory2/ugcStyles';
 
 interface Props {
   brief: UgcBriefV2;
@@ -186,7 +187,9 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
         <div>
           <h2 className="text-xl font-bold font-display text-navy">{brief.taskName}</h2>
           <p className="text-xs text-slate-500">
-            {brief.task.product} · {brief.task.talkingPoint} · {brief.task.awarenessLevel} · {brief.task.duration} · v{brief.version}
+            {brief.task.product} · {brief.task.talkingPoint} · {brief.task.awarenessLevel} ·{' '}
+            <span className="text-amber-700 font-medium">{getUgcStyle(brief.task.ugcStyle).name}</span> ·{' '}
+            {brief.task.duration} · v{brief.version}
           </p>
         </div>
         <div className="flex items-center gap-3">

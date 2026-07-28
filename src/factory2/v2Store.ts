@@ -27,6 +27,11 @@ function load(): Factory2Store {
     if (!raw) return { schemaVersion: SCHEMA_VERSION, briefs: [] };
     const parsed = JSON.parse(raw) as Factory2Store;
     if (!Array.isArray(parsed.briefs)) return { schemaVersion: SCHEMA_VERSION, briefs: [] };
+    // Migration: briefs saved before the UGC-style layer default to the
+    // W1 flagship style so the library/editor never hit an undefined style.
+    for (const b of parsed.briefs) {
+      if (!b.task.ugcStyle) b.task.ugcStyle = 'ugc_yap';
+    }
     return parsed;
   } catch {
     return { schemaVersion: SCHEMA_VERSION, briefs: [] };

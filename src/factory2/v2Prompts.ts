@@ -41,6 +41,7 @@ import {
   describeTarget,
   currentTargetText,
 } from './v2Types';
+import { getUgcStyle, getUgcStyleBlock } from './ugcStyles';
 
 // ─── Shared fragments ───────────────────────────────────────────────────────
 
@@ -94,8 +95,11 @@ export function buildV2ContextPack(task: V2Task, stage: 'concept' | 'script' = '
 - Product line: ${task.product}
 - Talking point / angle (hierarchy rank #1 — the subject of the ad): ${task.talkingPoint}
 - Awareness level: ${task.awarenessLevel}
+- UGC STYLE: ${getUgcStyle(task.ugcStyle).name} — the delivery grammar for this entire brief (full guide below)
 - ${durationBudget(task.duration)}
 - Ad type: UGC (User Generated Content) — a real creator filming themselves on their phone.
+
+${getUgcStyleBlock(task.ugcStyle)}
 
 ${awarenessGuide}
 
@@ -142,7 +146,7 @@ export function renderBriefState(brief: UgcBriefV2): string {
   return `## CURRENT BRIEF STATE (complete)
 
 - Task: ${brief.taskName} | Product: ${brief.task.product} | Talking point: ${brief.task.talkingPoint}
-- Awareness: ${brief.task.awarenessLevel} | ${durationBudget(brief.task.duration)}
+- Awareness: ${brief.task.awarenessLevel} | UGC style: ${getUgcStyle(brief.task.ugcStyle).name} | ${durationBudget(brief.task.duration)}
 - Framework: ${brief.framework.name} — ${brief.framework.rationale}
 - Concept: ${brief.concept.title} — ${brief.concept.summary}
 - Product entry pattern: ${brief.concept.productEntry}
@@ -172,7 +176,7 @@ export function buildBrainstormPrompt(
   const taskList = tasks
     .map(
       (t, i) =>
-        `${i + 1}. ${t.parsed.name} — ${t.product} | angle: ${t.talkingPoint} | awareness: ${t.awarenessLevel} | ${t.duration}${t.pinnedInspirationId ? ' | has PINNED inspiration' : ''}`,
+        `${i + 1}. ${t.parsed.name} — ${t.product} | angle: ${t.talkingPoint} | awareness: ${t.awarenessLevel} | STYLE: ${getUgcStyle(t.ugcStyle).name} | ${t.duration}${t.pinnedInspirationId ? ' | has PINNED style exemplar' : ''}`,
     )
     .join('\n');
 
@@ -185,7 +189,10 @@ UGC tasks and produce: (1) a sharp strategic read of the batch, and (2) 3-5 ques
 will genuinely change what gets made. This is a collaboration step — ask what you actually need to
 know, not ceremony questions.
 
-Everything is UGC: real creators, phones, first-person authenticity. Think about: which concepts
+Everything is UGC: real creators, phones, first-person authenticity. Each task carries a UGC STYLE —
+the taxonomy's innovation layer (Ad Type → STYLE → Angle): the style is the visual delivery grammar
+that breaks creative bundling, and each style has its own register, shot vocabulary, pacing, and
+constraints. Think about: how each task's angle can live inside its assigned style; which concepts
 suit product-forward vs earned-entry patterns (per each task's awareness level); where the batch
 risks monotony (avatars, emotional registers, opening techniques); which tasks are near-duplicates
 needing differentiation; what the inspiration bank offers; and what only the human knows (business
@@ -241,7 +248,7 @@ ${JSON_CONTRACT}
 JSON shape: { "direction": "..." }`;
 
   const user = `# TASKS
-${tasks.map((t, i) => `${i + 1}. ${t.parsed.name} — ${t.product} | ${t.talkingPoint} | ${t.awarenessLevel} | ${t.duration}`).join('\n')}
+${tasks.map((t, i) => `${i + 1}. ${t.parsed.name} — ${t.product} | ${t.talkingPoint} | ${t.awarenessLevel} | style: ${getUgcStyle(t.ugcStyle).shortLabel} | ${t.duration}`).join('\n')}
 
 # YOUR EARLIER ANALYSIS
 ${brainstorm.analysis}
@@ -308,7 +315,7 @@ ${getMarketingBrainBlock('conceptGeneration')}`;
 ${direction}
 
 ${inspirationContext ? `# INSPIRATION CONTEXT\n${inspirationContext}\n` : ''}
-Generate the 3 concepts for task "${task.parsed.name}" (${task.product} / ${task.talkingPoint} / ${task.awarenessLevel} / ${task.duration}).`;
+Generate the 3 concepts for task "${task.parsed.name}" (${task.product} / ${task.talkingPoint} / ${task.awarenessLevel} / style: ${getUgcStyle(task.ugcStyle).name} / ${task.duration}). Every concept must live natively inside the assigned UGC style — its visual grammar, register, and constraints are binding.`;
 
   return { system, user };
 }
@@ -329,9 +336,11 @@ export function buildFrameworkSelectPrompt(
 
 Choose the script framework that best fits THIS concept's natural storytelling from the list below.
 This is a real judgment, not a default: the framework is the plot; the awareness level is the censor
-deciding what may be said when. Any framework that honors the awareness level's release rules is
-valid. Do not default to one favorite — pick for fit, and say why in one sharp line the creative
-director will read.
+deciding what may be said when; and the UGC STYLE's FRAMEWORK LEANINGS (stated in the style guide
+above) are binding influences — its leanings are strong candidates, its AVOID list is a warning that
+the framework fights the style's delivery grammar. Any framework that honors both the awareness
+rules and the style's grammar is valid. Do not default to one favorite — pick for fit, and say why
+in one sharp line the creative director will read.
 
 AVAILABLE FRAMEWORKS (choose exactly one, by its exact name; full craft guidance per framework):
 

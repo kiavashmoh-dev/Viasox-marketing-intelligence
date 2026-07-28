@@ -210,19 +210,46 @@ export async function summarizeUgcBank(): Promise<string> {
   }
 }
 
-/** Inspiration context for a task: pinned item (authoritative) or matched. */
+/**
+ * Inspiration context for a task.
+ *
+ * PINNED path — the director pins a bank ad IN THE SAME UGC STYLE as the
+ * task, making it the FINISHED-PROJECT EXEMPLAR: the concept generator and
+ * script writer study it for what "done" looks like in this style across
+ * every execution dimension — visuals, shot angles, tone, pace, framework,
+ * hooks, beats, CTA, and how product/pain are positioned. The full analyzer
+ * output (and the ad's actual script when available) is rendered.
+ *
+ * UNPINNED path — falls back to the selector's matched references.
+ */
 async function inspirationContextFor(task: V2Task): Promise<string> {
   try {
     if (task.pinnedInspirationId) {
       const item = await getItem(task.pinnedInspirationId);
       if (item && item.status === 'ready') {
-        return `PINNED REFERENCE — the director pinned this specific ad for this task; follow its creative shape closely:
+        const script = (item.attachedScriptText || item.textContent || '').trim();
+        const scriptBlock = script
+          ? `\nTHE EXEMPLAR'S ACTUAL SCRIPT/VO (study its rhythm, beat lengths, and product positioning — write OUR script with the same craft, never the same words):\n"""\n${script.slice(0, 3000)}\n"""`
+          : '';
+        return `## FINISHED-PROJECT EXEMPLAR (PINNED — same UGC style as this task)
+
+The director pinned this bank ad as the exemplar of what a FINISHED project in this style looks
+like. Study it as the execution target across every dimension: visuals, shot angles, overall tone,
+pace, script framework, hooks, script beats, CTA, and how the product and pain points are
+positioned. Mirror its CRAFT — its shapes, timing, and energy — while everything you write stays
+inside OUR claim boundary, product truths, and this task's awareness rules. Never copy its claims,
+its brand facts, or its literal lines.
+
 "${item.title || item.filename}"
-Summary: ${item.summary || '-'}
-Hook breakdown: ${item.hookBreakdown ?? '-'}
-Narrative arc: ${item.narrativeArc ?? '-'}
-Key language: ${item.keyLanguage ?? '-'}
-Learnings: ${(item.learnings ?? []).join(' · ')}`;
+- Summary: ${item.summary || '-'}
+- Hook breakdown (the first seconds): ${item.hookBreakdown ?? '-'}
+- Narrative arc (the beat structure): ${item.narrativeArc ?? '-'}
+- Visual blueprint (shots, framing, text treatment): ${item.visualBlueprint ?? '-'}
+- Style notes (tone, pace, energy): ${item.styleNotes || '-'}
+- Product bridge (when/how the product enters): ${item.productBridge ?? '-'}
+- Key language (register and phrasing patterns): ${item.keyLanguage ?? '-'}
+- Line flow (how lines build on each other): ${item.lineFlowAnalysis ?? '-'}
+- Learnings: ${(item.learnings ?? []).join(' · ') || '-'}${scriptBlock}`;
       }
     }
     const { block } = await getInspirationContextBlock({
@@ -232,7 +259,9 @@ Learnings: ${(item.learnings ?? []).join(' · ')}`;
       isFullAi: false,
       maxResults: 5,
     });
-    return block;
+    return block
+      ? `${block}\n\n(NOTE: no style exemplar was pinned for this task — the references above are the bank's closest matches, not necessarily this UGC style. Follow the STYLE GUIDE in the context pack as the primary delivery authority.)`
+      : '';
   } catch (err) {
     console.warn('[factory2] inspiration context unavailable', err);
     return '';

@@ -16,6 +16,7 @@
 
 import type { AwarenessLevel, ProductCategory, ScriptFramework } from '../engine/types';
 import type { ParsedAsanaTask } from '../engine/autopilotTypes';
+import type { UgcStyleId } from './ugcStyles';
 
 // ─── Frameworks available in the V2 UGC dropdown ────────────────────────────
 
@@ -54,7 +55,18 @@ export interface V2Task {
   /** The angle IS the primary talking point (hierarchy rank #1). */
   talkingPoint: string;
   duration: '1-15 sec' | '16-59 sec' | '60-90 sec';
-  /** Pinned inspiration item id, if the user pinned one for this task. */
+  /**
+   * The UGC STYLE — the taxonomy's innovation layer (Ad Type → STYLE →
+   * Angle). Selected by the director per task; its guide enters the
+   * immutable context pack and dictates visual grammar, register, pacing,
+   * framework leanings, and hard constraints for the whole brief.
+   */
+  ugcStyle: UgcStyleId;
+  /**
+   * Pinned inspiration item id. The director pins an ad IN THE SAME STYLE
+   * so generation sees a finished-project exemplar (visuals, shot angles,
+   * tone, pace, frameworks, hooks, beats, CTA, product/pain positioning).
+   */
   pinnedInspirationId?: string;
 }
 

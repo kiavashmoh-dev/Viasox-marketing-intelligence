@@ -32,6 +32,7 @@ import {
   interCallDelay,
 } from '../../factory2/v2Engine';
 import { saveBrief, getBrief, getAllBriefs, deleteBrief } from '../../factory2/v2Store';
+import { UGC_STYLE_IDS, getUgcStyle, type UgcStyleId } from '../../factory2/ugcStyles';
 import BriefEditorV2 from './BriefEditorV2';
 
 const PRODUCTS: ProductCategory[] = ['EasyStretch', 'Compression', 'Ankle Compression'];
@@ -51,6 +52,9 @@ function toV2Task(parsed: ParsedAsanaTask, pinned?: string): V2Task {
     awarenessLevel: mapped.scriptParamsBase.awarenessLevel,
     talkingPoint: parsed.angle,
     duration: mapped.duration,
+    // W1 flagship as the default — the director picks the real style per
+    // task in the confirm table (it's the taxonomy's innovation layer).
+    ugcStyle: 'ugc_yap',
     pinnedInspirationId: pinned,
   };
 }
@@ -386,7 +390,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
                     <div>
                       <span className="font-medium text-slate-700">{b.taskName}</span>
                       <span className="text-xs text-slate-400 ml-2">
-                        {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
+                        {getUgcStyle(b.task.ugcStyle).shortLabel} · {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
                       </span>
                     </div>
                     <div className="flex gap-3">
@@ -433,8 +437,10 @@ export default function Factory2({ apiKey, onBack }: Props) {
           <div>
             <h3 className="font-semibold text-slate-800">Confirm your UGC tasks</h3>
             <p className="text-xs text-slate-500">
-              Every V2 task is UGC. Adjust the fields that drive the creative — talking point, product,
-              awareness, duration — and pin an inspiration where you want one followed closely.
+              Every V2 task is UGC. The <strong>UGC style</strong> is the innovation layer — it dictates the
+              whole delivery: visuals, shots, register, pacing, framework leanings. Pin a bank ad{' '}
+              <strong>in the same style</strong> as the exemplar of what finished looks like (strongly
+              recommended — generation studies its hooks, beats, pace, and product positioning).
             </p>
           </div>
           <table className="w-full text-sm">
@@ -444,8 +450,9 @@ export default function Factory2({ apiKey, onBack }: Props) {
                 <th className="py-2 pr-2">Talking point / angle</th>
                 <th className="py-2 pr-2">Product</th>
                 <th className="py-2 pr-2">Awareness</th>
+                <th className="py-2 pr-2">UGC style</th>
                 <th className="py-2 pr-2">Duration</th>
-                <th className="py-2 pr-2">Pinned inspiration</th>
+                <th className="py-2 pr-2">Style exemplar (pin)</th>
                 <th className="py-2"></th>
               </tr>
             </thead>
@@ -480,6 +487,23 @@ export default function Factory2({ apiKey, onBack }: Props) {
                       {AWARENESS_OPTIONS.map((a) => (
                         <option key={a} value={a}>{a}</option>
                       ))}
+                    </select>
+                  </td>
+                  <td className="py-2 pr-2">
+                    <select
+                      value={t.task.ugcStyle}
+                      onChange={(e) => updateTask(i, { ugcStyle: e.target.value as UgcStyleId })}
+                      className="border border-amber-300 bg-amber-50/50 rounded px-2 py-1 text-xs font-medium text-slate-800 max-w-[170px]"
+                      title={getUgcStyle(t.task.ugcStyle).oneLiner}
+                    >
+                      {UGC_STYLE_IDS.map((id) => {
+                        const s = getUgcStyle(id);
+                        return (
+                          <option key={id} value={id}>
+                            {s.shortLabel}{s.tier === 'week' ? '' : s.tier === 'bench' ? ' (bench)' : ' (bank)'}
+                          </option>
+                        );
+                      })}
                     </select>
                   </td>
                   <td className="py-2 pr-2">
@@ -591,7 +615,8 @@ export default function Factory2({ apiKey, onBack }: Props) {
                 <div className="font-semibold text-slate-800">
                   {t.task.parsed.name}
                   <span className="text-xs text-slate-400 ml-2">
-                    {t.task.product} · {t.task.talkingPoint} · {t.task.awarenessLevel}
+                    {t.task.product} · {t.task.talkingPoint} · {t.task.awarenessLevel} ·{' '}
+                    <span className="text-amber-700">{getUgcStyle(t.task.ugcStyle).shortLabel}</span>
                   </span>
                 </div>
                 <span className="text-xs text-slate-400">
