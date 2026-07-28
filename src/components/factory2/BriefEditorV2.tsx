@@ -198,13 +198,13 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
   const handleExport = useCallback(async () => {
     setBusy('Building the .doc export…');
     try {
-      await exportBriefDoc(brief, frameCache);
+      await exportBriefDoc(brief);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusy('');
     }
-  }, [brief, frameCache]);
+  }, [brief]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-5 animate-fade-in">
