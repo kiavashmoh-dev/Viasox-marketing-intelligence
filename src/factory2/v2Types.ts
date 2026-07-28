@@ -202,6 +202,10 @@ export interface UgcBriefV2 {
   /** Full script as flowing prose (the dual-presentation convention). */
   scriptProse: string;
   storyboard: V2Row[];
+  /** The director's batch-level instructions (occasion, campaign context,
+   *  constraints) — top-priority block in every generation AND every
+   *  regeneration for this brief. */
+  batchInstructions?: string;
   /** Every piece of human feedback ever given on this brief — re-injected
    *  into ALL subsequent generations (the anti-drift ledger). */
   feedbackLedger: V2FeedbackEntry[];

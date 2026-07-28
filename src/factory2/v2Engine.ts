@@ -274,9 +274,10 @@ export async function runBrainstorm(
   tasks: V2Task[],
   apiKey: string,
   signal?: AbortSignal,
+  instructions?: string,
 ): Promise<Pick<V2Brainstorm, 'analysis' | 'questions'>> {
   const bankSummary = await summarizeUgcBank();
-  const { system, user } = buildBrainstormPrompt(tasks, bankSummary);
+  const { system, user } = buildBrainstormPrompt(tasks, bankSummary, instructions);
   const brain = await buildBrainAddendum({ module: 'strategySession' }, { apiKey });
   const raw = await sendThinking(system + brain.addendum, user, apiKey, 6000, signal);
   const parsed = parseJson<{ analysis: string; questions: Array<{ id?: string; question: string; options?: string[] }> }>(
@@ -299,8 +300,9 @@ export async function synthesizeDirection(
   brainstorm: V2Brainstorm,
   apiKey: string,
   signal?: AbortSignal,
+  instructions?: string,
 ): Promise<string> {
-  const { system, user } = buildDirectionSynthesisPrompt(tasks, brainstorm);
+  const { system, user } = buildDirectionSynthesisPrompt(tasks, brainstorm, instructions);
   const raw = await sendThinking(system, user, apiKey, 3000, signal);
   const parsed = parseJson<{ direction: string }>(raw, 'direction synthesis');
   if (!parsed.direction) throw new Error('Factory V2: direction synthesis returned empty.');
@@ -314,9 +316,10 @@ export async function generateConcepts(
   direction: string,
   apiKey: string,
   signal?: AbortSignal,
+  instructions?: string,
 ): Promise<V2Concept[]> {
   const inspiration = await inspirationContextFor(task);
-  const { system, user } = buildConceptsPrompt(task, direction, inspiration);
+  const { system, user } = buildConceptsPrompt(task, direction, inspiration, instructions);
   const raw = await sendThinking(system, user, apiKey, 6000, signal);
   const parsed = parseJson<{ concepts: Array<Omit<V2Concept, 'id'>> }>(raw, 'concept generation');
   const concepts = (parsed.concepts ?? []).slice(0, 3).map((c) => ({ ...c, id: genId('con') }));
@@ -538,9 +541,10 @@ export async function writeBrief(
   direction: string,
   apiKey: string,
   signal?: AbortSignal,
+  instructions?: string,
 ): Promise<UgcBriefV2> {
   const inspiration = await inspirationContextFor(task);
-  const { system, user } = buildBriefWritePrompt(task, concept, framework, direction, inspiration);
+  const { system, user } = buildBriefWritePrompt(task, concept, framework, direction, inspiration, instructions);
   const brain = await buildBrainAddendum(
     { module: 'briefGenerator', angle: task.talkingPoint },
     { apiKey },
@@ -572,6 +576,7 @@ export async function writeBrief(
     concept,
     hooks,
     ctas,
+    batchInstructions: (instructions ?? '').trim() || undefined,
     scriptProse: parsed.scriptProse ?? '',
     storyboard: appendAlternateTakes(mainRows, hooks, ctas),
     feedbackLedger: [],

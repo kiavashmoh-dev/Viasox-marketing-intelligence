@@ -45,6 +45,51 @@ import { getUgcStyle, getUgcStyleBlock } from './ugcStyles';
 
 // ─── Shared fragments ───────────────────────────────────────────────────────
 
+/**
+ * The director's batch instructions as a top-priority block, with the
+ * OCCASION-AS-CREATIVE-FUEL doctrine attached. The doctrine is self-gating
+ * ("whenever the instructions name an occasion…") so it costs nothing on
+ * occasion-free batches and binds hard on occasion batches.
+ */
+export function renderDirectorInstructions(instructions?: string): string {
+  const trimmed = (instructions ?? '').trim();
+  if (!trimmed) return '';
+  return `
+## CREATIVE DIRECTOR'S BATCH INSTRUCTIONS — HIGHEST PRIORITY
+
+<creative_direction>
+${trimmed}
+</creative_direction>
+
+## OCCASION AS CREATIVE FUEL (binding whenever the instructions name a holiday, occasion, sale event, or cultural moment)
+
+Surface-level occasion marketing is BANNED. "Buy these during our [occasion] sale" with a themed
+sticker on an ordinary ad is an automatic failure. When an occasion is in play, you connect to it at
+the DEEPEST level available — the goal is RAPPORT with people who celebrate it, through every layer
+you control:
+- **STORYTELLING:** the concept's story happens INSIDE the occasion's real rituals and meaning — the
+  day's moments are the plot, not a backdrop mentioned once.
+- **VISUALS & ENVIRONMENT:** scenes, settings, and props from how people ACTUALLY celebrate (the
+  backyard barbecue, the flag on the porch, the folding chairs, the last long weekend of summer) —
+  this is licensed scene territory: shot descriptions should place the creator in the occasion's
+  world.
+- **CREATORS / CASTING:** who the creator IS on that day (the host who's been on her feet since 6am,
+  the nurse finally off shift for the long weekend, the grandmother running the family cookout) —
+  write the persona as a participant in the occasion, and say so in the creator-facing directions.
+- **SCRIPT FRAMEWORKS:** choose and execute the framework that lets the occasion breathe as a story
+  (a day-in-life through the holiday, a confession at the cookout) rather than one that reduces it
+  to an announcement.
+- **MEANING:** mine what the occasion HONORS and fuse it with our truths where they genuinely
+  connect (a holiday honoring workers belongs to people who spend their lives on their feet — our
+  exact customers). Meaning-level connection beats decoration-level connection every time.
+
+RULES: the occasion innovates the SCENE, STORY, CASTING, and MEANING. The claims stay inside the
+claim boundary; the awareness level still governs brand/offer timing; the UGC style still governs
+delivery grammar. THE TEST: someone who celebrates that day should feel the ad UNDERSTANDS the day —
+never that a sale was stapled to it.
+`;
+}
+
 const JSON_CONTRACT = `## OUTPUT CONTRACT — STRICT JSON ONLY
 
 Respond with ONE JSON object and nothing else: no markdown fences, no commentary before or after.
@@ -172,6 +217,7 @@ ${rows}`;
 export function buildBrainstormPrompt(
   tasks: V2Task[],
   inspirationSummary: string,
+  instructions?: string,
 ): { system: string; user: string } {
   const taskList = tasks
     .map(
@@ -197,6 +243,8 @@ suit product-forward vs earned-entry patterns (per each task's awareness level);
 risks monotony (avatars, emotional registers, opening techniques); which tasks are near-duplicates
 needing differentiation; what the inspiration bank offers; and what only the human knows (business
 priorities, what's been run recently, creator constraints).
+${renderDirectorInstructions(instructions)}
+${(instructions ?? '').trim() ? `OCCASION MANDATE FOR YOUR ANALYSIS: if the instructions name an occasion, your analysis MUST mine it on both levels — the ICONOGRAPHY (the real rituals, settings, and props of how people celebrate) as scene territory for the batch, and the MEANING (what the day honors) fused with our brand truths. Propose the occasion-native lane per task, and make at least ONE of your questions an occasion question (which rituals to lean into, how offer-forward vs story-forward the director wants each task).` : ''}
 
 ${getUgcVoiceDna()}
 
@@ -228,6 +276,7 @@ Produce the strategic analysis and your questions.`;
 export function buildDirectionSynthesisPrompt(
   tasks: V2Task[],
   brainstorm: V2Brainstorm,
+  instructions?: string,
 ): { system: string; user: string } {
   const qa = brainstorm.questions
     .map((q) => `Q: ${q.question}\nA: ${brainstorm.answers[q.id] ?? '(no answer)'}`)
@@ -240,9 +289,11 @@ export function buildDirectionSynthesisPrompt(
 Turn your batch analysis plus the creative director's answers into a tight working direction for
 this batch. It will be injected into every downstream generation. Be specific and directive; no
 generic advice. Include per-task notes where tasks need individual direction (differentiation
-between near-duplicates, persona/emotion spread, product-entry pattern leanings). 200-400 words of
-plain text.
-
+between near-duplicates, persona/emotion spread, product-entry pattern leanings). If an occasion is
+in play, the direction MUST carry the occasion lane per task: the ritual/scene each brief lives in,
+the casting posture, and how offer-forward vs story-forward each task runs. 200-400 words of plain
+text.
+${renderDirectorInstructions(instructions)}
 ${JSON_CONTRACT}
 
 JSON shape: { "direction": "..." }`;
@@ -267,6 +318,7 @@ export function buildConceptsPrompt(
   task: V2Task,
   direction: string,
   inspirationContext: string,
+  instructions?: string,
 ): { system: string; user: string } {
   const entryRule =
     task.awarenessLevel === 'Unaware' || task.awarenessLevel === 'Problem Aware'
@@ -292,7 +344,8 @@ must pass its own verification before you emit it:
 4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.
 
 productEntry for this task must be ${entryRule}.
-${task.awarenessLevel === 'Unaware' ? 'V2 has no separate persona/technique fields: name the Unaware SUB-PERSONA (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer) and the technique (Scene Identification / Mundane Reframe / False Cause Flip) INSIDE the summary, and confirm them in verification.\n' : ''}
+${task.awarenessLevel === 'Unaware' ? 'V2 has no separate persona/technique fields: name the Unaware SUB-PERSONA (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer) and the technique (Scene Identification / Mundane Reframe / False Cause Flip) INSIDE the summary, and confirm them in verification.\n' : ''}${renderDirectorInstructions(instructions)}
+${(instructions ?? '').trim() ? 'OCCASION MANDATE FOR CONCEPTS: if the instructions name an occasion, EVERY concept must plant the occasion in its OPENING SCENE (the ritual, the setting, the day itself — as concrete filmable details), cast the creator as a participant in the occasion, and connect at the meaning level where genuine. A concept whose occasion presence is only in the CTA or a mentioned sale = automatic verification failure.\n' : ''}
 ${JSON_CONTRACT}
 
 JSON shape:
@@ -403,6 +456,7 @@ export function buildBriefWritePrompt(
   framework: { name: ScriptFramework; rationale: string },
   direction: string,
   inspirationContext: string,
+  instructions?: string,
 ): { system: string; user: string } {
   const frameworkDetail = FRAMEWORK_DETAILS[framework.name] ?? `**${framework.name}**`;
   const system = `${buildV2ContextPack(task, 'script')}
@@ -437,7 +491,8 @@ ${briefJsonShape(task.awarenessLevel)}
 
 ${getMarketingBrainBlock('v2Writer')}`;
 
-  const user = `# BATCH DIRECTION (binding)
+  const user = `${renderDirectorInstructions(instructions)}
+# BATCH DIRECTION (binding)
 ${direction}
 
 # THE APPROVED CONCEPT (binding — the concept wins over everything except the awareness rules)
@@ -501,7 +556,8 @@ ${jsonShape}
 ${getMarketingBrainBlock('v2Regen')}`;
 
   const currentText = currentTargetText(brief, target);
-  const user = `${renderBriefState(brief)}
+  const user = `${renderDirectorInstructions(brief.batchInstructions)}
+${renderBriefState(brief)}
 ${renderLedger(brief)}
 # THE TARGET: ${targetLabel}
 ${currentText ? `Current text (you are replacing exactly this):\n"""\n${currentText}\n"""\n` : ''}

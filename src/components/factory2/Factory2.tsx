@@ -61,6 +61,7 @@ function toV2Task(parsed: ParsedAsanaTask, pinned?: string): V2Task {
 
 export default function Factory2({ apiKey, onBack }: Props) {
   const [session, setSession] = useState<V2SessionState>({ phase: 'idle', tasks: [] });
+  const [instructions, setInstructions] = useState('');
   const [entryMode, setEntryMode] = useState<'chooser' | 'manual'>('chooser');
   const [inspirations, setInspirations] = useState<InspirationItem[]>([]);
   const [direction, setDirection] = useState('');
@@ -141,6 +142,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
         session.tasks.map((t) => t.task),
         apiKey,
         abortRef.current.signal,
+        instructions,
       );
       setAnswers({});
       setSession((s) => ({
@@ -152,7 +154,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
     } finally {
       setBusyLabel('');
     }
-  }, [apiKey, session.tasks]);
+  }, [apiKey, instructions, session.tasks]);
 
   const submitAnswers = useCallback(async () => {
     if (!session.brainstorm) return;
@@ -165,6 +167,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
         brainstorm,
         apiKey,
         abortRef.current.signal,
+        instructions,
       );
       setDirection(dir);
       setSession((s) => ({ ...s, phase: 'concepting', brainstorm: { ...brainstorm, direction: dir } }));
@@ -178,7 +181,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
           tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'working' } : t)),
         }));
         try {
-          const concepts = await generateConcepts(session.tasks[i].task, dir, apiKey, abortRef.current?.signal);
+          const concepts = await generateConcepts(session.tasks[i].task, dir, apiKey, abortRef.current?.signal, instructions);
           setSession((s) => ({
             ...s,
             tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'awaiting-user', concepts } : t)),
@@ -198,7 +201,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
     } finally {
       setBusyLabel('');
     }
-  }, [answers, apiKey, session.brainstorm, session.tasks]);
+  }, [answers, apiKey, instructions, session.brainstorm, session.tasks]);
 
   const pickConcept = useCallback((taskIdx: number, conceptId: string) => {
     setSession((s) => ({
@@ -221,7 +224,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
         setBusyLabel(`Selecting framework for ${ts.task.parsed.name}…`);
         const framework = await selectFramework(ts.task, concept, apiKey, signal);
         setBusyLabel(`Writing brief for ${ts.task.parsed.name}…`);
-        let brief = await writeBrief(ts.task, concept, framework, direction, apiKey, signal);
+        let brief = await writeBrief(ts.task, concept, framework, direction, apiKey, signal, instructions);
         saveBrief(brief);
         refreshLibrary();
         setBusyLabel(`Matching storyboard references for ${ts.task.parsed.name}…`);
@@ -241,7 +244,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
         }));
       }
     },
-    [apiKey, direction, refreshLibrary],
+    [apiKey, direction, instructions, refreshLibrary],
   );
 
   const writeBriefs = useCallback(async () => {
@@ -271,7 +274,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
         }));
         try {
           setBusyLabel(`Generating concepts for ${ts.task.parsed.name}…`);
-          const concepts = await generateConcepts(ts.task, direction, apiKey, abortRef.current.signal);
+          const concepts = await generateConcepts(ts.task, direction, apiKey, abortRef.current.signal, instructions);
           setSession((s) => ({
             ...s,
             phase: 'concept-review',
@@ -288,7 +291,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
       }
       setBusyLabel('');
     },
-    [apiKey, direction, produceBriefForTask, session.tasks],
+    [apiKey, direction, instructions, produceBriefForTask, session.tasks],
   );
 
   const cancelWork = useCallback(() => {
@@ -541,6 +544,22 @@ export default function Factory2({ apiKey, onBack }: Props) {
               ))}
             </tbody>
           </table>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Batch instructions <span className="text-slate-400 font-normal">(campaign context, occasion, constraints)</span>
+            </label>
+            <textarea
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder="e.g., These are for our Labor Day sale — the last long weekend of summer. We want ads that live inside how people actually celebrate (backyard, barbecue, family), not a sale announcement with a flag on it."
+              className="w-full h-24 px-4 py-3 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder-slate-400 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="text-[10px] text-slate-400 mt-1">
+              Highest-priority context for every step, including line regenerations. Name an occasion here and the
+              whole pipeline treats it as creative fuel — storytelling, visuals, casting, environment, and framework
+              choices connect to it at the deepest level (never just &ldquo;buy during our sale&rdquo;).
+            </p>
+          </div>
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setSession({ phase: 'idle', tasks: [] })}
