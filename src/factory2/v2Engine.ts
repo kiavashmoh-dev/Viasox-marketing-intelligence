@@ -173,6 +173,89 @@ function parseJson<T>(raw: string, context: string): T {
   }
 }
 
+/**
+ * parseJson plus mechanical repairs for the model slips we actually see:
+ * trailing commas, a missing comma between members, a missing comma at a
+ * line break between two strings. Each repair candidate is accepted ONLY
+ * if the whole document then parses — no partial or lossy recovery.
+ */
+function parseJsonLenient<T>(raw: string, context: string): T {
+  try {
+    return parseJson<T>(raw, context);
+  } catch (firstErr) {
+    let text = raw.trim();
+    const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fence) text = fence[1].trim();
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start === -1 || end === -1 || end <= start) throw firstErr;
+    const base = text.slice(start, end + 1);
+    const noTrailing = base.replace(/,\s*([}\]])/g, '$1');
+    const commaBetweenObjects = (t: string) => t.replace(/}(\s*){/g, '},$1{');
+    const commaBetweenStrings = (t: string) => t.replace(/"(\s*\n\s*)"/g, '",$1"');
+    const candidates = [
+      noTrailing,
+      commaBetweenObjects(base),
+      commaBetweenStrings(base),
+      commaBetweenStrings(commaBetweenObjects(noTrailing)),
+    ];
+    for (const c of candidates) {
+      try {
+        const parsed = JSON.parse(c) as T;
+        console.warn(`[factory2] ${context}: response needed mechanical JSON repair (accepted a repaired parse).`);
+        return parsed;
+      } catch {
+        // try the next candidate
+      }
+    }
+    throw firstErr;
+  }
+}
+
+/**
+ * A thinking call whose response MUST parse as JSON — self-healing.
+ * On an unparseable response: mechanical repair first (above), then ONE
+ * corrective retry that shows the model its own output and the exact
+ * parser error so it fixes the JSON while keeping the creative content.
+ */
+async function requestJson<T>(
+  system: string,
+  user: string,
+  apiKey: string,
+  maxTokens: number,
+  context: string,
+  signal?: AbortSignal,
+): Promise<T> {
+  const raw = await sendThinking(system, user, apiKey, maxTokens, signal);
+  try {
+    return parseJsonLenient<T>(raw, context);
+  } catch (err) {
+    if (signal?.aborted) throw err;
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[factory2] ${context}: unparseable JSON — running one corrective retry.`, err);
+    await interCallDelay(signal);
+    const fixUser = `${user}
+
+## CORRECTION PASS — YOUR PREVIOUS RESPONSE WAS REJECTED
+
+Your previous response failed JSON parsing with this error:
+${msg}
+
+Your previous response was:
+"""
+${raw.slice(0, 24000)}
+"""
+
+Re-emit the COMPLETE response as ONE strictly valid JSON object. Keep the same creative content —
+fix ONLY the JSON: convert or escape double quotes inside string values (prefer single quotes for
+quoted speech), remove raw line breaks inside strings, add any missing commas between array
+elements and properties, remove trailing commas, and close every bracket. If your previous response
+was cut off, finish it. Output the JSON object and nothing else.`;
+    const raw2 = await sendThinking(system, fixUser, apiKey, maxTokens, signal);
+    return parseJsonLenient<T>(raw2, context);
+  }
+}
+
 let idCounter = 0;
 function genId(prefix: string): string {
   idCounter += 1;
@@ -279,10 +362,8 @@ export async function runBrainstorm(
   const bankSummary = await summarizeUgcBank();
   const { system, user } = buildBrainstormPrompt(tasks, bankSummary, instructions);
   const brain = await buildBrainAddendum({ module: 'strategySession' }, { apiKey });
-  const raw = await sendThinking(system + brain.addendum, user, apiKey, 6000, signal);
-  const parsed = parseJson<{ analysis: string; questions: Array<{ id?: string; question: string; options?: string[] }> }>(
-    raw,
-    'brainstorm',
+  const parsed = await requestJson<{ analysis: string; questions: Array<{ id?: string; question: string; options?: string[] }> }>(
+    system + brain.addendum, user, apiKey, 6000, 'brainstorm', signal,
   );
   const questions: V2BrainstormQuestion[] = (parsed.questions ?? []).slice(0, 5).map((q, i) => ({
     id: q.id || `q${i + 1}`,
@@ -303,8 +384,7 @@ export async function synthesizeDirection(
   instructions?: string,
 ): Promise<string> {
   const { system, user } = buildDirectionSynthesisPrompt(tasks, brainstorm, instructions);
-  const raw = await sendThinking(system, user, apiKey, 3000, signal);
-  const parsed = parseJson<{ direction: string }>(raw, 'direction synthesis');
+  const parsed = await requestJson<{ direction: string }>(system, user, apiKey, 3000, 'direction synthesis', signal);
   if (!parsed.direction) throw new Error('Factory V2: direction synthesis returned empty.');
   return parsed.direction;
 }
@@ -320,8 +400,7 @@ export async function generateConcepts(
 ): Promise<V2Concept[]> {
   const inspiration = await inspirationContextFor(task);
   const { system, user } = buildConceptsPrompt(task, direction, inspiration, instructions);
-  const raw = await sendThinking(system, user, apiKey, 6000, signal);
-  const parsed = parseJson<{ concepts: Array<Omit<V2Concept, 'id'>> }>(raw, 'concept generation');
+  const parsed = await requestJson<{ concepts: Array<Omit<V2Concept, 'id'>> }>(system, user, apiKey, 8000, 'concept generation', signal);
   const concepts = (parsed.concepts ?? []).slice(0, 3).map((c) => ({ ...c, id: genId('con') }));
   if (concepts.length === 0) throw new Error('Factory V2: no concepts generated.');
   return concepts;
@@ -336,8 +415,7 @@ export async function selectFramework(
   signal?: AbortSignal,
 ): Promise<{ name: ScriptFramework; rationale: string }> {
   const { system, user } = buildFrameworkSelectPrompt(task, concept);
-  const raw = await sendThinking(system, user, apiKey, 1500, signal);
-  const parsed = parseJson<{ framework: string; rationale: string }>(raw, 'framework selection');
+  const parsed = await requestJson<{ framework: string; rationale: string }>(system, user, apiKey, 1500, 'framework selection', signal);
   const exact = UGC_FRAMEWORKS.find((f) => f === parsed.framework)
     ?? UGC_FRAMEWORKS.find((f) => f.toLowerCase().includes((parsed.framework || '').toLowerCase().slice(0, 12)));
   if (!exact) {
@@ -573,8 +651,7 @@ export async function writeBrief(
     { module: 'briefGenerator', angle: task.talkingPoint },
     { apiKey },
   );
-  const raw = await sendThinking(system + brain.addendum, user, apiKey, 12000, signal);
-  const parsed = parseJson<RawBriefJson>(raw, 'brief writing');
+  const parsed = await requestJson<RawBriefJson>(system + brain.addendum, user, apiKey, 12000, 'brief writing', signal);
   const rawRows = parsed.storyboard ?? [];
   const mainRows = rawRows.map(toRow).filter((r): r is V2Row => r !== null);
   if (mainRows.length < 3) {
@@ -682,7 +759,7 @@ export async function matchReferences(
     3000,
     signal,
   );
-  const parsed = parseJson<{ assignments: Array<{ clipNumber: number; choice: number | string }> }>(
+  const parsed = parseJsonLenient<{ assignments: Array<{ clipNumber: number; choice: number | string }> }>(
     raw,
     'reference matching',
   );
@@ -758,7 +835,7 @@ export async function runRippleCheck(
   try {
     const { system, user } = buildRippleCheckPrompt(brief, changedTarget);
     const raw = await sendMessage(system, user, apiKey, 2500, V2_HEAVY_MODEL, signal);
-    const parsed = parseJson<{ flags: Array<{ target: string; issue: string; suggestion: string }> }>(
+    const parsed = parseJsonLenient<{ flags: Array<{ target: string; issue: string; suggestion: string }> }>(
       raw,
       'ripple check',
     );
@@ -837,17 +914,17 @@ export async function applyRegen(
 
   const { system, user } = buildRegenPrompt(withLedger.task, withLedger, target, feedback);
   const isStructural = target.type === 'framework-regenerate' || target.type === 'framework-switch';
-  const raw = await sendThinking(system, user, apiKey, isStructural ? 12000 : 2500, signal);
+  const maxT = isStructural ? 12000 : 2500;
 
   let updated: UgcBriefV2;
   if (isStructural) {
-    const parsed = parseJson<{
+    const parsed = await requestJson<{
       rationale: string;
       hooks: string[];
       ctas: string[];
       scriptProse: string;
       storyboard: RawBriefRow[];
-    }>(raw, 'framework restructure');
+    }>(system, user, apiKey, maxT, 'framework restructure', signal);
     const rawRows = parsed.storyboard ?? [];
     const mainRows = rawRows.map(toRow).filter((r): r is V2Row => r !== null);
     if (mainRows.length < 3) throw new Error('Factory V2: framework restructure returned too few rows.');
@@ -869,13 +946,13 @@ export async function applyRegen(
     // Storyboard changed wholesale — re-match, non-fatally.
     updated = await matchReferencesSafe(updated, apiKey, signal);
   } else if (target.type === 'row-insert') {
-    const parsed = parseJson<{
+    const parsed = await requestJson<{
       scriptLine: string;
       audioType?: string;
       shotType?: string;
       shotDescription?: string;
       editorNotes?: string;
-    }>(raw, 'line insertion');
+    }>(system, user, apiKey, maxT, 'line insertion', signal);
     const newRow = toRow({ clipNumber: 0, ...parsed });
     if (!newRow || !newRow.scriptLine.trim()) {
       throw new Error('Factory V2: line insertion returned an empty line.');
@@ -917,7 +994,7 @@ export async function applyRegen(
       updated = await matchReferencesSafe(updated, apiKey, signal, { onlyClipNumber: insertedClip });
     }
   } else {
-    const parsed = parseJson<{ newValue: string }>(raw, `regenerate ${targetLabel}`);
+    const parsed = await requestJson<{ newValue: string }>(system, user, apiKey, maxT, `regenerate ${targetLabel}`, signal);
     const v = (parsed.newValue ?? '').trim();
     if (!v) throw new Error('Factory V2: regeneration returned an empty value.');
     updated = { ...withLedger, version: withLedger.version + 1, updatedAt: new Date().toISOString() };

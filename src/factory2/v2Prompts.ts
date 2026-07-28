@@ -93,8 +93,11 @@ never that a sale was stapled to it.
 const JSON_CONTRACT = `## OUTPUT CONTRACT — STRICT JSON ONLY
 
 Respond with ONE JSON object and nothing else: no markdown fences, no commentary before or after.
-Every string value is plain text (no markdown headers inside values). If a value naturally contains
-a double quote, escape it. Invalid JSON is a failed generation.`;
+Every string value is plain text (no markdown headers inside values). Inside string values use
+single quotes for quoted speech or product names — never an unescaped double quote (if you must
+write one, escape it as \\"). Never put a raw line break inside a string value. Put a comma between
+every array element and every property; no trailing commas. Emit the COMPLETE object — never stop
+mid-array or mid-string. Invalid JSON is a failed generation.`;
 
 function durationBudget(duration: V2Task['duration']): string {
   const t = DURATION_TARGETS[duration];
