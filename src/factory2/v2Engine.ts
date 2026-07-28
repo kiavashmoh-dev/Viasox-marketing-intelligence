@@ -312,16 +312,21 @@ async function inspirationContextFor(task: V2Task): Promise<string> {
       if (item && item.status === 'ready') {
         const script = (item.attachedScriptText || item.textContent || '').trim();
         const scriptBlock = script
-          ? `\nTHE EXEMPLAR'S ACTUAL SCRIPT/VO (study its rhythm, beat lengths, and product positioning — write OUR script with the same craft, never the same words):\n"""\n${script.slice(0, 3000)}\n"""`
+          ? `\nTHE EXEMPLAR'S ACTUAL SCRIPT/VO (the primary dissection source — dissect it line by line):\n"""\n${script.slice(0, 6000)}\n"""`
           : '';
-        return `## FINISHED-PROJECT EXEMPLAR (PINNED — same UGC style as this task)
+        return `## PINNED EXEMPLAR — THE STRUCTURAL AUTHORITY for this task
 
-The director pinned this bank ad as the exemplar of what a FINISHED project in this style looks
-like. Study it as the execution target across every dimension: visuals, shot angles, overall tone,
-pace, script framework, hooks, script beats, CTA, and how the product and pain points are
-positioned. Mirror its CRAFT — its shapes, timing, and energy — while everything you write stays
-inside OUR claim boundary, product truths, and this task's awareness rules. Never copy its claims,
-its brand facts, or its literal lines.
+The director pinned this bank ad as THE authority on how this brief is built. Before writing
+ANYTHING, dissect it thoroughly: break it into numbered beats and for each beat name its JOB, its
+proportional share of runtime, and the BUILDING BLOCK of each line (hook / escalation / pivot /
+discovery / demo / proof / reveal / close). Locate the product-entry position (as % into the ad),
+how much of the ad talks product after entry, and the shape of the payoff. That dissected beat map
+GOVERNS this brief near one-to-one: same framework logic, same beat order, same proportional
+timing, same product-entry position, same product-talk share, same payoff shape, same visual
+grammar (shot types, angles, energy). It OUTRANKS the style guide's pacing norms and the awareness
+level's timing defaults. It never outranks the censors: OUR brand facts, OUR claim boundary, and
+the awareness level's vocabulary/offer bans bind in full — mirror the ARCHITECTURE and the craft,
+never the claims, brand facts, or literal lines.
 
 "${item.title || item.filename}"
 - Summary: ${item.summary || '-'}
@@ -414,7 +419,8 @@ export async function selectFramework(
   apiKey: string,
   signal?: AbortSignal,
 ): Promise<{ name: ScriptFramework; rationale: string }> {
-  const { system, user } = buildFrameworkSelectPrompt(task, concept);
+  const inspiration = await inspirationContextFor(task);
+  const { system, user } = buildFrameworkSelectPrompt(task, concept, inspiration);
   const parsed = await requestJson<{ framework: string; rationale: string }>(system, user, apiKey, 1500, 'framework selection', signal);
   const exact = UGC_FRAMEWORKS.find((f) => f === parsed.framework)
     ?? UGC_FRAMEWORKS.find((f) => f.toLowerCase().includes((parsed.framework || '').toLowerCase().slice(0, 12)));

@@ -161,10 +161,33 @@ ${getUgcVoiceDna()}
 
 ## PRODUCT-ENTRY × AWARENESS (binding)
 The voice DNA's two product-entry patterns are constrained by this task's awareness level:
-- Unaware / Problem Aware → EARNED ENTRY only, and the entry TIMING is governed by the awareness
-  level's release rules above (not by "midpoint" — at Unaware the product lands in the final beats).
+- Unaware / Problem Aware → EARNED ENTRY only; the entry TIMING follows the level's OWN release
+  rules above. Unaware: the product lands in the final beats per the release order. Problem Aware:
+  the product enters MID-SCRIPT per its time allocation, with a full mechanism + proof cascade
+  after it — a product that first appears one line before the CTA is a FAILED Problem Aware
+  script, not a cautious one.
 - Product Aware / Most Aware → PRODUCT-FORWARD only (the brand belongs in the first ~3 seconds).
 - Solution Aware → either pattern, chosen for concept fit.
+${task.pinnedInspirationId ? `- ⭐ PINNED-EXEMPLAR EXCEPTION: a finished-project exemplar is pinned for this task. When its
+  "PINNED EXEMPLAR — THE STRUCTURAL AUTHORITY" block is present in the conversation, that
+  exemplar's dissected beat map GOVERNS structure, framework choice, product-entry timing, and
+  product-talk share — the timing defaults above and the style guide's pacing norms yield to it.
+  The censors never yield: brand facts, the claim boundary, and the awareness level's
+  vocabulary/offer bans bind in full.` : ''}
+
+## THE CRAFT LICENSE — THE MEDIUM IS NOT THE CEILING
+Everything above is the MEDIUM: styles, pacing guidance, framework leanings, structural defaults.
+The medium serves the script — never the reverse. When you can write a DEMONSTRABLY better script
+by stepping slightly outside a style norm, a pacing default, or a structural convention, write the
+better script and name the deviation in your plan in one line ("deviating from X because Y").
+"Better" means: a more gripping opening, more concrete lived scenes, tighter line-to-line flow, and
+above all a MORE SATISFYING PRODUCT PAYOFF — once the product enters, it must get established as
+THE clear answer the whole script was walking toward (Schwartz: the product is the goal-conclusion
+of the gradualized argument; proof is placed exactly where the viewer is begging for it; the close
+lands as a payoff). A late entry is legitimate strategy; a starved payoff is a failed script at
+EVERY awareness level.
+NEVER flexible, at any quality bar: brand facts, the claim boundary, the awareness level's
+vocabulary/offer bans, the Unaware release ORDER, banned phrases, and the hard duration ceiling.
 
 # ═══ END CONTEXT PACK ═══`;
 }
@@ -323,8 +346,10 @@ export function buildConceptsPrompt(
   inspirationContext: string,
   instructions?: string,
 ): { system: string; user: string } {
-  const entryRule =
-    task.awarenessLevel === 'Unaware' || task.awarenessLevel === 'Problem Aware'
+  const hasPinnedExemplar = inspirationContext.includes('THE STRUCTURAL AUTHORITY');
+  const entryRule = hasPinnedExemplar
+    ? 'whatever MATCHES THE PINNED EXEMPLAR\'s product-entry pattern and timing — the exemplar is the structural authority for this task (the awareness level\'s vocabulary/offer rules still bind in full)'
+    : task.awarenessLevel === 'Unaware' || task.awarenessLevel === 'Problem Aware'
       ? '"earned-entry" (mandatory at this awareness level — entry timing follows the awareness release rules)'
       : task.awarenessLevel === 'Solution Aware'
         ? '"product-forward" or "earned-entry" — pick for concept fit'
@@ -347,7 +372,13 @@ must pass its own verification before you emit it:
 4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.
 
 productEntry for this task must be ${entryRule}.
-${task.awarenessLevel === 'Unaware' ? 'V2 has no separate persona/technique fields: name the Unaware SUB-PERSONA (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer) and the technique (Scene Identification / Mundane Reframe / False Cause Flip) INSIDE the summary, and confirm them in verification.\n' : ''}${renderDirectorInstructions(instructions)}
+${hasPinnedExemplar ? `EXEMPLAR SKELETON MANDATE: a finished-project exemplar is pinned for this task (its dissection is in
+the INSPIRATION CONTEXT of the user message). All 3 concepts must be conceived INSIDE the exemplar's
+structural skeleton — same beat arc, same product-entry position, same product-talk share, same
+payoff shape — and differ in STORY: the lived situation, the angle execution, the casting, the
+emotional world. Each summary must name, in one clause, how the concept maps onto the exemplar's
+arc. Concepts that abandon the exemplar's architecture fail verification.
+` : ''}${task.awarenessLevel === 'Unaware' ? 'V2 has no separate persona/technique fields: name the Unaware SUB-PERSONA (Normalizer / Diagnosed Non-Searcher / Incidental Sufferer) and the technique (Scene Identification / Mundane Reframe / False Cause Flip) INSIDE the summary, and confirm them in verification.\n' : ''}${renderDirectorInstructions(instructions)}
 ${(instructions ?? '').trim() ? 'OCCASION MANDATE FOR CONCEPTS: if the instructions name an occasion, EVERY concept must plant the occasion in its OPENING SCENE (the ritual, the setting, the day itself — as concrete filmable details), cast the creator as a participant in the occasion, and connect at the meaning level where genuine. A concept whose occasion presence is only in the CTA or a mentioned sale = automatic verification failure.\n' : ''}
 ${JSON_CONTRACT}
 
@@ -381,10 +412,12 @@ Generate the 3 concepts for task "${task.parsed.name}" (${task.product} / ${task
 export function buildFrameworkSelectPrompt(
   task: V2Task,
   concept: V2Concept,
+  inspirationContext = '',
 ): { system: string; user: string } {
   const frameworkGuide = UGC_FRAMEWORKS.map(
     (f) => FRAMEWORK_DETAILS[f] ?? `**${f}**`,
   ).join('\n\n');
+  const hasPinnedExemplar = inspirationContext.includes('THE STRUCTURAL AUTHORITY');
 
   const system = `${buildV2ContextPack(task, 'concept')}
 
@@ -397,7 +430,12 @@ above) are binding influences — its leanings are strong candidates, its AVOID 
 the framework fights the style's delivery grammar. Any framework that honors both the awareness
 rules and the style's grammar is valid. Do not default to one favorite — pick for fit, and say why
 in one sharp line the creative director will read.
-
+${hasPinnedExemplar ? `
+⭐ A PINNED EXEMPLAR is the structural authority for this task (its dissection is in the user
+message). Dissect its actual arc first, then choose the framework whose stages most closely MATCH
+that arc — the exemplar outranks the style leanings and any default preference. Your rationale must
+name the correspondence ("matches the exemplar's X → Y → Z arc").
+` : ''}
 AVAILABLE FRAMEWORKS (choose exactly one, by its exact name; full craft guidance per framework):
 
 ${frameworkGuide}
@@ -413,7 +451,7 @@ ${concept.title}: ${concept.summary}
 Product entry: ${concept.productEntry} | Product truth: ${concept.productTruth}
 Opening details: ${concept.openingDetails}
 
-Select the framework.`;
+${inspirationContext ? `# INSPIRATION CONTEXT\n${inspirationContext}\n\n` : ''}Select the framework.`;
 
   return { system, user };
 }
@@ -477,8 +515,18 @@ STRUCTURAL RULES:
 - The storyboard's main edit = hook 1 + body + CTA 1, split one-thought-per-clip. Alternate hooks
   and CTA 2 are NOT storyboard rows — the engine appends them as alternate-take rows automatically.
   Write ONLY the main edit rows.
-- Execute the framework below as the narrative engine — every clip annotatable with its stage —
-  while honoring the awareness level's release rules absolutely.
+- Execute the framework below as the narrative engine — every clip annotatable with its stage.
+  The awareness level's HARD rules (vocabulary bans, offer bans, the Unaware release ORDER) bind
+  absolutely; its pacing guidance is a default that yields to a pinned exemplar's beat map and to
+  the CRAFT LICENSE.
+${inspirationContext.includes('THE STRUCTURAL AUTHORITY') ? `- ⭐ A PINNED EXEMPLAR GOVERNS THIS BRIEF'S STRUCTURE. Your plan.beatMap must OPEN by dissecting
+  the exemplar into numbered beats — each beat's JOB, its proportional share of runtime, the
+  product-entry position (as % into the ad), the product-talk share after entry, the payoff shape,
+  and the building block of each line (hook / escalation / pivot / discovery / demo / proof /
+  reveal / close). Then map EVERY clip you write to its exemplar beat: same beat order, same
+  proportional timing, same product-entry position, same product-talk share, same payoff shape.
+  OUR story, THEIR architecture. Framework stages annotate WITHIN that map, never against it.
+` : ''}
 
 ## THE FRAMEWORK YOU ARE EXECUTING
 ${frameworkDetail}
@@ -498,7 +546,7 @@ ${getMarketingBrainBlock('v2Writer')}`;
 # BATCH DIRECTION (binding)
 ${direction}
 
-# THE APPROVED CONCEPT (binding — the concept wins over everything except the awareness rules)
+# THE APPROVED CONCEPT (binding — the concept wins over everything except the hard censors: brand facts, claim boundary, awareness vocabulary/offer bans)
 ${concept.title}: ${concept.summary}
 Product entry: ${concept.productEntry} | Product truth to sell: ${concept.productTruth}
 Opening details: ${concept.openingDetails}
