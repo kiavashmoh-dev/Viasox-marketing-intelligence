@@ -54,6 +54,7 @@ import {
   buildRippleCheckPrompt,
   type FrameCandidate,
   type FrameMatchOptions,
+  buildExemplarFidelityPrompt,
 } from './v2Prompts';
 
 const UGC_AD_TYPE = 'UGC (User Generated Content)';
@@ -693,6 +694,31 @@ export async function writeBrief(
     updatedAt: now,
   };
   brief.rippleFlags = validateBrief(brief);
+
+  // Beat-map fidelity gate: with a pinned exemplar, audit the finished
+  // structure against the exemplar's architecture. Non-fatal — mismatches
+  // surface as ripple flags in the editor.
+  if (inspiration.includes('THE STRUCTURAL AUTHORITY')) {
+    try {
+      await interCallDelay(signal);
+      const { system: fidSystem, user: fidUser } = buildExemplarFidelityPrompt(brief, inspiration);
+      const audit = await requestJson<{ flags: Array<{ target: string; issue: string; suggestion: string }> }>(
+        fidSystem, fidUser, apiKey, 2500, 'exemplar fidelity audit', signal,
+      );
+      brief.rippleFlags = [
+        ...brief.rippleFlags,
+        ...(audit.flags ?? []).slice(0, 6).map((f) => ({
+          id: genId('flag'),
+          target: `exemplar fidelity — ${f.target}`,
+          issue: f.issue,
+          suggestion: f.suggestion,
+        })),
+      ];
+    } catch (err) {
+      if (signal?.aborted) throw err;
+      console.warn('[factory2] exemplar fidelity audit failed (non-fatal)', err);
+    }
+  }
   return brief;
 }
 

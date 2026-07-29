@@ -130,7 +130,7 @@ Every Unaware concept must be buildable into this 5-beat structure in the script
 "you," "your," "every night," "at 3pm," "on your feet," "started," "stopped," "notice," "noticed," "just," "always," "never," "something," "that feeling when," "you know that moment when"
 
 **THE UNAWARE AVOID WORDS (banned in the first half of any Unaware concept — these are the words that kill the ad instantly):**
-"compression," "diabetic," "neuropathy," "circulation," "swelling," "edema," "varicose," "Viasox," "sock marks," "sock line," "relief," "solution," "finally," "sale," "offer," "discount," "buy," "shop," "cart," "only \$X," "limited time"
+"compression," "diabetic," "neuropathy," "circulation," "swelling," "edema," "varicose," "Viasox," "sock marks," "sock line," "relief," "solution," "finally," "sale," "offer," "discount," "buy," "shop," "cart," "only $X," "limited time"
 
 ---
 
@@ -204,9 +204,9 @@ These people KNOW they have a problem — sock marks, foot swelling, discomfort 
 
 2. **The viewer must feel SEEN — mirror their exact experience.** Problem Aware is where specificity wins. Use exact customer language from reviews. Describe the micro-moments they recognize: the morning sock struggle, the marks they hide under pants, the way they avoid certain shoes, the comment from a spouse.
 
-3. **Bridge from pain to hope — but don't hard-sell the product yet.** The concept should create a moment of "there's actually something that works" without turning into a product demo. The FEELING of possibility is more important than product features at this stage.
+3. **Bridge from pain to hope — the squeeze must buy a full payoff.** The concept creates the moment of "there's actually something that works" — and then the product must get ESTABLISHED as that something: mechanism shown against the named pain, lived proof, a payoff line. A concept whose product moment is a passing mention wastes the agitation it built.
 
-4. **Product appears in the second half.** In a 30s ad, product can appear around 0:15. In a 60s ad, around 0:25-30. The first half is entirely about the PROBLEM — making them nod, wince, and feel understood.
+4. **Product enters MID-SCRIPT — the ~30-45% zone of runtime.** In a 30s ad, around 0:10-0:14. In a 60s ad, around 0:20-0:27 — and the product owns the script from there (mechanism → proof cascade → CTA). Product-forward openings are also legal when the concept genuinely calls for the brand up front. The opening third is about the PROBLEM — making them nod, wince, and feel understood.
 
 5. **Concept structure: Pain Naming → Intensification → Hope Bridge → Solution Teaser.**
    - Pain Naming: "You know this feeling" (instant recognition)
@@ -275,7 +275,7 @@ This is the CRITICAL distinction. A Problem Aware ad and a Solution Aware ad for
    - Fashion-forward patterns (why you don't look like you're wearing medical devices)
    - Easy-on design (why you don't need help putting them on)
 
-4. **Product appears EARLY — within the first 30%.** Unlike Unaware (product last) or Problem Aware (product in second half), Solution Aware concepts can introduce Viasox early because the prospect is ready to evaluate solutions. But lead with the DIFFERENTIATION, not just the brand name.
+4. **Product appears EARLY — within the first 30%.** Unlike Unaware (product last) or Problem Aware (product mid-script), Solution Aware concepts can introduce Viasox early because the prospect is ready to evaluate solutions. But lead with the DIFFERENTIATION, not just the brand name.
 
 5. **Concept structure: Acknowledged Pain → Failed Solutions → New Mechanism → Proof → Differentiated CTA.**
    - Acknowledged Pain: Brief — "You know the problem" (1-2 seconds, not belabored)
@@ -858,7 +858,7 @@ Problem Aware scripts are the AGITATION scripts. The viewer knows their pain —
 2. Use customer language VERBATIM from the reviews. Their words, not marketing words.
 3. The agitation phase must make them FEEL the problem more acutely — sensory language, vivid details, emotional impact.
 4. The bridge from pain to solution must feel EARNED, not forced. "But what if..." is the pivot.
-5. The product appears in the second half — the RELIEF after the squeeze.
+5. The product enters MID-SCRIPT — the ~30-45% zone per the time allocation — and owns the script from there: mechanism, proof cascade, CTA. A product that first appears one line before the CTA is a FAILED Problem Aware script. (Product-forward openings are legal when the concept calls for the brand up front.)
 6. CTA is medium-soft: "Try your first pair," "See how it works," "Read the reviews."
 7. Offers can be mentioned but should NOT be the primary CTA driver. The SOLUTION is the driver.
 

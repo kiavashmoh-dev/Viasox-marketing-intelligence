@@ -160,20 +160,39 @@ ${getClaimBoundaryBlock(task.product)}
 ${getUgcVoiceDna()}
 
 ## PRODUCT-ENTRY × AWARENESS (binding)
-The voice DNA's two product-entry patterns are constrained by this task's awareness level:
-- Unaware / Problem Aware → EARNED ENTRY only; the entry TIMING follows the level's OWN release
-  rules above. Unaware: the product lands in the final beats per the release order. Problem Aware:
-  the product enters MID-SCRIPT per its time allocation, with a full mechanism + proof cascade
-  after it — a product that first appears one line before the CTA is a FAILED Problem Aware
-  script, not a cautious one.
+The voice DNA's two product-entry patterns are constrained by this task's awareness level. The
+entry ZONES below are the defaults for unpinned tasks — a pinned exemplar's beat map overrides
+the zones, and the CRAFT LICENSE may justify a small NAMED deviation:
+- Unaware → EARNED ENTRY only; the product lands in the final beats per the release order (the
+  release ORDER itself is hard doctrine, never a default).
+- Problem Aware → earned entry by DEFAULT, with the product entering MID-SCRIPT — inside the
+  ~30-45% zone of runtime — followed by a full mechanism + proof cascade. PRODUCT-FORWARD is also
+  LEGAL here when the style, pinned exemplar, or concept genuinely calls for the brand in the
+  opening. A product that first appears one line before the CTA is a FAILED Problem Aware script,
+  not a cautious one.
+- Solution Aware → either pattern; the product enters inside the first ~30% of runtime.
 - Product Aware / Most Aware → PRODUCT-FORWARD only (the brand belongs in the first ~3 seconds).
-- Solution Aware → either pattern, chosen for concept fit.
 ${task.pinnedInspirationId ? `- ⭐ PINNED-EXEMPLAR EXCEPTION: a finished-project exemplar is pinned for this task. When its
   "PINNED EXEMPLAR — THE STRUCTURAL AUTHORITY" block is present in the conversation, that
   exemplar's dissected beat map GOVERNS structure, framework choice, product-entry timing, and
   product-talk share — the timing defaults above and the style guide's pacing norms yield to it.
   The censors never yield: brand facts, the claim boundary, and the awareness level's
   vocabulary/offer bans bind in full.` : ''}
+
+## THE PRODUCT PAYOFF ARC (binding at every awareness level)
+From the moment the product enters until the CTA, the script is in its PAYOFF ARC — the stretch
+the entire script was walking toward (Schwartz: the product is the goal-conclusion of the
+gradualized argument). The arc has four stations and NONE may be skipped, at any level or duration:
+1. ENTRY MOMENT — the product arrives as an EVENT in the story (shown, discovered, handed over),
+   never a name-drop in passing.
+2. MECHANISM — show HOW it answers the exact pain this script named. In-bank attributes only.
+3. LIVED PROOF — the creator's own before/after moment, timeline, or on-camera demonstration.
+4. PAYOFF LINE — the line that lands the product as THE answer, placed before the CTA.
+Minimum PRODUCT AIRTIME (share of total runtime from the entry moment to the end of the ad):
+Unaware ≥15% · Problem Aware ≥45% · Solution Aware ≥60% · Product/Most Aware ≥80%.
+The concept's committed product truth is the SPINE of the arc. The writer may reinforce it with up
+to 2-3 additional attributes from the product truth bank when the arc needs them — never an
+invented claim, never a swap of the spine.
 
 ## THE CRAFT LICENSE — THE MEDIUM IS NOT THE CEILING
 Everything above is the MEDIUM: styles, pacing guidance, framework leanings, structural defaults.
@@ -349,11 +368,13 @@ export function buildConceptsPrompt(
   const hasPinnedExemplar = inspirationContext.includes('THE STRUCTURAL AUTHORITY');
   const entryRule = hasPinnedExemplar
     ? 'whatever MATCHES THE PINNED EXEMPLAR\'s product-entry pattern and timing — the exemplar is the structural authority for this task (the awareness level\'s vocabulary/offer rules still bind in full)'
-    : task.awarenessLevel === 'Unaware' || task.awarenessLevel === 'Problem Aware'
+    : task.awarenessLevel === 'Unaware'
       ? '"earned-entry" (mandatory at this awareness level — entry timing follows the awareness release rules)'
-      : task.awarenessLevel === 'Solution Aware'
-        ? '"product-forward" or "earned-entry" — pick for concept fit'
-        : '"product-forward" (mandatory at this awareness level — the brand belongs in the opening)';
+      : task.awarenessLevel === 'Problem Aware'
+        ? '"earned-entry" (default — the product enters mid-script, inside the ~30-45% zone of runtime) OR "product-forward" when the style or the concept genuinely calls for the brand in the opening. This is a REAL choice — pick for concept fit, not by habit'
+        : task.awarenessLevel === 'Solution Aware'
+          ? '"product-forward" or "earned-entry" — pick for concept fit (the product enters inside the first ~30% either way)'
+          : '"product-forward" (mandatory at this awareness level — the brand belongs in the opening)';
 
   const system = `${buildV2ContextPack(task, 'concept')}
 
@@ -458,13 +479,16 @@ ${inspirationContext ? `# INSPIRATION CONTEXT\n${inspirationContext}\n\n` : ''}S
 
 // ─── Step 4: Brief writing ──────────────────────────────────────────────────
 
-function briefJsonShape(level: AwarenessLevel): string {
+function briefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): string {
   return `{
   "plan": {
     "beatMap": "one line per clip: framework stage + what happens + estimated spoken words (e.g. 'clip 1 [Problem, hook]: mirror scene — 12w'). End with 'TOTAL: Nw vs ceiling Cw' — if N exceeds the ceiling, REVISE the plan before writing the fields below",
     "talkingPointPlacement": "which clips carry the talking point — it must live in at least 3 beats, not just hook+CTA",
     "tenSecondCheck": "quote the exact words of the first ~10 seconds and name their 2+ concrete details",
-    "halfwayCheck": "one sentence: what the viewer understands at the 50% mark"
+    "halfwayCheck": "one sentence: what the viewer understands at the 50% mark",
+    "productEntryCheck": "clip N — the product first enters at ~X% of runtime. State whether that is inside this awareness level's entry zone, matches the pinned exemplar's entry position, or is a named Craft-License deviation — an unjustified out-of-zone entry means REVISE",
+    "payoffArc": "map the four stations to clips (entry moment=clip N / mechanism=clip N / lived proof=clip N / payoff line=clip N) + product airtime ≈X% vs this level's minimum. A missing station or under-minimum airtime means REVISE before writing the fields below"${hasPinnedExemplar ? `,
+    "exemplarFidelity": "beat-by-beat: exemplar beat → our clip(s). Confirm same beat order, proportional timing, product-entry position, product-talk share, and payoff shape — or name the licensed deviation"` : ''}
   },
   "header": {
     "concept": "short concept label for the Brand Overview table",
@@ -531,14 +555,19 @@ ${inspirationContext.includes('THE STRUCTURAL AUTHORITY') ? `- ⭐ A PINNED EXEM
 ## THE FRAMEWORK YOU ARE EXECUTING
 ${frameworkDetail}
 
-- The product beat(s) must sell the concept's committed product truth concretely (SWAP TEST applies).
+- The product beat(s) must sell the concept's committed product truth concretely (SWAP TEST applies),
+  through the full PRODUCT PAYOFF ARC (entry moment → mechanism → lived proof → payoff line) at or
+  above this level's minimum product airtime.
+- plan.productEntryCheck and plan.payoffArc are REAL GATES (as is plan.exemplarFidelity when
+  present): a failed check means the plan is wrong — revise the plan, never write fields that fail
+  their own plan.
 - Shot descriptions: coach performance, vary camera setups, give the creator something to DO while
   talking. Every row must stand alone as a filmable unit.
 
 ${JSON_CONTRACT}
 
 JSON shape:
-${briefJsonShape(task.awarenessLevel)}
+${briefJsonShape(task.awarenessLevel, inspirationContext.includes('THE STRUCTURAL AUTHORITY'))}
 
 ${getMarketingBrainBlock('v2Writer')}`;
 
@@ -789,4 +818,38 @@ ${rows}
 
 CANDIDATE IMAGES (in attachment order):
 ${cands}`;
+}
+
+// ─── Exemplar fidelity audit (post-write gate for pinned tasks) ─────────────
+
+/**
+ * Structural audit of a finished brief against its pinned exemplar's
+ * dissected architecture. Non-fatal: mismatches surface as ripple flags in
+ * the editor, one hover-regen away from a fix.
+ */
+export function buildExemplarFidelityPrompt(
+  brief: UgcBriefV2,
+  exemplarBlock: string,
+): { system: string; user: string } {
+  const system = `You are Factory V2's structural auditor. A UGC brief was written under a PINNED
+EXEMPLAR that is the brief's structural authority: same beat order, proportional beat timing,
+product-entry position, product-talk share, and payoff shape. Claims, brand facts, and literal
+lines are OUT of scope — never compare those; the exemplar governs architecture only.
+
+Compare the brief's actual storyboard against the exemplar's structure and flag ONLY real
+structural mismatches (max 6): a reordered or missing beat, a product entry far from the
+exemplar's position, a starved product-talk share, a payoff shape that does not match. If the
+brief is faithful, return zero flags. Judge structure, not taste.
+
+${JSON_CONTRACT}
+
+JSON shape: { "flags": [ { "target": "which part of the brief", "issue": "the structural mismatch vs the exemplar", "suggestion": "the smallest edit that restores fidelity" } ] }`;
+
+  const user = `${exemplarBlock}
+
+${renderBriefState(brief)}
+
+Audit the brief's structure against the exemplar.`;
+
+  return { system, user };
 }
