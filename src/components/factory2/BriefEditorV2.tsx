@@ -12,9 +12,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ScriptFramework } from '../../engine/types';
 import { getFrames } from '../../inspiration/inspirationStore';
-import type { UgcBriefV2, V2RegenTarget } from '../../factory2/v2Types';
+import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/v2Types';
 import { UGC_FRAMEWORKS } from '../../factory2/v2Types';
-import { applyRegen, deleteRow } from '../../factory2/v2Engine';
+import { applyRegen, applyReviewFix, deleteRow, runFinalReview } from '../../factory2/v2Engine';
 import { exportBriefDoc } from '../../factory2/v2Export';
 import { INTRO_CALLOUT } from '../../factory2/templateBoilerplate';
 import { getUgcStyle } from '../../factory2/ugcStyles';
@@ -181,6 +181,56 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
     [apiKey, brief, busy, onSaved],
   );
 
+  // Final review: the post-editing hook-flow protocol. Every hook variant is
+  // plugged into the script and read as a finished video; findings arrive
+  // with their own surgical fixes, applied deterministically below.
+  const runReview = useCallback(async () => {
+    if (busy) return;
+    abortRef.current = new AbortController();
+    setBusy('Final review — plugging every hook into the script and reading it as a finished video…');
+    setError('');
+    try {
+      const report = await runFinalReview(brief, apiKey, abortRef.current.signal);
+      const updated: UgcBriefV2 = { ...brief, lastReview: report };
+      setBrief(updated);
+      onSaved(updated);
+    } catch (err) {
+      if (!/cancelled/i.test(String(err))) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    } finally {
+      setBusy('');
+    }
+  }, [apiKey, brief, busy, onSaved]);
+
+  const applyFinding = useCallback(
+    (f: V2ReviewFinding) => {
+      if (busy) return;
+      const updated = applyReviewFix(brief, f);
+      setBrief(updated);
+      onSaved(updated);
+    },
+    [brief, busy, onSaved],
+  );
+
+  const dismissFinding = useCallback(
+    (f: V2ReviewFinding) => {
+      if (busy || !brief.lastReview) return;
+      const updated: UgcBriefV2 = {
+        ...brief,
+        lastReview: {
+          ...brief.lastReview,
+          findings: brief.lastReview.findings.map((x) =>
+            x.id === f.id ? { ...x, resolution: 'dismissed' as const } : x,
+          ),
+        },
+      };
+      setBrief(updated);
+      onSaved(updated);
+    },
+    [brief, busy, onSaved],
+  );
+
   const thumbFor = useCallback(
     (rowId: string): { src?: string; label: string } => {
       const row = brief.storyboard.find((r) => r.id === rowId);
@@ -221,6 +271,9 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
         <div className="flex items-center gap-3">
           <button onClick={() => setShowLedger((s) => !s)} className="text-xs text-slate-500 hover:text-slate-700 underline">
             Feedback ledger ({brief.feedbackLedger.length})
+          </button>
+          <button onClick={() => void runReview()} className="text-sm bg-navy text-cream px-4 py-1.5 rounded-lg hover:bg-navy-deep font-medium">
+            Final Review
           </button>
           <button onClick={() => void handleExport()} className="text-sm border border-slate-300 px-4 py-1.5 rounded-lg hover:bg-slate-50">
             Export .doc
@@ -470,6 +523,80 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
           </tbody>
         </table>
       </div>
+
+      {/* Final review report */}
+      {brief.lastReview && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[11px] uppercase tracking-wider text-slate-400">
+              Final review · {new Date(brief.lastReview.createdAt).toLocaleString()}
+            </div>
+            {brief.lastReview.briefVersion !== brief.version && (
+              <span className="text-[11px] text-amber-600 font-medium">brief has changed since this review — re-run for a fresh pass</span>
+            )}
+          </div>
+          <p className="text-sm text-slate-600 mb-3">{brief.lastReview.summary}</p>
+          {brief.lastReview.findings.length === 0 ? (
+            <p className="text-sm text-emerald-600 font-medium">Clean pass — every hook variant reads seamlessly into the script.</p>
+          ) : (
+            <div className="space-y-3">
+              {brief.lastReview.findings.map((f) => (
+                <div
+                  key={f.id}
+                  className={`border rounded-lg p-3 ${
+                    f.resolution
+                      ? 'opacity-50 border-slate-200'
+                      : f.severity === 'major'
+                        ? 'border-red-200 bg-red-50/40'
+                        : f.severity === 'moderate'
+                          ? 'border-amber-200 bg-amber-50/40'
+                          : 'border-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-xs mb-1">
+                    <span
+                      className={`px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide text-[10px] ${
+                        f.severity === 'major'
+                          ? 'bg-red-100 text-red-700'
+                          : f.severity === 'moderate'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {f.severity}
+                    </span>
+                    <span className="font-medium text-slate-700">{f.target}</span>
+                    {f.resolution && <span className="text-slate-400 italic">{f.resolution}</span>}
+                  </div>
+                  <p className="text-sm text-slate-700 mb-2">{f.issue}</p>
+                  {f.currentText && <p className="text-xs text-slate-500 line-through mb-1">{f.currentText}</p>}
+                  {f.proposedText && (
+                    <p className="text-sm text-slate-800 bg-emerald-50 border border-emerald-100 rounded px-2 py-1 mb-1">
+                      {f.proposedText}
+                    </p>
+                  )}
+                  {f.rationale && <p className="text-[11px] text-slate-400 mb-2">{f.rationale}</p>}
+                  {!f.resolution && (
+                    <div className="flex gap-3">
+                      {f.proposedText && (
+                        <button
+                          onClick={() => applyFinding(f)}
+                          className="text-xs bg-navy text-cream px-3 py-1 rounded hover:bg-navy-deep font-medium"
+                        >
+                          Apply fix
+                        </button>
+                      )}
+                      <button onClick={() => dismissFinding(f)} className="text-xs text-slate-500 underline hover:text-slate-700">
+                        Dismiss
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Feedback popover */}
       {popover && (

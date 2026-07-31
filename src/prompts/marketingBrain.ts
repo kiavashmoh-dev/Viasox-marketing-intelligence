@@ -54,7 +54,8 @@ export type BrainKnowledgeStep =
   | 'v2Brainstorm'
   | 'v2FrameworkSelect'
   | 'v2Writer'
-  | 'v2Regen';
+  | 'v2Regen'
+  | 'v2Review';
 
 // ─── Cross-source synthesis (extracted from the master index) ────────────
 // The "one machine" decision order + where sources tension and how to
@@ -135,6 +136,7 @@ const ROUTING: Record<BrainKnowledgeStep, (keyof typeof DOCS)[]> = {
   // doctrine a single-line edit needs (full Schwartz would triple the cost
   // of every click for marginal gain).
   v2Regen: ['blyPart1'],
+  v2Review: ['blyPart1', 'schwartz'],
 };
 
 /**

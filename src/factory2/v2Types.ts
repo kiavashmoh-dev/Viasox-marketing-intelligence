@@ -211,10 +211,42 @@ export interface UgcBriefV2 {
   feedbackLedger: V2FeedbackEntry[];
   /** Open consistency flags from the last ripple check. */
   rippleFlags: V2RippleFlag[];
+  /** The last final-review report (persisted so findings survive refresh). */
+  lastReview?: V2ReviewReport;
   /** Bumped on every mutation (used for stale-write protection in the UI). */
   version: number;
   createdAt: string;
   updatedAt: string;
+}
+
+// ─── Final review (the post-editing hook-flow protocol) ─────────────────────
+
+export type V2ReviewSeverity = 'major' | 'moderate' | 'minor';
+
+/** One finding from the final review — carries its own surgical fix. */
+export interface V2ReviewFinding {
+  id: string;
+  severity: V2ReviewSeverity;
+  /** Human-addressable target: 'hook 2' | 'cta 1' | 'clip 7 script' |
+   *  'clip 7 shot' | 'general' (advisory, no apply). */
+  target: string;
+  issue: string;
+  /** Verbatim current text of the target — verified against the brief
+   *  before the finding is appliable. */
+  currentText: string;
+  /** The minimal replacement; empty = advisory only. */
+  proposedText: string;
+  rationale: string;
+  resolution?: 'applied' | 'dismissed';
+}
+
+export interface V2ReviewReport {
+  id: string;
+  createdAt: string;
+  /** brief.version this review ran against — stale once the brief moves on. */
+  briefVersion: number;
+  summary: string;
+  findings: V2ReviewFinding[];
 }
 
 // ─── Batch/session state ────────────────────────────────────────────────────

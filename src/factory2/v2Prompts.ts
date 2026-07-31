@@ -487,7 +487,8 @@ function briefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): strin
     "tenSecondCheck": "quote the exact words of the first ~10 seconds and name their 2+ concrete details",
     "halfwayCheck": "one sentence: what the viewer understands at the 50% mark",
     "productEntryCheck": "clip N — the product first enters at ~X% of runtime. State whether that is inside this awareness level's entry zone, matches the pinned exemplar's entry position, or is a named Craft-License deviation — an unjustified out-of-zone entry means REVISE",
-    "payoffArc": "map the four stations to clips (entry moment=clip N / mechanism=clip N / lived proof=clip N / payoff line=clip N) + product airtime ≈X% vs this level's minimum. A missing station or under-minimum airtime means REVISE before writing the fields below"${hasPinnedExemplar ? `,
+    "payoffArc": "map the four stations to clips (entry moment=clip N / mechanism=clip N / lived proof=clip N / payoff line=clip N) + product airtime ≈X% vs this level's minimum. A missing station or under-minimum airtime means REVISE before writing the fields below",
+    "hookFlowCheck": "for EACH alternate hook (2..${V2_HOOK_COUNT}): one clause on how it hands off into clip 2 WITHOUT restating clip 2-3's content, WITHOUT pre-telling a later beat, and WITHOUT naming the brand when the body stages a later first-mention moment. A hook that fails is rewritten before the fields below"${hasPinnedExemplar ? `,
     "exemplarFidelity": "beat-by-beat: exemplar beat → our clip(s). Confirm same beat order, proportional timing, product-entry position, product-talk share, and payoff shape — or name the licensed deviation"` : ''}
   },
   "header": {
@@ -558,9 +559,9 @@ ${frameworkDetail}
 - The product beat(s) must sell the concept's committed product truth concretely (SWAP TEST applies),
   through the full PRODUCT PAYOFF ARC (entry moment → mechanism → lived proof → payoff line) at or
   above this level's minimum product airtime.
-- plan.productEntryCheck and plan.payoffArc are REAL GATES (as is plan.exemplarFidelity when
-  present): a failed check means the plan is wrong — revise the plan, never write fields that fail
-  their own plan.
+- plan.productEntryCheck, plan.payoffArc, and plan.hookFlowCheck are REAL GATES (as is
+  plan.exemplarFidelity when present): a failed check means the plan is wrong — revise the plan,
+  never write fields that fail their own plan.
 - Shot descriptions: coach performance, vary camera setups, give the creator something to DO while
   talking. Every row must stand alone as a filmable unit.
 
@@ -850,6 +851,94 @@ JSON shape: { "flags": [ { "target": "which part of the brief", "issue": "the st
 ${renderBriefState(brief)}
 
 Audit the brief's structure against the exemplar.`;
+
+  return { system, user };
+}
+
+// ─── Final review — the post-editing hook-flow protocol ─────────────────────
+
+/**
+ * The director's review protocol, codified from the July 2026 ACS Labor Day
+ * batch review: simulate the finished video once per hook variant and once
+ * per CTA option, hunting a fixed taxonomy of failure classes — and ship
+ * every finding WITH its surgical fix.
+ */
+export function buildFinalReviewPrompt(brief: UgcBriefV2): { system: string; user: string } {
+  const system = `${buildV2ContextPack(brief.task, 'script')}
+
+## YOUR ROLE: FACTORY V2 FINAL REVIEW — THE HOOK-FLOW AUDIT
+
+The director has finished editing this brief and wants the last-mile audit before it ships to a
+creator. You run THE SIMULATION METHOD, then report findings that each carry their own minimal fix.
+
+### THE SIMULATION METHOD
+The storyboard's main edit IS the video. The alternate hooks are ALTERNATE OPENERS: in the edit,
+the first clip's spoken line is swapped for hook k (same shot setup). So:
+1. For EACH hook variant k: read hook k → clip 2 → clip 3 → … → CTA as ONE continuous spoken
+   video, holding each clip's shot visual in your head as you read its line.
+2. For EACH CTA option: read the final body beats → that CTA as the video's actual ending.
+3. Read the body once more end-to-end (lines + visuals back-to-back) with the primary hook.
+
+### THE FAILURE CLASSES (this exact taxonomy — hunt each one deliberately)
+1. HOOK↔BODY DUPLICATION — a hook restates an early body line's content nearly verbatim, so the
+   viewer hears the same sentence twice within seconds. (Belief-challenge hooks are the repeat
+   offender: they tend to restate the script's first problem line.)
+2. ORPHANED PROMISE — a hook frames the video as something the body never delivers (e.g. a
+   'how I restocked' frame on a first-discovery story).
+3. SPOILED REVEAL — a hook names the brand/product while the body stages a later first-mention or
+   discovery event, deflating the staged moment.
+4. PRE-TOLD BEAT — a hook gives away a mid-script turn, so that beat replays as a rerun.
+5. MISSING PIVOT — a hook's last words cannot hand off into clip 2's first words; it needs a gear
+   ('Let me back up.') or a rewrite.
+6. REGISTER MISMATCH — a device foreign to this UGC style's delivery grammar (e.g. a spoken
+   'POV:' line in a talk-to-camera style — POV framing is native ONLY to overlay/faceless styles).
+7. BODY FLOW BREAK — between consecutive clips: repeated information, leaps, tense/scene/pronoun
+   breaks, or a shot visual that contradicts its line.
+8. WORLD CONTRADICTION — any line (CTAs especially) contradicting the depicted world or timeline
+   (e.g. the body shows the holiday happening while the CTA says 'before the weekend'), plus any
+   brand-fact or offer-math drift.
+
+### FIX DOCTRINE (every finding ships its fix)
+- MINIMAL SURGERY: change one hook, one CTA, or one line — prefer fixing the VARIANT over the
+  body; touch a body line only when the body line itself is the defect.
+- Every proposedText must: fit the concept, framework, and style register; obey the awareness
+  level's vocabulary/offer rules; stay inside the claim boundary and brand facts (exact offer
+  math); keep the hook set SHAPE-DIVERSE (never make two hooks the same shape); and pass the flow
+  self-check — read line-before → your text → line-after as one spoken sequence before proposing.
+- Craft bar: Bly's 4 U's and you-orientation for hooks; Schwartz's open loop must close — a hook
+  may only promise what the body pays off.
+
+### WHAT NOT TO FLAG
+Taste-level rewrites, style choices the ledger shows the director already approved, legal claims,
+and anything a fix would make WORSE. A finished brief may genuinely pass: if the simulations read
+clean, return ZERO findings — do not invent problems to look useful.
+
+Severity: major = a viewer would notice the break; moderate = weakens the ad; minor = polish.
+Return at most 10 findings, ordered most severe first.
+
+${JSON_CONTRACT}
+
+JSON shape:
+{
+  "summary": "2-3 sentences: overall verdict across all hook simulations",
+  "findings": [
+    {
+      "severity": "major" | "moderate" | "minor",
+      "target": "hook 2" | "cta 1" | "clip 7 script" | "clip 7 shot" | "general",
+      "issue": "the failure class + what exactly breaks, quoting the colliding words",
+      "currentText": "the target's text VERBATIM as it appears in the brief (empty for general)",
+      "proposedText": "the minimal replacement (empty for advisory-only findings)",
+      "rationale": "one line: why this fix fits the concept/framework/style/awareness"
+    }
+  ]
+}
+
+${getMarketingBrainBlock('v2Review')}`;
+
+  const user = `${renderLedger(brief)}
+${renderBriefState(brief)}
+
+Run the full protocol: ${brief.hooks.length} hook simulations, ${brief.ctas.length} CTA simulations, one body pass. Report findings with fixes.`;
 
   return { system, user };
 }

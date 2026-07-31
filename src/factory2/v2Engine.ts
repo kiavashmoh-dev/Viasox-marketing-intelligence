@@ -36,6 +36,8 @@ import type {
   V2RippleFlag,
   V2Row,
   V2Task,
+  V2ReviewFinding,
+  V2ReviewReport,
 } from './v2Types';
 import {
   UGC_FRAMEWORKS,
@@ -55,6 +57,7 @@ import {
   type FrameCandidate,
   type FrameMatchOptions,
   buildExemplarFidelityPrompt,
+  buildFinalReviewPrompt,
 } from './v2Prompts';
 
 const UGC_AD_TYPE = 'UGC (User Generated Content)';
@@ -890,7 +893,9 @@ function patchProse(brief: UgcBriefV2, oldText: string, newText: string): UgcBri
   if (!oldText.trim()) return brief;
   const occurrences = brief.scriptProse.split(oldText).length - 1;
   if (occurrences === 1) {
-    return { ...brief, scriptProse: brief.scriptProse.replace(oldText, newText) };
+    // Function replacer: replacement text may contain "$" (offer math),
+    // which a string replacement would misread as a substitution pattern.
+    return { ...brief, scriptProse: brief.scriptProse.replace(oldText, () => newText) };
   }
   return {
     ...brief,
@@ -1164,4 +1169,185 @@ export async function deleteRow(
   }
 
   return runRippleCheck(updated, `deleted clip ${String(deletedClip)}`, apiKey, signal);
+}
+
+// ─── Final review — the post-editing hook-flow protocol ─────────────────────
+
+/** Normalize for verbatim comparison: curly quotes → straight, collapse
+ *  whitespace. The model reads a serialized brief, so tiny drift is normal. */
+function normalizeForMatch(t: string): string {
+  return t
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+type ReviewTargetRef =
+  | { kind: 'hook'; lineId: string }
+  | { kind: 'cta'; lineId: string }
+  | { kind: 'row-script'; rowId: string }
+  | { kind: 'row-shot'; rowId: string }
+  | null;
+
+/** Resolve 'hook 2' / 'cta 1' / 'clip 7 script' / 'clip 7 shot' → field ref
+ *  + that field's ACTUAL current text. */
+function resolveReviewTarget(brief: UgcBriefV2, target: string): { ref: ReviewTargetRef; actual: string } {
+  const t = target.trim().toLowerCase();
+  let m = t.match(/^hook\s+(\d+)/);
+  if (m) {
+    const h = brief.hooks[Number(m[1]) - 1];
+    return { ref: h ? { kind: 'hook', lineId: h.id } : null, actual: h?.text ?? '' };
+  }
+  m = t.match(/^cta\s+(\d+)/);
+  if (m) {
+    const c = brief.ctas[Number(m[1]) - 1];
+    return { ref: c ? { kind: 'cta', lineId: c.id } : null, actual: c?.text ?? '' };
+  }
+  m = t.match(/^clip\s+(\d+)\s*(script|shot)?/);
+  if (m) {
+    const row = brief.storyboard.find((r) => r.clipNumber === Number(m![1]));
+    if (!row) return { ref: null, actual: '' };
+    if (m[2] === 'shot') return { ref: { kind: 'row-shot', rowId: row.id }, actual: row.shotDescription };
+    return { ref: { kind: 'row-script', rowId: row.id }, actual: row.scriptLine };
+  }
+  return { ref: null, actual: '' };
+}
+
+/**
+ * Run the director's final-review protocol: every hook variant plugged into
+ * the script and read as a finished video, every CTA as the ending, plus a
+ * body pass — against the fixed failure-class taxonomy. Findings whose
+ * quoted text doesn't match the brief become advisory (no auto-apply):
+ * a fix must never overwrite text the model misquoted.
+ */
+export async function runFinalReview(
+  brief: UgcBriefV2,
+  apiKey: string,
+  signal?: AbortSignal,
+): Promise<V2ReviewReport> {
+  const { system, user } = buildFinalReviewPrompt(brief);
+  const parsed = await requestJson<{
+    summary: string;
+    findings: Array<{
+      severity?: string;
+      target?: string;
+      issue?: string;
+      currentText?: string;
+      proposedText?: string;
+      rationale?: string;
+    }>;
+  }>(system, user, apiKey, 8000, 'final review', signal);
+
+  const findings: V2ReviewFinding[] = (parsed.findings ?? []).slice(0, 10).map((f) => {
+    const severity: V2ReviewFinding['severity'] =
+      f.severity === 'major' ? 'major' : f.severity === 'minor' ? 'minor' : 'moderate';
+    const target = (f.target ?? 'general').trim();
+    let currentText = (f.currentText ?? '').trim();
+    let proposedText = (f.proposedText ?? '').trim();
+    let rationale = (f.rationale ?? '').trim();
+    if (proposedText && target.toLowerCase() !== 'general') {
+      const { ref, actual } = resolveReviewTarget(brief, target);
+      if (!ref || normalizeForMatch(actual) !== normalizeForMatch(currentText)) {
+        // Misquoted or unresolvable — demote to advisory rather than risk a bad overwrite.
+        rationale = `${rationale} [Not auto-appliable: the quoted text did not exactly match the brief — apply by hand or re-run the review.]`.trim();
+        proposedText = '';
+      } else {
+        currentText = actual; // store the exact field text so apply is precise
+      }
+    }
+    return {
+      id: genId('rf'),
+      severity,
+      target,
+      issue: (f.issue ?? '').trim(),
+      currentText,
+      proposedText,
+      rationale,
+    };
+  }).filter((f) => f.issue);
+
+  const order = { major: 0, moderate: 1, minor: 2 } as const;
+  findings.sort((a, b) => order[a.severity] - order[b.severity]);
+
+  return {
+    id: genId('rev'),
+    createdAt: new Date().toISOString(),
+    briefVersion: brief.version,
+    summary: (parsed.summary ?? '').trim() || 'Review complete.',
+    findings,
+  };
+}
+
+/**
+ * Apply one review finding's fix — deterministic, no model call. Mirrors the
+ * regen apply semantics: hook/CTA fixes sync their mirrored storyboard rows
+ * by identity, row fixes reverse-sync their hook/CTA line, and the prose
+ * read-through is patched. The fix enters the feedback ledger so future
+ * generations never reintroduce the flagged issue.
+ */
+export function applyReviewFix(brief: UgcBriefV2, finding: V2ReviewFinding): UgcBriefV2 {
+  const v = finding.proposedText.trim();
+  if (!v) return brief;
+  const { ref, actual } = resolveReviewTarget(brief, finding.target);
+  if (!ref || normalizeForMatch(actual) !== normalizeForMatch(finding.currentText)) {
+    console.warn(`[factory2] review fix skipped — "${finding.target}" changed since the review ran.`);
+    return brief;
+  }
+
+  let updated: UgcBriefV2 = {
+    ...brief,
+    feedbackLedger: [
+      ...brief.feedbackLedger,
+      {
+        id: genId('fb'),
+        timestamp: new Date().toISOString(),
+        target: finding.target,
+        feedback: `Final-review fix (${finding.severity}) applied on ${finding.target}: ${finding.issue} The line was replaced; never reintroduce this issue.`,
+      },
+    ],
+    version: brief.version + 1,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (ref.kind === 'hook') {
+    const old = updated.hooks.find((h) => h.id === ref.lineId)?.text ?? '';
+    updated.hooks = updated.hooks.map((h) => (h.id === ref.lineId ? { ...h, text: v } : h));
+    updated.storyboard = updated.storyboard.map((r) =>
+      r.mirrorsLineId === ref.lineId ? { ...r, scriptLine: v } : r,
+    );
+    updated = patchProse(updated, old, v);
+  } else if (ref.kind === 'cta') {
+    const old = updated.ctas.find((c) => c.id === ref.lineId)?.text ?? '';
+    updated.ctas = updated.ctas.map((c) => (c.id === ref.lineId ? { ...c, text: v } : c));
+    updated.storyboard = updated.storyboard.map((r) =>
+      r.mirrorsLineId === ref.lineId ? { ...r, scriptLine: v } : r,
+    );
+    updated = patchProse(updated, old, v);
+  } else if (ref.kind === 'row-script') {
+    const row = updated.storyboard.find((r) => r.id === ref.rowId);
+    const old = row?.scriptLine ?? '';
+    updated.storyboard = updated.storyboard.map((r) => (r.id === ref.rowId ? { ...r, scriptLine: v } : r));
+    if (row?.mirrorsLineId) {
+      updated.hooks = updated.hooks.map((h) => (h.id === row.mirrorsLineId ? { ...h, text: v } : h));
+      updated.ctas = updated.ctas.map((c) => (c.id === row.mirrorsLineId ? { ...c, text: v } : c));
+    }
+    updated = patchProse(updated, old, v);
+  } else if (ref.kind === 'row-shot') {
+    updated.storyboard = updated.storyboard.map((r) => (r.id === ref.rowId ? { ...r, shotDescription: v } : r));
+  }
+
+  // Mark the finding resolved inside the persisted report.
+  if (updated.lastReview) {
+    updated = {
+      ...updated,
+      lastReview: {
+        ...updated.lastReview,
+        findings: updated.lastReview.findings.map((f) =>
+          f.id === finding.id ? { ...f, resolution: 'applied' as const } : f,
+        ),
+      },
+    };
+  }
+  return updated;
 }
