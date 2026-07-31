@@ -629,38 +629,97 @@ export default function Factory2({ apiKey, onBack }: Props) {
       {(session.phase === 'concepting' || session.phase === 'concept-review') && (
         <div className="space-y-4">
           {session.tasks.map((t, i) => (
-            <div key={t.task.parsed.name + i} className="bg-white rounded-xl border border-slate-200 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="font-semibold text-slate-800">
-                  {t.task.parsed.name}
-                  <span className="text-xs text-slate-400 ml-2">
-                    {t.task.product} · {t.task.talkingPoint} · {t.task.awarenessLevel} ·{' '}
-                    <span className="text-amber-700">{getUgcStyle(t.task.ugcStyle).shortLabel}</span>
-                  </span>
+            <div key={t.task.parsed.name + i} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/60">
+                <div className="min-w-0">
+                  <div className="font-semibold text-slate-800 truncate">{t.task.parsed.name}</div>
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <span className="rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-medium">{t.task.product}</span>
+                    <span className="rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-medium">{t.task.awarenessLevel}</span>
+                    <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-medium">{getUgcStyle(t.task.ugcStyle).shortLabel}</span>
+                    <span className="rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-medium">{t.task.duration}</span>
+                  </div>
                 </div>
-                <span className="text-xs text-slate-400">
-                  {t.status === 'working' ? 'generating…' : t.status === 'error' ? 'error' : ''}
-                </span>
+                {t.status === 'working' && (
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-sky-700 shrink-0">
+                    <span className="inline-block h-3.5 w-3.5 rounded-full border-2 border-sky-200 border-t-sky-600 animate-spin" />
+                    generating concepts…
+                  </span>
+                )}
               </div>
-              {t.error && <div className="text-xs text-red-600 mb-2">{t.error}</div>}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {t.concepts.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => pickConcept(i, c.id)}
-                    className={`text-left border rounded-lg p-3 transition-colors ${
-                      t.selectedConceptId === c.id
-                        ? 'border-navy bg-cream/60 ring-1 ring-navy'
-                        : 'border-slate-200 hover:border-slate-400'
-                    }`}
-                  >
-                    <div className="font-medium text-sm text-slate-800 mb-1">{c.title}</div>
-                    <div className="text-xs text-slate-600 mb-2">{c.summary}</div>
-                    <div className="text-[10px] text-slate-400">
-                      {c.productEntry === 'product-forward' ? 'Product-forward' : 'Earned entry'} · sells: {c.productTruth}
-                    </div>
-                  </button>
-                ))}
+              <div className="p-5">
+                {t.error && <div className="text-xs text-red-600 mb-3">{t.error}</div>}
+                {t.concepts.length === 0 && t.status === 'working' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[0, 1, 2].map((k) => (
+                      <div key={k} className="rounded-xl border border-slate-200 p-4 animate-pulse space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="h-6 w-6 rounded-full bg-slate-200" />
+                          <div className="h-4 w-24 rounded-full bg-slate-100" />
+                        </div>
+                        <div className="h-4 w-3/4 rounded bg-slate-200" />
+                        <div className="space-y-1.5">
+                          <div className="h-2.5 rounded bg-slate-100" />
+                          <div className="h-2.5 rounded bg-slate-100" />
+                          <div className="h-2.5 w-2/3 rounded bg-slate-100" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {t.concepts.map((c, ci) => {
+                      const selected = t.selectedConceptId === c.id;
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => pickConcept(i, c.id)}
+                          className={`relative flex flex-col text-left rounded-xl border p-4 transition-all duration-150 ${
+                            selected
+                              ? 'border-navy ring-2 ring-navy/60 bg-cream/40 shadow-md'
+                              : 'border-slate-200 bg-white hover:border-navy/40 hover:shadow-md hover:-translate-y-0.5'
+                          }`}
+                        >
+                          {selected && (
+                            <span className="absolute -top-2.5 right-3 bg-navy text-cream text-[10px] font-bold rounded-full px-2.5 py-0.5 shadow-sm">
+                              ✓ SELECTED
+                            </span>
+                          )}
+                          <div className="flex items-center justify-between mb-2.5">
+                            <span
+                              className={`h-6 w-6 rounded-full text-[11px] font-bold flex items-center justify-center ${
+                                selected ? 'bg-navy text-cream' : 'bg-navy/10 text-navy'
+                              }`}
+                            >
+                              {ci + 1}
+                            </span>
+                            <span
+                              className={`text-[10px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ${
+                                c.productEntry === 'product-forward' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'
+                              }`}
+                            >
+                              {c.productEntry === 'product-forward' ? 'Product-forward' : 'Earned entry'}
+                            </span>
+                          </div>
+                          <div className="font-display font-bold text-navy text-sm leading-snug mb-2">{c.title}</div>
+                          <p className="text-xs text-slate-600 leading-relaxed flex-1">{c.summary}</p>
+                          <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                            <div>
+                              <div className="text-[9px] font-semibold uppercase tracking-[0.12em] text-navy/50 mb-0.5">Sells</div>
+                              <div className="text-[11px] text-slate-700 leading-snug">{c.productTruth}</div>
+                            </div>
+                            <div>
+                              <div className="text-[9px] font-semibold uppercase tracking-[0.12em] text-navy/50 mb-0.5">Opens on</div>
+                              <div className="text-[11px] text-slate-600 leading-snug line-clamp-2" title={c.openingDetails}>
+                                {c.openingDetails}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -686,15 +745,20 @@ export default function Factory2({ apiKey, onBack }: Props) {
               <div>
                 <div className="font-medium text-slate-800">{t.task.parsed.name}</div>
                 <div className={`text-xs ${t.status === 'error' ? 'text-red-600' : 'text-slate-400'}`}>
-                  {t.status === 'complete' && t.brief
-                    ? `${t.brief.framework.name} · ${t.brief.storyboard.length} clips${t.brief.rippleFlags.length > 0 ? ` · ${t.brief.rippleFlags.length} QA flag${t.brief.rippleFlags.length === 1 ? '' : 's'}` : ''}`
-                    : t.status === 'error'
-                      ? t.error
-                      : t.status === 'working'
-                        ? 'writing…'
-                        : !t.selectedConceptId
-                          ? 'no concept selected — skipped'
-                          : 'queued…'}
+                  {t.status === 'complete' && t.brief ? (
+                    `${t.brief.framework.name} · ${t.brief.storyboard.length} clips${t.brief.rippleFlags.length > 0 ? ` · ${t.brief.rippleFlags.length} QA flag${t.brief.rippleFlags.length === 1 ? '' : 's'}` : ''}`
+                  ) : t.status === 'error' ? (
+                    t.error
+                  ) : t.status === 'working' ? (
+                    <span className="inline-flex items-center gap-1.5 text-sky-700 font-medium">
+                      <span className="inline-block h-3 w-3 rounded-full border-2 border-sky-200 border-t-sky-600 animate-spin" />
+                      writing the brief…
+                    </span>
+                  ) : !t.selectedConceptId ? (
+                    'no concept selected — skipped'
+                  ) : (
+                    'queued…'
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">

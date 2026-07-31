@@ -7,9 +7,13 @@
  * regenerated with feedback. Feedback is law: it enters the brief's ledger
  * and binds every subsequent generation. After each edit a ripple check
  * flags any lines that are now inconsistent.
+ *
+ * Visual language (July 2026 polish): sectioned cards with header bands,
+ * hover-highlighted editable lines, and IN-PLACE progress — the exact line
+ * being regenerated/inserted/deleted carries its own spinner.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ScriptFramework } from '../../engine/types';
 import { getFrames } from '../../inspiration/inspirationStore';
 import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/v2Types';
@@ -31,32 +35,98 @@ interface PopoverState {
   label: string;
 }
 
-/** Hoverable wrapper: shows a ↻ affordance and opens the feedback popover. */
+/** Small in-place progress indicator. */
+function Spinner({ className = '' }: { className?: string }) {
+  return (
+    <span
+      className={`inline-block h-3.5 w-3.5 shrink-0 rounded-full border-2 border-navy/25 border-t-navy animate-spin ${className}`}
+      aria-label="working"
+    />
+  );
+}
+
+/** In-place "being worked on" chip shown exactly where the change lands. */
+function WorkingChip({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-semibold px-2 py-0.5">
+      <Spinner className="h-2.5 w-2.5 border-sky-300 border-t-sky-700" />
+      {label}
+    </span>
+  );
+}
+
+/** Section card: a titled, visually separated block. */
+function Section({
+  title,
+  meta,
+  children,
+  flush,
+}: {
+  title: string;
+  meta?: React.ReactNode;
+  children: React.ReactNode;
+  /** No body padding (tables manage their own). */
+  flush?: boolean;
+}) {
+  return (
+    <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <header className="flex items-center justify-between gap-3 px-5 py-2.5 border-b border-slate-100 bg-slate-50/60">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-navy/70">{title}</h3>
+        {meta && <div className="text-[11px] text-slate-400 text-right">{meta}</div>}
+      </header>
+      <div className={flush ? '' : 'p-5'}>{children}</div>
+    </section>
+  );
+}
+
+/** Hoverable wrapper: highlights the line and shows a ↻ affordance; when
+ *  busy, the line carries its own spinner in place of the button. */
 function Regenable({
   label,
   onRegen,
   children,
   disabled,
+  busy,
 }: {
   label: string;
   onRegen: () => void;
   children: React.ReactNode;
   disabled?: boolean;
+  busy?: boolean;
 }) {
   return (
-    <div className="group relative">
-      {children}
-      {!disabled && (
-        <button
-          onClick={onRegen}
-          title={`Regenerate ${label}`}
-          className="absolute -right-1 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] bg-navy text-cream rounded px-1.5 py-0.5"
-        >
-          ↻
-        </button>
+    <div
+      className={`group relative rounded-md -mx-2 px-2 py-1 transition-colors ${
+        busy ? 'bg-sky-50 ring-1 ring-sky-200' : 'hover:bg-sky-50/70 hover:ring-1 hover:ring-sky-100'
+      }`}
+    >
+      <div className={busy ? 'opacity-60' : ''}>{children}</div>
+      {busy ? (
+        <span className="absolute -right-1 top-1">
+          <Spinner />
+        </span>
+      ) : (
+        !disabled && (
+          <button
+            onClick={onRegen}
+            title={`Regenerate ${label}`}
+            className="absolute -right-1 top-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] bg-navy text-cream rounded-md shadow-sm px-1.5 py-0.5 hover:bg-navy-deep"
+          >
+            ↻
+          </button>
+        )
       )}
     </div>
   );
+}
+
+function Chip({ children, tone = 'slate' }: { children: React.ReactNode; tone?: 'slate' | 'amber' | 'navy' }) {
+  const tones = {
+    slate: 'bg-slate-100 text-slate-600',
+    amber: 'bg-amber-100 text-amber-800',
+    navy: 'bg-navy/10 text-navy',
+  } as const;
+  return <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${tones[tone]}`}>{children}</span>;
 }
 
 export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved }: Props) {
@@ -64,6 +134,8 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
   const [popover, setPopover] = useState<PopoverState | null>(null);
   const [feedback, setFeedback] = useState('');
   const [busy, setBusy] = useState('');
+  const [busyTarget, setBusyTarget] = useState<V2RegenTarget | null>(null);
+  const [deletingRowId, setDeletingRowId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [frameCache, setFrameCache] = useState<Record<string, string[]>>({});
   const [showLedger, setShowLedger] = useState(false);
@@ -130,6 +202,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               ? 'Writing the new line to bridge its neighbors…'
               : 'Regenerating…',
       );
+      setBusyTarget(target);
       setError('');
       setPopover(null);
       setFeedback('');
@@ -143,6 +216,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
         }
       } finally {
         setBusy('');
+        setBusyTarget(null);
       }
     },
     [apiKey, brief, busy, onSaved],
@@ -165,6 +239,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
       if (!window.confirm(`Delete clip ${clipLabel}? Clips renumber automatically and a ripple check will flag any continuity break.`)) return;
       abortRef.current = new AbortController();
       setBusy(`Deleting clip ${clipLabel} and checking the flow around it…`);
+      setDeletingRowId(rowId);
       setError('');
       try {
         const updated = await deleteRow(brief, rowId, apiKey, abortRef.current.signal);
@@ -176,6 +251,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
         }
       } finally {
         setBusy('');
+        setDeletingRowId(null);
       }
     },
     [apiKey, brief, busy, onSaved],
@@ -256,26 +332,56 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
     }
   }, [brief]);
 
+  // ── In-place busy resolution ──────────────────────────────────────────────
+  const rowBusyKind = (rowId: string): 'script' | 'shot' | 'reference' | null => {
+    const t = busyTarget;
+    if (!t) return null;
+    if (t.type === 'row-script' && t.rowId === rowId) return 'script';
+    if (t.type === 'row-shot' && t.rowId === rowId) return 'shot';
+    if (t.type === 'row-reference' && t.rowId === rowId) return 'reference';
+    return null;
+  };
+  const insertAfterRowId = busyTarget?.type === 'row-insert' ? busyTarget.afterRowId : null;
+  const hookBusyId = busyTarget?.type === 'hook' ? busyTarget.lineId : null;
+  const ctaBusyId = busyTarget?.type === 'cta' ? busyTarget.lineId : null;
+  const proseBusy = busyTarget?.type === 'script-prose';
+  const headerBusyField = busyTarget?.type === 'header-field' ? busyTarget.field : null;
+
+  const style = getUgcStyle(brief.task.ugcStyle);
+
   return (
-    <div className="max-w-6xl mx-auto space-y-5 animate-fade-in">
+    <div className="max-w-6xl mx-auto space-y-4 animate-fade-in">
       {/* Toolbar */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold font-display text-navy">{brief.taskName}</h2>
-          <p className="text-xs text-slate-500">
-            {brief.task.product} · {brief.task.talkingPoint} · {brief.task.awarenessLevel} ·{' '}
-            <span className="text-amber-700 font-medium">{getUgcStyle(brief.task.ugcStyle).name}</span> ·{' '}
-            {brief.task.duration} · v{brief.version}
-          </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold font-display text-navy leading-tight">{brief.taskName}</h2>
+          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+            <Chip>{brief.task.product}</Chip>
+            <Chip>{brief.task.awarenessLevel}</Chip>
+            <Chip tone="amber">{style.name}</Chip>
+            <Chip>{brief.task.duration}</Chip>
+            <Chip tone="navy">v{brief.version}</Chip>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => setShowLedger((s) => !s)} className="text-xs text-slate-500 hover:text-slate-700 underline">
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setShowLedger((s) => !s)}
+            className="text-xs text-slate-500 hover:text-slate-700 underline mr-1"
+          >
             Feedback ledger ({brief.feedbackLedger.length})
           </button>
-          <button onClick={() => void runReview()} className="text-sm bg-navy text-cream px-4 py-1.5 rounded-lg hover:bg-navy-deep font-medium">
+          <button
+            onClick={() => void runReview()}
+            disabled={!!busy}
+            className="text-sm bg-navy text-cream px-4 py-1.5 rounded-lg hover:bg-navy-deep font-medium disabled:opacity-40"
+          >
             Final Review
           </button>
-          <button onClick={() => void handleExport()} className="text-sm border border-slate-300 px-4 py-1.5 rounded-lg hover:bg-slate-50">
+          <button
+            onClick={() => void handleExport()}
+            disabled={!!busy}
+            className="text-sm border border-slate-300 px-4 py-1.5 rounded-lg hover:bg-slate-50 disabled:opacity-40"
+          >
             Export .doc
           </button>
           <button onClick={onClose} className="text-sm text-slate-500 hover:text-slate-700 underline">
@@ -285,22 +391,25 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
       </div>
 
       {busy && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg px-4 py-3 flex items-center justify-between">
-          <span className="animate-pulse">{busy}</span>
-          <button onClick={() => abortRef.current?.abort()} className="text-xs text-blue-700 underline hover:text-blue-900 ml-4">
+        <div className="bg-sky-50 border border-sky-200 text-sky-900 text-sm rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-2.5">
+            <Spinner />
+            {busy}
+          </span>
+          <button onClick={() => abortRef.current?.abort()} className="text-xs text-sky-700 underline hover:text-sky-900">
             Cancel
           </button>
         </div>
       )}
-      {error && <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3">{error}</div>}
+      {error && <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-xl px-4 py-3">{error}</div>}
 
       {/* Ripple flags */}
       {brief.rippleFlags.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm">
-          <div className="font-medium text-amber-900 mb-1">Consistency flags from the last edit</div>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm">
+          <div className="font-medium text-amber-900 mb-1.5">Consistency flags from the last edit</div>
           <ul className="space-y-1">
             {brief.rippleFlags.map((f) => (
-              <li key={f.id} className="text-amber-800 text-xs">
+              <li key={f.id} className="text-amber-800 text-xs leading-relaxed">
                 <strong>{f.target}:</strong> {f.issue} — <em>{f.suggestion}</em>
               </li>
             ))}
@@ -310,26 +419,32 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
 
       {/* Ledger */}
       {showLedger && (
-        <div className="bg-white border border-slate-200 rounded-lg px-4 py-3 text-xs text-slate-600 space-y-1">
-          {brief.feedbackLedger.length === 0 && <div>No feedback yet. Everything you tell the editor lands here and binds every future generation.</div>}
-          {brief.feedbackLedger.map((f) => (
-            <div key={f.id}>
-              <span className="text-slate-400">[{f.target}]</span> {f.feedback}
-            </div>
-          ))}
-        </div>
+        <Section title="Feedback ledger — binds every future generation">
+          <div className="text-xs text-slate-600 space-y-1.5">
+            {brief.feedbackLedger.length === 0 && (
+              <div>No feedback yet. Everything you tell the editor lands here and binds every future generation.</div>
+            )}
+            {brief.feedbackLedger.map((f) => (
+              <div key={f.id} className="leading-relaxed">
+                <span className="text-slate-400">[{f.target}]</span> {f.feedback}
+              </div>
+            ))}
+          </div>
+        </Section>
       )}
 
       {/* Intro callout (evergreen) */}
-      <div className="bg-slate-100 rounded-xl px-5 py-4 text-sm text-slate-700">💡 {INTRO_CALLOUT}</div>
+      <div className="bg-slate-100 rounded-xl px-5 py-3.5 text-[13px] text-slate-600 leading-relaxed">💡 {INTRO_CALLOUT}</div>
 
       {/* Framework control */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <Section
+        title="Framework — the narrative engine"
+        meta={busyTarget?.type === 'framework-switch' || busyTarget?.type === 'framework-regenerate' ? <WorkingChip label="rebuilding" /> : undefined}
+      >
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-slate-400 mb-1">Framework — the narrative engine</div>
             <div className="font-semibold text-slate-800">{brief.framework.name}</div>
-            <div className="text-xs text-slate-500 mt-0.5">{brief.framework.rationale}</div>
+            <div className="text-xs text-slate-500 mt-0.5 max-w-xl leading-relaxed">{brief.framework.rationale}</div>
           </div>
           <div className="flex items-center gap-2">
             <select
@@ -349,193 +464,286 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             </select>
             <button
               onClick={() => openPopover({ type: 'framework-regenerate' }, 'the framework structure')}
-              className="text-sm border border-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-50"
+              className="text-sm border border-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-50 disabled:opacity-40"
               disabled={!!busy}
             >
               Restructure with feedback…
             </button>
           </div>
         </div>
-        <p className="text-[11px] text-slate-400 mt-2">
+        <p className="text-[11px] text-slate-400 mt-2.5">
           Switching rewrites the script and storyboard under the new engine while holding the concept, product truth, and all your feedback constant.
         </p>
-      </div>
+      </Section>
 
-      {/* Header fields */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        {(
-          [
-            ['concept', 'Concept', brief.header.concept],
-            ['angle', 'Angle', brief.header.angle],
-            ['videoTonality', 'Video tonality', brief.header.videoTonality],
-            ['attire', 'Attire', brief.header.attire],
-          ] as const
-        ).map(([field, label, value]) => (
-          <Regenable key={field} label={label} onRegen={() => openPopover({ type: 'header-field', field }, label)}>
-            <div>
-              <div className="text-[11px] uppercase tracking-wider text-slate-400">{label}</div>
-              <div className="text-slate-700 pr-6">{value || <span className="text-slate-300">—</span>}</div>
-            </div>
-          </Regenable>
-        ))}
-        <Regenable label="Per-brief instructions" onRegen={() => openPopover({ type: 'header-field', field: 'instructions' }, 'per-brief instructions')}>
+      {/* Creative direction (header fields) */}
+      <Section title="Creative direction">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+          {(
+            [
+              ['concept', 'Concept', brief.header.concept],
+              ['angle', 'Angle', brief.header.angle],
+              ['videoTonality', 'Video tonality', brief.header.videoTonality],
+              ['attire', 'Attire', brief.header.attire],
+            ] as const
+          ).map(([field, label, value]) => (
+            <Regenable
+              key={field}
+              label={label}
+              busy={headerBusyField === field}
+              onRegen={() => openPopover({ type: 'header-field', field }, label)}
+            >
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-navy/50">{label}</div>
+                <div className="text-slate-700 leading-relaxed mt-0.5 pr-6">{value || <span className="text-slate-300">—</span>}</div>
+              </div>
+            </Regenable>
+          ))}
           <div className="md:col-span-2">
-            <div className="text-[11px] uppercase tracking-wider text-slate-400">Per-brief instructions</div>
-            <ul className="list-disc ml-5 text-slate-700 pr-6">
-              {brief.header.instructions.map((ins, i) => (
-                <li key={i}>{ins}</li>
-              ))}
-            </ul>
+            <Regenable
+              label="Per-brief instructions"
+              busy={headerBusyField === 'instructions'}
+              onRegen={() => openPopover({ type: 'header-field', field: 'instructions' }, 'per-brief instructions')}
+            >
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-navy/50">Per-brief instructions</div>
+              <ul className="list-disc ml-5 text-slate-700 leading-relaxed mt-0.5 pr-6 space-y-0.5">
+                {brief.header.instructions.map((ins, i) => (
+                  <li key={i}>{ins}</li>
+                ))}
+              </ul>
+            </Regenable>
           </div>
-        </Regenable>
-      </div>
+        </div>
+      </Section>
 
       {/* Hooks + CTAs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="text-[11px] uppercase tracking-wider text-slate-400 mb-2">Hooks (first = primary; alternates feed the variation matrix)</div>
-          <div className="space-y-2">
+        <Section title={`Hooks — ${brief.hooks.length} variations`} meta="first = primary; alternates feed the variation matrix">
+          <div className="space-y-1.5">
             {brief.hooks.map((h, i) => (
-              <Regenable key={h.id} label={`hook ${i + 1}`} onRegen={() => openPopover({ type: 'hook', lineId: h.id }, `hook ${i + 1}`)}>
-                <div className={`text-sm pr-6 ${i === 0 ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
-                  {i + 1}. {h.text}
+              <Regenable
+                key={h.id}
+                label={`hook ${i + 1}`}
+                busy={hookBusyId === h.id}
+                onRegen={() => openPopover({ type: 'hook', lineId: h.id }, `hook ${i + 1}`)}
+              >
+                <div className="flex items-start gap-2.5 pr-6">
+                  <span
+                    className={`mt-0.5 h-5 w-5 shrink-0 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                      i === 0 ? 'bg-navy text-cream' : 'bg-navy/10 text-navy'
+                    }`}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className={`text-sm leading-relaxed ${i === 0 ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
+                    {h.text}
+                  </span>
                 </div>
               </Regenable>
             ))}
           </div>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="text-[11px] uppercase tracking-wider text-slate-400 mb-2">CTA options</div>
-          <div className="space-y-2">
+        </Section>
+        <Section
+          title="CTA options"
+          meta={
+            <>
+              sells <span className="text-slate-600 font-medium">{brief.concept.productTruth}</span>
+            </>
+          }
+        >
+          <div className="space-y-1.5">
             {brief.ctas.map((c, i) => (
-              <Regenable key={c.id} label={`CTA ${i + 1}`} onRegen={() => openPopover({ type: 'cta', lineId: c.id }, `CTA ${i + 1}`)}>
-                <div className={`text-sm pr-6 ${i === 0 ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
-                  {i + 1}. {c.text}
+              <Regenable
+                key={c.id}
+                label={`CTA ${i + 1}`}
+                busy={ctaBusyId === c.id}
+                onRegen={() => openPopover({ type: 'cta', lineId: c.id }, `CTA ${i + 1}`)}
+              >
+                <div className="flex items-start gap-2.5 pr-6">
+                  <span
+                    className={`mt-0.5 h-5 w-5 shrink-0 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                      i === 0 ? 'bg-navy text-cream' : 'bg-navy/10 text-navy'
+                    }`}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className={`text-sm leading-relaxed ${i === 0 ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
+                    {c.text}
+                  </span>
                 </div>
               </Regenable>
             ))}
           </div>
-          <div className="mt-3 text-[11px] text-slate-400">
-            Concept: <span className="text-slate-600">{brief.concept.title}</span> · sells{' '}
-            <span className="text-slate-600">{brief.concept.productTruth}</span>
+          <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+            Concept: <span className="text-slate-600">{brief.concept.title}</span>
           </div>
-        </div>
+        </Section>
       </div>
 
       {/* Script prose */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <div className="text-[11px] uppercase tracking-wider text-slate-400 mb-2">
-          Script — full read-through (the creator internalizes this before the shot list)
-        </div>
-        <Regenable label="the script prose" onRegen={() => openPopover({ type: 'script-prose' }, 'the full script prose')}>
-          <p className="text-sm text-slate-700 whitespace-pre-wrap pr-6">{brief.scriptProse}</p>
+      <Section
+        title="Script — full read-through"
+        meta={proseBusy ? <WorkingChip label="rewriting" /> : 'the creator internalizes this before the shot list'}
+      >
+        <Regenable label="the script prose" busy={proseBusy} onRegen={() => openPopover({ type: 'script-prose' }, 'the full script prose')}>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3.5">
+            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed pr-4">{brief.scriptProse}</p>
+          </div>
         </Regenable>
-      </div>
+      </Section>
 
       {/* Storyboard */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 overflow-x-auto">
-        <div className="text-[11px] uppercase tracking-wider text-slate-400 mb-3">Storyboard</div>
-        <table className="w-full text-sm min-w-[900px]">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200">
-              <th className="py-2 pr-2 w-10">Clip</th>
-              <th className="py-2 pr-2 w-14">Audio</th>
-              <th className="py-2 pr-2 w-[26%]">Script</th>
-              <th className="py-2 pr-2 w-24">Shot type</th>
-              <th className="py-2 pr-2 w-[26%]">Shot description</th>
-              <th className="py-2 pr-2 w-28">Reference</th>
-              <th className="py-2 w-[16%]">Editor notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {brief.storyboard.map((r, i) => {
-              const thumb = r.reference.kind === 'frame' ? thumbFor(r.id) : null;
-              const endIdx = brief.storyboard.findIndex((x) => x.clipNumber === 'end-card');
-              const isMainRow = typeof r.clipNumber === 'number' && (endIdx === -1 || i < endIdx);
-              return (
-                <tr key={r.id} className={`group/row border-b border-slate-100 align-top ${r.clipNumber === 'end-card' ? 'bg-slate-50' : ''}`}>
-                  <td className="py-2 pr-2 font-medium text-slate-700">
-                    {r.clipNumber === 'end-card' ? 'End Card' : r.clipNumber}
-                    {isMainRow && (
-                      <div className="flex flex-col gap-1 mt-1.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => openPopover({ type: 'row-insert', afterRowId: r.id }, `a new line after clip ${r.clipNumber}`)}
-                          title={`Insert a new line after clip ${r.clipNumber} — written to bridge the lines around it`}
-                          className="text-[11px] leading-none bg-navy text-cream rounded px-1.5 py-1 w-fit"
-                        >
-                          ＋
-                        </button>
-                        {!r.mirrorsLineId && (
-                          <button
-                            onClick={() => void runDelete(r.id, String(r.clipNumber))}
-                            title={`Delete clip ${r.clipNumber}`}
-                            className="text-[11px] leading-none bg-slate-200 text-slate-600 hover:bg-red-100 hover:text-red-700 rounded px-1.5 py-1 w-fit"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-2 pr-2 text-slate-500">{r.audioType}</td>
-                  <td className="py-2 pr-2">
-                    {r.clipNumber !== 'end-card' ? (
-                      <Regenable label={`clip ${r.clipNumber} script`} onRegen={() => openPopover({ type: 'row-script', rowId: r.id }, `clip ${r.clipNumber} script line`)}>
-                        <div className="text-slate-700 pr-6">{r.scriptLine}</div>
-                      </Regenable>
-                    ) : (
-                      <span className="text-slate-300">—</span>
-                    )}
-                  </td>
-                  <td className="py-2 pr-2 text-slate-500 text-xs font-medium">{r.shotType}</td>
-                  <td className="py-2 pr-2">
-                    {r.clipNumber !== 'end-card' ? (
-                      <Regenable label={`clip ${r.clipNumber} shot`} onRegen={() => openPopover({ type: 'row-shot', rowId: r.id }, `clip ${r.clipNumber} shot description`)}>
-                        <div className="text-slate-600 text-xs whitespace-pre-wrap pr-6">{r.shotDescription}</div>
-                      </Regenable>
-                    ) : (
-                      <span className="text-slate-300">—</span>
-                    )}
-                  </td>
-                  <td className="py-2 pr-2">
-                    {r.reference.kind === 'frame' ? (
-                      <Regenable label={`clip ${r.clipNumber} reference`} onRegen={() => openPopover({ type: 'row-reference', rowId: r.id }, `clip ${r.clipNumber} reference screenshot`)}>
-                        {thumb?.src ? (
-                          <img src={thumb.src} alt="reference" className="w-20 rounded border border-slate-200" />
-                        ) : (
-                          <div className="w-20 h-32 rounded border border-dashed border-slate-200 text-[10px] text-slate-400 flex items-center justify-center">
-                            loading…
+      <Section title="Storyboard" meta="hover a row for line actions: ↻ regenerate · ＋ insert below · ✕ delete" flush>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[900px]">
+            <thead>
+              <tr className="text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 border-b border-slate-200 bg-slate-50/60">
+                <th className="py-2.5 pl-5 pr-2 w-14">Clip</th>
+                <th className="py-2.5 pr-2 w-14">Audio</th>
+                <th className="py-2.5 pr-3 w-[26%]">Script</th>
+                <th className="py-2.5 pr-2 w-24">Shot type</th>
+                <th className="py-2.5 pr-3 w-[26%]">Shot description</th>
+                <th className="py-2.5 pr-2 w-28">Reference</th>
+                <th className="py-2.5 pr-5 w-[16%]">Editor notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {brief.storyboard.map((r, i) => {
+                const thumb = r.reference.kind === 'frame' ? thumbFor(r.id) : null;
+                const endIdx = brief.storyboard.findIndex((x) => x.clipNumber === 'end-card');
+                const isMainRow = typeof r.clipNumber === 'number' && (endIdx === -1 || i < endIdx);
+                const busyKind = rowBusyKind(r.id);
+                const isDeleting = deletingRowId === r.id;
+                return (
+                  <Fragment key={r.id}>
+                    <tr
+                      className={`group/row border-b border-slate-100 align-top transition-colors ${
+                        r.clipNumber === 'end-card'
+                          ? 'bg-slate-50'
+                          : isDeleting
+                            ? 'bg-red-50/60 opacity-50'
+                            : busyKind
+                              ? 'bg-sky-50/70'
+                              : 'hover:bg-sky-50/40'
+                      }`}
+                    >
+                      <td className="py-2.5 pl-5 pr-2 font-semibold text-slate-700">
+                        <div className="flex items-center gap-1.5">
+                          {r.clipNumber === 'end-card' ? <span className="text-xs">End Card</span> : r.clipNumber}
+                          {isDeleting && <Spinner className="h-3 w-3" />}
+                        </div>
+                        {isMainRow && !isDeleting && !busyKind && (
+                          <div className="flex flex-col gap-1 mt-2 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => openPopover({ type: 'row-insert', afterRowId: r.id }, `a new line after clip ${r.clipNumber}`)}
+                              title={`Insert a new line after clip ${r.clipNumber} — written to bridge the lines around it`}
+                              className="text-[11px] leading-none bg-navy text-cream rounded-md shadow-sm px-1.5 py-1 w-fit hover:bg-navy-deep"
+                            >
+                              ＋
+                            </button>
+                            {!r.mirrorsLineId && (
+                              <button
+                                onClick={() => void runDelete(r.id, String(r.clipNumber))}
+                                title={`Delete clip ${r.clipNumber}`}
+                                className="text-[11px] leading-none bg-white border border-slate-200 text-slate-500 rounded-md px-1.5 py-1 w-fit hover:border-red-300 hover:text-red-600 hover:bg-red-50"
+                              >
+                                ✕
+                              </button>
+                            )}
                           </div>
                         )}
-                      </Regenable>
-                    ) : r.reference.kind === 'same-as' ? (
-                      <span className="text-xs text-slate-500 italic">Same as clip {r.reference.clipNumber}</span>
-                    ) : (
-                      <Regenable label={`clip ${r.clipNumber} reference`} onRegen={() => openPopover({ type: 'row-reference', rowId: r.id }, `clip ${r.clipNumber} reference screenshot`)} disabled={r.clipNumber === 'end-card'}>
-                        <span className="text-[10px] text-slate-400 pr-6">{r.reference.reason}</span>
-                      </Regenable>
+                      </td>
+                      <td className="py-2.5 pr-2">
+                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 rounded px-1.5 py-0.5">{r.audioType}</span>
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        {r.clipNumber !== 'end-card' ? (
+                          <Regenable
+                            label={`clip ${r.clipNumber} script`}
+                            busy={busyKind === 'script'}
+                            onRegen={() => openPopover({ type: 'row-script', rowId: r.id }, `clip ${r.clipNumber} script line`)}
+                          >
+                            <div className="text-slate-700 leading-relaxed pr-6">{r.scriptLine}</div>
+                          </Regenable>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 pr-2 text-slate-500 text-xs font-medium">{r.shotType}</td>
+                      <td className="py-2.5 pr-3">
+                        {r.clipNumber !== 'end-card' ? (
+                          <Regenable
+                            label={`clip ${r.clipNumber} shot`}
+                            busy={busyKind === 'shot'}
+                            onRegen={() => openPopover({ type: 'row-shot', rowId: r.id }, `clip ${r.clipNumber} shot description`)}
+                          >
+                            <div className="text-slate-600 text-xs whitespace-pre-wrap leading-relaxed pr-6">{r.shotDescription}</div>
+                          </Regenable>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 pr-2">
+                        {r.reference.kind === 'frame' ? (
+                          <Regenable
+                            label={`clip ${r.clipNumber} reference`}
+                            busy={busyKind === 'reference'}
+                            onRegen={() => openPopover({ type: 'row-reference', rowId: r.id }, `clip ${r.clipNumber} reference screenshot`)}
+                          >
+                            {thumb?.src ? (
+                              <img src={thumb.src} alt="reference" className="w-20 rounded-md border border-slate-200 shadow-sm" />
+                            ) : (
+                              <div className="w-20 h-32 rounded-md border border-dashed border-slate-200 text-[10px] text-slate-400 flex items-center justify-center">
+                                loading…
+                              </div>
+                            )}
+                          </Regenable>
+                        ) : r.reference.kind === 'same-as' ? (
+                          <span className="text-xs text-slate-500 italic">Same as clip {r.reference.clipNumber}</span>
+                        ) : (
+                          <Regenable
+                            label={`clip ${r.clipNumber} reference`}
+                            busy={busyKind === 'reference'}
+                            onRegen={() => openPopover({ type: 'row-reference', rowId: r.id }, `clip ${r.clipNumber} reference screenshot`)}
+                            disabled={r.clipNumber === 'end-card'}
+                          >
+                            <span className="text-[10px] text-slate-400 pr-6">{r.reference.reason}</span>
+                          </Regenable>
+                        )}
+                      </td>
+                      <td className="py-2.5 pr-5 text-xs text-slate-500 leading-relaxed">
+                        {r.editorNotes || <span className="text-slate-300">—</span>}
+                      </td>
+                    </tr>
+                    {insertAfterRowId === r.id && (
+                      <tr className="border-b border-slate-100">
+                        <td colSpan={7} className="py-2.5 pl-5 pr-5">
+                          <div className="flex items-center gap-2.5 border-2 border-dashed border-sky-200 bg-sky-50/60 rounded-lg px-4 py-2.5 text-sm text-sky-800">
+                            <Spinner />
+                            Writing the new line here — bridging clip {String(r.clipNumber)} and the line after it…
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                  </td>
-                  <td className="py-2 text-xs text-slate-500">{r.editorNotes || <span className="text-slate-300">—</span>}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Section>
 
       {/* Final review report */}
       {brief.lastReview && (
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wider text-slate-400">
-              Final review · {new Date(brief.lastReview.createdAt).toLocaleString()}
-            </div>
-            {brief.lastReview.briefVersion !== brief.version && (
-              <span className="text-[11px] text-amber-600 font-medium">brief has changed since this review — re-run for a fresh pass</span>
-            )}
-          </div>
-          <p className="text-sm text-slate-600 mb-3">{brief.lastReview.summary}</p>
+        <Section
+          title={`Final review · ${new Date(brief.lastReview.createdAt).toLocaleString()}`}
+          meta={
+            brief.lastReview.briefVersion !== brief.version ? (
+              <span className="text-amber-600 font-medium">brief has changed since this review — re-run for a fresh pass</span>
+            ) : undefined
+          }
+        >
+          <p className="text-sm text-slate-600 mb-3 leading-relaxed">{brief.lastReview.summary}</p>
           {brief.lastReview.findings.length === 0 ? (
             <p className="text-sm text-emerald-600 font-medium">Clean pass — every hook variant reads seamlessly into the script.</p>
           ) : (
@@ -543,7 +751,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               {brief.lastReview.findings.map((f) => (
                 <div
                   key={f.id}
-                  className={`border rounded-lg p-3 ${
+                  className={`border rounded-lg p-3.5 ${
                     f.resolution
                       ? 'opacity-50 border-slate-200'
                       : f.severity === 'major'
@@ -553,7 +761,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                           : 'border-slate-200'
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-xs mb-1">
+                  <div className="flex items-center gap-2 text-xs mb-1.5">
                     <span
                       className={`px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide text-[10px] ${
                         f.severity === 'major'
@@ -568,20 +776,20 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                     <span className="font-medium text-slate-700">{f.target}</span>
                     {f.resolution && <span className="text-slate-400 italic">{f.resolution}</span>}
                   </div>
-                  <p className="text-sm text-slate-700 mb-2">{f.issue}</p>
-                  {f.currentText && <p className="text-xs text-slate-500 line-through mb-1">{f.currentText}</p>}
+                  <p className="text-sm text-slate-700 mb-2 leading-relaxed">{f.issue}</p>
+                  {f.currentText && <p className="text-xs text-slate-500 line-through mb-1 leading-relaxed">{f.currentText}</p>}
                   {f.proposedText && (
-                    <p className="text-sm text-slate-800 bg-emerald-50 border border-emerald-100 rounded px-2 py-1 mb-1">
+                    <p className="text-sm text-slate-800 bg-emerald-50 border border-emerald-100 rounded-md px-2.5 py-1.5 mb-1.5 leading-relaxed">
                       {f.proposedText}
                     </p>
                   )}
-                  {f.rationale && <p className="text-[11px] text-slate-400 mb-2">{f.rationale}</p>}
+                  {f.rationale && <p className="text-[11px] text-slate-400 mb-2 leading-relaxed">{f.rationale}</p>}
                   {!f.resolution && (
                     <div className="flex gap-3">
                       {f.proposedText && (
                         <button
                           onClick={() => applyFinding(f)}
-                          className="text-xs bg-navy text-cream px-3 py-1 rounded hover:bg-navy-deep font-medium"
+                          className="text-xs bg-navy text-cream px-3 py-1 rounded-md hover:bg-navy-deep font-medium"
                         >
                           Apply fix
                         </button>
@@ -595,17 +803,17 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               ))}
             </div>
           )}
-        </div>
+        </Section>
       )}
 
       {/* Feedback popover */}
       {popover && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={() => setPopover(null)}>
-          <div className="bg-white rounded-xl shadow-xl p-5 w-[480px] max-w-[92vw]" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] flex items-center justify-center z-50" onClick={() => setPopover(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-5 w-[480px] max-w-[92vw]" onClick={(e) => e.stopPropagation()}>
             <div className="font-semibold text-slate-800 mb-1">
               {popover.target.type === 'row-insert' ? `Insert ${popover.label}` : `Regenerate ${popover.label}`}
             </div>
-            <p className="text-xs text-slate-500 mb-3">
+            <p className="text-xs text-slate-500 mb-3 leading-relaxed">
               {popover.target.type === 'row-insert'
                 ? 'The new line is written to bridge the line before and the line after seamlessly — your note steers what it says.'
                 : 'Your feedback becomes law for this brief — it binds this regeneration and every one after it.'}
@@ -620,7 +828,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                     ? "What should this new line do or emphasize? (leave empty and it writes whatever most strengthens the bridge)"
                     : "What should change? (leave empty for a fresh take)"
               }
-              className="w-full h-24 border border-slate-200 rounded-lg px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="w-full h-24 border border-slate-200 rounded-lg px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-sky-300"
               autoFocus
             />
             <div className="flex justify-end gap-3 mt-3">
