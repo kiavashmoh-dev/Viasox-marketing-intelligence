@@ -13,7 +13,10 @@ const EXTRACTION_PROMPT = `Extract all visible tasks from this Asana board scree
     "ES"   → "EasyStretch"
     Older boards may still spell out the full names ("Ankle Compression Socks", "Compression", "EasyStretch") — accept those too. Always RETURN the canonical full name ("EasyStretch", "Compression", or "Ankle Compression"), never the abbreviation.
 - angle: The Angle column value — e.g., Neuropathy, Swelling, Diabetes, Varicose Veins
-- medium: The Medium column value — must be one of: Shortform, Midform, Expanded
+- medium: The Medium column value — one of: Shortform, Midform, Expanded, Longform. Boards may
+    write variations like "Longform(60s-3min)" or "Longform (60s-3min)" — return just "Longform".
+    If a value matches none of these, return the closest one (or the raw visible value) WITHOUT
+    commentary — never explain a mapping decision in your response.
 - adType: (OPTIONAL) The Ad Type column value IF visible. Recognized values include:
     "Ecom Style", "AGC", "UGC", "Static", "Founder Style", "Fake Podcast", "Spokesperson",
     "Packaging", "Employee", "Full AI", "Documentary", "Fully AI", "AI".
@@ -21,7 +24,8 @@ const EXTRACTION_PROMPT = `Extract all visible tasks from this Asana board scree
     OMIT this field entirely (or set it to an empty string). Do NOT guess — only include
     an adType value when it is explicitly written in the screenshot.
 
-Return ONLY a JSON array. No markdown code fences. No explanation.
+Return ONLY a JSON array. No markdown code fences. No explanation, no preamble, no notes about
+ambiguous values — even when a value is unexpected, your ENTIRE response must be the JSON array.
 Example with abbreviation: [{"name":"VIASOX-77","product":"EasyStretch","angle":"Neuropathy","medium":"Shortform","adType":"Ecom Style"}] (input was "ES")
 Example: [{"name":"VIASOX-78","product":"Compression","angle":"Swelling","medium":"Midform"}] (input was "COMP")
 Example: [{"name":"VIASOX-79","product":"Ankle Compression","angle":"Plantar Fasciitis","medium":"Shortform"}] (input was "ACS")
@@ -53,10 +57,21 @@ export async function parseAsanaScreenshot(
   );
 
   // Strip markdown fences if present
-  const cleaned = result.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  let cleaned = result.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  // The model occasionally prefixes commentary (e.g. reasoning about an
+  // unexpected column value) before the JSON — extract the array itself.
+  const start = cleaned.indexOf('[');
+  const end = cleaned.lastIndexOf(']');
+  if (start !== -1 && end > start) cleaned = cleaned.slice(start, end + 1);
 
   try {
-    const parsed = JSON.parse(cleaned);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      // Mechanical repair: trailing commas are the common slip.
+      parsed = JSON.parse(cleaned.replace(/,\s*([}\]])/g, '$1'));
+    }
     if (!Array.isArray(parsed)) throw new Error('Expected JSON array');
 
     return parsed.map((task: Record<string, unknown>) => {
