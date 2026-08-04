@@ -183,6 +183,43 @@ function parseJson<T>(raw: string, context: string): T {
  * line break between two strings. Each repair candidate is accepted ONLY
  * if the whole document then parses — no partial or lossy recovery.
  */
+/**
+ * Heuristic repair for unescaped double quotes INSIDE string values — the
+ * one slip the other repairs cannot touch, and the most common writer
+ * failure on dialogue-heavy (yapper) briefs. A quote counts as the
+ * string's close only when the next non-space character is a structural
+ * delimiter; anything else means it was content, so it gets escaped.
+ * Like every repair, the result is accepted ONLY if the whole document
+ * then parses — a bad guess self-rejects.
+ */
+function repairUnescapedQuotes(text: string): string {
+  let out = '';
+  let inStr = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (!inStr) {
+      out += ch;
+      if (ch === '"') inStr = true;
+    } else if (ch === '\\') {
+      out += ch + (text[i + 1] ?? '');
+      i++;
+    } else if (ch === '"') {
+      let j = i + 1;
+      while (j < text.length && (text[j] === ' ' || text[j] === '\t')) j++;
+      const next = text[j];
+      if (next === ',' || next === '}' || next === ']' || next === ':' || next === '\n' || next === '\r' || next === undefined) {
+        out += ch;
+        inStr = false;
+      } else {
+        out += '\\"';
+      }
+    } else {
+      out += ch;
+    }
+  }
+  return out;
+}
+
 function parseJsonLenient<T>(raw: string, context: string): T {
   try {
     return parseJson<T>(raw, context);
@@ -197,11 +234,14 @@ function parseJsonLenient<T>(raw: string, context: string): T {
     const noTrailing = base.replace(/,\s*([}\]])/g, '$1');
     const commaBetweenObjects = (t: string) => t.replace(/}(\s*){/g, '},$1{');
     const commaBetweenStrings = (t: string) => t.replace(/"(\s*\n\s*)"/g, '",$1"');
+    const quoteFixed = repairUnescapedQuotes(base);
     const candidates = [
       noTrailing,
       commaBetweenObjects(base),
       commaBetweenStrings(base),
       commaBetweenStrings(commaBetweenObjects(noTrailing)),
+      quoteFixed,
+      commaBetweenStrings(commaBetweenObjects(quoteFixed.replace(/,\s*([}\]])/g, '$1'))),
     ];
     for (const c of candidates) {
       try {
