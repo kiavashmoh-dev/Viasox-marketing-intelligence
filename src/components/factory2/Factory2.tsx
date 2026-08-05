@@ -31,7 +31,7 @@ import {
   matchReferencesSafe,
   interCallDelay,
 } from '../../factory2/v2Engine';
-import { saveBrief, getBrief, getAllBriefs, deleteBrief } from '../../factory2/v2Store';
+import { saveBrief, getAllBriefs, deleteBrief } from '../../factory2/v2Store';
 import { UGC_STYLE_IDS, getUgcStyle, type UgcStyleId } from '../../factory2/ugcStyles';
 import BriefEditorV2 from './BriefEditorV2';
 
@@ -67,12 +67,21 @@ export default function Factory2({ apiKey, onBack }: Props) {
   const [direction, setDirection] = useState('');
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [openBriefId, setOpenBriefId] = useState<string | null>(null);
-  const [library, setLibrary] = useState<UgcBriefV2[]>(() => getAllBriefs());
+  const [library, setLibrary] = useState<UgcBriefV2[]>([]);
   const [busyLabel, setBusyLabel] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const refreshLibrary = useCallback(() => setLibrary(getAllBriefs()), []);
+  const refreshLibrary = useCallback(async () => {
+    try {
+      setLibrary(await getAllBriefs());
+    } catch (err) {
+      console.error('[factory2] brief library failed to load', err);
+    }
+  }, []);
+  useEffect(() => {
+    void refreshLibrary();
+  }, [refreshLibrary]);
 
   const loadInspirations = useCallback(async () => {
     try {
@@ -225,12 +234,12 @@ export default function Factory2({ apiKey, onBack }: Props) {
         const framework = await selectFramework(ts.task, concept, apiKey, signal);
         setBusyLabel(`Writing brief for ${ts.task.parsed.name}…`);
         let brief = await writeBrief(ts.task, concept, framework, direction, apiKey, signal, instructions);
-        saveBrief(brief);
-        refreshLibrary();
+        await saveBrief(brief);
+        void refreshLibrary();
         setBusyLabel(`Matching storyboard references for ${ts.task.parsed.name}…`);
         brief = await matchReferencesSafe(brief, apiKey, signal);
-        saveBrief(brief);
-        refreshLibrary();
+        await saveBrief(brief);
+        void refreshLibrary();
         setSession((s) => ({
           ...s,
           tasks: s.tasks.map((t, idx) => (idx === i ? { ...t, status: 'complete', brief } : t)),
@@ -305,11 +314,13 @@ export default function Factory2({ apiKey, onBack }: Props) {
   }, []);
 
   // ── Open brief in editor ───────────────────────────────────────────────
-  // Fallback to the store directly: a brief saved mid-loop exists in
-  // localStorage before the library state refreshes.
+  // Resolve from the library state; fall back to the in-session task briefs
+  // (a brief completed seconds ago may not be in the refreshed library yet).
 
   const openBrief =
-    library.find((b) => b.id === openBriefId) ?? (openBriefId ? getBrief(openBriefId) ?? null : null);
+    library.find((b) => b.id === openBriefId) ??
+    session.tasks.find((t) => t.brief?.id === openBriefId)?.brief ??
+    null;
   if (openBrief) {
     return (
       <BriefEditorV2
@@ -320,8 +331,14 @@ export default function Factory2({ apiKey, onBack }: Props) {
           refreshLibrary();
         }}
         onSaved={(b) => {
-          saveBrief(b);
-          refreshLibrary();
+          void (async () => {
+            try {
+              await saveBrief(b);
+              await refreshLibrary();
+            } catch (err) {
+              window.alert(err instanceof Error ? err.message : String(err));
+            }
+          })();
         }}
       />
     );
@@ -402,8 +419,14 @@ export default function Factory2({ apiKey, onBack }: Props) {
                       </button>
                       <button
                         onClick={() => {
-                          deleteBrief(b.id);
-                          refreshLibrary();
+                          void (async () => {
+                            try {
+                              await deleteBrief(b.id);
+                            } catch (err) {
+                              console.error('[factory2] delete failed', err);
+                            }
+                            await refreshLibrary();
+                          })();
                         }}
                         className="text-xs text-slate-400 hover:text-red-600"
                       >
