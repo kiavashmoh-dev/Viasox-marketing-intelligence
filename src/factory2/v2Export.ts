@@ -95,9 +95,9 @@ h1 { text-align: center; }
   html += kvRow('Attire', esc(brief.header.attire));
   html += kvRow(
     'Instructions',
-    brief.header.instructions.length
-      ? brief.header.instructions.map((i) => `• ${esc(i)}`).join('<br/>')
-      : '—',
+    [...brief.header.instructions.map((i) => `• ${esc(i)}`),
+      `• Record ALL ${brief.hooks.length} hooks as separate takes of the opening — see the SCRIPT (HOOKS) section below.`,
+    ].join('<br/>'),
   );
   html += kvRow('Duration', esc(brief.task.duration));
   html += kvRow('Deadline', '3 days after the product delivery');
@@ -109,8 +109,12 @@ h1 { text-align: center; }
   html += sectionHeader('SHOT TYPES EXPLAINED');
   html += glossaryTable(SHOT_TYPES);
 
-  // 4. SCRIPT (HOOKS) — every variation; hook 1 is the primary.
+  // 4. SCRIPT (HOOKS) — every variation; hook 1 is the primary. The
+  // recording note exists because creators otherwise film only the main
+  // edit and never realize the alternate hooks are separate takes
+  // (director feedback, Week-1 yapper batch, Aug 2026).
   html += sectionHeader(`SCRIPT (HOOKS) — ${brief.hooks.length} Variations`);
+  html += `<div style="padding:8px 12px;border:1px solid ${BORDER};background:#f8f9fb;font-size:10pt;color:#000;font-family:Arial,sans-serif;margin:0 0 8px 0;line-height:1.45;"><b>&#9888;&#65039; CREATOR &mdash; RECORD EVERY HOOK BELOW:</b> film EACH hook as its OWN separate short clip, in the exact same setup, framing, and energy as your main video&rsquo;s opening. Deliver just that hook line (let it run one beat into the next line if it feels natural, then stop). Your MAIN video uses Hook 1 as its opening; the extra hook clips are swapped in by our editor to create ad variations. Name the extra clips <b>H2, H3, H4</b> when you submit.</div>`;
   html += `<table>`;
   html += `<tr><th style="${scriptHeaderStyle}width:40px;">#</th><th style="${scriptHeaderStyle}">HOOK LINE</th></tr>`;
   brief.hooks.forEach((h, i) => {

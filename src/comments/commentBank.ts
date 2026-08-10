@@ -185,3 +185,43 @@ export async function getStats(): Promise<CommentBankStats> {
     lastPullAt: lastPull,
   };
 }
+
+// ─── CSV export ─────────────────────────────────────────────────────────────
+
+/** RFC-4180 field escaping: quote when needed, double inner quotes. */
+function csvField(v: string | number | undefined | null): string {
+  const s = v === undefined || v === null ? '' : String(v);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+/**
+ * The pulled bank as a spreadsheet-ready CSV, newest comment first.
+ * UTF-8 BOM + CRLF line endings so Excel opens it directly with emoji and
+ * accents intact.
+ */
+export function commentsToCsv(comments: CommentRecord[]): string {
+  const header = [
+    'Date', 'Comment', 'Author', 'Reactions', 'Ad Name', 'Campaign', 'Page',
+    'Platform', 'Ad ID', 'Campaign ID', 'Post ID', 'Comment ID', 'Pulled At',
+  ];
+  const rows = [...comments]
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .map((c) =>
+      [
+        new Date(c.createdAt).toISOString(),
+        c.text,
+        c.authorName ?? '',
+        c.reactionsCount ?? 0,
+        c.adName,
+        c.campaignName ?? '',
+        c.pageName ?? '',
+        c.platform,
+        c.adId,
+        c.campaignId ?? '',
+        c.postId,
+        c.commentId,
+        new Date(c.pulledAt).toISOString(),
+      ].map(csvField).join(','),
+    );
+  return '\uFEFF' + [header.map(csvField).join(','), ...rows].join('\r\n') + '\r\n';
+}

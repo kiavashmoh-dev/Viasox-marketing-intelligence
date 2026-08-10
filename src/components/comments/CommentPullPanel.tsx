@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { pullAllAdComments } from '../../comments/commentPuller';
-import { getStats, getAllComments, clearAllComments } from '../../comments/commentBank';
+import { getStats, getAllComments, clearAllComments, commentsToCsv } from '../../comments/commentBank';
 import type { CommentBankStats, PullProgress, PullSummary } from '../../comments/commentBankTypes';
 import type { CommentRecord } from '../../comments/commentBankTypes';
 import type { RawComment } from '../../utils/commentCsv';
@@ -106,6 +106,29 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
       setProgress((p) => p ? { ...p, phase: 'error', error: msg } : null);
     } finally {
       setPulling(false);
+    }
+  };
+
+  /** Download the entire pulled bank as a CSV file (newest first). */
+  const handleExportCsv = async () => {
+    setBusy(true);
+    try {
+      const all = await getAllComments();
+      if (all.length === 0) return;
+      const csv = commentsToCsv(all);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `viasox-ad-comments-${new Date().toISOString().slice(0, 10)}-${all.length}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -353,6 +376,22 @@ export default function CommentPullPanel({ onAnalyzeBank }: Props) {
           </div>
         );
       })()}
+
+      {/* Export the raw bank as CSV */}
+      {!pulling && stats !== null && stats.totalComments > 0 && (
+        <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+          <span className="text-[11px] text-slate-500">
+            Need the raw comments outside the app? One file, every pulled comment with its ad, campaign, and date.
+          </span>
+          <button
+            onClick={() => void handleExportCsv()}
+            disabled={busy}
+            className="text-xs border border-slate-300 text-slate-700 bg-white px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-40 shrink-0"
+          >
+            Download all {stats.totalComments.toLocaleString()} comments (.csv)
+          </button>
+        </div>
+      )}
 
       {/* Diagnostic — what pages do we have access to? */}
       {!pulling && (
