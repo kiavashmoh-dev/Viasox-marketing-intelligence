@@ -1,0 +1,36 @@
+# Viasox Transcribe Proxy — Cloudflare Worker
+#
+# Speech-to-text for the Inspiration Bank, using Cloudflare Workers AI's
+# hosted Whisper. Deliberately a THIRD worker rather than a route added to
+# proxy/ — the Claude path stays untouched (house rule: strictly-additive
+# integration, zero diffs to existing behaviour).
+#
+# WHY WORKERS AI: it needs no API key at all (the `ai` binding is native),
+# so unlike OpenAI/Deepgram/AssemblyAI there is no third-party credential
+# to leak. ~$0.00051 per audio-minute, and 10,000 neurons/day are free on
+# every plan (~214 audio-minutes/day) — a 10-brief research week costs $0.
+#
+# SETUP (one time):
+#   cd transcribe-proxy
+#   npx wrangler secret put APP_ORIGIN_ALLOWLIST
+#     → https://kiavashmoh-dev.github.io,http://localhost:5173
+#   npx wrangler deploy
+#
+# NOTE ON PLAN: request bodies here are a few MB of base64. The Workers
+# FREE plan caps CPU at 10ms per request, which is tight for reading a
+# multi-MB body; the Paid plan ($5/mo) raises it to 5 minutes. If
+# transcription returns CPU-limit errors on the free plan, that is the
+# cause — upgrade, or shorten the clips.
+
+name = "viasox-transcribe-proxy"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# Workers AI — no key, no secret; the binding IS the credential.
+[ai]
+binding = "AI"
+
+[vars]
+# Whisper large v3 turbo: returns text + WebVTT + word-level timestamps.
+# Alternative: "@cf/openai/whisper" (cheaper, no word timings).
+WHISPER_MODEL = "@cf/openai/whisper-large-v3-turbo"

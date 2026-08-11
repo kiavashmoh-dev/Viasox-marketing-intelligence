@@ -106,8 +106,15 @@ export interface InspirationItem {
   thumbnailDataUrl?: string;
   frameCount?: number;
 
-  /** Optional script/voiceover text the user pasted alongside a video upload */
+  /** The reference script/VO for a video: pasted by the user at upload, or
+   *  produced by in-app transcription. Consumed as ground truth by the
+   *  analyzer, V1's reference injection, and V2's pinned-exemplar block. */
   attachedScriptText?: string;
+  /** How attachedScriptText got here — drives the "auto-transcribed" label
+   *  and lets a manual edit survive a later re-analysis. */
+  transcriptSource?: 'manual' | 'auto';
+  /** ISO timestamp of the last successful transcription. */
+  transcribedAt?: string;
 
   /** For brief/script kind: the extracted plain text */
   textContent?: string;

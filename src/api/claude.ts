@@ -53,31 +53,39 @@ export async function sendMessage(
   const effectiveSignal = controller.signal;
   const cleanup = () => clearTimeout(timeoutId);
 
-  // Try proxy first, fall back to direct API
-  let response: Response;
+  const abortError = () =>
+    new Error(
+      timedOut
+        ? `API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`
+        : 'Request was cancelled.',
+    );
 
-  try {
-    response = await fetch(PROXY_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-      },
-      body,
-      signal: effectiveSignal,
-    });
-  } catch {
-    // If caller aborted or timed out, don't retry
-    if (effectiveSignal.aborted) {
-      cleanup();
-      if (timedOut) {
-        throw new Error(`API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`);
-      }
-      throw new Error('Request was cancelled.');
-    }
-    // Proxy unreachable - try direct API (works if CORS isn't blocking)
+  /**
+   * One send attempt: proxy first, direct API if the proxy is unreachable.
+   *
+   * This is a FUNCTION rather than inline code because the 429/529 retry
+   * loop below must use the identical path. It previously retried through
+   * the proxy only — so with the proxy Worker undeployed (which it has been
+   * since launch; the app runs entirely on this direct fallback) every retry
+   * threw instantly, hit `catch { break; }`, and the caller was told
+   * "Rate limited after 8 retries" after making ZERO retries.
+   */
+  const sendOnce = async (): Promise<Response> => {
     try {
-      response = await fetch(DIRECT_URL, {
+      return await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+        },
+        body,
+        signal: effectiveSignal,
+      });
+    } catch {
+      // If caller aborted or timed out, don't fall through to a doomed retry
+      if (effectiveSignal.aborted) throw abortError();
+      // Proxy unreachable - try direct API (works if CORS isn't blocking)
+      return await fetch(DIRECT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,18 +96,19 @@ export async function sendMessage(
         body,
         signal: effectiveSignal,
       });
-    } catch {
-      cleanup();
-      if (effectiveSignal.aborted) {
-        if (timedOut) {
-          throw new Error(`API request timed out after ${Math.round(timeoutMs / 60000)} minutes. The API may be slow — please try again.`);
-        }
-        throw new Error('Request was cancelled.');
-      }
-      throw new Error(
-        'Unable to reach the Claude API. Please check your internet connection and try again.',
-      );
     }
+  };
+
+  let response: Response;
+  try {
+    response = await sendOnce();
+  } catch (err) {
+    cleanup();
+    if (effectiveSignal.aborted) throw abortError();
+    if (err instanceof Error && err.name === 'AbortError') throw abortError();
+    throw new Error(
+      'Unable to reach the Claude API. Please check your internet connection and try again.',
+    );
   }
 
   cleanup();
@@ -124,14 +133,14 @@ export async function sendMessage(
       }
 
       try {
-        response = await fetch(PROXY_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
-          body,
-          signal: effectiveSignal,
-        });
+        response = await sendOnce();
         if (response.ok || (response.status !== 429 && response.status !== 529)) break;
-      } catch { break; }
+      } catch {
+        // Network died entirely (both proxy and direct) — further retries
+        // would only burn the backoff clock.
+        if (effectiveSignal.aborted) throw abortError();
+        break;
+      }
     }
   }
 

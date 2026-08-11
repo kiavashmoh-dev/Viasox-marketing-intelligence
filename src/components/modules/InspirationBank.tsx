@@ -22,6 +22,7 @@ import {
   getBlob,
 } from '../../inspiration/inspirationStore';
 import { extractVideoFrames } from '../../inspiration/frameExtractor';
+import { transcribeMedia } from '../../api/transcribe';
 import { extractTextFromFile } from '../../inspiration/textExtractor';
 import {
   analyzeVideoItem,
@@ -263,12 +264,38 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
       if (kind === 'video') {
         setUploadStatus(`Extracting frames from ${file.name}…`);
         const extracted = await extractVideoFrames(file);
+
+        // Transcribe the audio track BEFORE analysis so the analyzer gets the
+        // real voiceover as ground truth instead of guessing it from mouth
+        // movement — and so V2's pinned-exemplar block has a script to
+        // dissect. A pasted script always wins; transcription only fills the
+        // gap. NON-FATAL by design: losing a transcript must never cost the
+        // upload, which still lands with frames and full analysis.
+        let scriptText = attachedScript.trim() || undefined;
+        let scriptSource: 'manual' | 'auto' | undefined = scriptText ? 'manual' : undefined;
+        let scriptAt: string | undefined;
+        if (!scriptText) {
+          try {
+            setUploadStatus(`Transcribing ${file.name}…`);
+            const transcript = await transcribeMedia(file);
+            if (transcript.text) {
+              scriptText = transcript.text;
+              scriptSource = 'auto';
+              scriptAt = new Date().toISOString();
+            }
+          } catch (transcribeErr) {
+            console.warn('[inspiration] transcription failed (non-fatal)', transcribeErr);
+          }
+        }
+
         const itemWithMeta: InspirationItem = {
           ...baseItem,
           durationSeconds: extracted.durationSeconds,
           thumbnailDataUrl: extracted.thumbnailDataUrl,
           frameCount: extracted.frames.length,
-          attachedScriptText: attachedScript.trim() || undefined,
+          attachedScriptText: scriptText,
+          transcriptSource: scriptSource,
+          transcribedAt: scriptAt,
         };
         await putItem(itemWithMeta, file, extracted.frames);
         await reload();
@@ -572,6 +599,18 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
           }}
           onCategoriesChange={async (next) => {
             const updated = { ...selectedItem, userCategories: next };
+            await updateItem(updated);
+            await reload();
+            setSelectedItem(updated);
+          }}
+          onTranscriptChange={async (text, source) => {
+            const trimmed = text.trim();
+            const updated: InspirationItem = {
+              ...selectedItem,
+              attachedScriptText: trimmed || undefined,
+              transcriptSource: trimmed ? source : undefined,
+              transcribedAt: source === 'auto' ? new Date().toISOString() : selectedItem.transcribedAt,
+            };
             await updateItem(updated);
             await reload();
             setSelectedItem(updated);
@@ -911,6 +950,7 @@ function DetailModal({
   onTagsChange,
   onNotesChange,
   onCategoriesChange,
+  onTranscriptChange,
 }: {
   item: InspirationItem;
   onClose: () => void;
@@ -922,6 +962,9 @@ function DetailModal({
    *  tabs in the bank surface this item (additive on top of the analyzer's
    *  primary adType — see itemMatchesFolder). */
   onCategoriesChange: (next: string[]) => void;
+  /** Persist the reference script/VO — 'auto' when it came from in-app
+   *  transcription, 'manual' when the director typed or edited it. */
+  onTranscriptChange: (text: string, source: 'manual' | 'auto') => void;
 }) {
   const tags = getEffectiveTags(item);
   const [overrides, setOverrides] = useState<Partial<InspirationTags>>(item.userTagOverrides ?? {});
@@ -937,8 +980,31 @@ function DetailModal({
     onCategoriesChange(next);
   };
   const [customTagInput, setCustomTagInput] = useState('');
+  const [transcript, setTranscript] = useState(item.attachedScriptText ?? '');
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcribeError, setTranscribeError] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
+
+  // Transcribe (or re-transcribe) from the ORIGINAL video still held in
+  // IndexedDB — which is why this works retroactively on everything ever
+  // uploaded, not just new items.
+  const runTranscribe = async () => {
+    setTranscribing(true);
+    setTranscribeError(null);
+    try {
+      const blob = await getBlob(item.id);
+      if (!blob) throw new Error('The original video is no longer in storage — re-upload it to transcribe.');
+      const result = await transcribeMedia(blob);
+      if (!result.text) throw new Error('No speech was detected in this video.');
+      setTranscript(result.text);
+      onTranscriptChange(result.text, 'auto');
+    } catch (err) {
+      setTranscribeError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setTranscribing(false);
+    }
+  };
 
   // Load the raw video blob from IndexedDB and turn it into an object URL
   // for the <video> element. Cleanup revokes the URL and resets state to free
@@ -1264,6 +1330,45 @@ function DetailModal({
               })}
             </div>
           </Section>
+
+          {item.kind === 'video' && (
+            <Section title="Transcript / VO" icon={'\uD83C\uDFA4'} accent="blue">
+              <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+                <div className="text-[11px] text-slate-500 flex-1 min-w-[200px]">
+                  {item.transcriptSource === 'auto'
+                    ? `Auto-transcribed${item.transcribedAt ? ` \u00b7 ${new Date(item.transcribedAt).toLocaleDateString()}` : ''} \u2014 edit freely, changes are saved.`
+                    : transcript
+                      ? 'Used as ground truth by the analyzer and as the pinned-exemplar script.'
+                      : 'No script yet \u2014 transcribe it to feed the analyzer and the exemplar dissection.'}
+                </div>
+                <button
+                  onClick={() => void runTranscribe()}
+                  disabled={transcribing}
+                  type="button"
+                  className="text-xs border border-slate-300 text-slate-700 bg-white px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-40 shrink-0"
+                >
+                  {transcribing ? 'Transcribing\u2026' : transcript ? 'Re-transcribe' : 'Transcribe audio'}
+                </button>
+              </div>
+              {transcribeError && (
+                <div className="mb-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  {transcribeError}
+                </div>
+              )}
+              <textarea
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                onBlur={() => {
+                  if (transcript !== (item.attachedScriptText ?? '')) {
+                    onTranscriptChange(transcript, 'manual');
+                  }
+                }}
+                rows={6}
+                placeholder={'The spoken script / voiceover\u2026'}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </Section>
+          )}
 
           <Section title="Notes" icon={'\uD83D\uDCDD'} accent="slate">
             <textarea
