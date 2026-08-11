@@ -15,7 +15,54 @@
 
 import { extractAudioWav, blobToBase64, AudioExtractionError } from '../inspiration/audioExtractor';
 
-const TRANSCRIBE_URL = 'https://viasox-transcribe-proxy.kiavashmoh.workers.dev/transcribe';
+const SERVICE_URL = 'https://viasox-transcribe-proxy.kiavashmoh.workers.dev';
+const TRANSCRIBE_URL = `${SERVICE_URL}/transcribe`;
+
+/** Whisper on a long clip is slow, but nothing here may hang forever. */
+const TRANSCRIBE_TIMEOUT_MS = 180_000;
+/** A dead endpoint must be discovered in milliseconds, not after an upload. */
+const HEALTH_TIMEOUT_MS = 8_000;
+/** Don't base64 an enormous file down the server-side fallback path. */
+const MAX_FALLBACK_BYTES = 25 * 1024 * 1024;
+
+const NOT_DEPLOYED_HINT =
+  'The transcription service is not reachable. It is a separate Cloudflare Worker that must be deployed once:\n\n' +
+  '  cd transcribe-proxy\n  npx wrangler login\n  npx wrangler secret put APP_ORIGIN_ALLOWLIST\n  npx wrangler deploy\n\n' +
+  "(If it IS deployed, this site's origin may be missing from APP_ORIGIN_ALLOWLIST.)";
+
+/** Stages worth telling the user about — transcription is slow enough that
+ *  a single unchanging "Transcribing…" reads as a freeze. */
+export type TranscribeStage = 'checking' | 'extracting' | 'encoding' | 'uploading';
+
+const STAGE_LABEL: Record<TranscribeStage, string> = {
+  checking: 'Checking the transcription service…',
+  extracting: 'Extracting the audio track…',
+  encoding: 'Preparing the audio…',
+  uploading: 'Transcribing — this can take up to a minute…',
+};
+
+export function stageLabel(stage: TranscribeStage): string {
+  return STAGE_LABEL[stage];
+}
+
+/**
+ * Cheap reachability probe BEFORE megabytes go over the wire. Without it, a
+ * dead or unauthorised endpoint is only discovered after uploading the whole
+ * payload — which is exactly what made an undeployed Worker feel like a hang
+ * instead of an error.
+ */
+async function assertServiceReachable(signal?: AbortSignal): Promise<void> {
+  try {
+    const res = await fetch(SERVICE_URL, {
+      method: 'GET',
+      signal: signal ?? AbortSignal.timeout(HEALTH_TIMEOUT_MS),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  } catch (err) {
+    if (signal?.aborted) throw new Error('Transcription was cancelled.');
+    throw new Error(`${NOT_DEPLOYED_HINT}\n\n(${err instanceof Error ? err.message : String(err)})`);
+  }
+}
 
 export interface TranscriptSegment {
   start: number;
@@ -44,13 +91,15 @@ async function postAudio(base64: string, signal?: AbortSignal) {
       // stay inside Cloudflare's per-request CPU budget on multi-MB bodies.
       headers: { 'Content-Type': 'text/plain' },
       body: base64,
-      signal,
+      signal: signal ?? AbortSignal.timeout(TRANSCRIBE_TIMEOUT_MS),
     });
   } catch (err) {
     if (signal?.aborted) throw new Error('Transcription was cancelled.');
+    if (err instanceof Error && err.name === 'TimeoutError') {
+      throw new Error('Transcription timed out after 3 minutes. Try a shorter clip.');
+    }
     throw new Error(
-      `Could not reach the transcription service (${err instanceof Error ? err.message : String(err)}). ` +
-        'If this is the first run, the Worker may not be deployed yet: cd transcribe-proxy && npx wrangler deploy',
+      `Could not reach the transcription service (${err instanceof Error ? err.message : String(err)}).\n\n${NOT_DEPLOYED_HINT}`,
     );
   }
 
@@ -76,19 +125,40 @@ async function postAudio(base64: string, signal?: AbortSignal) {
 /**
  * Transcribe a video/audio file. Throws with a human-readable reason.
  */
-export async function transcribeMedia(file: Blob, signal?: AbortSignal): Promise<TranscriptResult> {
+export async function transcribeMedia(
+  file: Blob,
+  signal?: AbortSignal,
+  onStage?: (stage: TranscribeStage) => void,
+): Promise<TranscriptResult> {
+  // Fail fast on a dead endpoint before spending time and bandwidth.
+  onStage?.('checking');
+  await assertServiceReachable(signal);
+
   try {
+    onStage?.('extracting');
     const { wav, truncated } = await extractAudioWav(file);
-    const result = await postAudio(await blobToBase64(wav), signal);
+    onStage?.('encoding');
+    const base64 = await blobToBase64(wav);
+    onStage?.('uploading');
+    const result = await postAudio(base64, signal);
     return { ...result, truncated, via: 'browser-audio' };
   } catch (err) {
     const canFallBack = err instanceof AudioExtractionError && err.canRetryServerSide;
     if (!canFallBack) throw err;
 
+    if (file.size > MAX_FALLBACK_BYTES) {
+      throw new Error(
+        `${(err as AudioExtractionError).message} The file is also too large ` +
+          `(${Math.round(file.size / 1024 / 1024)}MB) to send whole — re-export it as .mp4, or open the app in Chrome.`,
+      );
+    }
     // Container the browser can't open — hand the raw file to Whisper.
     console.warn('[transcribe] browser audio decode failed, retrying with the original file', err);
     try {
-      const result = await postAudio(await blobToBase64(file), signal);
+      onStage?.('encoding');
+      const base64 = await blobToBase64(file);
+      onStage?.('uploading');
+      const result = await postAudio(base64, signal);
       return { ...result, truncated: false, via: 'original-file' };
     } catch (fallbackErr) {
       throw new Error(

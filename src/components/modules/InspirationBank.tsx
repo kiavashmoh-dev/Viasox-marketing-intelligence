@@ -22,7 +22,7 @@ import {
   getBlob,
 } from '../../inspiration/inspirationStore';
 import { extractVideoFrames } from '../../inspiration/frameExtractor';
-import { transcribeMedia } from '../../api/transcribe';
+import { transcribeMedia, stageLabel } from '../../api/transcribe';
 import { extractTextFromFile } from '../../inspiration/textExtractor';
 import {
   analyzeVideoItem,
@@ -277,7 +277,9 @@ export default function InspirationBank({ apiKey, onBack }: Props) {
         if (!scriptText) {
           try {
             setUploadStatus(`Transcribing ${file.name}…`);
-            const transcript = await transcribeMedia(file);
+            const transcript = await transcribeMedia(file, undefined, (stage) =>
+              setUploadStatus(`${file.name} — ${stageLabel(stage)}`),
+            );
             if (transcript.text) {
               scriptText = transcript.text;
               scriptSource = 'auto';
@@ -982,6 +984,7 @@ function DetailModal({
   const [customTagInput, setCustomTagInput] = useState('');
   const [transcript, setTranscript] = useState(item.attachedScriptText ?? '');
   const [transcribing, setTranscribing] = useState(false);
+  const [transcribeStage, setTranscribeStage] = useState('');
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
@@ -995,7 +998,7 @@ function DetailModal({
     try {
       const blob = await getBlob(item.id);
       if (!blob) throw new Error('The original video is no longer in storage — re-upload it to transcribe.');
-      const result = await transcribeMedia(blob);
+      const result = await transcribeMedia(blob, undefined, (stage) => setTranscribeStage(stageLabel(stage)));
       if (!result.text) throw new Error('No speech was detected in this video.');
       setTranscript(result.text);
       onTranscriptChange(result.text, 'auto');
@@ -1003,6 +1006,7 @@ function DetailModal({
       setTranscribeError(err instanceof Error ? err.message : String(err));
     } finally {
       setTranscribing(false);
+      setTranscribeStage('');
     }
   };
 
@@ -1350,8 +1354,14 @@ function DetailModal({
                   {transcribing ? 'Transcribing\u2026' : transcript ? 'Re-transcribe' : 'Transcribe audio'}
                 </button>
               </div>
+              {transcribing && transcribeStage && (
+                <div className="mb-2 text-xs text-sky-800 bg-sky-50 border border-sky-200 rounded-lg px-3 py-2 flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 shrink-0 rounded-full border-2 border-sky-300 border-t-sky-700 animate-spin" />
+                  {transcribeStage}
+                </div>
+              )}
               {transcribeError && (
-                <div className="mb-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <div className="mb-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 whitespace-pre-wrap font-mono leading-relaxed">
                   {transcribeError}
                 </div>
               )}

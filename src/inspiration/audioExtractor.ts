@@ -135,15 +135,22 @@ export async function extractAudioWav(file: Blob): Promise<ExtractedAudio> {
 }
 
 /**
- * Base64 without blowing the call stack: String.fromCharCode(...bigArray)
- * throws RangeError well below our payload sizes, so walk in chunks.
+ * Base64 without blowing the call stack OR freezing the tab.
+ *
+ * Two hazards, both real at our payload sizes:
+ *  - String.fromCharCode(...bigArray) throws RangeError, so walk in chunks.
+ *  - The whole walk is synchronous. On the server-side fallback path the
+ *    input is an entire video file (tens of MB), and a straight loop pins
+ *    the main thread long enough to look like a hang. So yield to the event
+ *    loop every ~2MB — the UI keeps painting and stays cancellable.
  */
 export async function blobToBase64(blob: Blob): Promise<string> {
   const bytes = new Uint8Array(await blob.arrayBuffer());
   const CHUNK = 0x8000;
-  let binary = '';
+  const parts: string[] = [];
   for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+    parts.push(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
+    if (parts.length % 64 === 0) await new Promise((r) => setTimeout(r, 0));
   }
-  return btoa(binary);
+  return btoa(parts.join(''));
 }
