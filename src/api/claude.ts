@@ -19,6 +19,38 @@ function computeTimeout(model: string, _maxTokens: number): number {
   return 900_000;
 }
 
+
+/**
+ * Extract the response's text block, or throw a message that names WHY there
+ * wasn't one.
+ *
+ * A response can legitimately contain no text block: the model can spend its
+ * entire output budget on reasoning and hit max_tokens before emitting a
+ * single visible token. That failure is DETERMINISTIC for a given prompt —
+ * retrying the identical call reproduces it forever. The Aug 2026 batch hit
+ * exactly this: two tasks failed "No text in response" through ~10 manual
+ * retries while other tasks recovered on the first retry. The old message
+ * gave the caller nothing to act on; this one distinguishes an exhausted
+ * budget (fixable by raising it) from any other empty-content case.
+ */
+function extractTextBlock(data: ClaudeResponse, maxTokens: number): { text: string; truncated: boolean } {
+  const textBlock = data.content.find((c) => c.type === 'text');
+  const stopReason = (data as unknown as Record<string, unknown>).stop_reason;
+  if (textBlock) return { text: textBlock.text, truncated: stopReason === 'max_tokens' };
+
+  const kinds =
+    data.content.map((c) => (c as { type?: string }).type ?? 'unknown').join(', ') || 'none';
+  if (stopReason === 'max_tokens') {
+    throw new Error(
+      `TOKEN_BUDGET_EXHAUSTED: the model used its entire ${maxTokens}-token output budget before writing any text ` +
+        `(blocks returned: ${kinds}). Retrying identically will fail the same way — this call needs a larger budget.`,
+    );
+  }
+  throw new Error(
+    `No text in response (stop_reason: ${String(stopReason ?? 'unknown')}, blocks returned: ${kinds}).`,
+  );
+}
+
 export async function sendMessage(
   system: string,
   userMessage: string,
@@ -171,16 +203,12 @@ export async function sendMessage(
   }
 
   const typedData = data as ClaudeResponse;
-  const textBlock = typedData.content.find((c) => c.type === 'text');
-  if (!textBlock) throw new Error('No text in response');
-
-  // Warn if output was truncated due to max_tokens
-  const stopReason = (data as Record<string, unknown>).stop_reason;
-  if (stopReason === 'max_tokens') {
-    return textBlock.text + '\n\n---\n\n> **Note:** This output was truncated because it reached the token limit. Try regenerating or reducing the scope of your request.';
+  const { text, truncated } = extractTextBlock(typedData, maxTokens);
+  if (truncated) {
+    return text + '\n\n---\n\n> **Note:** This output was truncated because it reached the token limit. Try regenerating or reducing the scope of your request.';
   }
 
-  return textBlock.text;
+  return text;
 }
 
 /* ------------------------------------------------------------------ */
@@ -274,9 +302,7 @@ export async function sendVisionMessage(
     throw new Error('Unexpected API response format.');
   }
   const typedData = data as ClaudeResponse;
-  const textBlock = typedData.content.find((c) => c.type === 'text');
-  if (!textBlock) throw new Error('No text in response');
-  return textBlock.text;
+  return extractTextBlock(typedData, maxTokens).text;
 }
 
 /* ------------------------------------------------------------------ */
@@ -385,8 +411,5 @@ export async function sendChatMessage(
   }
 
   const typedData = data as ClaudeResponse;
-  const textBlock = typedData.content.find((c) => c.type === 'text');
-  if (!textBlock) throw new Error('No text in response');
-
-  return textBlock.text;
+  return extractTextBlock(typedData, maxTokens).text;
 }

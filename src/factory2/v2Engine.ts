@@ -270,7 +270,24 @@ async function requestJson<T>(
   context: string,
   signal?: AbortSignal,
 ): Promise<T> {
-  const raw = await sendThinking(system, user, apiKey, maxTokens, signal);
+  let raw: string;
+  try {
+    raw = await sendThinking(system, user, apiKey, maxTokens, signal);
+  } catch (err) {
+    if (signal?.aborted) throw err;
+    // The model burned its whole output budget reasoning and never wrote a
+    // token. This is deterministic for a given prompt — an identical retry
+    // fails identically forever (the Aug 2026 batch proved it over ~10 manual
+    // retries). The only useful recovery is MORE ROOM, so retry once, bigger.
+    if (err instanceof Error && err.message.startsWith('TOKEN_BUDGET_EXHAUSTED')) {
+      const bigger = Math.min(maxTokens * 3, 32000);
+      console.warn(`[factory2] ${context}: output budget exhausted at ${maxTokens} tokens — retrying once at ${bigger}.`);
+      await interCallDelay(signal);
+      raw = await sendThinking(system, user, apiKey, bigger, signal);
+    } else {
+      throw err;
+    }
+  }
   try {
     return parseJsonLenient<T>(raw, context);
   } catch (err) {
@@ -465,7 +482,10 @@ export async function selectFramework(
 ): Promise<{ name: ScriptFramework; rationale: string }> {
   const inspiration = await inspirationContextFor(task);
   const { system, user } = buildFrameworkSelectPrompt(task, concept, inspiration);
-  const parsed = await requestJson<{ framework: string; rationale: string }>(system, user, apiKey, 1500, 'framework selection', signal);
+  // 1500 was too tight: this call ships all 15 framework guides, the context
+  // pack, the pinned-exemplar dissection AND the Schwartz/Bly brain block, so
+  // the model can reason past a small budget before writing its one-line answer.
+  const parsed = await requestJson<{ framework: string; rationale: string }>(system, user, apiKey, 5000, 'framework selection', signal);
   const exact = UGC_FRAMEWORKS.find((f) => f === parsed.framework)
     ?? UGC_FRAMEWORKS.find((f) => f.toLowerCase().includes((parsed.framework || '').toLowerCase().slice(0, 12)));
   if (!exact) {
