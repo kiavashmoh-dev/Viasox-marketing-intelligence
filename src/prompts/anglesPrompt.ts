@@ -447,7 +447,7 @@ These people have visited the site, added to cart, engaged with multiple ads, or
 2. The first 30% delivers the OFFER, NEWS, or URGENCY message — do not make them wait.
 3. Every BOF concept must have a CLEAR, SPECIFIC, ACTIONABLE CTA — not just "shop now" but "Get 20% off your first pair — code COMFORT20" or "Free shipping ends tonight."
 4. Schwartz's BOF rule: "Use the product name, the price, the offer, or what's new." These are the ONLY valid lead elements.
-5. Hopkins' "make action easy" rule: reduce friction in the concept itself — mention free shipping, easy returns, guarantee, risk-free trial.
+5. Hopkins' "make action easy" rule: reduce friction in the concept itself — shrink the FIRST COMMITMENT (one pair, one shift, one day on your feet). NEVER promise a guarantee, refund, risk-free trial, or returns policy.
 6. The concept must create URGENCY without being deceptive — limited time, limited stock, seasonal relevance, or "while supplies last."
 7. Keep it SHORT and DIRECT. BOF concepts should be the most concise. No lengthy education, no problem setup, no awareness building. They know all that.
 
@@ -455,7 +455,7 @@ These people have visited the site, added to cart, engaged with multiple ads, or
 
 **CONCEPT STRUCTURE:**
 - Opening 30%: Brand recognition + offer/news/urgency lead
-- Middle 40%: Final proof point + objection removal + risk reduction (guarantee, free returns)
+- Middle 40%: Final proof point + objection removal + low-stakes entry (the smallest first commitment that still proves the point)
 - Final 30%: Specific CTA + urgency reinforcement
 
 **BEST CONCEPT APPROACHES FOR BOF:**
@@ -465,7 +465,7 @@ These people have visited the site, added to cart, engaged with multiple ads, or
 - Final testimonial from someone who was on the fence
 - "Last chance" or seasonal urgency
 - New product launch or restock alerts
-- Guarantee/risk-reversal focused ("Try for 30 days, love them or return free")
+- Low-stakes-entry focused ("Start with one pair — one day on your feet tells you everything")
 - Social proof urgency ("X pairs sold this week")
 
 **AVOID AT BOF:**

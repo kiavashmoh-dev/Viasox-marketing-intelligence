@@ -86,7 +86,7 @@ function buildFunnelGuide(stage: FunnelStage): string {
 2. The first 30% delivers the OFFER, NEWS, or URGENCY — do not make them wait.
 3. Every BOF script must have a CLEAR, SPECIFIC, ACTIONABLE CTA — not "shop now" but "Get 20% off — code COMFORT20."
 4. Schwartz BOF rule: Lead with product name, price, offer, or what's new. ONLY valid leads.
-5. Hopkins' "make action easy" rule: mention free shipping, easy returns, guarantee, risk-free trial.
+5. Hopkins' "make action easy" rule: shrink the FIRST COMMITMENT (one pair, one shift, one day on your feet). NEVER promise a guarantee, refund, risk-free trial, or returns policy.
 6. Create URGENCY without deception — limited time, limited stock, seasonal relevance.
 7. Keep it SHORT and DIRECT. BOF scripts are the most concise. No education, no problem setup.
 
@@ -262,7 +262,7 @@ Execution:
 - FEEL: Address the Protector Voice directly. "I know you're thinking 'just another pair of socks.'" Bly's BFD: identify their core Belief, Feeling, and Desire.
 - FELT: Schwartz's identification — create shared experience. Reference the Closet Graveyard (3.1%), the Cycle of False Hope. Show you understand their JOURNEY.
 - FOUND: Bly's proof cascade — specific numbers, specific quotes. "After 1 week, 90% less pain." Every claim backed by review data.
-- CTA: Risk-free language for the Protector Voice: "Try them. If I'm wrong, you've lost nothing."
+- CTA: Low-stakes entry for the Protector Voice: "Start with one pair. One day on your feet is the whole test."
 Best for: Overcoming skepticism, price objection. Solution-Aware and Product-Aware.`,
 
   'Problem-Promise-Proof-Push': `**Problem-Promise-Proof-Push** — Bly (PPPP formula) + Hopkins (specificity)
@@ -308,7 +308,7 @@ Execution:
 - ACKNOWLEDGMENT: Schwartz's identification — "I get it. I said the same thing." Don't dismiss. Reference the Cycle of False Hope.
 - TWIST: The evidence that cracks skepticism — a specific data point they didn't know, a customer quote that sounds like THEM, a demonstration. Bly: Ultra-specific.
 - CONVERSION: The belief shift. "I can't believe I waited so long." Schwartz: the conversion must feel earned.
-- CTA: Challenge language: "Prove us wrong" or "Try them risk-free — we'll wait."
+- CTA: Challenge language: "Prove us wrong" or "Put them on for one shift — we'll wait."
 Best for: Solution-Aware and Product-Aware skeptics. MOF.`,
 
   'The Day-in-Life': `**The Day-in-Life** — Schwartz (identification) + Hopkins (specificity)
@@ -374,13 +374,13 @@ Execution:
 Best for: Product-Aware. MOF and BOF. Visual media.`,
 
   'The Objection Crusher': `**The Objection Crusher** — Bly (objection handling) + Schwartz (Two Voices Framework)
-Structure: State objection (0-12%) → Acknowledge (12-25%) → Counter evidence (25-60%) → Testimonial support (60-80%) → Risk-free CTA (80-100%)
+Structure: State objection (0-12%) → Acknowledge (12-25%) → Counter evidence (25-60%) → Testimonial support (60-80%) → Low-stakes-entry CTA (80-100%)
 Execution:
 - STATE: Bly — voice the objection FOR them. "$30 for socks?" "You've heard it all before." Schwartz's Protector Voice: speak AS the skeptic.
 - ACKNOWLEDGE: Never dismiss. "I get it. That's exactly what I thought." Reference the Cycle of False Hope — they've been burned before.
 - COUNTER: Bly's proof cascade — (1) Specific data ("last 3x longer — cheaper per wear"), (2) Customer quote addressing the SAME objection, (3) Risk reversal.
 - TESTIMONIAL: Find the review that PERFECTLY mirrors this objection and its resolution.
-- CTA: Risk-free, no-pressure: "Try one pair. If we're wrong, return them." Schwartz: speak to the Hope Voice.
+- CTA: Low-stakes, no-pressure: "Start with one pair. One day on your feet decides it." Schwartz: speak to the Hope Voice.
 Best for: Product-Aware skeptics. BOF retargeting. Price and "just socks" objections.`,
 
   'The Identity Alignment': `**The Identity Alignment** — Schwartz (identification dimension) + Neumeier (brand as identity signal)
@@ -746,7 +746,7 @@ The product data includes two layers of customer segments:
 2. Include specific customer language from the review data — not paraphrased, THEIR words
 3. Timestamp every section precisely
 4. Include visual direction for each section — be specific about what the camera sees
-5. Include a clear, specific CTA — not "learn more" but "try your first pair risk-free"
+5. Include a clear, specific CTA — not "learn more" but "start with your first pair"
 6. Include at least one real customer quote with the data frequency backing it
 7. Keep within the sweet spot (${durationTarget.sweetSpot}) and NEVER exceed the hard ceiling (${durationTarget.hardCeiling} words). Count your words before finalizing. See the LENGTH TARGET and LENGTH CALIBRATION blocks above — the tool has historically overshot length by 20-30%, so your default assumption must be "my first draft is too long."
 8. ${durationTarget.voRequired ? `VOICEOVER OR SPOKEN DIALOGUE IS MANDATORY for this ${durationTarget.duration} brief. Every Body row must have spoken words. See the VO REQUIREMENT block above.` : `VO is OPTIONAL for this short-form brief. You may choose text-only / no-VO OR include a VO. Both are valid.`}
@@ -951,7 +951,7 @@ ${params.product === 'EasyStretch' ? 'This is the EasyStretch line — NON-BINDI
 The product line changes the messaging pillars, the talent/setting, and the emotional territory. An EasyStretch script and a Compression script should feature different people, different settings, and different proof points.
 
 **CRITICAL — FUNNEL STAGE IS ${params.funnelStage}:**
-${params.funnelStage === 'TOF' ? 'Cold audiences. NO brand/product in first 40% of script. Lead with identification and emotion. Proof density LOW — one data point max. CTA soft. The script must feel like content, not an ad. Delivery should be storytelling/confessional, not salesy.' : ''}${params.funnelStage === 'MOF' ? 'Warm audiences. HIGH proof density — at least 2-3 proof elements. Overcome at least one specific objection. Hopkins\' "specifics" rule: every benefit needs data. CTA medium-direct. Include mechanism explanation (why it works).' : ''}${params.funnelStage === 'BOF' ? 'Hot audiences. Brand name in FIRST 3 SECONDS. Offer/urgency/news leads. Keep script SHORT and DIRECT — no education, no problem setup. Specific CTA with action details. Mention risk reducers (free shipping, guarantee, easy returns).' : ''}
+${params.funnelStage === 'TOF' ? 'Cold audiences. NO brand/product in first 40% of script. Lead with identification and emotion. Proof density LOW — one data point max. CTA soft. The script must feel like content, not an ad. Delivery should be storytelling/confessional, not salesy.' : ''}${params.funnelStage === 'MOF' ? 'Warm audiences. HIGH proof density — at least 2-3 proof elements. Overcome at least one specific objection. Hopkins\' "specifics" rule: every benefit needs data. CTA medium-direct. Include mechanism explanation (why it works).' : ''}${params.funnelStage === 'BOF' ? 'Hot audiences. Brand name in FIRST 3 SECONDS. Offer/urgency/news leads. Keep script SHORT and DIRECT — no education, no problem setup. Specific CTA with action details. Reduce risk by shrinking the FIRST COMMITMENT (start with one pair) — never by promising a guarantee, refund, or returns policy.' : ''}
 
 **SELECTOR INTERACTION:**
 All selectors (awareness, ad type, product, funnel, framework, duration, book) interact and must ALL be reflected. For example:

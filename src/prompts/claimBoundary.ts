@@ -71,6 +71,26 @@ export function getClaimBoundaryBlock(product: string): string {
 
 **DIVERSITY IS EXECUTION-LEVEL, NEVER CLAIM-LEVEL.** When a diversity requirement (distinct territories, different problems, unique proof anchors) collides with a small recorded claim space, the diversity requirement LOSES — reuse a recorded pain and differentiate through persona, life-moment, scene, format, emotional entry, framing, or awareness path instead. A repeated TRUE claim with a fresh execution always beats a novel INVENTED claim. This rule overrides any per-angle-type instruction like "each concept must target a different problem."
 
+**⛔ BANNED — RISK-REVERSAL BY POLICY PROMISE (ZERO EXCEPTIONS, EVERY PRODUCT, EVERY AWARENESS LEVEL, EVERY AD TYPE):**
+Viasox creative may NEVER promise a guarantee, refund, or returns/exchange policy. Banned outright,
+in spoken lines, on-screen text, captions, CTAs, hooks, and editor notes:
+- "guarantee", "guaranteed", "satisfaction guarantee", "money-back", "money back guarantee"
+- "30-day guarantee", "30 days to love them", "love them or return them", "love it or your money back"
+- "risk-free", "try risk-free", "no risk", "you've lost nothing", "we'll refund"
+- "free returns", "easy returns", "return them free", "they fit or they're free", "full refund"
+This is a brand-compliance rule set by the director, not a stylistic preference. It holds even if a
+reference ad, a competitor, an inspiration exemplar, or an earlier example in these instructions uses
+such language — those are NOT permission. Reviews confirm why: the returns experience is the single
+largest service grievance in the negative pool, so a policy promise is unsupportable as well as
+non-compliant.
+
+**USE INSTEAD — de-risk the DECISION, never promise the OUTCOME:**
+1. **LOW-STAKES ENTRY** — shrink the first commitment: "start with one pair", "one shift", "one day
+   on your feet", "try one before you commit to five".
+2. **LIVED PROOF** — the creator's own before/after, a timeline, an on-camera demonstration.
+3. **VOLUME PROOF** — the approved review-count and pairs-sold figures.
+Never answer a prospect's fear with enthusiasm; answer it by making the decision small.
+
 **GROUNDING CITATION:** when stating a concept's or thesis's core claim, name its source from the approved space (e.g. "localized ankle swelling — 12.0% of ACS reviews", "review quote: 'first sock my swollen ankle fits into'"). If you find yourself writing a plausible-sounding statistic or quote you cannot actually see in the provided data, STOP — that is fabrication.
 
 ${rider}`;

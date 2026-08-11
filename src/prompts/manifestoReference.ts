@@ -118,7 +118,7 @@ export function getTransformationJourney(): string {
 **The Two Voices:**
 - Protector: "Don't get hurt again" / "Save your money" / "They're probably all the same"
 - Hope: "But what if...?" / "The reviews seem real" / "Maybe this time..."
-**Marketing Implication:** Address BOTH voices. Acknowledge skepticism ("we know you've tried everything") while building evidence that this is different. Risk-free offers (30-day guarantee) speak directly to the Protector Voice.
+**Marketing Implication:** Address BOTH voices. Acknowledge skepticism ("we know you've tried everything") while building evidence that this is different. A SMALLER FIRST COMMITMENT (one pair, one shift) speaks directly to the Protector Voice — de-risk the DECISION, never promise the OUTCOME.
 
 ### Stage 3: Success (Marketing = BOF / Retention)
 **Psychology:** Identity restoration — not just "my socks are comfortable" but "I'm ME again." The transformation happens in 4 stages:
@@ -311,7 +311,7 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 - INTEREST: Schwartz's Dimension 2 (Identification) — make the viewer see themselves. "If you're a nurse who..." Use an unexpected angle or insight from the review data that makes them lean in.
 - DESIRE: Schwartz's Dimension 1 (Desire intensification) — paint the after-state so vividly they can feel it. Stack benefits using Bly's "one level deeper" technique: Feature → Benefit → REAL Benefit. "Non-binding tops → no marks → no more evidence your body is failing."
 - ACTION: Direct, specific CTA. Bly: make the action easy and clear. Include the offer if applicable.
-- RETENTION: Risk reversal (30-day guarantee) + repeat the single strongest benefit. Schwartz's Dimension 3 (Belief) — leave them trusting.
+- RETENTION: Low-stakes entry (the smallest next commitment) + repeat the single strongest benefit. Schwartz's Dimension 3 (Belief) — leave them trusting.
 
 ### 3. Before-After-Bridge
 **Book Origin:** Schwartz (visualization) + Neumeier (gut feeling creation)
@@ -341,7 +341,7 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 - FEEL: "I know how you feel about [specific concern]." Schwartz's Two Voices: address the Protector Voice directly. "I know you're thinking 'just another pair of socks.' I thought that too." Use Bly's BFD analysis — identify their core Belief, Feeling, and Desire.
 - FELT: "I felt the same way." or "Others felt..." Schwartz's identification — create a shared experience. Reference the Closet Graveyard (3.1% of reviews), the Cycle of False Hope. Show you understand their JOURNEY, not just their problem.
 - FOUND: "But here's what I found..." The pivot. Bly's proof cascade — specific numbers, specific quotes, specific results. "After 1 week, 90% less pain." "The swelling went down by more than half the first day." Every claim backed by review data.
-- CTA: Risk-free language that speaks to the Protector Voice: "Try them. If I'm wrong, you've lost nothing."
+- CTA: Low-stakes entry for the Protector Voice: "Start with one pair. One day on your feet is the whole test."
 
 ### 6. Problem-Promise-Proof-Push
 **Book Origin:** Bly (PPPP formula) + Hopkins (specificity principle)
@@ -351,7 +351,7 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 - PROBLEM: One specific pain point from review data. Hopkins: specificity is your weapon. Not "discomfort" but "deep red rings around your calves that take hours to fade."
 - PROMISE: The bold claim Viasox makes. Bly: the promise must pass the "so what?" test. Not "comfortable socks" but "the first socks that won't leave a single mark." Make the promise specific and testable.
 - PROOF: This is the longest section — Bly's proof cascade. Stack at least 3 types of proof: (1) Data from reviews ("8.8% of 107,000+ reviews cite no marks"), (2) Customer testimony (direct quote), (3) Mechanism explanation (Hopkins: give the reason why). Each proof element must be Ultra-specific.
-- PUSH: CTA with urgency. Bly: give a reason to act NOW. Include risk reversal (guarantee) and the offer if applicable.
+- PUSH: CTA with urgency. Bly: give a reason to act NOW. Include low-stakes entry (the smallest first commitment) and the offer if applicable.
 
 ### 7. Hook-Story-Offer
 **Book Origin:** Bly (direct response structure) + Hopkins (headline-as-selector)
@@ -392,7 +392,7 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 - ACKNOWLEDGMENT: "I get it. I said the same thing." This is critical — Schwartz's identification. Don't dismiss the objection; validate it. Reference the Cycle of False Hope: "After the 10th pair that didn't work..."
 - TWIST: The unexpected evidence that cracks the skepticism. A specific data point they didn't know, a customer quote that sounds like THEM, a demonstration that contradicts their assumption. Bly: the proof must be Ultra-specific.
 - CONVERSION: Show the moment of belief shift. The review quote that says "I can't believe I waited so long." Schwartz: the conversion must feel earned, not forced.
-- CTA: Challenge language: "Prove us wrong" or "Try them risk-free — we'll wait."
+- CTA: Challenge language: "Prove us wrong" or "Put them on for one shift — we'll wait."
 
 ### 11. The Day-in-Life
 **Book Origin:** Schwartz (identification) + Hopkins (specificity of scenarios)
@@ -462,14 +462,14 @@ Use these as structural blueprints — adapt timing to the selected ad duration.
 
 ### 17. The Objection Crusher
 **Book Origin:** Bly (objection handling is the copywriter's primary job) + Schwartz (the Two Voices Framework)
-**Structure:** State the objection (0-12%) → Acknowledge it (12-25%) → Counter with evidence (25-60%) → Testimonial support (60-80%) → Risk-free CTA (80-100%)
+**Structure:** State the objection (0-12%) → Acknowledge it (12-25%) → Counter with evidence (25-60%) → Testimonial support (60-80%) → Low-stakes-entry CTA (80-100%)
 **Best for:** Product-Aware skeptics. BOF retargeting. Price objection, "just socks" objection.
 **How to Execute:**
 - STATE: Bly: the most powerful persuasion starts by VOICING the objection for them. "You're probably thinking: $30 for socks?" "I know — you've heard it all before." Schwartz's Protector Voice: speak AS the skeptic, not AT the skeptic.
 - ACKNOWLEDGE: "I get it. That's exactly what I thought." Bly: never dismiss the objection. Validate it. Show you understand WHY they're skeptical. Reference the Cycle of False Hope — they've been burned before.
-- COUNTER: Bly's proof cascade — stack evidence that dismantles the objection: (1) Specific data — "They last 3x longer than drugstore socks at twice the price — that's actually cheaper per wear." (2) Customer quote addressing the SAME objection — "I thought they were too expensive until I calculated cost per wear." (3) Risk reversal — "30-day guarantee means you literally can't lose."
+- COUNTER: Bly's proof cascade — stack evidence that dismantles the objection: (1) Specific data — "They last 3x longer than drugstore socks at twice the price — that's actually cheaper per wear." (2) Customer quote addressing the SAME objection — "I thought they were too expensive until I calculated cost per wear." (3) Low-stakes entry — "Start with one pair; one day on your feet is the whole test."
 - TESTIMONIAL: Find the review that PERFECTLY mirrors this objection and its resolution. Bly: nothing sells like a real person who had the same doubt.
-- CTA: Risk-free, no-pressure: "Try one pair. If we're wrong, return them." Schwartz: speak to the Hope Voice — "What if this time is different?"
+- CTA: Low-stakes, no-pressure: "Start with one pair. One day on your feet decides it." Schwartz: speak to the Hope Voice — "What if this time is different?"
 
 ### 18. The Identity Alignment
 **Book Origin:** Schwartz (identification dimension) + Neumeier (brand as identity signal)
@@ -704,7 +704,7 @@ Acknowledge the accumulated, time-based nature of their pain:
 Every Solution-Aware prospect has two internal voices. Address BOTH:
 
 **The Protector Voice:** "Don't get your hopes up" / "Remember last time?" / "They're probably all the same" / "Save your money"
-**Your Response:** "We know you're protecting yourself" / "This isn't like last time because..." / "Here's exactly what's different..." / "Risk-free for skeptics like you"
+**Your Response:** "We know you're protecting yourself" / "This isn't like last time because..." / "Here's exactly what's different..." / "Start smaller than you think you should"
 
 **The Hope Voice:** "But what if...?" / "Reviews seem genuine" / "Maybe this time..."
 **Your Reinforcement:** "What if you're right to hope?" / "Real people, real relief" / "This time IS different"

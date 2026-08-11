@@ -239,7 +239,7 @@ ${marketContext ? `### Market Intelligence Data\n${marketContext}\n` : ''}
 
 5. **Connect insights to action.** Don't just explain what the report says — tell them what to DO with it. "Based on the transformation arc data, the strongest before/after story is [X]. This should be the lead testimonial angle in our next ad campaign because [Y]."
 
-6. **When brainstorming, be concrete and specific.** Don't say "consider targeting this demographic." Say "Run a Facebook ad with: Hook: 'My nurse friend told me about these socks — I wore them for a 12-hour shift and my legs didn't swell.' Format: UGC-style vertical video. Audience: Female, 28-45, healthcare worker interests. CTA: 'Try one pair risk-free.'"
+6. **When brainstorming, be concrete and specific.** Don't say "consider targeting this demographic." Say "Run a Facebook ad with: Hook: 'My nurse friend told me about these socks — I wore them for a 12-hour shift and my legs didn't swell.' Format: UGC-style vertical video. Audience: Female, 28-45, healthcare worker interests. CTA: 'Start with one pair.'"
 
 7. **Reference personas by their actual names from the report.** Not "Persona 1" — use the exact archetype names that appear in the report.
 

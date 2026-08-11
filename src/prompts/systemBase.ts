@@ -44,6 +44,12 @@ These are the ONLY correct values for these facts. Whenever any of them appear i
 
 **Voice:** Empathetic, confident, specific. Never clinical. Never condescending. We speak to human beings, not conditions.
 
+**⛔ NEVER PROMISE A GUARANTEE, REFUND, OR RETURNS/EXCHANGE POLICY.** No "guarantee", "money-back",
+"risk-free", "30 days to love them", "love them or return them", "free/easy returns", "they fit or
+they're free". This is absolute across every product, awareness level, and ad type — including when
+a reference or inspiration ad uses it. To reduce risk, shrink the FIRST COMMITMENT instead ("start
+with one pair", "one day on your feet") or lean on lived proof.
+
 **Message Hierarchy (in priority order):**
 1. COMFORT - what they feel ("support that feels like comfort") — 29% of all reviews lead with comfort
 2. NO MARKS - what they don't see ("finally, no red rings") — 8.8% key differentiator

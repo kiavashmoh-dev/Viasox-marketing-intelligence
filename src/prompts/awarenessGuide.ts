@@ -282,7 +282,7 @@ This is the CRITICAL distinction. A Problem Aware ad and a Solution Aware ad for
    - Failed Solutions: "You've tried [X] and it didn't work because [Y]" (builds trust through honesty)
    - New Mechanism: "Here's why Viasox is fundamentally different" (the Schwartz mechanism play)
    - Proof: Data, testimonials, reviews — specific evidence this mechanism WORKS
-   - CTA: "Compare for yourself," "See why [X]K switched," "Try risk-free"
+   - CTA: "Compare for yourself," "See why [X]K switched," "Start with one pair"
 
 **VIASOX-SPECIFIC SOLUTION AWARE MESSAGING (from Manifesto + Four Books):**
 - "Compression Without Compromise" — Medical support that doesn't sacrifice comfort. The mechanism: graduated compression + non-binding tops.
@@ -421,7 +421,7 @@ Most Aware is the CONVERSION stage. Every other stage builds toward this moment.
 - Gifting CTA: "The perfect gift for someone you love" — caregiver/gift buyer segment activation.
 - Repurchase: "Time to restock? Your favorites are back." — Repeat Loyalist segment.
 - Scarcity: "Our best-selling pattern sold out in 3 days last time" — genuine scarcity.
-- Risk reversal: "Try risk-free. Love them or return them." — remove the last objection.
+- Low-stakes entry: "Start with one pair. One shift. One day on your feet." — shrink the first commitment; never promise an outcome or a refund.
 - Schwartz's three dimensions at Most Aware:
   - DESIRE: Already maximized. Just REMIND them of it.
   - IDENTIFICATION: "You already know you're a Viasox person."
@@ -703,7 +703,7 @@ These people need the DEAL, the NUDGE, or the REMINDER. The hook is the shortest
 - **Urgency:** "Last chance: our best-selling pattern sold out in 3 days." (genuine scarcity)
 - **Cart reminder:** "Still in your cart. Still waiting for you." (retargeting)
 - **Novelty:** "Just dropped: 6 new patterns you haven't seen yet." (news)
-- **Risk reversal:** "Try them risk-free. Love them or send them back." (friction removal)
+- **Low-stakes entry:** "Start with a single pair — one day on your feet tells you everything." (shrink the commitment, never promise the outcome)
 - **Gifting CTA:** "The perfect gift for someone on their feet all day." (occasion)
 - **Restock:** "Time to restock your favorites? They're back in stock." (repeat buyer)
 
@@ -969,7 +969,7 @@ Most Aware scripts are the SHORTEST, MOST DIRECT scripts. No education, no proof
 1. Product name and offer in the FIRST sentence. No warm-up.
 2. Keep it SHORT even when the duration is long. Dead space > unnecessary words at Most Aware.
 3. Urgency must be GENUINE: real deadlines, real scarcity, real seasonal relevance.
-4. Risk reversal handles the last objection: "Love them or return them. Risk-free."
+4. Low-stakes entry handles the last objection: "Start with one pair and let one day on your feet decide."
 5. CTA is the MOST DIRECT of all levels: "Buy now," "Shop the sale," "Claim your pair," "Add to cart."
 6. Offers are the PRIMARY driver. B1G1, B2G3, free shipping, limited-time deals.
 7. For retargeting: "You left something in your cart" or "Back in stock" is sufficient as the entire concept.

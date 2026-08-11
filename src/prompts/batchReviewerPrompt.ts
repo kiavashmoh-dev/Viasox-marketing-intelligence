@@ -168,6 +168,7 @@ Cross-check every fact mentioned in the brief against the BRAND FACTS section at
 - Offer math wrong: "6 pairs for $60", "5 for $30", or any pair count other than **5 pairs for $60** (Buy 2 Get 3 Free = pay for 2, receive 3 free, total 5 pairs)
 - Pairs sold cited as a specific made-up number (e.g., "1.3 million," "1,247,000") — must be **"over 1 million"** or equivalent
 - Review count invented (e.g., "200,000 reviews", "500K reviews") — the canonical number is **107,993 reviews** (or rounded "107K+", "107,000+")
+- **ANY guarantee, refund, or returns/exchange promise** — "guarantee", "guaranteed", "money-back", "risk-free", "30 days to love them", "love them or return them", "free returns", "easy returns", "they fit or they're free", "full refund". These are BANNED brand-wide with zero exceptions; the compliant substitutes are low-stakes entry ("start with one pair", "one day on your feet") and lived proof
 - EasyStretch called "with elastic" or any phrasing that implies it has an elastic band (it does NOT)
 - Any other invented spec, percentage, mmHg level, or dollar amount that doesn't appear in the brand facts or the review data summary
 

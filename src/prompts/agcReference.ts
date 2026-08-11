@@ -59,7 +59,7 @@ Every row in the AGC brief MUST have a Building Block label. This label explains
 **Commercial blocks:**
 - **Buying experience** — What happens when you order (unboxing, packaging, delivery)
 - **Special details** — Unique differentiators (bamboo blend, seamless toe, extra cushion)
-- **Guarantees** — Risk reversal (free shipping, easy returns, satisfaction guarantee)
+- **Low-stakes entry** — Shrink the first commitment (start with one pair). NEVER a guarantee, refund, or returns promise.
 - **CTA** — Call to action with specific next step`;
 }
 
@@ -273,7 +273,7 @@ Every row in the production brief MUST have a Building Block label. This label e
 **Commercial blocks:**
 - **Buying experience** — What happens when you order (unboxing, packaging, delivery)
 - **Special details** — Unique differentiators (bamboo blend, seamless toe, extra cushion)
-- **Guarantees** — Risk reversal (free shipping, easy returns, satisfaction guarantee)
+- **Low-stakes entry** — Shrink the first commitment (start with one pair). NEVER a guarantee, refund, or returns promise.
 - **CTA** — Call to action with specific next step
 
 ## SHOT TYPES (one per row)

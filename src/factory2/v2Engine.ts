@@ -637,7 +637,16 @@ function renumberStoryboard(rows: V2Row[]): V2Row[] {
 const BRAND_FACT_CHECKS: Array<{ pattern: RegExp; issue: string }> = [
   { pattern: /graduated[^.]{0,40}ankle|ankle[^.]{0,40}graduated/i, issue: 'Ankle Compression is UNIFORM, never "graduated" — brand-fact violation' },
   { pattern: /\b(1[0-1]|1[6-9]|[2-9]\d)\s*[-–]?\s*\d*\s*mmhg/i, issue: 'mmHg spec other than 12-15 detected — canonical is graduated 12-15 mmHg (Compression) / uniform (Ankle)' },
-  { pattern: /30[- ]?day money[- ]?back/i, issue: 'Guarantee wording — Viasox standard risk-reversal should be verified (do not import other brands\' guarantees)' },
+  // BANNED brand-wide (director ruling, Aug 2026): Viasox creative never
+  // promises a guarantee, refund, or returns/exchange policy. Deterministic
+  // so no prompt-level persuasion can reintroduce it.
+  { pattern: /\bguarantee(d|s)?\b/i, issue: 'BANNED CLAIM: guarantee language — Viasox never promises a guarantee. Use low-stakes entry ("start with one pair") or lived proof instead' },
+  { pattern: /money[- ]?back|full refund|we'?ll refund|refund(ed)? (you|your)/i, issue: 'BANNED CLAIM: refund/money-back promise — not approved for Viasox creative' },
+  { pattern: /risk[- ]?free|no risk\b|you'?ve lost nothing/i, issue: 'BANNED CLAIM: risk-free framing — de-risk the DECISION (smaller first commitment), never promise the outcome' },
+  { pattern: /(free|easy) returns?|return them free|love (them|it) or (return|send)|they fit or they'?re free|send (them|it) back\b/i, issue: 'BANNED CLAIM: returns/exchange promise — not approved for Viasox creative' },
+  // The conditional-promise construction: "if we're wrong, return them",
+  // "if you don't love them, send them back" — same promise, softer clothes.
+  { pattern: /(if|unless)[^.!?]{0,40}(wrong|don'?t love|not happy|doesn'?t work)[^.!?]{0,30}(return|refund|money|send (them|it) back)/i, issue: 'BANNED CLAIM: conditional return/refund promise — de-risk the DECISION (smaller first commitment), never promise the outcome' },
 ];
 
 export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {

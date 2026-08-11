@@ -208,7 +208,7 @@ The SAME review data, translated into institutional language:
 - **Budget Cycle:** When do institutional buyers evaluate new products?
 - **Committee Dynamics:** Who needs to approve? (purchasing, clinical, admin)
 - **Pilot Pathway:** How do they typically trial new products?
-- **Risk Tolerance:** What evidence reduces perceived risk? (certifications, volume discounts, satisfaction guarantees)
+- **Risk Tolerance:** What evidence reduces perceived risk? (lived proof, customer testimony, a smaller first commitment — NEVER a guarantee or returns promise)
 - **Competitive Displacement:** What makes them switch from current vendor?
 
 **7. Institutional Messaging**

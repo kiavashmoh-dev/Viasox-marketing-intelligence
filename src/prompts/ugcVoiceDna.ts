@@ -49,7 +49,7 @@ awareness names the clock.
 family/friends-noticing social proof ("My friends keep asking what I'm doing differently"),
 show-don't-tell pivots ("And the bloating? Look…"). Proof is lived, never clinical.
 
-**CTA:** offer + risk-reversal ("Grab one today with a 90 day money back guarantee…") and/or a soft
+**CTA:** offer + LOW-STAKES ENTRY ("Grab a pair and see for yourself…") and/or a soft
 alternative path ("take their free 2-minute quiz"). ALWAYS attach a performance note: "Sound
 welcoming and warm, not too excited, but friendly." The close is a friend's assurance, not a pitch.
 
