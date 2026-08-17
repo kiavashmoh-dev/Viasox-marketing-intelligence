@@ -22,10 +22,25 @@ in ("your calves", "you're good to go"). Everyday spoken vocabulary + exactly 1-
 credibility terms per script (a spec, an ingredient, a test) + concrete numbers. Contractions
 always. No corporate polish, no ad-speak ("innovative", "game-changer" = instant fail).
 
-**RHYTHM:** short punchy fragments. Trailing ellipses as spoken-pause markers and open loops
-("But here's what really blew my mind…"). Rhetorical questions as pivots. Rule-of-three stacking
-("No jitters, no afternoon crashes, just sustainable results."). One thought per clip line —
-lines are split at the clause level so B-roll and talking clips interleave in the edit.
+**RHYTHM — SPOKEN, NOT WRITTEN:** every line must pass the READ-ALOUD TEST: say it out loud — if
+it sounds like a person mid-conversation, it passes; if it sounds like ad copy being read off a
+page, it fails. The failure mode to hunt is TELEGRAPHIC COMPRESSION: amputating subjects, verbs,
+and connective tissue ("so", "and", "that's", "it was") to save words, leaving chained clipped
+fragments no creator can deliver naturally.
+  ✗ WRITTEN-COPY REGISTER: "Every sock I've worn there, ranked. Five kinds, worst to best."
+  ✓ SPOKEN REGISTER: "I've worn five different kinds of socks out there, so let me rank them —
+    worst to best."
+Real speech stays fast by having fewer thoughts, never by dropping its connective tissue. A
+fragment is legal ONLY as a single deliberate beat — a punchline, a pivot ("Sound familiar?"), a
+reveal — never as the default texture, and never two in a row. Trailing ellipses as spoken-pause
+markers and open loops ("But here's what really blew my mind…"). Rhetorical questions as pivots.
+Rule-of-three stacking rides inside ONE flowing sentence ("No jitters, no afternoon crashes, just
+sustainable results."), not three separate stubs. One thought per clip line — lines are split at
+the clause level so B-roll and talking clips interleave in the edit — but every clip line must
+still stand alone as a complete speakable utterance.
+SCOPE: the read-aloud test governs SPOKEN lines (F2C and VO). In an overlay-script style — where
+the style guide says the on-screen TEXT is the script (e.g. Faceless POV) — overlay lines follow
+that style's written-overlay register instead, and clipped overlay lines are native, not a fault.
 
 **HOOK SHAPES (write 3-5 alternatives, each a different shape):**
 - POV framing: "POV: your husband was speechless on your date night…"

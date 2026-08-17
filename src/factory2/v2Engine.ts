@@ -388,6 +388,10 @@ grammar (shot types, angles, energy). It OUTRANKS the style guide's pacing norms
 level's timing defaults. It never outranks the censors: OUR brand facts, OUR claim boundary, and
 the awareness level's vocabulary/offer bans bind in full — mirror the ARCHITECTURE and the craft,
 never the claims, brand facts, or literal lines.
+REGISTER CAVEAT: exemplar transcripts are often caption-fragmented (auto-transcription splits
+speech into stubs). The exemplar governs STRUCTURE and energy — OUR lines are still written in the
+voice DNA's spoken register and must pass the read-aloud test. A choppy transcript is a transcript
+artifact, never a license for telegraphic delivery.
 
 "${item.title || item.filename}"
 - Summary: ${item.summary || '-'}
@@ -710,6 +714,49 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
   for (const check of BRAND_FACT_CHECKS) {
     if (check.pattern.test(allText)) {
       flags.push({ id: genId('flag'), target: 'script prose', issue: check.issue, suggestion: 'Correct against the canonical brand facts before shipping.' });
+    }
+  }
+  // Telegraphic chop, deterministically — only the unambiguous shapes (a bare
+  // ordinal doing a sentence's job; 3+ clipped fragments chained). Register is
+  // ultimately a judgment call, so the main enforcement lives in the voice
+  // DNA's read-aloud doctrine, the writer's speakabilityCheck gate, and Final
+  // Review failure class 9; this net just guarantees the flagrant cases are
+  // never silent. Advisory: a deliberate single punch beat never trips it.
+  // Style scope: in Faceless POV the overlay text IS the script (see the
+  // ugc_pov guide) — written-overlay register is native there, so the spoken
+  // net does not apply. Keep in sync with the DNA's SCOPE clause.
+  if (brief.task.ugcStyle === 'ugc_pov') return flags;
+  const spokenSurfaces = [
+    ...brief.hooks.map((h, i) => ({ where: `hook ${i + 1}`, text: h.text })),
+    ...brief.ctas.map((c, i) => ({ where: `cta ${i + 1}`, text: c.text })),
+    ...mainEdit.filter((r) => typeof r.clipNumber === 'number').map((r) => ({ where: `clip ${r.clipNumber} script`, text: r.scriptLine })),
+  ];
+  const BARE_STUB = /^(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+|number\s+\w+)$/i;
+  for (const { where, text } of spokenSurfaces) {
+    const sentences = text.split(/[.!?…]+/).map((s) => s.trim()).filter(Boolean);
+    if (sentences.length < 2) continue;
+    const stub = sentences.find((s) => BARE_STUB.test(s));
+    // "…worn there, ranked." — a sentence whose verb arrives as a bare
+    // comma-spliced participle tail is the written-copy compression shape.
+    const participleTail = sentences.find((s) => /,\s+\w+ed$/i.test(s) && s.split(/\s+/).length >= 4);
+    let run = 0;
+    let maxRun = 0;
+    for (const s of sentences) {
+      run = s.split(/\s+/).filter(Boolean).length <= 4 ? run + 1 : 0;
+      if (run > maxRun) maxRun = run;
+    }
+    if (stub || participleTail || maxRun >= 3) {
+      const shape = stub
+        ? `a bare "${stub}." stub is doing a sentence's job`
+        : participleTail
+          ? `a comma-spliced participle tail ("…${participleTail.slice(-30)}") amputates the verb phrase`
+          : `${maxRun} clipped fragments chained back-to-back`;
+      flags.push({
+        id: genId('flag'),
+        target: where,
+        issue: `Telegraphic chop — ${shape}: "${text.length > 90 ? `${text.slice(0, 90)}…` : text}" reads as written copy, not speech`,
+        suggestion: 'Fails the read-aloud test. Restore the connective tissue (so / and / that\'s / it was) into one flowing spoken sentence — same facts, same beat. Regenerate the line with "make it sound like natural speech" feedback.',
+      });
     }
   }
   return flags;

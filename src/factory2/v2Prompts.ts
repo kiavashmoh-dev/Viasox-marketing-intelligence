@@ -108,7 +108,7 @@ function durationBudget(duration: V2Task['duration']): string {
     duration === '1-15 sec'
       ? 'Short-form UGC still SPEAKS: one creator, spoken lines — no silent text-only cuts in V2.'
       : t.voRule;
-  return `Duration: ${duration}. Word budget: sweet spot ${t.sweetSpot}, HARD ceiling ${t.hardCeiling} words of spoken content, max runtime ${t.maxSeconds}s. ${voRule} (The tool historically overshoots 20-30% — write tight.)`;
+  return `Duration: ${duration}. Word budget: sweet spot ${t.sweetSpot}, HARD ceiling ${t.hardCeiling} words of spoken content, max runtime ${t.maxSeconds}s. ${voRule} (The tool historically overshoots 20-30% — write tight. TIGHT MEANS FEWER THOUGHTS, never amputated sentences: dropping "so/and/that's/I've" to save words produces telegraphic written-copy fragments a creator cannot speak naturally. Cut a beat, never the connective tissue.)`;
 }
 
 /** Per-awareness-level CTA policy — keeps the JSON shape from contradicting
@@ -488,7 +488,8 @@ function briefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): strin
     "halfwayCheck": "one sentence: what the viewer understands at the 50% mark",
     "productEntryCheck": "clip N — the product first enters at ~X% of runtime. State whether that is inside this awareness level's entry zone, matches the pinned exemplar's entry position, or is a named Craft-License deviation — an unjustified out-of-zone entry means REVISE",
     "payoffArc": "map the four stations to clips (entry moment=clip N / mechanism=clip N / lived proof=clip N / payoff line=clip N) + product airtime ≈X% vs this level's minimum. A missing station or under-minimum airtime means REVISE before writing the fields below",
-    "hookFlowCheck": "for EACH alternate hook (2..${V2_HOOK_COUNT}): one clause on how it hands off into clip 2 WITHOUT restating clip 2-3's content, WITHOUT pre-telling a later beat, and WITHOUT naming the brand when the body stages a later first-mention moment. A hook that fails is rewritten before the fields below"${hasPinnedExemplar ? `,
+    "hookFlowCheck": "for EACH alternate hook (2..${V2_HOOK_COUNT}): one clause on how it hands off into clip 2 WITHOUT restating clip 2-3's content, WITHOUT pre-telling a later beat, and WITHOUT naming the brand when the body stages a later first-mention moment. A hook that fails is rewritten before the fields below",
+    "speakabilityCheck": "run the READ-ALOUD TEST on the planned script: name any line where sentences would lose their subject/verb/connectives to fit the budget, or where clipped fragments would chain back-to-back ('X. Y. Z.'). State 'all lines read as natural speech' or name the lines to fix — a failed read-aloud means the LINE is rewritten (or a beat is cut for room), never shipped telegraphic"${hasPinnedExemplar ? `,
     "exemplarFidelity": "beat-by-beat: exemplar beat → our clip(s). Confirm same beat order, proportional timing, product-entry position, product-talk share, and payoff shape — or name the licensed deviation"` : ''}
   },
   "header": {
@@ -559,9 +560,9 @@ ${frameworkDetail}
 - The product beat(s) must sell the concept's committed product truth concretely (SWAP TEST applies),
   through the full PRODUCT PAYOFF ARC (entry moment → mechanism → lived proof → payoff line) at or
   above this level's minimum product airtime.
-- plan.productEntryCheck, plan.payoffArc, and plan.hookFlowCheck are REAL GATES (as is
-  plan.exemplarFidelity when present): a failed check means the plan is wrong — revise the plan,
-  never write fields that fail their own plan.
+- plan.productEntryCheck, plan.payoffArc, plan.hookFlowCheck, and plan.speakabilityCheck are REAL
+  GATES (as is plan.exemplarFidelity when present): a failed check means the plan is wrong — revise
+  the plan, never write fields that fail their own plan.
 - Shot descriptions: coach performance, vary camera setups, give the creator something to DO while
   talking. Every row must stand alone as a filmable unit.
 
@@ -661,7 +662,8 @@ ${current ? `- THE LINE YOU ARE REWRITING: ${line(current, '')}` : ''}
 **MANDATORY FLOW SELF-CHECK before you answer:** read LINE BEFORE → YOUR NEW LINE → LINE AFTER as
 one spoken sequence. Your line must take the baton from the line before and hand it to the line
 after: continuity of scene, props, tense, pronouns, and emotional register; no repeated
-information, no leaps, no disconnect, no vagueness. This is ONE script — the ${mode === 'insert' ? 'inserted' : 'rewritten'}
+information, no leaps, no disconnect, no vagueness — and no telegraphic chop: the line must sound
+like a person talking, connective tissue intact (READ-ALOUD TEST). This is ONE script — the ${mode === 'insert' ? 'inserted' : 'rewritten'}
 line must sit in its place as if it had always been there. If the sequence does not flow
 seamlessly, rewrite it until it does — only then answer.
 `;
@@ -681,7 +683,7 @@ export function buildRegenPrompt(
   const scopeRules = isStructural
     ? `You are ${target.type === 'framework-switch' ? `SWITCHING the framework to "${(target as { newFramework: string }).newFramework}"` : 'RESTRUCTURING the framework per the feedback'}. You rewrite: framework rationale, hooks, ctas, scriptProse, and the storyboard's main-edit rows. You HOLD CONSTANT: the concept, its product truth, the header fields, and every entry in the feedback ledger. Return the full JSON shape below.`
     : isInsert
-      ? `You are writing ONE NEW clip to be inserted between the two lines quoted in the FLOW CONTEXT below, following the director's instructions for what it should do. It must BRIDGE those lines seamlessly — as if the script had always contained it. Keep it to one thought (this script has a hard word ceiling; a new line must earn its words — write tight). Also write its filming direction in the same coaching voice as the surrounding shot descriptions, varying the camera setup vs its neighbors. Return ONLY the JSON shape below.`
+      ? `You are writing ONE NEW clip to be inserted between the two lines quoted in the FLOW CONTEXT below, following the director's instructions for what it should do. It must BRIDGE those lines seamlessly — as if the script had always contained it. Keep it to one thought (this script has a hard word ceiling; a new line must earn its words — but tight means ONE thought spoken naturally, never a telegraphic fragment with its subject/verb/connectives amputated). Also write its filming direction in the same coaching voice as the surrounding shot descriptions, varying the camera setup vs its neighbors. Return ONLY the JSON shape below.`
       : target.type === 'header-field' && target.field === 'instructions'
         ? `You are regenerating the per-brief filming instructions. Return 3-5 instructions, ONE PER LINE inside newValue, no bullet prefixes, no numbering. Everything else in the brief stays exactly as it is.`
         : `You are regenerating ONE element: ${targetLabel} (its current text is quoted in the user message). Everything else in the brief stays EXACTLY as it is — your output must fit seamlessly into the surrounding lines per the FLOW CONTEXT below. Return ONLY the JSON shape below.`;
@@ -696,7 +698,7 @@ export function buildRegenPrompt(
 }`
     : isInsert
       ? `{
-  "scriptLine": "the new spoken line (one thought, tight)",
+  "scriptLine": "the new spoken line (one thought, spoken naturally — a complete utterance, never a clipped fragment)",
   "audioType": "F2C" | "VO",
   "shotType": "Talk to Camera" | "B-Roll" | "Visual Hook",
   "shotDescription": "second-person coaching for filming this clip — vary the camera setup vs the neighboring clips",
@@ -897,6 +899,16 @@ the first clip's spoken line is swapped for hook k (same shot setup). So:
 8. WORLD CONTRADICTION — any line (CTAs especially) contradicting the depicted world or timeline
    (e.g. the body shows the holiday happening while the CTA says 'before the weekend'), plus any
    brand-fact or offer-math drift.
+9. TELEGRAPHIC LINE — a line in written-copy register: subjects, verbs, or connective tissue
+   amputated to save words, leaving chained clipped fragments ("Every sock I've worn there,
+   ranked. Five kinds, worst to best.") that fail the READ-ALOUD TEST — no creator can deliver
+   them as natural speech, and a voiceover of them sounds robotic. The fix restores the
+   connective tissue as one flowing sentence with the SAME facts and beat ("I've worn five kinds
+   of socks out there, so let me rank them — worst to best"), staying inside the word ceiling by
+   cutting a lesser beat if needed. A single deliberate punch beat ("Sound familiar?") is NOT
+   this failure — the failure is chop as texture, or any bare stub ("One.") doing a sentence's job.
+   Overlay-text lines in an overlay-script style (Faceless POV, where the on-screen text IS the
+   script) follow the written-overlay register and are EXEMPT from this class.
 
 ### FIX DOCTRINE (every finding ships its fix)
 - MINIMAL SURGERY: change one hook, one CTA, or one line — prefer fixing the VARIANT over the
