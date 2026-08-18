@@ -43,10 +43,35 @@ export const UGC_FRAMEWORKS: readonly ScriptFramework[] = [
   'The Gradualization (Schwartz)',
 ] as const;
 
+/**
+ * The ecom framework roster — every entry has a FRAMEWORK_DETAILS guide.
+ * Grounded in the seed corpus: the 7 winning briefs ran Empathy-Education-
+ * Evidence, The Skeptic Converter, The Myth Buster (×2), The Reason-Why,
+ * Before-After-Bridge, and The Discovery Narrative; the reference cohort
+ * adds the rest (PAS = the Diabetic ad, The Contrast = split-screens,
+ * Problem-Promise-Proof-Push = the listicle ads, Hook-Story-Offer = the
+ * short closers, The Enemy = the industry indictments).
+ */
+export const ECOM_FRAMEWORKS: readonly ScriptFramework[] = [
+  'PAS (Problem-Agitate-Solution)',
+  'Before-After-Bridge',
+  'Hook-Story-Offer',
+  'Problem-Promise-Proof-Push',
+  'Empathy-Education-Evidence',
+  'The Contrast Framework',
+  'The Skeptic Converter',
+  'The Day-in-Life',
+  'The Myth Buster',
+  'The Enemy Framework',
+  'The Discovery Narrative',
+  'The Demonstration Proof',
+  'The Objection Crusher',
+  'The Reason-Why (Hopkins)',
+] as const;
+
 // ─── Task (intake) ──────────────────────────────────────────────────────────
 
-/** A V2 task: the shared intake output plus V2-only settings. Ad type is
- *  implicitly UGC for every V2 task at launch. */
+/** A V2 task: the shared intake output plus V2-only settings. */
 export interface V2Task {
   /** Original parsed Asana/manual data (shared intake layer). */
   parsed: ParsedAsanaTask;
@@ -55,6 +80,14 @@ export interface V2Task {
   /** The angle IS the primary talking point (hierarchy rank #1). */
   talkingPoint: string;
   duration: '1-15 sec' | '16-59 sec' | '60-90 sec';
+  /**
+   * 'ugc' (default when absent — every pre-ecom task/brief) or 'ecom'.
+   * Set at intake ONLY from an EXPLICIT parsed 'Ecom Style' ad type, never
+   * from the V1 mapper's heuristic (which defaults to Ecom Style when the
+   * column is missing and would silently flip UGC batches). The director
+   * can override per task in the confirm table. Read via taskAdType().
+   */
+  adType?: V2AdType;
   /**
    * The UGC STYLE — the taxonomy's innovation layer (Ad Type → STYLE →
    * Angle). Selected by the director per task; its guide enters the
@@ -121,6 +154,64 @@ export type V2ShotType =
   | 'Visual Hook'
   | 'End Card';
 
+// ─── Ad type (the ecom expansion) ───────────────────────────────────────────
+
+/** V2's second ad type. Absent on pre-ecom tasks/briefs — read via
+ *  taskAdType(), never directly, so old data is 'ugc' with no migration. */
+export type V2AdType = 'ugc' | 'ecom';
+
+/** The one honest way to read a task's ad type (absent = 'ugc'). */
+export function taskAdType(task: { adType?: V2AdType }): V2AdType {
+  return task.adType ?? 'ugc';
+}
+
+/**
+ * The ecom footage library's shot-type TAGS (V1's taxonomy, kept verbatim —
+ * Kia keeps the V1 library until an updated one arrives). Source of truth
+ * for the EcomShotTag type AND the footage-library prompt block; the
+ * negative list lives with the prompt block in ecomFootageLibrary.ts.
+ */
+export const ECOM_SHOT_TAGS = {
+  core: [
+    'Talking Head',
+    'Putting On Socks',
+    'Feet Up Lifestyle',
+    'Bare Legs – Condition',
+    'Walking',
+    'Standing Feet',
+    'Before/After Reveal',
+    'Studio Product Shot',
+    'Animation / Motion Graphics',
+    'Text/Title Card',
+  ],
+  supplementary: [
+    'Socks With Shoes',
+    'Documentary / Interview',
+    'Product Flat Lay (Branded)',
+    'Branded Shipping Box',
+    'EGC / Warehouse',
+    'Lifestyle Flat Lay',
+    'Material Close-up',
+    'PNG Cutout',
+    'Home Environment',
+    'Outdoor Setting',
+  ],
+  limited: [
+    'Yoga / Wellness B-Roll',
+    'Event / In-Person',
+    'Trade Show / Booth',
+    'Edutainment / Pattern Grid',
+    'Car Interior',
+    'Mall / Public Indoor',
+    'Cafe / Seated Public',
+  ],
+} as const;
+
+export type EcomShotTag =
+  | (typeof ECOM_SHOT_TAGS.core)[number]
+  | (typeof ECOM_SHOT_TAGS.supplementary)[number]
+  | (typeof ECOM_SHOT_TAGS.limited)[number];
+
 export interface V2Row {
   id: string;
   /** 'end-card' marks the spacer row separating the main edit from
@@ -128,10 +219,15 @@ export interface V2Row {
   clipNumber: number | 'end-card';
   audioType: V2AudioType;
   scriptLine: string;
-  shotType: V2ShotType;
+  /** UGC rows use the three UGC shot types; ecom rows carry a footage-library
+   *  TAG instead (grounding: the editor pulls from existing clips). */
+  shotType: V2ShotType | EcomShotTag;
   shotDescription: string;
   reference: V2Reference;
   editorNotes: string;
+  /** Ecom only: the on-screen text overlay for this scene (the channel that
+   *  survives mute). UGC rows never set it. */
+  overlayText?: string;
   /** Identity link to the hook/CTA line this row mirrors (set for the
    *  primary hook/CTA rows and every alternate-take row). Hook/CTA regens
    *  sync mirrored rows by THIS id — never by text matching. */
@@ -160,9 +256,19 @@ export interface V2StrategicHeader {
   angle: string;
   awarenessLevel: AwarenessLevel;
   videoTonality: string;
+  /** Creator wardrobe (UGC). Ecom briefs have no creator — empty string. */
   attire: string;
   /** Per-brief filming instructions (beyond the evergreen guidelines). */
   instructions: string[];
+  /** Ecom only: the editing-instructions block (V1 editing-brief lineage —
+   *  pacing/music/transitions as DIRECTION, special notes as the creative
+   *  mandate). UGC briefs never set it. */
+  ecomEditing?: {
+    pacing: string;
+    music: string;
+    transitions: string;
+    specialNotes: string;
+  };
 }
 
 export interface V2FeedbackEntry {
@@ -287,6 +393,8 @@ export type V2RegenTarget =
   | { type: 'cta'; lineId: string }
   | { type: 'row-script'; rowId: string }
   | { type: 'row-shot'; rowId: string }
+  /** Ecom rows only: regenerate the on-screen overlay text. */
+  | { type: 'row-overlay'; rowId: string }
   | { type: 'row-reference'; rowId: string }
   /** Insert a NEW clip immediately after the given row — generated to
    *  bridge the lines around it seamlessly. */
@@ -314,6 +422,7 @@ export function describeTarget(t: V2RegenTarget, brief?: UgcBriefV2): string {
     case 'cta': return `CTA ${ctaNo(t.lineId) || '?'}`;
     case 'row-script': return `clip ${clipOf(t.rowId)} script line`;
     case 'row-shot': return `clip ${clipOf(t.rowId)} shot description`;
+    case 'row-overlay': return `clip ${clipOf(t.rowId)} overlay text`;
     case 'row-reference': return `clip ${clipOf(t.rowId)} reference screenshot`;
     case 'row-insert': return `new clip inserted after clip ${clipOf(t.afterRowId)}`;
     case 'script-prose': return 'the full script prose';
@@ -331,6 +440,7 @@ export function currentTargetText(brief: UgcBriefV2, t: V2RegenTarget): string {
     case 'cta': return brief.ctas.find((c) => c.id === t.lineId)?.text ?? '';
     case 'row-script': return brief.storyboard.find((r) => r.id === t.rowId)?.scriptLine ?? '';
     case 'row-shot': return brief.storyboard.find((r) => r.id === t.rowId)?.shotDescription ?? '';
+    case 'row-overlay': return brief.storyboard.find((r) => r.id === t.rowId)?.overlayText ?? '';
     case 'row-insert': return '';
     case 'script-prose': return brief.scriptProse;
     case 'header-field':

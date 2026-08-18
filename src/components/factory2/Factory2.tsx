@@ -17,11 +17,13 @@ import type { InspirationItem } from '../../engine/inspirationTypes';
 import { getAllItems } from '../../inspiration/inspirationStore';
 import type {
   UgcBriefV2,
+  V2AdType,
   V2Brainstorm,
   V2SessionState,
   V2Task,
   V2TaskState,
 } from '../../factory2/v2Types';
+import { taskAdType } from '../../factory2/v2Types';
 import {
   generateConcepts,
   runBrainstorm,
@@ -52,8 +54,13 @@ function toV2Task(parsed: ParsedAsanaTask, pinned?: string): V2Task {
     awarenessLevel: mapped.scriptParamsBase.awarenessLevel,
     talkingPoint: parsed.angle,
     duration: mapped.duration,
+    // Ecom ONLY on an EXPLICIT parsed ad type — the V1 mapper's heuristic
+    // defaults to 'Ecom Style' when the column is absent, which would
+    // silently flip UGC batches. Explicit or nothing; override in confirm.
+    adType: parsed.adType && mapped.scriptParamsBase.adType === 'Ecom Style' ? 'ecom' : 'ugc',
     // W1 flagship as the default — the director picks the real style per
     // task in the confirm table (it's the taxonomy's innovation layer).
+    // Ignored (and hidden) for ecom tasks.
     ugcStyle: 'ugc_yap',
     pinnedInspirationId: pinned,
   };
@@ -410,7 +417,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
                     <div>
                       <span className="font-medium text-slate-700">{b.taskName}</span>
                       <span className="text-xs text-slate-400 ml-2">
-                        {getUgcStyle(b.task.ugcStyle).shortLabel} · {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
+                        {taskAdType(b.task) === 'ecom' ? 'Ecom' : getUgcStyle(b.task.ugcStyle).shortLabel} · {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
                       </span>
                     </div>
                     <div className="flex gap-3">
@@ -476,9 +483,9 @@ export default function Factory2({ apiKey, onBack }: Props) {
                 <th className="py-2 pr-2">Talking point / angle</th>
                 <th className="py-2 pr-2">Product</th>
                 <th className="py-2 pr-2">Awareness</th>
-                <th className="py-2 pr-2">UGC style</th>
+                <th className="py-2 pr-2">Ad type / style</th>
                 <th className="py-2 pr-2">Duration</th>
-                <th className="py-2 pr-2">Style exemplar (pin)</th>
+                <th className="py-2 pr-2">Exemplar (pin)</th>
                 <th className="py-2"></th>
               </tr>
             </thead>
@@ -516,21 +523,34 @@ export default function Factory2({ apiKey, onBack }: Props) {
                     </select>
                   </td>
                   <td className="py-2 pr-2">
-                    <select
-                      value={t.task.ugcStyle}
-                      onChange={(e) => updateTask(i, { ugcStyle: e.target.value as UgcStyleId })}
-                      className="border border-amber-300 bg-amber-50/50 rounded px-2 py-1 text-xs font-medium text-slate-800 max-w-[170px]"
-                      title={getUgcStyle(t.task.ugcStyle).oneLiner}
-                    >
-                      {UGC_STYLE_IDS.map((id) => {
-                        const s = getUgcStyle(id);
-                        return (
-                          <option key={id} value={id}>
-                            {s.shortLabel}{s.tier === 'week' ? '' : s.tier === 'bench' ? ' (bench)' : ' (bank)'}
-                          </option>
-                        );
-                      })}
-                    </select>
+                    <div className="flex flex-col gap-1">
+                      <select
+                        value={taskAdType(t.task)}
+                        onChange={(e) => updateTask(i, { adType: e.target.value as V2AdType })}
+                        className={`border rounded px-2 py-1 text-xs font-semibold max-w-[170px] ${taskAdType(t.task) === 'ecom' ? 'border-sky-400 bg-sky-50 text-sky-900' : 'border-slate-200 bg-white text-slate-700'}`}
+                        title={taskAdType(t.task) === 'ecom' ? 'Editing brief — built from the footage library + AI voiceover, read verbatim' : 'Creator brief — a real person films it on their phone'}
+                      >
+                        <option value="ugc">UGC (creator)</option>
+                        <option value="ecom">Ecom (editing)</option>
+                      </select>
+                      {taskAdType(t.task) === 'ugc' && (
+                        <select
+                          value={t.task.ugcStyle}
+                          onChange={(e) => updateTask(i, { ugcStyle: e.target.value as UgcStyleId })}
+                          className="border border-amber-300 bg-amber-50/50 rounded px-2 py-1 text-xs font-medium text-slate-800 max-w-[170px]"
+                          title={getUgcStyle(t.task.ugcStyle).oneLiner}
+                        >
+                          {UGC_STYLE_IDS.map((id) => {
+                            const s = getUgcStyle(id);
+                            return (
+                              <option key={id} value={id}>
+                                {s.shortLabel}{s.tier === 'week' ? '' : s.tier === 'bench' ? ' (bench)' : ' (bank)'}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      )}
+                    </div>
                   </td>
                   <td className="py-2 pr-2">
                     <select
@@ -659,7 +679,11 @@ export default function Factory2({ apiKey, onBack }: Props) {
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <span className="rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-medium">{t.task.product}</span>
                     <span className="rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-medium">{t.task.awarenessLevel}</span>
-                    <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-medium">{getUgcStyle(t.task.ugcStyle).shortLabel}</span>
+                    {taskAdType(t.task) === 'ecom' ? (
+                      <span className="rounded-full bg-sky-100 text-sky-800 px-2 py-0.5 text-[10px] font-semibold">Ecom</span>
+                    ) : (
+                      <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-medium">{getUgcStyle(t.task.ugcStyle).shortLabel}</span>
+                    )}
                     <span className="rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-medium">{t.task.duration}</span>
                   </div>
                 </div>

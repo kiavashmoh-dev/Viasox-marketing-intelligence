@@ -17,7 +17,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import type { ScriptFramework } from '../../engine/types';
 import { getFrames } from '../../inspiration/inspirationStore';
 import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/v2Types';
-import { UGC_FRAMEWORKS } from '../../factory2/v2Types';
+import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType } from '../../factory2/v2Types';
 import { applyRegen, applyReviewFix, deleteRow, runFinalReview } from '../../factory2/v2Engine';
 import { exportBriefDoc } from '../../factory2/v2Export';
 import { INTRO_CALLOUT } from '../../factory2/templateBoilerplate';
@@ -333,11 +333,12 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
   }, [brief]);
 
   // ── In-place busy resolution ──────────────────────────────────────────────
-  const rowBusyKind = (rowId: string): 'script' | 'shot' | 'reference' | null => {
+  const rowBusyKind = (rowId: string): 'script' | 'shot' | 'overlay' | 'reference' | null => {
     const t = busyTarget;
     if (!t) return null;
     if (t.type === 'row-script' && t.rowId === rowId) return 'script';
     if (t.type === 'row-shot' && t.rowId === rowId) return 'shot';
+    if (t.type === 'row-overlay' && t.rowId === rowId) return 'overlay';
     if (t.type === 'row-reference' && t.rowId === rowId) return 'reference';
     return null;
   };
@@ -347,6 +348,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
   const proseBusy = busyTarget?.type === 'script-prose';
   const headerBusyField = busyTarget?.type === 'header-field' ? busyTarget.field : null;
 
+  const isEcom = taskAdType(brief.task) === 'ecom';
   const style = getUgcStyle(brief.task.ugcStyle);
 
   return (
@@ -358,7 +360,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
             <Chip>{brief.task.product}</Chip>
             <Chip>{brief.task.awarenessLevel}</Chip>
-            <Chip tone="amber">{style.name}</Chip>
+            <Chip tone="amber">{isEcom ? 'Ecom Style (editing brief)' : style.name}</Chip>
             <Chip>{brief.task.duration}</Chip>
             <Chip tone="navy">v{brief.version}</Chip>
           </div>
@@ -458,7 +460,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white"
               disabled={!!busy}
             >
-              {UGC_FRAMEWORKS.map((f) => (
+              {(isEcom ? ECOM_FRAMEWORKS : UGC_FRAMEWORKS).map((f) => (
                 <option key={f} value={f}>{f}</option>
               ))}
             </select>
@@ -484,7 +486,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               ['concept', 'Concept', brief.header.concept],
               ['angle', 'Angle', brief.header.angle],
               ['videoTonality', 'Video tonality', brief.header.videoTonality],
-              ['attire', 'Attire', brief.header.attire],
+              ...(isEcom ? [] : ([['attire', 'Attire', brief.header.attire]] as const)),
             ] as const
           ).map(([field, label, value]) => (
             <Regenable
@@ -499,13 +501,30 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               </div>
             </Regenable>
           ))}
+          {isEcom && brief.header.ecomEditing && (
+            <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 rounded-lg bg-sky-50/60 border border-sky-100 px-4 py-3">
+              {(
+                [
+                  ['Pacing', brief.header.ecomEditing.pacing],
+                  ['Music', brief.header.ecomEditing.music],
+                  ['Transitions', brief.header.ecomEditing.transitions],
+                  ['Special notes', brief.header.ecomEditing.specialNotes],
+                ] as const
+              ).map(([label, value]) => (
+                <div key={label}>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sky-700/70">{label}</div>
+                  <div className="text-slate-700 text-xs leading-relaxed mt-0.5">{value || <span className="text-slate-300">—</span>}</div>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="md:col-span-2">
             <Regenable
               label="Per-brief instructions"
               busy={headerBusyField === 'instructions'}
               onRegen={() => openPopover({ type: 'header-field', field: 'instructions' }, 'per-brief instructions')}
             >
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-navy/50">Per-brief instructions</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-navy/50">{isEcom ? 'Editor notes (per-brief)' : 'Per-brief instructions'}</div>
               <ul className="list-disc ml-5 text-slate-700 leading-relaxed mt-0.5 pr-6 space-y-0.5">
                 {brief.header.instructions.map((ins, i) => (
                   <li key={i}>{ins}</li>
@@ -598,11 +617,12 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
           <table className="w-full text-sm min-w-[900px]">
             <thead>
               <tr className="text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 border-b border-slate-200 bg-slate-50/60">
-                <th className="py-2.5 pl-5 pr-2 w-14">Clip</th>
+                <th className="py-2.5 pl-5 pr-2 w-14">{isEcom ? 'Scene' : 'Clip'}</th>
                 <th className="py-2.5 pr-2 w-14">Audio</th>
-                <th className="py-2.5 pr-3 w-[26%]">Script</th>
-                <th className="py-2.5 pr-2 w-24">Shot type</th>
-                <th className="py-2.5 pr-3 w-[26%]">Shot description</th>
+                <th className="py-2.5 pr-3 w-[26%]">{isEcom ? 'VO line' : 'Script'}</th>
+                {isEcom && <th className="py-2.5 pr-3 w-[14%]">Overlay</th>}
+                <th className="py-2.5 pr-2 w-24">{isEcom ? 'Shot tag' : 'Shot type'}</th>
+                <th className="py-2.5 pr-3 w-[26%]">{isEcom ? 'Visual' : 'Shot description'}</th>
                 <th className="py-2.5 pr-2 w-28">Reference</th>
                 <th className="py-2.5 pr-5 w-[16%]">Editor notes</th>
               </tr>
@@ -669,6 +689,21 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                           <span className="text-slate-300">—</span>
                         )}
                       </td>
+                      {isEcom && (
+                        <td className="py-2.5 pr-3">
+                          {r.clipNumber !== 'end-card' ? (
+                            <Regenable
+                              label={`clip ${r.clipNumber} overlay`}
+                              busy={busyKind === 'overlay'}
+                              onRegen={() => openPopover({ type: 'row-overlay', rowId: r.id }, `clip ${r.clipNumber} overlay text`)}
+                            >
+                              <div className="text-sky-800 text-xs font-medium leading-relaxed pr-6">{r.overlayText || <span className="text-slate-300 font-normal">—</span>}</div>
+                            </Regenable>
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                      )}
                       <td className="py-2.5 pr-2 text-slate-500 text-xs font-medium">{r.shotType}</td>
                       <td className="py-2.5 pr-3">
                         {r.clipNumber !== 'end-card' ? (
@@ -717,7 +752,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                     </tr>
                     {insertAfterRowId === r.id && (
                       <tr className="border-b border-slate-100">
-                        <td colSpan={7} className="py-2.5 pl-5 pr-5">
+                        <td colSpan={isEcom ? 8 : 7} className="py-2.5 pl-5 pr-5">
                           <div className="flex items-center gap-2.5 border-2 border-dashed border-sky-200 bg-sky-50/60 rounded-lg px-4 py-2.5 text-sm text-sky-800">
                             <Spinner />
                             Writing the new line here — bridging clip {String(r.clipNumber)} and the line after it…

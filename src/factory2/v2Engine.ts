@@ -41,10 +41,14 @@ import type {
 } from './v2Types';
 import {
   UGC_FRAMEWORKS,
+  ECOM_FRAMEWORKS,
+  ECOM_SHOT_TAGS,
   V2_HOOK_COUNT,
   CTA_PERFORMANCE_NOTE,
   describeTarget,
+  taskAdType,
 } from './v2Types';
+import type { V2AdType, EcomShotTag } from './v2Types';
 import {
   buildBrainstormPrompt,
   buildBriefWritePrompt,
@@ -61,6 +65,7 @@ import {
 } from './v2Prompts';
 
 const UGC_AD_TYPE = 'UGC (User Generated Content)';
+const ECOM_AD_TYPE = 'Ecom Style';
 
 // ─── Retry + model fallback wrappers ────────────────────────────────────────
 
@@ -325,18 +330,24 @@ function genId(prefix: string): string {
 
 // ─── Inspiration helpers ────────────────────────────────────────────────────
 
-/** UGC-relevant bank items: explicitly UGC-tagged, or untagged videos.
- *  Full-AI and other-ad-type videos are excluded — the selector's own hard
- *  boundary (Full-AI references never mix with live-action). */
-async function ugcBankItems(): Promise<InspirationItem[]> {
+/** Ad-type-relevant bank items: explicitly tagged for this ad type, or
+ *  untagged videos. Full-AI and other-ad-type videos are excluded — the
+ *  selector's own hard boundary (Full-AI never mixes with live-action). */
+async function bankItemsFor(adType: V2AdType): Promise<InspirationItem[]> {
+  const wanted = adType === 'ecom' ? ECOM_AD_TYPE : UGC_AD_TYPE;
   const items = await getAllItems();
   return items.filter((it) => {
     if (it.status !== 'ready') return false;
     const tags = getEffectiveTags(it);
     if (tags.isFullAi) return false;
-    if (tags.adType === UGC_AD_TYPE) return true;
+    if (tags.adType === wanted) return true;
     return it.kind === 'video' && !tags.adType;
   });
+}
+
+/** UGC-relevant bank items (the pre-ecom filter, unchanged behavior). */
+async function ugcBankItems(): Promise<InspirationItem[]> {
+  return bankItemsFor('ugc');
 }
 
 /** Short text snapshot of the UGC bank for the brainstorm prompt. */
@@ -406,14 +417,14 @@ artifact, never a license for telegraphic delivery.
       }
     }
     const { block } = await getInspirationContextBlock({
-      adType: UGC_AD_TYPE,
+      adType: taskAdType(task) === 'ecom' ? ECOM_AD_TYPE : UGC_AD_TYPE,
       duration: task.duration,
       productCategory: task.product,
       isFullAi: false,
       maxResults: 5,
     });
     return block
-      ? `${block}\n\n(NOTE: no style exemplar was pinned for this task — the references above are the bank's closest matches, not necessarily this UGC style. Follow the STYLE GUIDE in the context pack as the primary delivery authority.)`
+      ? `${block}\n\n(NOTE: no ${taskAdType(task) === 'ecom' ? 'exemplar was pinned for this task — the references above are the bank\'s closest ecom matches. Follow the ECOM CRAFT DNA in the context pack as the primary delivery authority.)' : 'style exemplar was pinned for this task — the references above are the bank\'s closest matches, not necessarily this UGC style. Follow the STYLE GUIDE in the context pack as the primary delivery authority.)'}`
       : '';
   } catch (err) {
     console.warn('[factory2] inspiration context unavailable', err);
@@ -490,8 +501,9 @@ export async function selectFramework(
   // pack, the pinned-exemplar dissection AND the Schwartz/Bly brain block, so
   // the model can reason past a small budget before writing its one-line answer.
   const parsed = await requestJson<{ framework: string; rationale: string }>(system, user, apiKey, 5000, 'framework selection', signal);
-  const exact = UGC_FRAMEWORKS.find((f) => f === parsed.framework)
-    ?? UGC_FRAMEWORKS.find((f) => f.toLowerCase().includes((parsed.framework || '').toLowerCase().slice(0, 12)));
+  const roster = taskAdType(task) === 'ecom' ? ECOM_FRAMEWORKS : UGC_FRAMEWORKS;
+  const exact = roster.find((f) => f === parsed.framework)
+    ?? roster.find((f) => f.toLowerCase().includes((parsed.framework || '').toLowerCase().slice(0, 12)));
   if (!exact) {
     console.warn(`[factory2] Unrecognized framework "${parsed.framework}" — defaulting to The Discovery Narrative (logged, not silent).`);
   }
@@ -510,6 +522,7 @@ interface RawBriefRow {
   scriptLine?: string;
   shotType?: string;
   shotDescription?: string;
+  overlayText?: string;
   editorNotes?: string;
 }
 
@@ -520,6 +533,12 @@ interface RawBriefJson {
     videoTonality: string;
     attire: string;
     instructions: string[];
+    ecomEditing?: {
+      pacing?: string;
+      music?: string;
+      transitions?: string;
+      specialNotes?: string;
+    };
   };
   hooks: string[];
   ctas: string[];
@@ -527,12 +546,40 @@ interface RawBriefJson {
   storyboard: RawBriefRow[];
 }
 
-/** Normalized, logged-not-silent coercion of model row values. */
-function toRow(r: RawBriefRow): V2Row | null {
+/** All ecom footage tags, flattened, for case-insensitive canonicalization. */
+const ALL_ECOM_TAGS: readonly EcomShotTag[] = [
+  ...ECOM_SHOT_TAGS.core,
+  ...ECOM_SHOT_TAGS.supplementary,
+  ...ECOM_SHOT_TAGS.limited,
+];
+
+/** Normalized, logged-not-silent coercion of model row values. Ecom rows keep
+ *  their footage-library TAG (canonicalized case-insensitively; unknown tags
+ *  are preserved, not coerced — validateBrief flags them deterministically,
+ *  because silently rewriting a tag would hide a grounding failure). */
+function toRow(r: RawBriefRow, adType: V2AdType = 'ugc'): V2Row | null {
   const clip = Number(r.clipNumber);
   if (!Number.isFinite(clip)) {
     console.warn(`[factory2] dropping storyboard row with non-numeric clipNumber ${JSON.stringify(r.clipNumber)}`);
     return null;
+  }
+  if (adType === 'ecom') {
+    const tagRaw = (r.shotType ?? '').trim();
+    const canonical = ALL_ECOM_TAGS.find((t) => t.toLowerCase() === tagRaw.toLowerCase());
+    if (!canonical && tagRaw) {
+      console.warn(`[factory2] ecom row carries a non-library shot tag "${tagRaw}" — kept for the validator to flag`);
+    }
+    return {
+      id: genId('row'),
+      clipNumber: clip,
+      audioType: 'VO',
+      scriptLine: r.scriptLine ?? '',
+      shotType: (canonical ?? (tagRaw as EcomShotTag)) || 'Studio Product Shot',
+      shotDescription: r.shotDescription ?? '',
+      reference: { kind: 'none', reason: 'pending match' },
+      editorNotes: r.editorNotes ?? '',
+      overlayText: r.overlayText ?? '',
+    };
   }
   const audioRaw = (r.audioType ?? '').trim().toLowerCase();
   const audio: V2Row['audioType'] =
@@ -716,6 +763,50 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
       flags.push({ id: genId('flag'), target: 'script prose', issue: check.issue, suggestion: 'Correct against the canonical brand facts before shipping.' });
     }
   }
+  // ── Ecom-only deterministic nets ──────────────────────────────────────────
+  if (taskAdType(brief.task) === 'ecom') {
+    // 1. Footage grounding: the negative list is the visual claim boundary.
+    //    A visual implying footage we don't have is a wall for the editor.
+    const NEGATIVE_FOOTAGE =
+      /\b(gym|fitness (?:class|studio)|medical office|clinic|clinical setting|hospital|airport|travel(?:ing|ling)?|restaurant|dining out|hiking|jogging|cycling|playing sports|children|toddler|grandchild(?:ren)?|family scene|puppy|kitten|\bdog\b|\bcat\b)\b/i;
+    for (const r of mainEdit) {
+      if (typeof r.clipNumber !== 'number') continue;
+      const visual = `${r.shotType} ${r.shotDescription}`;
+      const m = NEGATIVE_FOOTAGE.exec(visual);
+      if (m) {
+        flags.push({
+          id: genId('flag'),
+          target: `clip ${r.clipNumber} shot`,
+          issue: `Visual implies footage from the NEGATIVE list ("${m[0]}") — the library has no gym/medical/sports/travel/dining/outdoor-activity/children/pet footage`,
+          suggestion: 'Rewrite the visual against the footage library tags, or note the replacement in editor notes.',
+        });
+      }
+      // 2. Tag grounding: the shot tag must be a library tag.
+      if (r.shotType && !ALL_ECOM_TAGS.some((t) => t === r.shotType)) {
+        flags.push({
+          id: genId('flag'),
+          target: `clip ${r.clipNumber} shot`,
+          issue: `"${r.shotType}" is not a footage-library tag — the editor has no bucket to pull from`,
+          suggestion: 'Pick the closest tag from the library lists (Core / Supplementary / Limited).',
+        });
+      }
+    }
+    // 3. Kia's CTA law: the offer rides every ecom CTA (Unaware exempt — the
+    //    release-order doctrine governs the close there).
+    if (brief.task.awarenessLevel !== 'Unaware') {
+      const OFFER = /buy\s*2|get\s*3|b2g3|\$\s?60|\$\s?12|5 pairs|five pairs/i;
+      brief.ctas.forEach((c, i) => {
+        if (!OFFER.test(c.text)) {
+          flags.push({
+            id: genId('flag'),
+            target: `cta ${i + 1}`,
+            issue: `Ecom CTA carries no offer — "${c.text.length > 70 ? `${c.text.slice(0, 70)}…` : c.text}"`,
+            suggestion: 'State the offer plainly (exact brand-facts math) and close on the thesis echo.',
+          });
+        }
+      });
+    }
+  }
   // Telegraphic chop, deterministically — only the unambiguous shapes (a bare
   // ordinal doing a sentence's job; 3+ clipped fragments chained). Register is
   // ultimately a judgment call, so the main enforcement lives in the voice
@@ -724,8 +815,10 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
   // never silent. Advisory: a deliberate single punch beat never trips it.
   // Style scope: in Faceless POV the overlay text IS the script (see the
   // ugc_pov guide) — written-overlay register is native there, so the spoken
-  // net does not apply. Keep in sync with the DNA's SCOPE clause.
-  if (brief.task.ugcStyle === 'ugc_pov') return flags;
+  // net does not apply. Ecom VO is ALWAYS spoken (read verbatim by the AI
+  // voice), so the net runs for every ecom brief regardless of style field.
+  // Keep in sync with the DNA's SCOPE clause.
+  if (taskAdType(brief.task) === 'ugc' && brief.task.ugcStyle === 'ugc_pov') return flags;
   const spokenSurfaces = [
     ...brief.hooks.map((h, i) => ({ where: `hook ${i + 1}`, text: h.text })),
     ...brief.ctas.map((c, i) => ({ where: `cta ${i + 1}`, text: c.text })),
@@ -779,7 +872,7 @@ export async function writeBrief(
   );
   const parsed = await requestJson<RawBriefJson>(system + brain.addendum, user, apiKey, 12000, 'brief writing', signal);
   const rawRows = parsed.storyboard ?? [];
-  const mainRows = rawRows.map(toRow).filter((r): r is V2Row => r !== null);
+  const mainRows = rawRows.map((r) => toRow(r, taskAdType(task))).filter((r): r is V2Row => r !== null);
   if (mainRows.length < 3) {
     throw new Error('Factory V2: brief writer returned too few storyboard rows.');
   }
@@ -798,6 +891,16 @@ export async function writeBrief(
       videoTonality: parsed.header?.videoTonality ?? '',
       attire: parsed.header?.attire ?? '',
       instructions: parsed.header?.instructions ?? [],
+      ...(taskAdType(task) === 'ecom'
+        ? {
+            ecomEditing: {
+              pacing: parsed.header?.ecomEditing?.pacing ?? '',
+              music: parsed.header?.ecomEditing?.music ?? '',
+              transitions: parsed.header?.ecomEditing?.transitions ?? '',
+              specialNotes: parsed.header?.ecomEditing?.specialNotes ?? '',
+            },
+          }
+        : {}),
     },
     framework,
     concept,
@@ -852,7 +955,7 @@ export async function matchReferences(
   signal?: AbortSignal,
   opts: FrameMatchOptions = {},
 ): Promise<UgcBriefV2> {
-  const items = await ugcBankItems();
+  const items = await bankItemsFor(taskAdType(brief.task));
   // Pinned item first, then starred, then recent.
   const ordered = [...items].sort((a, b) => {
     const ap = a.id === brief.task.pinnedInspirationId ? 1 : 0;
@@ -1079,7 +1182,7 @@ export async function applyRegen(
       storyboard: RawBriefRow[];
     }>(system, user, apiKey, maxT, 'framework restructure', signal);
     const rawRows = parsed.storyboard ?? [];
-    const mainRows = rawRows.map(toRow).filter((r): r is V2Row => r !== null);
+    const mainRows = rawRows.map((r) => toRow(r, taskAdType(withLedger.task))).filter((r): r is V2Row => r !== null);
     if (mainRows.length < 3) throw new Error('Factory V2: framework restructure returned too few rows.');
     const hooks = (parsed.hooks ?? []).slice(0, V2_HOOK_COUNT + 1).map((t) => ({ id: genId('hook'), text: t }));
     const ctas = (parsed.ctas ?? []).slice(0, 2).map((t) => ({ id: genId('cta'), text: t }));
@@ -1104,9 +1207,10 @@ export async function applyRegen(
       audioType?: string;
       shotType?: string;
       shotDescription?: string;
+      overlayText?: string;
       editorNotes?: string;
     }>(system, user, apiKey, maxT, 'line insertion', signal);
-    const newRow = toRow({ clipNumber: 0, ...parsed });
+    const newRow = toRow({ clipNumber: 0, ...parsed }, taskAdType(withLedger.task));
     if (!newRow || !newRow.scriptLine.trim()) {
       throw new Error('Factory V2: line insertion returned an empty line.');
     }
@@ -1197,6 +1301,9 @@ export async function applyRegen(
       }
       case 'row-shot':
         updated.storyboard = updated.storyboard.map((r) => (r.id === target.rowId ? { ...r, shotDescription: v } : r));
+        break;
+      case 'row-overlay':
+        updated.storyboard = updated.storyboard.map((r) => (r.id === target.rowId ? { ...r, overlayText: v } : r));
         break;
       case 'script-prose':
         updated.scriptProse = v;

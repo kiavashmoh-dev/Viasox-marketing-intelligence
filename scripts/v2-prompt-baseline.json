@@ -1,0 +1,41 @@
+{
+  "writtenAt": "ecom-expansion phase 0",
+  "sections": {
+    "ctx_concept_yapPA": {
+      "sha256": "048cf529fece292eaa9cdd4510b9596b7edd68f05131d569a2361fcfc166573c",
+      "bytes": 43608
+    },
+    "ctx_script_yapPA": {
+      "sha256": "24c5f5ff49e3bac4f28d0184666ebbda55d7e983b9ee67064e430241dc466679",
+      "bytes": 41080
+    },
+    "ctx_script_povUnaware": {
+      "sha256": "a72e671575196305847baa1da697cda23b6efafd4e769378bbf3229e05f1b1d3",
+      "bytes": 49431
+    },
+    "ctx_script_listMA_pinned": {
+      "sha256": "06b1fdb4a1c4bf8343088874bab6547f4fe398aae20d7ffbd922f79196c391d7",
+      "bytes": 39562
+    },
+    "brainstorm": {
+      "sha256": "fc1ebd04b5cacdcad4b8c2574cb3d011ea80d5886ea58e950bb58e51a0964b70",
+      "bytes": 125521
+    },
+    "write_yapPA_unpinned": {
+      "sha256": "a6cdefee172b6c2bdd67cfd81ed81b2294bf0c62cd791cd5b898bb482f1665a1",
+      "bytes": 178651
+    },
+    "write_listMA_pinned": {
+      "sha256": "2c6e2cdfb28879395f1da37d237aa0b9727ae48513bcdd1be02446f7a49fb202",
+      "bytes": 175853
+    },
+    "regen_row_script": {
+      "sha256": "6946a7958add6687cbcbd58af077e895e55c11ca7d5b5ce8bdedc99add529500",
+      "bytes": 86664
+    },
+    "final_review": {
+      "sha256": "224f7dd3752869b8314b9a533bff7c158febd5f2af0b70784a2bada32fae4115",
+      "bytes": 138453
+    }
+  }
+}
