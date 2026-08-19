@@ -1182,11 +1182,17 @@ the first clip's spoken line is swapped for hook k (same shot setup). So:
    video, holding each clip's shot visual in your head as you read its line.
 2. For EACH CTA option: read the final body beats → that CTA as the video's actual ending.
 3. Read the body once more end-to-end (lines + visuals back-to-back) with the primary hook.
+4. Read each BODY line under EVERY hook variant: any name, day, place, or fact the line leans on
+   must be established by ALL the hooks (or by the shared visual), not just by hook 1 — a
+   reference that only one opener sets up breaks every other variant.
 
 ### THE FAILURE CLASSES (this exact taxonomy — hunt each one deliberately)
 1. HOOK↔BODY DUPLICATION — a hook restates an early body line's content nearly verbatim, so the
    viewer hears the same sentence twice within seconds. (Belief-challenge hooks are the repeat
-   offender: they tend to restate the script's first problem line.)
+   offender: they tend to restate the script's first problem line.) ALSO counts as this class: a
+   DISTINCTIVE word or phrase from the hook re-appearing in body lines 1-2 ("thirty seconds" into
+   "thirty seconds", a "Here's…" opener straight into another "Here's…") — adjacency makes even a
+   small echo read as a stutter.
 2. ORPHANED PROMISE — a hook frames the video as something the body never delivers (e.g. a
    'how I restocked' frame on a first-discovery story).
 3. SPOILED REVEAL — a hook names the brand/product while the body stages a later first-mention or
@@ -1211,6 +1217,16 @@ the first clip's spoken line is swapped for hook k (same shot setup). So:
    this failure — the failure is chop as texture, or any bare stub ("One.") doing a sentence's job.
    Overlay-text lines in an overlay-script style (Faceless POV, where the on-screen text IS the
    script) follow the written-overlay register and are EXEMPT from this class.
+10. DANGLING REFERENT — a body line that leans on information only ONE hook variant establishes
+   (a day, a name, a place, a promise), so under every other hook the reference points at
+   nothing ("So I got him these before Thursday" when only hook 1 ever says Thursday). Prefer
+   fixing the BODY line to stand under all hooks over rewriting three hooks around it — this is
+   the one class where the body-side fix is usually the minimal one.
+11. CONDITIONAL-CLAIM DRIFT — on Ankle Compression and Compression, an absolute mark or dig-in
+   promise missing its condition: "nothing digs in", "no marks", "never digs in" are ILLEGAL on
+   those products — the approved phrasing is "no dig-in when sized right". (Absolute no-mark
+   claims are EasyStretch-only, where they are true and encouraged.) The fix inserts the
+   condition, never deletes the benefit.
 
 ### FIX DOCTRINE (every finding ships its fix)
 - MINIMAL SURGERY: change one hook, one CTA, or one line — prefer fixing the VARIANT over the
@@ -1277,6 +1293,8 @@ scene-1 visual. So:
 2. For EACH CTA option: read the final body beats → that CTA as the video's actual ending.
 3. Read the body once more end-to-end with the primary hook — lines, visuals, and overlays
    together, watching the VO and the on-screen text as two synchronized channels.
+4. Read each BODY line under EVERY hook variant: any name, day, place, or fact the line leans on
+   must be established by ALL the hooks (or by the shared scene-1 visual), not just by hook 1.
 
 ### THE FAILURE CLASSES (this exact taxonomy — hunt each one deliberately)
 1. HOOK↔BODY DUPLICATION — a hook restates an early body line's content nearly verbatim, so the
@@ -1288,7 +1306,9 @@ scene-1 visual. So:
 4. PRE-TOLD BEAT — a hook gives away a mid-script turn, so that beat replays as a rerun.
 5. BROKEN HANDOFF — a hook's last words cannot hand off into scene 2's first words as one spoken
    sequence; or any body line fails to take the baton from the line before (a leap, a reset, a
-   subject the audience can't place).
+   subject the audience can't place). ALSO this class: a DISTINCTIVE word or phrase from the hook
+   re-appearing in the first 1-2 body lines ("ninety dollars worth" into "ninety dollars worth",
+   "five o'clock" into "By five o'clock") — the AI voice reads the stutter exactly as written.
 6. ROBOT-READ LINE — a line that fails the read-aloud test: telegraphic chop, amputated
    connectives, or vague reference that presumes knowledge. The AI voice will read it exactly as
    written; if it sounds like a caption, it ships as a robot. (A single cut-synced fragment at an
@@ -1297,13 +1317,21 @@ scene-1 visual. So:
    the spoken line, or carries a claim the VO never earns. In vo-narrated mode overlays are
    fragments OF the spoken line.
 8. UNGROUNDED VISUAL — a visual implying footage from the negative list or outside the library's
-   tags, or a description too vague for the editor to pull ("B-roll of feet").
+   tags, or a description too vague for the editor to pull ("B-roll of feet"). ALSO this class:
+   a visual that promises WEAKER proof than the VO claims over it (generic review cards under a
+   VO about sensitive-feet reviewers; a measurement the shot never shows) — the visual must show
+   the exact thing the line is claiming.
 9. MODALITY MONOTONY — three or more consecutive scenes with the same visual modality (e.g. three
    Talking Head pulls in a row), or a missing through-line device the brief promised.
 10. WORLD CONTRADICTION — any line contradicting the depicted world or timeline, plus any
     brand-fact or offer-math drift (exact offer math only).
 11. OFFER-MISSING CTA — a CTA without the offer stated plainly (brand-facts math) or without its
     thesis echo. (At Unaware the discovery-CTA rules govern instead — flag an offer that appears.)
+12. CONDITIONAL-CLAIM DRIFT — on Ankle Compression and Compression, an absolute mark or dig-in
+    promise missing its condition: "nothing digs in", "no marks", "never digs in" are ILLEGAL on
+    those products in VO and overlays alike — the approved phrasing is "no dig-in when sized
+    right". (Absolute no-mark claims are EasyStretch-only.) The fix inserts the condition, never
+    deletes the benefit.
 
 ### FIX DOCTRINE (every finding ships its fix)
 - MINIMAL SURGERY: change one hook, one CTA, one line, or one overlay — prefer fixing the VARIANT

@@ -9,11 +9,14 @@ const DIRECT_URL = 'https://api.anthropic.com/v1/messages';
  * Scale: base 3 min + 30s per 1K tokens for Opus, base 2 min + 15s per 1K tokens for Sonnet.
  */
 function computeTimeout(model: string, _maxTokens: number): number {
-  const isOpus = model.includes('opus');
-  if (isOpus) {
-    // Opus with massive system prompts can be very slow under load.
-    // Fixed 30 minutes for all Opus calls
-    return 1_800_000;
+  // Opus and Fable (the thinking tier) with massive system prompts can be
+  // very slow under load — a large-budget Fable generation can legitimately
+  // run past 15 minutes, and cutting it off just burns the whole wait.
+  // (Fable on the 15-minute tier was half of the "Final Review never
+  // finishes" spiral, Aug 2026.)
+  const isSlow = model.includes('opus') || model.includes('fable');
+  if (isSlow) {
+    return 1_800_000; // 30 minutes
   }
   // Sonnet: fixed 15 minutes
   return 900_000;

@@ -105,7 +105,12 @@ async function withRetry<T>(fn: () => Promise<T>, signal?: AbortSignal, attempts
       return await fn();
     } catch (err) {
       lastErr = err;
-      if (signal?.aborted || !retryableTransient(err) || i === attempts - 1) throw err;
+      // A TIMEOUT is a 15-30 MINUTE failure: blind-retrying it up to 3× turns
+      // one slow call into an hour of silent spinner (the "Final Review never
+      // finishes" spiral). One timeout retry, then surface the error.
+      const isTimeout = /timed out/i.test(err instanceof Error ? err.message : String(err));
+      const lastAllowed = isTimeout ? Math.min(attempts - 1, 1) : attempts - 1;
+      if (signal?.aborted || !retryableTransient(err) || i >= lastAllowed) throw err;
       console.warn(`[factory2] transient failure (attempt ${i + 1}/${attempts}) — retrying in 15s`, err);
       await delay(15000, signal);
     }
@@ -807,6 +812,35 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
       });
     }
   }
+  // Conditional-claim drift, deterministically: on ACS and COMP an absolute
+  // mark/dig-in promise must carry its condition ("when sized right") —
+  // absolutes are EasyStretch-only. Caught twice in the Week-3 hand review;
+  // this net makes the catch permanent. Advisory.
+  if (brief.task.product !== 'EasyStretch') {
+    const ABSOLUTE_DIG = /(?:nothing|never)\s+dig(?:s|ging)?\s+in|no\s+dig[- ]?ins?\b|no\s+marks\b/i;
+    const CONDITIONED = /sized?\s+right|right\s+size/i;
+    const spokenAndOverlay = [
+      ...brief.hooks.map((h, i) => ({ where: `hook ${i + 1}`, text: h.text })),
+      ...brief.ctas.map((c, i) => ({ where: `cta ${i + 1}`, text: c.text })),
+      ...mainEdit
+        .filter((r) => typeof r.clipNumber === 'number')
+        .flatMap((r) => [
+          { where: `clip ${r.clipNumber} script`, text: r.scriptLine },
+          ...(r.overlayText ? [{ where: `clip ${r.clipNumber} overlay`, text: r.overlayText }] : []),
+        ]),
+    ];
+    for (const { where, text } of spokenAndOverlay) {
+      const m = ABSOLUTE_DIG.exec(text);
+      if (m && !CONDITIONED.test(text.slice(Math.max(0, m.index - 60), m.index + m[0].length + 60))) {
+        flags.push({
+          id: genId('flag'),
+          target: where,
+          issue: `Absolute mark/dig-in claim on ${brief.task.product} ("…${m[0]}…") — absolutes are EasyStretch-only`,
+          suggestion: 'Use the approved conditional phrasing: "no dig-in when sized right". Insert the condition; keep the benefit.',
+        });
+      }
+    }
+  }
   // Telegraphic chop, deterministically — only the unambiguous shapes (a bare
   // ordinal doing a sentence's job; 3+ clipped fragments chained). Register is
   // ultimately a judgment call, so the main enforcement lives in the voice
@@ -1411,6 +1445,7 @@ type ReviewTargetRef =
   | { kind: 'cta'; lineId: string }
   | { kind: 'row-script'; rowId: string }
   | { kind: 'row-shot'; rowId: string }
+  | { kind: 'row-overlay'; rowId: string }
   | null;
 
 /** Resolve 'hook 2' / 'cta 1' / 'clip 7 script' / 'clip 7 shot' → field ref
@@ -1427,11 +1462,12 @@ function resolveReviewTarget(brief: UgcBriefV2, target: string): { ref: ReviewTa
     const c = brief.ctas[Number(m[1]) - 1];
     return { ref: c ? { kind: 'cta', lineId: c.id } : null, actual: c?.text ?? '' };
   }
-  m = t.match(/^clip\s+(\d+)\s*(script|shot)?/);
+  m = t.match(/^(?:clip|scene)\s+(\d+)\s*(script|shot|overlay)?/);
   if (m) {
     const row = brief.storyboard.find((r) => r.clipNumber === Number(m![1]));
     if (!row) return { ref: null, actual: '' };
     if (m[2] === 'shot') return { ref: { kind: 'row-shot', rowId: row.id }, actual: row.shotDescription };
+    if (m[2] === 'overlay') return { ref: { kind: 'row-overlay', rowId: row.id }, actual: row.overlayText ?? '' };
     return { ref: { kind: 'row-script', rowId: row.id }, actual: row.scriptLine };
   }
   return { ref: null, actual: '' };
@@ -1460,7 +1496,11 @@ export async function runFinalReview(
       proposedText?: string;
       rationale?: string;
     }>;
-  }>(system, user, apiKey, 8000, 'final review', signal);
+    // 16000, not 8000: the review runs on the THINKING tier and reasons
+    // through every hook simulation before writing a token — 8000 was
+    // reliably exhausted mid-thought, which triggered the giant-budget
+    // retry and the timeout spiral. Room first, retry as the backstop.
+  }>(system, user, apiKey, 16000, 'final review', signal);
 
   const findings: V2ReviewFinding[] = (parsed.findings ?? []).slice(0, 10).map((f) => {
     const severity: V2ReviewFinding['severity'] =
@@ -1558,6 +1598,8 @@ export function applyReviewFix(brief: UgcBriefV2, finding: V2ReviewFinding): Ugc
     updated = patchProse(updated, old, v);
   } else if (ref.kind === 'row-shot') {
     updated.storyboard = updated.storyboard.map((r) => (r.id === ref.rowId ? { ...r, shotDescription: v } : r));
+  } else if (ref.kind === 'row-overlay') {
+    updated.storyboard = updated.storyboard.map((r) => (r.id === ref.rowId ? { ...r, overlayText: v } : r));
   }
 
   // Mark the finding resolved inside the persisted report.

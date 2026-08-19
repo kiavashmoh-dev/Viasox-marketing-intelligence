@@ -55,6 +55,18 @@ function WorkingChip({ label }: { label: string }) {
   );
 }
 
+/** Live elapsed-seconds counter — long thinking calls (Final Review can
+ *  legitimately run several minutes) must visibly progress, not look hung. */
+function Elapsed() {
+  const [secs, setSecs] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setSecs((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const m = Math.floor(secs / 60);
+  return <span className="text-xs text-sky-600 tabular-nums shrink-0">{m > 0 ? `${m}m ${secs % 60}s` : `${secs}s`}</span>;
+}
+
 /** Section card: a titled, visually separated block. */
 function Section({
   title,
@@ -263,7 +275,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
   const runReview = useCallback(async () => {
     if (busy) return;
     abortRef.current = new AbortController();
-    setBusy('Final review — plugging every hook into the script and reading it as a finished video…');
+    setBusy('Final review — plugging every hook into the script and reading it as a finished video… (deep review; this can take a few minutes)');
     setError('');
     try {
       const report = await runFinalReview(brief, apiKey, abortRef.current.signal);
@@ -397,6 +409,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
           <span className="inline-flex items-center gap-2.5">
             <Spinner />
             {busy}
+            <Elapsed />
           </span>
           <button onClick={() => abortRef.current?.abort()} className="text-xs text-sky-700 underline hover:text-sky-900">
             Cancel
