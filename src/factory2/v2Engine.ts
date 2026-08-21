@@ -62,6 +62,7 @@ import {
   type FrameMatchOptions,
   buildExemplarFidelityPrompt,
   buildFinalReviewPrompt,
+  ECOM_LONGFORM,
 } from './v2Prompts';
 
 const UGC_AD_TYPE = 'UGC (User Generated Content)';
@@ -734,7 +735,10 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
   const endCardIdx = brief.storyboard.findIndex((r) => r.clipNumber === 'end-card');
   const mainEdit = endCardIdx >= 0 ? brief.storyboard.slice(0, endCardIdx) : mainRows;
   const words = mainEdit.reduce((n, r) => n + r.scriptLine.split(/\s+/).filter(Boolean).length, 0);
-  const ceiling = DURATION_TARGETS[brief.task.duration]?.hardCeiling;
+  const ceiling =
+    taskAdType(brief.task) === 'ecom' && brief.task.duration === '60-90 sec'
+      ? ECOM_LONGFORM.hardCeiling // ecom long-form: 90-150s runs to 360 words
+      : DURATION_TARGETS[brief.task.duration]?.hardCeiling;
   if (ceiling && words > ceiling) {
     flags.push({
       id: genId('flag'),

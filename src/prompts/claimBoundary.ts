@@ -71,6 +71,29 @@ export function getClaimBoundaryBlock(product: string): string {
 
 **DIVERSITY IS EXECUTION-LEVEL, NEVER CLAIM-LEVEL.** When a diversity requirement (distinct territories, different problems, unique proof anchors) collides with a small recorded claim space, the diversity requirement LOSES — reuse a recorded pain and differentiate through persona, life-moment, scene, format, emotional entry, framing, or awareness path instead. A repeated TRUE claim with a fresh execution always beats a novel INVENTED claim. This rule overrides any per-angle-type instruction like "each concept must target a different problem."
 
+**✅ THE STAKES LICENSE (director + CMO ruling, Aug 2026) — the boundary polices what the PRODUCT
+promises, not how deep the PAIN goes.** The pain side of a script may — and should — go to the full
+TRUE severity of the recorded condition: what it feels like at its worst, what it has already taken
+from the person (the walks quit, the workarounds adopted, the identity wounds), and the medically
+true MECHANISM OF HARM — including, where the condition genuinely carries them, wounds that heal
+slowly, infection risk, and amputation as the recorded fear (explicitly approved). Rules of the
+license:
+1. STAKES BELONG TO THE CONDITION, NEVER TO THE PRODUCT'S PROMISE. "Diabetes restricts circulation,
+   and circulation is how the body heals — this is how diabetics lose toes" is LEGAL (true,
+   educational, about the disease). "These socks protect you from amputation" is BANNED FOREVER —
+   the product's answer stays mechanism-true and in-bank (it removes an obstacle: "nothing
+   strangling what little circulation your feet are working so hard to get"), and never promises
+   the medical outcome.
+2. CONDITIONAL FRAMING, NEVER DIAGNOSIS: "If you have diabetes…", "For people with neuropathy…" —
+   never "your diabetes", never asserting the viewer's condition or their certain future. Clinical
+   gravity, not horror-movie sensationalism.
+3. DEEP PAIN MUST STILL BE TRACEABLE: dial the RECORDED truth to full volume — fear sets, negative
+   reviews, customer verbatims. Never invent a symptom, statistic, or worst case the record does
+   not contain. The recorded material is already at level 10; use it.
+4. SURFACE PAIN IS A DOORWAY, NOT A DESTINATION: tired legs, sock marks, and "annoying" rings are
+   no longer sufficient as a script's CENTRAL pain — they are legal only as the entry that opens
+   into the deeper recorded pain behind them (the condition, the chronic pain, the shrinking life).
+
 **⛔ BANNED — RISK-REVERSAL BY POLICY PROMISE (ZERO EXCEPTIONS, EVERY PRODUCT, EVERY AWARENESS LEVEL, EVERY AD TYPE):**
 Viasox creative may NEVER promise a guarantee, refund, or returns/exchange policy. Banned outright,
 in spoken lines, on-screen text, captions, CTAs, hooks, and editor notes:

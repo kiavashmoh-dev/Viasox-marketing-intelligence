@@ -49,6 +49,48 @@ vague hook stays vague at full volume. Therefore:
    thesis echo lands as the final word. A CTA that arrives out of nowhere, or omits the offer, is
    a failed close. (At Unaware the release-order doctrine still governs what a CTA may contain.)
 
+**THE STAKES ENGINE — pain depth is the ad's voltage (CMO ruling, Aug 2026):** the last six months
+of surface-level pains (tired legs, sock marks, "annoying" rings) produced zero winners. Every
+script now runs on the PAIN LADDER, and the script's center of gravity must sit at L3-L4:
+- L1 INCONVENIENCE: tired feet, marks, tugging — legal ONLY as the doorway in.
+- L2 LIFE EROSION: what the pain has already taken — the quit evening walks, the bench she always
+  stops at, watching the grandkids' game sitting down, the workarounds adopted without noticing.
+- L3 THE NAMED CONDITION: arthritis mornings, neuropathy burning, chronic heaviness, the diagnosis
+  she carries — named plainly, felt specifically.
+- L4 THE STAKES: the medically true mechanism of harm and what it threatens — restricted
+  circulation and what that means for healing, the fear the personas actually report (wounds,
+  losing mobility, amputation) — under the Stakes License: condition-true, conditionally framed,
+  never the product's promise.
+TWIST THE KNIFE — the missing building block, now mandatory: a pain named ONCE is a pain wasted.
+After the pain lands, drive it home with 2-3 ESCALATION BEATS before any turn toward the product:
+make it more frequent than they admit ("not sometimes — every single evening"), attach the
+consequence ("that's why the walks stopped"), attach the identity wound ("and you started calling
+it getting older"). The studied winner runs the full chain: "Every cut, every blister, every
+pressure point… when it can't, they don't heal. They get infected. This is how diabetics lose
+toes." Escalation beats are CAUSAL, each one a consequence of the last — never three restatements
+of the same fact. THE DEEPER THE VALLEY, THE MORE EARNED THE ENTRY: a script that feels salesy is
+almost always a script whose pain hasn't earned its product yet — the knife section is what buys
+the turn.
+
+**THE ONE-VOICE LAW — first person beats brand voice:** the story comes from ONE person living it,
+in their own voice, start to finish — a person telling you what happened to them, not a brand
+presenting a message. Brand-POV narration ("At Viasox, we believe…", "Introducing…", disembodied
+announcer copy) is the register of an AD, and the viewer's ad-blindness fires instantly. Default
+register: THE TESTIMONIAL NARRATOR carrying Educator or Investigator moves inside her own story
+("my doctor explained it to me like this…" is a first-person way to teach). The narrator persists
+through the CTA — the offer arrives as HER telling you what to do about it, never as a voice
+switch to an announcer. If any line could not plausibly be said by the ONE person whose story this
+is, it is the wrong line.
+
+**LONG-FORM IS THE FORMAT (this cycle):** the story needs room — establishing a person, a
+condition, real stakes, an earned reveal, and a full payoff arc takes 90+ seconds, and the
+mainline target is now 90-150s. Length is leverage AND exposure: more room to build the valley
+and smooth every seam, but every flat beat is a drop-off, so long-form survives on ESCALATION —
+each beat must raise something (the pain, the stakes, the curiosity, the proof), open loops must
+hold ("I didn't find out why until the nurse told me"), and mid-script re-hooks reset attention.
+The knife section is not padding — it is what makes minute two feel necessary. A 120-second
+script with one flat stretch is worse than a 60-second script with none.
+
 **THE TWO MODES — declare one per brief, never mixed:**
 1. VO-NARRATED (all 7 winning briefs): a narrator argues line by line over cut-matched footage.
    20-90s. The mode for education, investigation, and story.
@@ -122,11 +164,15 @@ product moment doubles as an objection crusher ("Not knee-high. Ankle." — A133
 PAYOFF ARC binds in ecom exactly as in UGC — "lived proof" translates to SHOWN proof (the
 timeline, the ladder, the demo).
 
-**CTA — offer plus thesis echo:** the winning close is the OFFER stated plainly + a MEANING line
-reframing the whole ad as its payoff: "Because everyone deserves socks that tell the truth"
-(E171) · "Real socks for real legs" (E194) · "The best compression is the compression you
-actually wear" (C163). The thesis echo is the last word — the sale lands as the story's moral,
-never a pivot away from it.
+**CTA — offer plus thesis echo, in the narrator's voice:** the winning close is the OFFER stated
+plainly + a MEANING line reframing the whole ad as its payoff: "Because everyone deserves socks
+that tell the truth" (E171) · "Real socks for real legs" (E194) · "The best compression is the
+compression you actually wear" (C163). The thesis echo is the last word — the sale lands as the
+story's moral, never a pivot away from it. THE SEAM RULE: the turn from story to offer is the
+single most exposed cut in the ad — it happens INSIDE the narrator's voice ("so if your evenings
+look like mine did…"), with the story's vocabulary, at the story's pace. Any register switch to
+announcer-speak at the offer ("Order now!", "Introducing…") converts the whole preceding story
+into a setup the viewer feels tricked by.
 
 **EDITOR COACHING — the header blocks are performance direction:** the Editing Instructions block
 is ecom's creator coaching, written as craft, not admin: pacing with intent ("Quick, punchy"),

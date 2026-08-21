@@ -46,6 +46,7 @@ import {
 import { getUgcStyle, getUgcStyleBlock } from './ugcStyles';
 import { getEcomCraftDna } from './../prompts/ecomCraftDna';
 import { getEcomFootageLibraryBlock } from './../prompts/ecomFootageLibrary';
+import { getPainBankBlock } from './../prompts/painBank';
 
 // ─── Shared fragments ───────────────────────────────────────────────────────
 
@@ -115,12 +116,21 @@ function durationBudget(duration: V2Task['duration']): string {
   return `Duration: ${duration}. Word budget: sweet spot ${t.sweetSpot}, HARD ceiling ${t.hardCeiling} words of spoken content, max runtime ${t.maxSeconds}s. ${voRule} (The tool historically overshoots 20-30% — write tight. TIGHT MEANS FEWER THOUGHTS, never amputated sentences: dropping "so/and/that's/I've" to save words produces telegraphic written-copy fragments a creator cannot speak naturally. Cut a beat, never the connective tissue.)`;
 }
 
+/** Ecom long-form: the '60-90 sec' selection is the LONG-FORM tier for ecom
+ *  (CMO ruling, Aug 2026 — the story needs 90+ seconds to establish a person,
+ *  real stakes, and an earned reveal). Single source of truth for the prompt
+ *  line AND validateBrief's ceiling. ~2.3 spoken words/sec. */
+export const ECOM_LONGFORM = { sweetSpot: '260-330 words', hardCeiling: 360, maxSeconds: 150 } as const;
+
 /** Ecom duration line: same budgets and the same anti-telegraphese rule, but
  *  the UGC "still SPEAKS" short-form override is replaced by the ecom mode
  *  rule — overlay-carried IS native ecom short-form. */
 function ecomDurationBudget(duration: V2Task['duration']): string {
   const t = DURATION_TARGETS[duration];
   if (!t) return '';
+  if (duration === '60-90 sec') {
+    return `Duration: LONG-FORM (the '60-90 sec' selection runs 90-150s for ecom — this cycle's mainline format). Word budget: sweet spot ${ECOM_LONGFORM.sweetSpot}, HARD ceiling ${ECOM_LONGFORM.hardCeiling} words of spoken VO, max runtime ${ECOM_LONGFORM.maxSeconds}s. Mode rule: VO-NARRATED — one narrator carries the whole runtime. Length is leverage AND exposure: every beat must escalate, and the word budget is spent on the VALLEY and the seams, never on padding. (TIGHT MEANS FEWER THOUGHTS, never amputated sentences: this VO is read VERBATIM by an AI voice, and a telegraphic line comes out sounding like a robot. Cut a beat, never the connective tissue.)`;
+  }
   const modeRule =
     duration === '1-15 sec'
       ? 'Mode rule: at this length OVERLAY-CARRIED is native (the on-screen text does the selling, minimal or no VO) — VO-NARRATED remains legal when the concept needs a narrator.'
@@ -185,6 +195,8 @@ ${getSchwartzStateBlock(task.awarenessLevel)}
 ${getProductTruthBlock(task.product)}
 
 ${getClaimBoundaryBlock(task.product)}
+
+${getPainBankBlock(task.product)}
 
 ${getEcomCraftDna()}
 
@@ -550,7 +562,11 @@ must pass its own verification before you emit it:
 ${isEcom ? `4. FOOTAGE FEASIBILITY: the whole story must be buildable from the footage library + graphics —
    name the concept's MODE (vo-narrated or overlay-carried), its SHOWN-PROOF device (ladder /
    timeline / instrument / demo / split-screen), and its through-line visual, all inside the
-   summary. A concept needing footage from the negative list invalidates itself.` : `4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.`}
+   summary. A concept needing footage from the negative list invalidates itself.
+5. PAIN DEPTH (CMO gate): name the concept's pain-ladder level and its ONE-PERSON narrator. The
+   central pain must be a NAMED condition or life-scale loss (L3-L4) with its stakes stated —
+   surface pains (tired legs, sock marks, rings) are legal only as the doorway INTO it. A concept
+   whose deepest moment is an inconvenience invalidates itself.` : `4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.`}
 
 productEntry for this task must be ${entryRule}.
 ${hasPinnedExemplar ? `EXEMPLAR SKELETON MANDATE: a finished-project exemplar is pinned for this task (its dissection is in
@@ -689,8 +705,9 @@ function ecomBriefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): s
     "beatMap": "one line per scene: framework stage + what happens + estimated spoken VO words (e.g. 'scene 1 [Problem, hook]: swollen-ankle close-up — 12w'). End with 'TOTAL: Nw vs ceiling Cw' — if N exceeds the ceiling, REVISE the plan before writing the fields below",
     "talkingPointPlacement": "which scenes carry the talking point — it must live in at least 3 beats, not just hook+CTA",
     "tenSecondCheck": "quote the exact words AND overlay of the first ~10 seconds and name their 2+ concrete details",
-    "flowCheck": "read the ENTIRE VO aloud in your head, hook 1 → every line → CTA 1, as ONE continuous spoken argument. Name any baton break (a line that doesn't receive from the line before or hand to the line after), any vague reference the audience couldn't place, and any line that would sound telegraphic read by an AI voice. State 'the full read flows clean' or name the lines to fix — a failed read means the LINE is rewritten before the fields below",
+    "flowCheck": "read the ENTIRE VO aloud in your head, hook 1 → every line → CTA 1, as ONE continuous spoken argument. Name any baton break (a line that doesn't receive from the line before or hand to the line after), any vague reference the audience couldn't place, and any line that would sound telegraphic read by an AI voice. Then read the STORY→OFFER SEAM twice on its own: the turn must happen inside the narrator's voice, with the story's vocabulary — quote the seam lines and confirm no register switch to announcer-speak. State 'the full read flows clean and the seam holds' or name the lines to fix — a failed read means the LINE is rewritten before the fields below",
     "hookHandoffCheck": "for EACH hook (1..${V2_HOOK_COUNT}): read hook k → scene 1's body line → scene 2's line as one spoken sequence. Confirm the hook raises exactly the question the body starts answering, WITHOUT restating it, WITHOUT pre-telling a later beat, WITHOUT naming the brand when the verbal clock stages a later entry. A hook that fails is rewritten before the fields below",
+    "stakesCheck": "name the script's pain-ladder level (L1 inconvenience / L2 life erosion / L3 named condition / L4 medical stakes) and quote the deepest line. The center of gravity must sit at L3-L4 — a script whose deepest pain is tired legs or sock marks means REVISE. Then count the KNIFE BEATS: quote the 2-3 escalation lines that drive the pain home AFTER it is first named (each one a CONSEQUENCE of the last, not a restatement) — fewer than 2 means the valley is shallow, REVISE. Confirm every stakes line obeys the Stakes License: condition-true, conditionally framed, never the product's promise",
     "productEntryCheck": "scene N — the brand is first NAMED at ~X% of runtime (the VERBAL clock). State whether that is inside this awareness level's entry zone, matches the pinned exemplar's entry position, or is a named Craft-License deviation. Also state when the product first APPEARS on screen (the visual clock) and confirm the Unaware release order is respected on both channels if applicable — an unjustified out-of-zone entry means REVISE",
     "payoffArc": "map the four stations to scenes (entry moment=scene N / mechanism=scene N / shown proof=scene N / payoff line=scene N) + product airtime ≈X% vs this level's minimum. Name the SHOWN-PROOF device (ladder / timeline / instrument / demo / split-screen). A missing station or under-minimum airtime means REVISE",
     "ctaOfferCheck": "${level === 'Unaware' ? "confirm BOTH CTAs are soft discovery closes per the Unaware rules — no price, no offer, no 'buy'" : "quote each CTA's offer text verbatim and its thesis echo. A CTA missing the offer (exact brand-facts math) or missing the echo means REVISE"}"${hasPinnedExemplar ? `,
@@ -830,9 +847,10 @@ Verbatim-to-VO law binds every line you write.
 STRUCTURAL RULES:
 - Emit the "plan" FIRST and honor it: mode declared, beat map summed against the hard ceiling,
   talking point threaded through ≥3 beats, and the flow gates passed BEFORE the fields below.
-- plan.flowCheck, plan.hookHandoffCheck, plan.productEntryCheck, plan.payoffArc, and
-  plan.ctaOfferCheck are REAL GATES (as is plan.exemplarFidelity when present): a failed check
-  means the plan is wrong — revise the plan, never write fields that fail their own plan.
+- plan.flowCheck, plan.hookHandoffCheck, plan.stakesCheck, plan.productEntryCheck,
+  plan.payoffArc, and plan.ctaOfferCheck are REAL GATES (as is plan.exemplarFidelity when
+  present): a failed check means the plan is wrong — revise the plan, never write fields that
+  fail their own plan.
 - The storyboard's main edit = hook 1 + body + CTA 1, split one-thought-per-scene. Alternate
   hooks and CTA 2 are NOT storyboard rows — the engine appends them as alternate-take rows
   automatically (they swap over scene 1's visual, which is why every hook must hand off over the
@@ -1332,6 +1350,15 @@ scene-1 visual. So:
     those products in VO and overlays alike — the approved phrasing is "no dig-in when sized
     right". (Absolute no-mark claims are EasyStretch-only.) The fix inserts the condition, never
     deletes the benefit.
+13. SHALLOW VALLEY — the script's deepest pain is an inconvenience (tired legs, marks, tugging),
+    or the pain is named once and abandoned with no knife beats driving it home, or the stakes
+    line breaks the Stakes License (a product promise wearing the disease's clothes). The fix
+    deepens the valley with RECORDED material (condition, consequence, identity wound) or adds
+    the missing escalation beats — never by inventing new horror.
+14. BRAND-VOICE DRIFT — a line the ONE narrator could not plausibly say: announcer copy
+    ("Introducing…", "Order now!"), brand-POV statements ("At Viasox we…"), or a register switch
+    at the offer that breaks the story's voice. The fix rewrites the line in the narrator's own
+    vocabulary — the offer arrives as HER telling you what to do about it.
 
 ### FIX DOCTRINE (every finding ships its fix)
 - MINIMAL SURGERY: change one hook, one CTA, one line, or one overlay — prefer fixing the VARIANT
