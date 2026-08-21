@@ -24,6 +24,7 @@ import type {
   V2TaskState,
 } from '../../factory2/v2Types';
 import { taskAdType } from '../../factory2/v2Types';
+import { fableFallbackActive } from '../../api/claude';
 import {
   generateConcepts,
   runBrainstorm,
@@ -358,6 +359,11 @@ export default function Factory2({ apiKey, onBack }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold font-display text-navy">The Factory V2</h2>
+          {fableFallbackActive() && (
+            <span className="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold bg-amber-100 text-amber-900 align-middle ml-2" title="This API key is not enabled for Fable 5 — generations are running on the Opus 5 fallback. Enable Fable 5 on the key to restore the primary model.">
+              ⚠ Fallback model: Opus 5
+            </span>
+          )}
           <p className="text-sm text-slate-500">
             Interactive UGC brief production — brainstorm, concepts, and a brief you can edit line by line.
           </p>

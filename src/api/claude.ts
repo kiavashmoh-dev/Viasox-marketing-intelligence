@@ -1,4 +1,33 @@
 import type { ClaudeResponse } from '../engine/types';
+import { FABLE_FALLBACK_MODEL } from '../config/models';
+
+// ─── The universal Fable gate ───────────────────────────────────────────────
+// Fable 5 is the PRIMARY model for every thinking/writing seat (director
+// ruling, Aug 2026). This gate lives at the API layer so V1 and V2, text and
+// vision, all share ONE fallback behavior:
+//   - A genuine model-access failure on Fable (key not enabled) trips a
+//     STICKY session gate: subsequent Fable calls silently run on the
+//     fallback with no wasted roundtrip, and the UI can surface the state
+//     via fableFallbackActive() — the fallback is never silent.
+//   - Exhausted transient retries (429/529 after the full backoff ladder)
+//     on a Fable call get ONE last-resort attempt on the fallback,
+//     NON-sticky — the next call tries Fable again.
+const FABLE_MODEL = 'claude-fable-5';
+let fableGated = false;
+
+/** True when Fable 5 failed a model-access check this session and calls are
+ *  running on the fallback. Surfaced in the Factory UI. */
+export function fableFallbackActive(): boolean {
+  return fableGated;
+}
+
+/** A model-access failure (key not enabled for the model) — NOT a transient,
+ *  NOT auth, NOT a bad request. 404 on /messages means the model itself. */
+function isModelAccessFailure(status: number, errText: string): boolean {
+  if (status === 404) return true;
+  if (status === 403 && /model|permission/i.test(errText)) return true;
+  return /not_found_error|model.*not.*(found|available)|no such model/i.test(errText);
+}
 
 const PROXY_URL = 'https://viasox-claude-proxy.workers.dev';
 const DIRECT_URL = 'https://api.anthropic.com/v1/messages';
@@ -62,6 +91,9 @@ export async function sendMessage(
   model = 'claude-sonnet-4-6',
   signal?: AbortSignal,
 ): Promise<string> {
+  // Sticky gate: once Fable is known-unavailable this session, swap silently
+  // (no wasted roundtrip). fableFallbackActive() keeps it visible in the UI.
+  if (model === FABLE_MODEL && fableGated) model = FABLE_FALLBACK_MODEL;
   const body = JSON.stringify({
     model,
     max_tokens: maxTokens,
@@ -181,6 +213,22 @@ export async function sendMessage(
 
   if (!response.ok) {
     const errText = await response.text();
+    if (model === FABLE_MODEL) {
+      if (isModelAccessFailure(response.status, errText)) {
+        // The key is not enabled for Fable — gate it for the session and
+        // finish THIS call on the fallback so nothing fails.
+        fableGated = true;
+        console.warn(`[claude] ${FABLE_MODEL} unavailable on this API key (${response.status}) — falling back to ${FABLE_FALLBACK_MODEL} for this session. Enable Fable 5 on the key to restore the primary model.`);
+        return sendMessage(system, userMessage, apiKey, maxTokens, FABLE_FALLBACK_MODEL, signal);
+      }
+      if (response.status === 429 || response.status === 529) {
+        // Extreme-reason fallback: Fable stayed congested through the whole
+        // backoff ladder. One rescue attempt on the fallback, NON-sticky —
+        // the next call tries Fable first again.
+        console.warn(`[claude] ${FABLE_MODEL} still ${response.status} after all retries — one-off rescue on ${FABLE_FALLBACK_MODEL} (non-sticky).`);
+        return sendMessage(system, userMessage, apiKey, maxTokens, FABLE_FALLBACK_MODEL, signal);
+      }
+    }
     if (response.status === 429) {
       throw new Error('Rate limited after 8 retries. The API is congested — please wait a few minutes and try again.');
     }
@@ -234,6 +282,9 @@ export async function sendVisionMessage(
   model = 'claude-sonnet-4-6',
   signal?: AbortSignal,
 ): Promise<string> {
+  // The universal Fable gate applies to vision too (V1 sends vision on the
+  // ideation tier): sticky swap when gated, access-failure fallback below.
+  if (model === FABLE_MODEL && fableGated) model = FABLE_FALLBACK_MODEL;
   const body = JSON.stringify({
     model,
     max_tokens: maxTokens,

@@ -19,6 +19,7 @@ import { getFrames } from '../../inspiration/inspirationStore';
 import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/v2Types';
 import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType } from '../../factory2/v2Types';
 import { applyRegen, applyReviewFix, deleteRow, runFinalReview } from '../../factory2/v2Engine';
+import { fableFallbackActive } from '../../api/claude';
 import { exportBriefDoc } from '../../factory2/v2Export';
 import { INTRO_CALLOUT } from '../../factory2/templateBoilerplate';
 import { getUgcStyle } from '../../factory2/ugcStyles';
@@ -375,6 +376,11 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             <Chip tone="amber">{isEcom ? 'Ecom Style (editing brief)' : style.name}</Chip>
             <Chip>{brief.task.duration}</Chip>
             <Chip tone="navy">v{brief.version}</Chip>
+            {fableFallbackActive() && (
+              <span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-900" title="This API key is not enabled for Fable 5 — generations are running on the Opus 5 fallback. Enable Fable 5 on the key to restore the primary model.">
+                ⚠ Fallback model: Opus 5
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">

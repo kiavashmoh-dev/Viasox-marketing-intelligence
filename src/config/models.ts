@@ -30,33 +30,37 @@
  * Frontier ideation model — the steps that INVENT (Creative Strategist,
  * Concept Generator, Differentiation Critic, standalone Concepts/Hooks).
  *
- * Target is Fable 5 ('claude-fable-5'), but that model is GATED — this API
- * key does NOT have Fable access yet (the API returns 404 "Claude Fable 5
- * is not available; please use Opus 4.8"). So the ideation tier runs on
- * Opus 4.8 for now. ALL of the ideation prompt work (Visual Craft Guide,
- * treatment judgment, AGC visual divergence, critic checks) is unaffected —
- * only the model behind this tier changes. When Fable access is granted,
- * flip this one line back to 'claude-fable-5'.
+ * FABLE-FIRST POLICY (director ruling, Aug 2026): every thinking/writing
+ * seat targets Fable 5 as the PRIMARY model. The fallback lives UNIVERSALLY
+ * at the API layer (src/api/claude.ts): a genuine model-access failure
+ * trips a sticky session gate to FABLE_FALLBACK_MODEL (surfaced in the
+ * Factory UI — never silent), and exhausted transient retries get a one-off
+ * NON-sticky rescue. Pinning Fable here is therefore safe even if the key's
+ * access lapses — nothing fails, and the fallback is always visible.
+ * (The old note recording a 404 gate on this key predates Fable 5 GA; the
+ * gate now re-verifies itself live on every fresh session.)
  */
-export const IDEATION_MODEL = 'claude-opus-4-8'; // TODO: 'claude-fable-5' once Fable access is granted
+export const IDEATION_MODEL = 'claude-fable-5';
 
-/** High-reasoning execution model. Opus 4.8. */
-export const CREATIVE_MODEL = 'claude-opus-4-8';
+/** High-reasoning execution model — the Script Writer and its judges.
+ *  Fable-first per the same ruling; same universal fallback. */
+export const CREATIVE_MODEL = 'claude-fable-5';
 
 /** Fast/cheap utility model. Sonnet 4.6 (the dated Sonnet 4 ID was retired). */
 export const UTILITY_MODEL = 'claude-sonnet-4-6';
 
+/** The single fallback authority for gated/rescued Fable calls (API layer). */
+export const FABLE_FALLBACK_MODEL = 'claude-opus-5';
+
 // ─── Factory V2 tiers ───────────────────────────────────────────────────────
 //
 // V2's thinking seats (brainstorm, framework selection, concept generation,
-// brief writing, line regeneration) TARGET Fable 5. Unlike the V1 ideation
-// tier, V2 does not hard-pin the fallback here: the V2 engine tries
-// V2_THINKING_MODEL first and degrades to V2_HEAVY_MODEL automatically on a
-// model-access error (then remembers for the session). So when the API key
-// gains Fable access, V2 upgrades itself with zero code changes.
+// brief writing, line regeneration, final review) TARGET Fable 5. The
+// universal API-layer gate handles unavailability; V2's own sendThinking
+// fallback remains as defense-in-depth.
 
-/** V2 thinking/writing model — tried first, auto-falls back if gated. */
+/** V2 thinking/writing model — the primary for every V2 creative seat. */
 export const V2_THINKING_MODEL = 'claude-fable-5';
 
-/** V2 floor model — heavy lifting never runs below Opus 4.8. */
-export const V2_HEAVY_MODEL = 'claude-opus-4-8';
+/** V2 heavy tier — the Fable fallback + vision + ripple. Opus 5. */
+export const V2_HEAVY_MODEL = 'claude-opus-5';
