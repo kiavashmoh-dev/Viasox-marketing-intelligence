@@ -101,6 +101,25 @@ export interface V2Task {
    * tone, pace, frameworks, hooks, beats, CTA, product/pain positioning).
    */
   pinnedInspirationId?: string;
+  /**
+   * Ecom only: how the ad is produced. 'library' (default when absent —
+   * every pre-existing ecom task) = the editor pulls from the footage
+   * library; 'ai-generated' = every scene is generated, visual cells are
+   * generation prompts, and the AI-generation visual spec replaces the
+   * footage-library block. Read via taskEcomProduction(), never directly.
+   */
+  ecomProduction?: V2EcomProduction;
+}
+
+/** Ecom production mode. Absent on pre-existing tasks — read via
+ *  taskEcomProduction() so old data is 'library' with no migration. */
+export type V2EcomProduction = 'library' | 'ai-generated';
+
+/** The one honest way to read an ecom task's production mode. */
+export function taskEcomProduction(task: {
+  ecomProduction?: V2EcomProduction;
+}): V2EcomProduction {
+  return task.ecomProduction ?? 'library';
 }
 
 // ─── Brainstorm ─────────────────────────────────────────────────────────────
@@ -268,6 +287,10 @@ export interface V2StrategicHeader {
     music: string;
     transitions: string;
     specialNotes: string;
+    /** AI-generated production only: the full persona/casting spec every
+     *  generation prompt restates (age, face, hair, wardrobe, setting).
+     *  Library briefs never set it. */
+    casting?: string;
   };
 }
 

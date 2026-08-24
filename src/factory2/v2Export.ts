@@ -20,7 +20,7 @@
  */
 
 import type { UgcBriefV2, V2Row } from './v2Types';
-import { taskAdType } from './v2Types';
+import { taskAdType, taskEcomProduction } from './v2Types';
 import { AUDIO_TYPES, SHOT_TYPES, type BoilerplateRow } from './templateBoilerplate';
 import { getUgcStyle } from './ugcStyles';
 
@@ -176,6 +176,8 @@ h1 { text-align: center; }
 export function buildEcomBriefHtml(brief: UgcBriefV2): string {
   const date = (brief.createdAt || '').slice(0, 10);
   const ed = brief.header.ecomEditing;
+  const aiMode = taskEcomProduction(brief.task) === 'ai-generated';
+  const visualHeader = aiMode ? 'GENERATION PROMPT' : 'SUGGESTED VISUAL';
   const rows = mainEditWithEndCard(brief).filter((r) => r.clipNumber !== 'end-card');
   // The scene carrying hook 1 (identity link, never text matching).
   const hookRow = rows.find((r) => r.mirrorsLineId === brief.hooks[0]?.id) ?? rows[0];
@@ -198,6 +200,12 @@ h1 { text-align: center; }
   html += kvRow('Date', esc(date));
   html += kvRow('Product', esc(brief.task.product));
   html += kvRow('Format', `${esc(brief.task.duration)} &mdash; 9x16 vertical`);
+  html += kvRow(
+    'Production',
+    aiMode
+      ? '<b>FULLY AI-GENERATED</b> — every scene is generated (nothing pulled from the library). Each row’s visual cell is the GENERATION PROMPT for that scene; the CASTING spec below is restated in every prompt.'
+      : 'Footage library — the editor assembles from existing clips.',
+  );
   html += `</table>`;
 
   // 2. STRATEGY
@@ -215,10 +223,15 @@ h1 { text-align: center; }
   html += `<table>`;
   html += kvRow('Pacing', esc(ed?.pacing || ''));
   html += kvRow('Resolution', '9x16');
-  html += kvRow('Caption & Graphics', 'Subtitles on. Per-scene text overlays are in the OVERLAY column of the script body.');
+  html += kvRow('Caption & Graphics', aiMode
+    ? 'Subtitles on. Per-scene text overlays are in the OVERLAY column of the script body — overlays are added in POST, never generated in-scene (generated in-scene text is the #1 AI tell).'
+    : 'Subtitles on. Per-scene text overlays are in the OVERLAY column of the script body.');
   html += kvRow('Transitions', esc(ed?.transitions || ''));
   html += kvRow('Music', esc(ed?.music || ''));
   html += kvRow('Voiceover', 'AI voiceover — reads the SCRIPT below VERBATIM. Do not paraphrase any line.');
+  if (aiMode && ed?.casting) {
+    html += kvRow('Casting', `<b>${esc(ed.casting)}</b><br/>Restate this persona VERBATIM in every generation prompt — identity anchors (glasses, jewelry, signature garment) must never flicker between scenes.`);
+  }
   html += kvRow('Special Notes', esc(ed?.specialNotes || ''));
   html += kvRow(
     'Notes',
@@ -230,7 +243,7 @@ h1 { text-align: center; }
   html += sectionHeader(`SCRIPT (HOOKS) — ${brief.hooks.length} Variations`);
   html += `<div style="padding:8px 12px;border:1px solid ${BORDER};background:#f8f9fb;font-size:10pt;color:#000;font-family:Arial,sans-serif;margin:0 0 8px 0;line-height:1.45;"><b>EDITOR:</b> every hook below is an ALTERNATE OPENER for the same video — record each as its own VO take over the scene-1 visual, and cut one variation per hook. Hook 1 is the primary edit.</div>`;
   html += `<table>`;
-  html += `<tr><th style="${scriptHeaderStyle}width:40px;">LINE #</th><th style="${scriptHeaderStyle}width:110px;">SHOT TYPE</th><th style="${scriptHeaderStyle}width:220px;">SUGGESTED VISUAL</th><th style="${scriptHeaderStyle}">HOOK LINE</th></tr>`;
+  html += `<tr><th style="${scriptHeaderStyle}width:40px;">LINE #</th><th style="${scriptHeaderStyle}width:110px;">SHOT TYPE</th><th style="${scriptHeaderStyle}width:220px;">${visualHeader}</th><th style="${scriptHeaderStyle}">HOOK LINE</th></tr>`;
   brief.hooks.forEach((h, i) => {
     html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${i + 1}</td><td style="${scriptCellStyle}width:110px;">${esc(String(hookRow?.shotType ?? ''))}</td><td style="${scriptCellStyle}width:220px;">${esc(hookRow?.shotDescription ?? '')}</td><td style="${scriptCellStyle}">${esc(h.text)}</td></tr>`;
   });
@@ -258,7 +271,7 @@ h1 { text-align: center; }
   html += `<tr>` +
     `<th style="${scriptHeaderStyle}width:40px;">LINE #</th>` +
     `<th style="${scriptHeaderStyle}width:110px;">SHOT TYPE</th>` +
-    `<th style="${scriptHeaderStyle}width:200px;">SUGGESTED VISUAL</th>` +
+    `<th style="${scriptHeaderStyle}width:200px;">${visualHeader}</th>` +
     `<th style="${scriptHeaderStyle}width:140px;">OVERLAY</th>` +
     `<th style="${scriptHeaderStyle}">SCRIPT LINE</th>` +
     `</tr>`;

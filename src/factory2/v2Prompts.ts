@@ -47,6 +47,9 @@ import { getUgcStyle, getUgcStyleBlock } from './ugcStyles';
 import { getEcomCraftDna } from './../prompts/ecomCraftDna';
 import { getEcomFootageLibraryBlock } from './../prompts/ecomFootageLibrary';
 import { getPainBankBlock } from './../prompts/painBank';
+import { getAuthorityPlaybookBlock } from './../prompts/authorityPlaybook';
+import { getAiGenerationSpecBlock } from './../prompts/aiGenerationSpec';
+import { taskEcomProduction } from './v2Types';
 
 // ─── Shared fragments ───────────────────────────────────────────────────────
 
@@ -174,6 +177,7 @@ function buildEcomContextPack(task: V2Task, stage: 'concept' | 'script' = 'scrip
     stage === 'concept'
       ? getAwarenessConceptGuide(task.awarenessLevel)
       : getAwarenessScriptGuide(task.awarenessLevel);
+  const aiMode = taskEcomProduction(task) === 'ai-generated';
   return `${buildSystemBase()}
 
 # ═══ FACTORY V2 ECOM CONTEXT PACK (IMMUTABLE — every generation obeys all of it) ═══
@@ -183,9 +187,16 @@ function buildEcomContextPack(task: V2Task, stage: 'concept' | 'script' = 'scrip
 - Product line: ${task.product}
 - Talking point / angle (hierarchy rank #1 — the subject of the ad): ${task.talkingPoint}
 - Awareness level: ${task.awarenessLevel}
-- AD TYPE: ECOM (editing brief) — built ENTIRELY from existing library footage + AI voiceover.
+${
+  aiMode
+    ? `- AD TYPE: ECOM (editing brief), PRODUCTION: FULLY AI-GENERATED — every scene is GENERATED
+  (nothing filmed, nothing pulled from the library) yet must be indistinguishable from real UGC.
+  The AI VOICE reads the script VERBATIM; each row's visual cell is a GENERATION PROMPT. The
+  brief must declare its MODE (VO-narrated or overlay-carried) via its rows.`
+    : `- AD TYPE: ECOM (editing brief) — built ENTIRELY from existing library footage + AI voiceover.
   Nothing gets filmed; no creator performs it. The EDITOR assembles it and the AI VOICE reads the
-  script VERBATIM. The brief must declare its MODE (VO-narrated or overlay-carried) via its rows.
+  script VERBATIM. The brief must declare its MODE (VO-narrated or overlay-carried) via its rows.`
+}
 - ${ecomDurationBudget(task.duration)}
 
 ${awarenessGuide}
@@ -200,7 +211,9 @@ ${getPainBankBlock(task.product)}
 
 ${getEcomCraftDna()}
 
-${getEcomFootageLibraryBlock()}
+${getAuthorityPlaybookBlock()}
+
+${aiMode ? getAiGenerationSpecBlock() : getEcomFootageLibraryBlock()}
 
 ## PRODUCT ENTRY × AWARENESS — TWO CLOCKS (binding)
 Ecom splits what UGC fuses: VISUAL PRESENCE and VERBAL ENTRY run on separate clocks. The awareness
@@ -245,7 +258,7 @@ SATISFYING PRODUCT PAYOFF. A late verbal entry is legitimate strategy; a starved
 script at EVERY awareness level.
 NEVER flexible, at any quality bar: brand facts, the claim boundary, the awareness level's
 vocabulary/offer bans, the Unaware release ORDER, banned phrases, the hard duration ceiling, and
-the footage library's negative list.
+${aiMode ? 'the AI-generation casting law (demographic-exact faces, persona consistency)' : "the footage library's negative list"}.
 
 # ═══ END ECOM CONTEXT PACK ═══`;
 }
@@ -369,12 +382,13 @@ export function renderBriefState(brief: UgcBriefV2): string {
     return `## CURRENT BRIEF STATE (complete)
 
 - Task: ${brief.taskName} | Product: ${brief.task.product} | Talking point: ${brief.task.talkingPoint}
-- Awareness: ${brief.task.awarenessLevel} | Ad type: ECOM (editing brief — the VO is read verbatim by an AI voice) | ${ecomDurationBudget(brief.task.duration)}
+- Awareness: ${brief.task.awarenessLevel} | Ad type: ECOM (editing brief — the VO is read verbatim by an AI voice)${taskEcomProduction(brief.task) === 'ai-generated' ? ' | Production: FULLY AI-GENERATED (visual cells are generation prompts)' : ''} | ${ecomDurationBudget(brief.task.duration)}
 - Framework: ${brief.framework.name} — ${brief.framework.rationale}
 - Concept: ${brief.concept.title} — ${brief.concept.summary}
 - Product entry pattern: ${brief.concept.productEntry}
 - Product truth being sold: ${brief.concept.productTruth}
-- Tonality: ${brief.header.videoTonality}${brief.header.ecomEditing ? ` | Pacing: ${brief.header.ecomEditing.pacing} | Music: ${brief.header.ecomEditing.music} | Transitions: ${brief.header.ecomEditing.transitions} | Special notes: ${brief.header.ecomEditing.specialNotes}` : ''}
+- Tonality: ${brief.header.videoTonality}${brief.header.ecomEditing ? ` | Pacing: ${brief.header.ecomEditing.pacing} | Music: ${brief.header.ecomEditing.music} | Transitions: ${brief.header.ecomEditing.transitions} | Special notes: ${brief.header.ecomEditing.specialNotes}` : ''}${brief.header.ecomEditing?.casting ? `
+- CASTING SPEC (every generation prompt restates it verbatim): ${brief.header.ecomEditing.casting}` : ''}
 - Per-brief instructions: ${brief.header.instructions.join(' · ') || '-'}
 
 Hooks (alternatives, first = primary):
@@ -559,14 +573,23 @@ must pass its own verification before you emit it:
    viewer thinks "this is about me" within ~10 seconds${task.awarenessLevel === 'Unaware' ? ' — as SCENES and BEHAVIORS (product/category/symptom labels stay banned in an Unaware opening)' : ''}.
 3. PRODUCT CONVICTION: the concept commits to one concrete product attribute from the bank and would
    fail the SWAP TEST if that attribute were removed.
-${isEcom ? `4. FOOTAGE FEASIBILITY: the whole story must be buildable from the footage library + graphics —
+${isEcom ? `4. ${taskEcomProduction(task) === 'ai-generated' ? `GENERATION FEASIBILITY (AI production): every scene will be GENERATED — name the concept's MODE
+   (vo-narrated or overlay-carried), its SHOWN-PROOF device (ladder / timeline / instrument /
+   demo / split-screen), its through-line visual, and its NARRATOR (who she is, her age, and —
+   when the concept uses an authority — her authority MODE from the playbook), all inside the
+   summary. The casting law binds: demographic-exact faces, UGC-native camera grammar. The claim
+   boundary still limits what a scene may imply.` : `FOOTAGE FEASIBILITY: the whole story must be buildable from the footage library + graphics —
    name the concept's MODE (vo-narrated or overlay-carried), its SHOWN-PROOF device (ladder /
    timeline / instrument / demo / split-screen), and its through-line visual, all inside the
-   summary. A concept needing footage from the negative list invalidates itself.
+   summary. A concept needing footage from the negative list invalidates itself.`}
 5. PAIN DEPTH (CMO gate): name the concept's pain-ladder level and its ONE-PERSON narrator. The
    central pain must be a NAMED condition or life-scale loss (L3-L4) with its stakes stated —
    surface pains (tired legs, sock marks, rings) are legal only as the doorway INTO it. A concept
-   whose deepest moment is an inconvenience invalidates itself.` : `4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.`}
+   whose deepest moment is an inconvenience invalidates itself.
+6. AUTHORITY (when the instructions, direction, or the concept itself invoke an authority
+   narrator): name the authority MODE (one of the playbook's six) and the narrator's vantage
+   point in one clause inside the summary, and confirm in verification that her witnessed-volume
+   testimony maps to recorded material. Skip this gate only when no authority is invoked.` : `4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.`}
 
 productEntry for this task must be ${entryRule}.
 ${hasPinnedExemplar ? `EXEMPLAR SKELETON MANDATE: a finished-project exemplar is pinned for this task (its dissection is in
@@ -599,7 +622,7 @@ ${getMarketingBrainBlock('conceptGeneration')}`;
 ${direction}
 
 ${inspirationContext ? `# INSPIRATION CONTEXT\n${inspirationContext}\n` : ''}
-Generate the 3 concepts for task "${task.parsed.name}" (${task.product} / ${task.talkingPoint} / ${task.awarenessLevel} / ${isEcom ? 'ECOM editing brief' : `style: ${getUgcStyle(task.ugcStyle).name}`} / ${task.duration}). ${isEcom ? 'Every concept must be buildable from the footage library and carried by VO + overlays — the ecom craft DNA\'s modes, registers, and proof engine are binding.' : 'Every concept must live natively inside the assigned UGC style — its visual grammar, register, and constraints are binding.'}`;
+Generate the 3 concepts for task "${task.parsed.name}" (${task.product} / ${task.talkingPoint} / ${task.awarenessLevel} / ${isEcom ? (taskEcomProduction(task) === 'ai-generated' ? 'ECOM editing brief, FULLY AI-GENERATED production' : 'ECOM editing brief') : `style: ${getUgcStyle(task.ugcStyle).name}`} / ${task.duration}). ${isEcom ? (taskEcomProduction(task) === 'ai-generated' ? 'Every scene will be GENERATED and must be indistinguishable from real UGC — the AI-generation visual spec\'s casting law and the ecom craft DNA\'s modes, registers, and proof engine are binding.' : 'Every concept must be buildable from the footage library and carried by VO + overlays — the ecom craft DNA\'s modes, registers, and proof engine are binding.') : 'Every concept must live natively inside the assigned UGC style — its visual grammar, register, and constraints are binding.'}`;
 
   return { system, user };
 }
@@ -698,7 +721,11 @@ Role rules: the clip(s) speaking hook 1 get role "hook"; the clip(s) speaking CT
 }
 
 /** Ecom JSON shape — the verbatim-to-VO law as REAL plan gates. */
-function ecomBriefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): string {
+function ecomBriefJsonShape(
+  level: AwarenessLevel,
+  hasPinnedExemplar = false,
+  aiMode = false,
+): string {
   return `{
   "plan": {
     "mode": "'vo-narrated' or 'overlay-carried' — declared once, never mixed",
@@ -708,9 +735,11 @@ function ecomBriefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): s
     "flowCheck": "read the ENTIRE VO aloud in your head, hook 1 → every line → CTA 1, as ONE continuous spoken argument. Name any baton break (a line that doesn't receive from the line before or hand to the line after), any vague reference the audience couldn't place, and any line that would sound telegraphic read by an AI voice. Then read the STORY→OFFER SEAM twice on its own: the turn must happen inside the narrator's voice, with the story's vocabulary — quote the seam lines and confirm no register switch to announcer-speak. State 'the full read flows clean and the seam holds' or name the lines to fix — a failed read means the LINE is rewritten before the fields below",
     "hookHandoffCheck": "for EACH hook (1..${V2_HOOK_COUNT}): read hook k → scene 1's body line → scene 2's line as one spoken sequence. Confirm the hook raises exactly the question the body starts answering, WITHOUT restating it, WITHOUT pre-telling a later beat, WITHOUT naming the brand when the verbal clock stages a later entry. A hook that fails is rewritten before the fields below",
     "stakesCheck": "name the script's pain-ladder level (L1 inconvenience / L2 life erosion / L3 named condition / L4 medical stakes) and quote the deepest line. The center of gravity must sit at L3-L4 — a script whose deepest pain is tired legs or sock marks means REVISE. Then count the KNIFE BEATS: quote the 2-3 escalation lines that drive the pain home AFTER it is first named (each one a CONSEQUENCE of the last, not a restatement) — fewer than 2 means the valley is shallow, REVISE. Confirm every stakes line obeys the Stakes License: condition-true, conditionally framed, never the product's promise",
+    "authorityCheck": "if the concept, direction, or instructions invoke an AUTHORITY NARRATOR: name the authority MODE from the playbook's six, quote the installation line and confirm it lands in the first line as a passing clause, and confirm every 'what I've seen' testimony maps to recorded Pain Bank / review material (quote the mapping). A credential arriving mid-script, a resume-centerpiece opening, or unrecorded testimony means REVISE. Otherwise state 'no authority narrator in this concept'",
     "productEntryCheck": "scene N — the brand is first NAMED at ~X% of runtime (the VERBAL clock). State whether that is inside this awareness level's entry zone, matches the pinned exemplar's entry position, or is a named Craft-License deviation. Also state when the product first APPEARS on screen (the visual clock) and confirm the Unaware release order is respected on both channels if applicable — an unjustified out-of-zone entry means REVISE",
     "payoffArc": "map the four stations to scenes (entry moment=scene N / mechanism=scene N / shown proof=scene N / payoff line=scene N) + product airtime ≈X% vs this level's minimum. Name the SHOWN-PROOF device (ladder / timeline / instrument / demo / split-screen). A missing station or under-minimum airtime means REVISE",
-    "ctaOfferCheck": "${level === 'Unaware' ? "confirm BOTH CTAs are soft discovery closes per the Unaware rules — no price, no offer, no 'buy'" : "quote each CTA's offer text verbatim and its thesis echo. A CTA missing the offer (exact brand-facts math) or missing the echo means REVISE"}"${hasPinnedExemplar ? `,
+    "ctaOfferCheck": "${level === 'Unaware' ? "confirm BOTH CTAs are soft discovery closes per the Unaware rules — no price, no offer, no 'buy'" : "quote each CTA's offer text verbatim and its thesis echo. A CTA missing the offer (exact brand-facts math) or missing the echo means REVISE"}"${aiMode ? `,
+    "castingCheck": "state the narrator's exact age and how her face/wardrobe/setting match the buyer demographic (50-75, real texture, lived-in home) and where her occupation shows in ONE worn detail. Then confirm EVERY storyboard visual cell restates her full persona verbatim — quote the persona restatement string used. A cell missing the restatement, a narrator younger than the demographic, or a costume-level occupation means REVISE"` : ''}${hasPinnedExemplar ? `,
     "exemplarFidelity": "beat-by-beat: exemplar beat → our scene(s). Confirm same beat order, proportional timing, product-entry position, product-talk share, and payoff shape — or name the licensed deviation"` : ''}
   },
   "header": {
@@ -723,7 +752,8 @@ function ecomBriefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): s
       "pacing": "pacing as DIRECTION with intent (e.g. 'Quick, punchy — cuts accelerate through the failure ladder')",
       "music": "music as a REGISTER (e.g. 'Building dramatic/revelation style')",
       "transitions": "transitions serving the concept (e.g. 'Sharp cuts for reveal moments')",
-      "specialNotes": "the creative mandate in one breath (e.g. 'Build anticipation before reveals. Use the measuring tape in every scene.')"
+      "specialNotes": "the creative mandate in one breath (e.g. 'Build anticipation before reveals. Use the measuring tape in every scene.')"${aiMode ? `,
+      "casting": "the FULL persona/casting spec (the single source every generation prompt restates): narrator's age, face description, hair, wardrobe incl. the one occupational detail, home setting with its life props — plus any second person's full identity if the concept has one"` : ''}
     }
   },
   "hooks": ["${V2_HOOK_COUNT} alternative VO hooks, each a DIFFERENT proven shape (specific-number claim, cost reframe, industry indictment, question reversal, measured-proof, how-to-without); every one passes the hookHandoffCheck; first = primary"],
@@ -735,10 +765,10 @@ function ecomBriefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): s
       "audioType": "VO",
       "role": "hook" | "body" | "cta",
       "scriptLine": "the exact VO line for this scene (empty string ONLY in overlay-carried mode)",
-      "shotType": "ONE footage-library TAG from the available lists",
-      "shotDescription": "short CONVERSATIONAL description of what the viewer sees — telling the editor what you're picturing, never a label",
-      "overlayText": "the on-screen text for this scene, or empty string (in vo-narrated mode overlays are fragments OF the spoken line; in overlay-carried mode this IS the script)",
-      "editorNotes": "editor-facing instruction (graphics, timing, missing-footage replacements), or empty string"
+      "shotType": "ONE scene-type TAG from the available lists${aiMode ? ' (vocabulary only in AI production — nothing is limited to a library)' : ''}",
+      "shotDescription": ${aiMode ? `"the GENERATION PROMPT for this scene: [full persona restatement verbatim from header.ecomEditing.casting] + [action] + [setting + life props] + [wardrobe] + [camera framing/distance/handheld] + [light] + [imperfection note]. Every cell restates the persona — a cell without it is a failed row"` : `"short CONVERSATIONAL description of what the viewer sees — telling the editor what you're picturing, never a label"`},
+      "overlayText": "the on-screen text for this scene, or empty string (in vo-narrated mode overlays are fragments OF the spoken line; in overlay-carried mode this IS the script${aiMode ? '; overlays are added in POST — never baked into the generation prompt' : ''})",
+      "editorNotes": "editor-facing instruction (${aiMode ? 'generation retries to expect, continuity with the neighboring scenes, post overlays/graphics, timing' : 'graphics, timing, missing-footage replacements'}), or empty string"
     }
   ]
 }
@@ -834,23 +864,32 @@ function buildEcomBriefWritePrompt(
 ): { system: string; user: string } {
   const frameworkDetail = FRAMEWORK_DETAILS[framework.name] ?? `**${framework.name}**`;
   const hasPinned = inspirationContext.includes('THE STRUCTURAL AUTHORITY');
+  const aiMode = taskEcomProduction(task) === 'ai-generated';
   const system = `${buildV2ContextPack(task, 'script')}
 
 ## YOUR ROLE: FACTORY V2 ECOM BRIEF WRITER
 
 Write the complete ECOM editing brief for the approved concept, as structured data. You are
-writing for TWO readers at once, and NEITHER is a creator: the EDITOR who assembles the ad from
+writing for TWO readers at once, and NEITHER is a creator: ${
+    aiMode
+      ? `the EDITOR who GENERATES every
+scene from your visual cells (each cell is a generation prompt obeying the AI-generation visual
+spec — persona restated, casting demographic-exact), and the AI VOICE that reads your script
+VERBATIM — there is no performer to smooth a clumsy line. The Verbatim-to-VO law binds every
+line you write.`
+      : `the EDITOR who assembles the ad from
 existing library footage (every visual must be pullable; graphics are buildable), and the AI
 VOICE that reads your script VERBATIM — there is no performer to smooth a clumsy line. The
-Verbatim-to-VO law binds every line you write.
+Verbatim-to-VO law binds every line you write.`
+  }
 
 STRUCTURAL RULES:
 - Emit the "plan" FIRST and honor it: mode declared, beat map summed against the hard ceiling,
   talking point threaded through ≥3 beats, and the flow gates passed BEFORE the fields below.
-- plan.flowCheck, plan.hookHandoffCheck, plan.stakesCheck, plan.productEntryCheck,
-  plan.payoffArc, and plan.ctaOfferCheck are REAL GATES (as is plan.exemplarFidelity when
-  present): a failed check means the plan is wrong — revise the plan, never write fields that
-  fail their own plan.
+- plan.flowCheck, plan.hookHandoffCheck, plan.stakesCheck, plan.authorityCheck,
+  plan.productEntryCheck, plan.payoffArc, and plan.ctaOfferCheck are REAL GATES (as are
+  plan.castingCheck and plan.exemplarFidelity when present): a failed check means the plan is
+  wrong — revise the plan, never write fields that fail their own plan.
 - The storyboard's main edit = hook 1 + body + CTA 1, split one-thought-per-scene. Alternate
   hooks and CTA 2 are NOT storyboard rows — the engine appends them as alternate-take rows
   automatically (they swap over scene 1's visual, which is why every hook must hand off over the
@@ -877,7 +916,7 @@ ${frameworkDetail}
 ${JSON_CONTRACT}
 
 JSON shape:
-${ecomBriefJsonShape(task.awarenessLevel, hasPinned)}
+${ecomBriefJsonShape(task.awarenessLevel, hasPinned, aiMode)}
 
 ${getMarketingBrainBlock('v2Writer')}`;
 
@@ -992,7 +1031,7 @@ export function buildRegenPrompt(
     ? `You are ${target.type === 'framework-switch' ? `SWITCHING the framework to "${(target as { newFramework: string }).newFramework}"` : 'RESTRUCTURING the framework per the feedback'}. You rewrite: framework rationale, hooks, ctas, scriptProse, and the storyboard's main-edit rows. You HOLD CONSTANT: the concept, its product truth, the header fields, and every entry in the feedback ledger. Return the full JSON shape below.`
     : isInsert
       ? taskAdType(task) === 'ecom'
-        ? `You are writing ONE NEW scene to be inserted between the two lines quoted in the FLOW CONTEXT below, following the director's instructions for what it should do. It must BRIDGE those lines seamlessly — as if the VO had always contained it (this voiceover is read VERBATIM by an AI voice; the new line must take the baton and hand it on as natural speech). Keep it to one thought (hard word ceiling; tight means ONE thought spoken naturally, never a telegraphic fragment). Its visual must be pullable from the footage library (tag + conversational description), varying the visual modality vs its neighbors. Return ONLY the JSON shape below.`
+        ? `You are writing ONE NEW scene to be inserted between the two lines quoted in the FLOW CONTEXT below, following the director's instructions for what it should do. It must BRIDGE those lines seamlessly — as if the VO had always contained it (this voiceover is read VERBATIM by an AI voice; the new line must take the baton and hand it on as natural speech). Keep it to one thought (hard word ceiling; tight means ONE thought spoken naturally, never a telegraphic fragment). ${taskEcomProduction(task) === 'ai-generated' ? 'Its visual cell is a GENERATION PROMPT obeying the AI-generation visual spec — restate the casting spec\'s persona verbatim — varying the visual modality vs its neighbors.' : 'Its visual must be pullable from the footage library (tag + conversational description), varying the visual modality vs its neighbors.'} Return ONLY the JSON shape below.`
         : `You are writing ONE NEW clip to be inserted between the two lines quoted in the FLOW CONTEXT below, following the director's instructions for what it should do. It must BRIDGE those lines seamlessly — as if the script had always contained it. Keep it to one thought (this script has a hard word ceiling; a new line must earn its words — but tight means ONE thought spoken naturally, never a telegraphic fragment with its subject/verb/connectives amputated). Also write its filming direction in the same coaching voice as the surrounding shot descriptions, varying the camera setup vs its neighbors. Return ONLY the JSON shape below.`
       : target.type === 'header-field' && target.field === 'instructions'
         ? `You are regenerating the per-brief filming instructions. Return 3-5 instructions, ONE PER LINE inside newValue, no bullet prefixes, no numbering. Everything else in the brief stays exactly as it is.`
@@ -1011,8 +1050,8 @@ export function buildRegenPrompt(
         ? `{
   "scriptLine": "the new VO line (one thought, spoken naturally — read verbatim by the AI voice, never a clipped fragment)",
   "audioType": "VO",
-  "shotType": "ONE footage-library TAG from the available lists",
-  "shotDescription": "short conversational description of what the viewer sees — pullable from the library",
+  "shotType": "ONE scene-type TAG from the available lists",
+  "shotDescription": ${taskEcomProduction(task) === 'ai-generated' ? '"the GENERATION PROMPT for this scene: persona restatement verbatim + action + setting + wardrobe + camera + light + imperfection note"' : '"short conversational description of what the viewer sees — pullable from the library"'},
   "overlayText": "on-screen text for this scene, or empty string",
   "editorNotes": "editor-facing instruction, or empty string"
 }`
@@ -1294,6 +1333,7 @@ Run the full protocol: ${brief.hooks.length} hook simulations, ${brief.ctas.leng
 /** The ecom Final Review — the same last-mile discipline, adapted to a script
  *  that is read VERBATIM by an AI voice and assembled from library footage. */
 function buildEcomFinalReviewPrompt(brief: UgcBriefV2): { system: string; user: string } {
+  const aiMode = taskEcomProduction(brief.task) === 'ai-generated';
   const system = `${buildV2ContextPack(brief.task, 'script')}
 
 ## YOUR ROLE: FACTORY V2 ECOM FINAL REVIEW — THE VERBATIM-VO AUDIT
@@ -1334,11 +1374,15 @@ scene-1 visual. So:
 7. VO↔OVERLAY COLLISION — an overlay that competes with the VO as a second script, contradicts
    the spoken line, or carries a claim the VO never earns. In vo-narrated mode overlays are
    fragments OF the spoken line.
-8. UNGROUNDED VISUAL — a visual implying footage from the negative list or outside the library's
+8. UNGROUNDED VISUAL — ${aiMode ? `a generation prompt missing the persona restatement, implying a scene the
+   claim boundary bans, or too vague to generate consistently ("B-roll of feet"). ALSO this
+   class: a visual that promises WEAKER proof than the VO claims over it (generic review cards
+   under a VO about sensitive-feet reviewers; a measurement the shot never shows) — the visual
+   must show the exact thing the line is claiming.` : `a visual implying footage from the negative list or outside the library's
    tags, or a description too vague for the editor to pull ("B-roll of feet"). ALSO this class:
    a visual that promises WEAKER proof than the VO claims over it (generic review cards under a
    VO about sensitive-feet reviewers; a measurement the shot never shows) — the visual must show
-   the exact thing the line is claiming.
+   the exact thing the line is claiming.`}
 9. MODALITY MONOTONY — three or more consecutive scenes with the same visual modality (e.g. three
    Talking Head pulls in a row), or a missing through-line device the brief promised.
 10. WORLD CONTRADICTION — any line contradicting the depicted world or timeline, plus any
@@ -1359,13 +1403,25 @@ scene-1 visual. So:
     ("Introducing…", "Order now!"), brand-POV statements ("At Viasox we…"), or a register switch
     at the offer that breaks the story's voice. The fix rewrites the line in the narrator's own
     vocabulary — the offer arrives as HER telling you what to do about it.
+15. AUTHORITY BREAK (when the brief's concept uses an authority narrator) — the credential
+    arrives mid-script instead of the first line, becomes the centerpiece instead of a passing
+    clause, or the narrator reports witnessing something the recorded material doesn't support;
+    ALSO a "doctors recommend"-style endorsement claim (a doctor may exist inside the story as
+    an event, never as an endorsement). The fix moves or trims the credential, or re-grounds
+    the testimony in recorded material.${aiMode ? `
+16. CASTING/DEMOGRAPHIC DRIFT (AI production) — a storyboard cell whose generation prompt
+    drops the persona restatement, changes her identity between scenes without an explicit
+    time jump, casts anyone outside the buyer demographic, dresses the occupation as a costume
+    (staged clinic, whiteboard), or bakes on-screen text into a generated scene instead of a
+    post overlay. The fix restores the verbatim persona restatement from the casting spec or
+    corrects the drifted detail.` : ''}
 
 ### FIX DOCTRINE (every finding ships its fix)
 - MINIMAL SURGERY: change one hook, one CTA, one line, or one overlay — prefer fixing the VARIANT
   over the body; touch a body line only when the body line itself is the defect.
 - Every proposedText must: fit the concept, framework, and declared mode; obey the awareness
   level's vocabulary/offer rules on BOTH clocks; stay inside the claim boundary, brand facts, and
-  footage library; keep the hook set SHAPE-DIVERSE; and pass the read-aloud test — read
+  ${aiMode ? 'the AI-generation visual spec (persona restated in any rewritten visual cell)' : 'footage library'}; keep the hook set SHAPE-DIVERSE; and pass the read-aloud test — read
   line-before → your text → line-after as one spoken sequence before proposing.
 - Craft bar: Bly's 4 U's and you-orientation for hooks; Schwartz's open loop must close — a hook
   may only promise what the body pays off; the CTA's thesis echo lands as the final word.

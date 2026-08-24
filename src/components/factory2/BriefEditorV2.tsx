@@ -535,6 +535,12 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                   <div className="text-slate-700 text-xs leading-relaxed mt-0.5">{value || <span className="text-slate-300">—</span>}</div>
                 </div>
               ))}
+              {brief.header.ecomEditing.casting && (
+                <div className="col-span-2 md:col-span-4 border-t border-sky-100 pt-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-700/70">Casting (AI production — restated verbatim in every generation prompt)</div>
+                  <div className="text-slate-700 text-xs leading-relaxed mt-0.5">{brief.header.ecomEditing.casting}</div>
+                </div>
+              )}
             </div>
           )}
           <div className="md:col-span-2">

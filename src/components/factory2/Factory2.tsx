@@ -19,11 +19,12 @@ import type {
   UgcBriefV2,
   V2AdType,
   V2Brainstorm,
+  V2EcomProduction,
   V2SessionState,
   V2Task,
   V2TaskState,
 } from '../../factory2/v2Types';
-import { taskAdType } from '../../factory2/v2Types';
+import { taskAdType, taskEcomProduction } from '../../factory2/v2Types';
 import { fableFallbackActive } from '../../api/claude';
 import {
   generateConcepts,
@@ -423,7 +424,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
                     <div>
                       <span className="font-medium text-slate-700">{b.taskName}</span>
                       <span className="text-xs text-slate-400 ml-2">
-                        {taskAdType(b.task) === 'ecom' ? 'Ecom' : getUgcStyle(b.task.ugcStyle).shortLabel} · {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
+                        {taskAdType(b.task) === 'ecom' ? (taskEcomProduction(b.task) === 'ai-generated' ? 'Ecom · AI-gen' : 'Ecom') : getUgcStyle(b.task.ugcStyle).shortLabel} · {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
                       </span>
                     </div>
                     <div className="flex gap-3">
@@ -554,6 +555,17 @@ export default function Factory2({ apiKey, onBack }: Props) {
                               </option>
                             );
                           })}
+                        </select>
+                      )}
+                      {taskAdType(t.task) === 'ecom' && (
+                        <select
+                          value={taskEcomProduction(t.task)}
+                          onChange={(e) => updateTask(i, { ecomProduction: e.target.value as V2EcomProduction })}
+                          className={`border rounded px-2 py-1 text-xs font-medium max-w-[170px] ${taskEcomProduction(t.task) === 'ai-generated' ? 'border-violet-400 bg-violet-50 text-violet-900' : 'border-slate-200 bg-white text-slate-700'}`}
+                          title={taskEcomProduction(t.task) === 'ai-generated' ? 'Every scene is GENERATED — visual cells are generation prompts; casting law binds' : 'The editor pulls from the existing footage library'}
+                        >
+                          <option value="library">Footage library</option>
+                          <option value="ai-generated">Fully AI-generated</option>
                         </select>
                       )}
                     </div>

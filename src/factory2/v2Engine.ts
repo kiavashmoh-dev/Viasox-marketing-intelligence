@@ -47,6 +47,7 @@ import {
   CTA_PERFORMANCE_NOTE,
   describeTarget,
   taskAdType,
+  taskEcomProduction,
 } from './v2Types';
 import type { V2AdType, EcomShotTag } from './v2Types';
 import {
@@ -544,6 +545,7 @@ interface RawBriefJson {
       music?: string;
       transitions?: string;
       specialNotes?: string;
+      casting?: string;
     };
   };
   hooks: string[];
@@ -776,12 +778,18 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
   if (taskAdType(brief.task) === 'ecom') {
     // 1. Footage grounding: the negative list is the visual claim boundary.
     //    A visual implying footage we don't have is a wall for the editor.
+    //    LIBRARY production only — in AI production every scene is generated,
+    //    so the library-gap rationale doesn't hold (the CLAIM boundary still
+    //    bans children/athletic-performance scenes; the model-side review
+    //    covers that — a regex net here would false-flag legal generated
+    //    scenes like an airport in a flight-swelling angle).
+    const aiProduction = taskEcomProduction(brief.task) === 'ai-generated';
     const NEGATIVE_FOOTAGE =
       /\b(gym|fitness (?:class|studio)|medical office|clinic|clinical setting|hospital|airport|travel(?:ing|ling)?|restaurant|dining out|hiking|jogging|cycling|playing sports|children|toddler|grandchild(?:ren)?|family scene|puppy|kitten|\bdog\b|\bcat\b)\b/i;
     for (const r of mainEdit) {
       if (typeof r.clipNumber !== 'number') continue;
       const visual = `${r.shotType} ${r.shotDescription}`;
-      const m = NEGATIVE_FOOTAGE.exec(visual);
+      const m = aiProduction ? null : NEGATIVE_FOOTAGE.exec(visual);
       if (m) {
         flags.push({
           id: genId('flag'),
@@ -790,13 +798,16 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
           suggestion: 'Rewrite the visual against the footage library tags, or note the replacement in editor notes.',
         });
       }
-      // 2. Tag grounding: the shot tag must be a library tag.
+      // 2. Tag grounding: the shot tag must be a known tag (in AI production
+      //    the tag list is still the scene-type vocabulary).
       if (r.shotType && !ALL_ECOM_TAGS.some((t) => t === r.shotType)) {
         flags.push({
           id: genId('flag'),
           target: `clip ${r.clipNumber} shot`,
-          issue: `"${r.shotType}" is not a footage-library tag — the editor has no bucket to pull from`,
-          suggestion: 'Pick the closest tag from the library lists (Core / Supplementary / Limited).',
+          issue: aiProduction
+            ? `"${r.shotType}" is not a known scene-type tag — the brief's tag column must use the shared vocabulary`
+            : `"${r.shotType}" is not a footage-library tag — the editor has no bucket to pull from`,
+          suggestion: 'Pick the closest tag from the tag lists (Core / Supplementary / Limited).',
         });
       }
     }
@@ -936,6 +947,10 @@ export async function writeBrief(
               music: parsed.header?.ecomEditing?.music ?? '',
               transitions: parsed.header?.ecomEditing?.transitions ?? '',
               specialNotes: parsed.header?.ecomEditing?.specialNotes ?? '',
+              // AI production only: the persona/casting spec the writer emits.
+              ...(parsed.header?.ecomEditing?.casting
+                ? { casting: parsed.header.ecomEditing.casting }
+                : {}),
             },
           }
         : {}),
