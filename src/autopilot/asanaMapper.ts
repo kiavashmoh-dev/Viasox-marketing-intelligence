@@ -428,6 +428,19 @@ export function normalizeAdType(raw: string | undefined | null): AdType | undefi
     return 'Ecom Style';
   }
 
+  // 11. V2 ecom production styles (Aug 2026 boards): "Editing", "AI
+  //     Lifestyle", and "AI Animation" are all ECOM editing briefs at the
+  //     V1 level — the V2 intake reads the PRODUCTION dimension off the
+  //     same label via mapEcomProductionLabel() in factory2/v2Types.
+  if (
+    lower.includes('editing') ||
+    lower.includes('lifestyle') ||
+    lower.includes('animation') ||
+    lower.includes('animated')
+  ) {
+    return 'Ecom Style';
+  }
+
   return undefined;
 }
 

@@ -24,7 +24,7 @@ import type {
   V2Task,
   V2TaskState,
 } from '../../factory2/v2Types';
-import { taskAdType, taskEcomProduction } from '../../factory2/v2Types';
+import { taskAdType, taskEcomProduction, mapEcomProductionLabel } from '../../factory2/v2Types';
 import { fableFallbackActive } from '../../api/claude';
 import {
   generateConcepts,
@@ -50,16 +50,21 @@ interface Props {
 
 function toV2Task(parsed: ParsedAsanaTask, pinned?: string): V2Task {
   const mapped = mapAsanaTask(parsed);
+  // Ecom ONLY on an EXPLICIT parsed ad type — the V1 mapper's heuristic
+  // defaults to 'Ecom Style' when the column is absent, which would
+  // silently flip UGC batches. Explicit or nothing; override in confirm.
+  const isEcom = Boolean(parsed.adType) && mapped.scriptParamsBase.adType === 'Ecom Style';
+  // The production mode rides on the same explicit label ("AI Lifestyle" /
+  // "AI Animation" / "Editing"); unrecognized → library, override in confirm.
+  const ecomProduction = isEcom ? mapEcomProductionLabel(parsed.adType) : undefined;
   return {
     parsed,
     product: mapped.product,
     awarenessLevel: mapped.scriptParamsBase.awarenessLevel,
     talkingPoint: parsed.angle,
     duration: mapped.duration,
-    // Ecom ONLY on an EXPLICIT parsed ad type — the V1 mapper's heuristic
-    // defaults to 'Ecom Style' when the column is absent, which would
-    // silently flip UGC batches. Explicit or nothing; override in confirm.
-    adType: parsed.adType && mapped.scriptParamsBase.adType === 'Ecom Style' ? 'ecom' : 'ugc',
+    adType: isEcom ? 'ecom' : 'ugc',
+    ...(ecomProduction ? { ecomProduction } : {}),
     // W1 flagship as the default — the director picks the real style per
     // task in the confirm table (it's the taxonomy's innovation layer).
     // Ignored (and hidden) for ecom tasks.

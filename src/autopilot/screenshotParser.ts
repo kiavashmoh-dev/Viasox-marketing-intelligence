@@ -17,11 +17,14 @@ const EXTRACTION_PROMPT = `Extract all visible tasks from this Asana board scree
     write variations like "Longform(60s-3min)" or "Longform (60s-3min)" — return just "Longform".
     If a value matches none of these, return the closest one (or the raw visible value) WITHOUT
     commentary — never explain a mapping decision in your response.
-- adType: (OPTIONAL) The Ad Type column value IF visible. Recognized values include:
+- adType: (OPTIONAL) The Ad Type / Ad Style column value IF visible. Recognized values include:
     "Ecom Style", "AGC", "UGC", "Static", "Founder Style", "Fake Podcast", "Spokesperson",
-    "Packaging", "Employee", "Full AI", "Documentary", "Fully AI", "AI".
-    If the board does not have an Ad Type column, or the value is not visible for a row,
-    OMIT this field entirely (or set it to an empty string). Do NOT guess — only include
+    "Packaging", "Employee", "Full AI", "Documentary", "Fully AI", "AI",
+    "Editing", "AI Lifestyle", "AI Animation".
+    Return the value EXACTLY as written (e.g. "AI Lifestyle" stays "AI Lifestyle" — never
+    normalize it to another recognized value).
+    If the board does not have an Ad Type / Ad Style column, or the value is not visible for a
+    row, OMIT this field entirely (or set it to an empty string). Do NOT guess — only include
     an adType value when it is explicitly written in the screenshot.
 
 Return ONLY a JSON array. No markdown code fences. No explanation, no preamble, no notes about

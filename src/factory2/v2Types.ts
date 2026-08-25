@@ -130,6 +130,25 @@ export function taskEcomProduction(task: {
   return p;
 }
 
+/**
+ * Map an intake ad-style label (the Asana "Ad Style" column, e.g.
+ * "AI Lifestyle" / "AI Animation" / "Editing") to a V2 ecom production
+ * mode. EXPLICIT labels only — anything unrecognized returns undefined
+ * (which reads as 'library' via taskEcomProduction, and the director can
+ * override in the confirm table). The V1 mapper sends all three labels to
+ * 'Ecom Style'; this reads the PRODUCTION dimension off the same string.
+ */
+export function mapEcomProductionLabel(
+  raw: string | undefined | null,
+): V2EcomProduction | undefined {
+  if (!raw) return undefined;
+  const lower = raw.toLowerCase();
+  if (lower.includes('animation') || lower.includes('animated')) return 'ai-animation';
+  if (lower.includes('lifestyle')) return 'ai-lifestyle';
+  if (lower.includes('editing')) return 'library';
+  return undefined;
+}
+
 // ─── Brainstorm ─────────────────────────────────────────────────────────────
 
 export interface V2BrainstormQuestion {
