@@ -256,11 +256,22 @@ export async function sendMessage(
   const typedData = data as ClaudeResponse;
   const { text, truncated } = extractTextBlock(typedData, maxTokens);
   if (truncated) {
-    return text + '\n\n---\n\n> **Note:** This output was truncated because it reached the token limit. Try regenerating or reducing the scope of your request.';
+    return text + TRUNCATION_NOTE;
   }
 
   return text;
 }
+
+/**
+ * Appended to a response that stopped at the max_tokens ceiling with text
+ * already written. Exported so callers can DETECT truncation mechanically
+ * (`raw.includes(TRUNCATION_NOTE)`) — a truncated JSON response is
+ * deterministic for a given prompt and budget: the only useful recovery is
+ * retrying with a larger budget, which V2's requestJson does. Keep the
+ * wording stable; V1 renders it verbatim in chat-style outputs.
+ */
+export const TRUNCATION_NOTE =
+  '\n\n---\n\n> **Note:** This output was truncated because it reached the token limit. Try regenerating or reducing the scope of your request.';
 
 /* ------------------------------------------------------------------ */
 /*  Vision API (for screenshot parsing)                                */

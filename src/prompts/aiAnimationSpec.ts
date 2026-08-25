@@ -38,20 +38,22 @@ style FOR the story (name the reason in one clause): claymation/stop-motion (tac
 warmest — the house default), felt/fabric miniatures (softest, comfort-coded — natural fit for a
 sock story), paper cutout (graphic, quick, best for listy teardowns), stylized 3D (roundest and
 most polished — use when the concept needs physical simulation like stretch), painterly 2D (most
-emotional interiority). The style's FULL texture description is restated VERBATIM in every
-generation prompt (the animation twin of the persona restatement) — e.g. 'handmade claymation,
-visible fingerprints in the clay, slightly imperfect surfaces, miniature-set depth of field,
-stop-motion cadence'.
+emotional interiority). The style's FULL texture description is written ONCE, in the style +
+character spec — e.g. 'handmade claymation, visible fingerprints in the clay, slightly imperfect
+surfaces, miniature-set depth of field, stop-motion cadence'. THE TOOL PREPENDS THAT SPEC
+VERBATIM to every visual cell at export, so each generation prompt opens with the full style —
+you never rewrite it per scene; you write cells that never contradict it.
 
 **3. THE CHARACTER DESIGN LAW.** The narrator's avatar reads as the BUYER, translated into the
 style: silver/gray hair in yarn or clay, reading glasses, a cardigan, softly rounded proportions
 — warm and DIGNIFIED. Never a caricature of age, never a joke at her expense: she is the hero
 telling her own story. Write ONE character model spec (proportions, palette, wardrobe, plus 2-3
-FIXED ANCHORS — the same glasses, the same brooch, the same cardigan color) and restate it
-verbatim in every scene prompt; anchors never flicker. When the concept uses an AUTHORITY
-narrator, the avatar wears the occupation in-style (a tiny clay name tag, a felt scrub top, a
-miniature measuring stick) — the playbook's rules still bind. Supporting characters get the same
-one-spec-restated discipline.
+FIXED ANCHORS — the same glasses, the same brooch, the same cardigan color) into the style +
+character spec; the tool prepends it to every visual cell at export, so anchors never flicker
+and you never re-describe her per scene — cells refer to her as 'she' and name only what this
+scene changes. When the concept uses an AUTHORITY narrator, the avatar wears the occupation
+in-style (a tiny clay name tag, a felt scrub top, a miniature measuring stick) — the playbook's
+rules still bind. Supporting characters are specced in full in the same spec.
 
 **4. THE METAPHOR ENGINE (animation's superpower).** Animation shows what real footage cannot —
 use it on the exact beats where the script needs it most: the tight sock as a band cinching a
@@ -93,7 +95,10 @@ generated in-scene. Generated in-scene text garbles in animation exactly as it d
 live-action: any in-world text is a handcrafted PROP with at most 1-2 short words (a stitched
 'OUCH', a tiny 'SALE' sign), used sparingly and legible in one frame.
 
-**9. EVERY GENERATION PROMPT INCLUDES:** [style restatement verbatim] + [character model
-restatement verbatim] + [action] + [set + handmade props] + [camera + motion cadence] + [light]
-+ [craft-texture note]. A visual cell missing the style or character restatement is a failed row.`;
+**9. EVERY VISUAL CELL IS THE SCENE HALF OF A GENERATION PROMPT.** The tool prepends the full
+style + character spec to each cell at export, so the editor receives [style + character spec] +
+your cell as ONE prompt. Your cell supplies everything scene-specific: [action] + [set +
+handmade props] + [camera + motion cadence] + [light] + [craft-texture note]. A cell that
+re-describes the style or the character, contradicts an anchor, or reads wrong with the spec
+block in front of it is a failed row.`;
 }

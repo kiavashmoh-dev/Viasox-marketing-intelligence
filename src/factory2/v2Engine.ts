@@ -17,7 +17,7 @@
  * match never discards a completed generation.
  */
 
-import { sendMessage, sendVisionMessage, type ContentBlock } from '../api/claude';
+import { sendMessage, sendVisionMessage, TRUNCATION_NOTE, type ContentBlock } from '../api/claude';
 import { V2_THINKING_MODEL, V2_HEAVY_MODEL } from '../config/models';
 import { buildBrainAddendum } from '../brain/contextAssembler';
 import { getAllItems, getFrames, getItem } from '../inspiration/inspirationStore';
@@ -282,9 +282,10 @@ async function requestJson<T>(
   context: string,
   signal?: AbortSignal,
 ): Promise<T> {
+  let budget = maxTokens;
   let raw: string;
   try {
-    raw = await sendThinking(system, user, apiKey, maxTokens, signal);
+    raw = await sendThinking(system, user, apiKey, budget, signal);
   } catch (err) {
     if (signal?.aborted) throw err;
     // The model burned its whole output budget reasoning and never wrote a
@@ -292,13 +293,26 @@ async function requestJson<T>(
     // fails identically forever (the Aug 2026 batch proved it over ~10 manual
     // retries). The only useful recovery is MORE ROOM, so retry once, bigger.
     if (err instanceof Error && err.message.startsWith('TOKEN_BUDGET_EXHAUSTED')) {
-      const bigger = Math.min(maxTokens * 3, 32000);
-      console.warn(`[factory2] ${context}: output budget exhausted at ${maxTokens} tokens — retrying once at ${bigger}.`);
+      budget = Math.min(maxTokens * 3, 32000);
+      console.warn(`[factory2] ${context}: output budget exhausted at ${maxTokens} tokens — retrying once at ${budget}.`);
       await interCallDelay(signal);
-      raw = await sendThinking(system, user, apiKey, bigger, signal);
+      raw = await sendThinking(system, user, apiKey, budget, signal);
     } else {
       throw err;
     }
+  }
+  // Truncated-with-text: the model wrote real content but hit the max_tokens
+  // ceiling before finishing (stop_reason max_tokens; sendMessage appends the
+  // TRUNCATION_NOTE marker). Just as deterministic as the zero-text case —
+  // the parser would choke exactly at the guillotine point ("Expected ',' or
+  // ']' after array element" at the last complete row, Aug 2026 batch) and a
+  // same-budget corrective retry re-truncates identically. Retry once with
+  // double the room BEFORE wasting a parse + correction cycle.
+  if (raw.includes(TRUNCATION_NOTE) && budget < 32000) {
+    budget = Math.min(budget * 2, 32000);
+    console.warn(`[factory2] ${context}: output truncated at the token ceiling — retrying once at ${budget} tokens.`);
+    await interCallDelay(signal);
+    raw = await sendThinking(system, user, apiKey, budget, signal);
   }
   try {
     return parseJsonLenient<T>(raw, context);
@@ -316,7 +330,7 @@ ${msg}
 
 Your previous response was:
 """
-${raw.slice(0, 24000)}
+${raw.slice(0, 60000)}
 """
 
 Re-emit the COMPLETE response as ONE strictly valid JSON object. Keep the same creative content —
@@ -324,7 +338,10 @@ fix ONLY the JSON: convert or escape double quotes inside string values (prefer 
 quoted speech), remove raw line breaks inside strings, add any missing commas between array
 elements and properties, remove trailing commas, and close every bracket. If your previous response
 was cut off, finish it. Output the JSON object and nothing else.`;
-    const raw2 = await sendThinking(system, fixUser, apiKey, maxTokens, signal);
+    // The correction must re-emit EVERYTHING the first attempt wrote and
+    // finish it — running it at the budget that just proved too small would
+    // guarantee a second truncation. Escalate.
+    const raw2 = await sendThinking(system, fixUser, apiKey, Math.min(budget * 2, 32000), signal);
     return parseJsonLenient<T>(raw2, context);
   }
 }
@@ -920,7 +937,17 @@ export async function writeBrief(
     { module: 'briefGenerator', angle: task.talkingPoint },
     { apiKey },
   );
-  const parsed = await requestJson<RawBriefJson>(system + brain.addendum, user, apiKey, 12000, 'brief writing', signal);
+  // Output budget by weight class (shared with thinking on the reasoning
+  // tier). Ecom long-form storyboards are the heaviest surface; the AI
+  // production modes add per-row generation prompts + extra plan gates on
+  // top — the Aug 2026 batch proved 12000 truncates them mid-storyboard.
+  const writeBudget =
+    taskAdType(task) === 'ecom'
+      ? taskEcomProduction(task) !== 'library'
+        ? 24000
+        : 16000
+      : 12000;
+  const parsed = await requestJson<RawBriefJson>(system + brain.addendum, user, apiKey, writeBudget, 'brief writing', signal);
   const rawRows = parsed.storyboard ?? [];
   const mainRows = rawRows.map((r) => toRow(r, taskAdType(task))).filter((r): r is V2Row => r !== null);
   if (mainRows.length < 3) {

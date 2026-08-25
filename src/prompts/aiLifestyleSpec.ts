@@ -48,8 +48,12 @@ hands — hand-continuity mismatches between inserts read as native stitched UGC
 **2. PERSONA CONSISTENCY — lock one identity spec.** The narrator's full identity — exact age
 read, hair color/length/style, skin-texture notes, and 2-3 FIXED IDENTITY ANCHORS (the same
 glasses, same small gold hoops, same ring, same signature cardigan or scrub top) — is written
-ONCE in the casting spec and restated VERBATIM in every scene prompt. Anchors are what viewers
-track: faces may drift subtly, anchors may not. Keep talking-head clips 2-4s and cut to b-roll
+ONCE, in full, in the casting spec. THE TOOL PREPENDS THAT SPEC VERBATIM to every visual cell
+when the brief is exported, so the editor's generation prompt always opens with the complete
+persona — you never rewrite it per scene. Write each cell AS THE CONTINUATION of that persona
+block: refer to her as 'she', never re-describe her, never contradict an anchor, and name any
+wardrobe/lighting delta explicitly as a diegetic change ('same woman, now in her robe — evening
+of the same day'). Anchors are what viewers track: faces may drift subtly, anchors may not. Keep talking-head clips 2-4s and cut to b-roll
 before micro-drift registers; never let two versions of the same face abut. Justify variation
 diegetically — wardrobe/lighting changes are different days, which launders drift as life. Give
 risky shots to anonymous hands and rotating extras: variation among extras is expected; variation
@@ -125,8 +129,11 @@ UGC formats (car visor check, selfie vent). IMPERFECTION AS CAMOUFLAGE: pores, f
 highlights, motion blur — "too imperfect to be fake." Do not homogenize the grade. Expressions
 must match the VO's temperature — an over-articulated face on a mundane line is a soft tell.
 
-**9. EVERY GENERATION PROMPT INCLUDES:** [persona restatement verbatim from the casting spec] +
-[action] + [setting + life props] + [wardrobe for this scene] + [camera register: which of the
-four + framing/distance] + [light source] + [imperfection note]. A visual cell missing the
-persona restatement is a failed row.`;
+**9. EVERY VISUAL CELL IS THE SCENE HALF OF A GENERATION PROMPT.** The tool prepends the full
+casting spec to each cell at export, so the editor receives [persona spec] + your cell as ONE
+prompt. Your cell supplies everything scene-specific: [action] + [setting + life props] +
+[wardrobe for this scene, as a delta from the spec where it changes] + [camera register: which
+of the four + framing/distance] + [light source] + [imperfection note]. A cell that re-describes
+the persona, contradicts an anchor, or reads wrong with the persona block in front of it is a
+failed row.`;
 }

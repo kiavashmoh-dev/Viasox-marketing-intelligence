@@ -179,6 +179,16 @@ export function buildEcomBriefHtml(brief: UgcBriefV2): string {
   const production = taskEcomProduction(brief.task);
   const aiMode = production !== 'library';
   const visualHeader = aiMode ? 'GENERATION PROMPT' : 'SUGGESTED VISUAL';
+  // AI production: the writer authors the casting/style spec ONCE and cells
+  // carry only the scene half — the export COMPOSES the full self-contained
+  // generation prompt here, so the editor can copy any cell straight into a
+  // generator. (This is the redundancy fix: the spec is no longer emitted
+  // per-row by the model, it is prepended per-row by the tool.)
+  const specPrefix = aiMode && ed?.casting
+    ? `<span style="color:#666;font-style:italic;">[${production === 'ai-animation' ? 'STYLE + CHARACTER' : 'PERSONA'}: ${esc(ed.casting)}]</span><br/>`
+    : '';
+  const composedVisual = (cell: string) =>
+    cell ? `${specPrefix}${esc(cell)}` : specPrefix ? `${specPrefix}—` : '—';
   const rows = mainEditWithEndCard(brief).filter((r) => r.clipNumber !== 'end-card');
   // The scene carrying hook 1 (identity link, never text matching).
   const hookRow = rows.find((r) => r.mirrorsLineId === brief.hooks[0]?.id) ?? rows[0];
@@ -234,8 +244,8 @@ h1 { text-align: center; }
   html += kvRow('Voiceover', 'AI voiceover — reads the SCRIPT below VERBATIM. Do not paraphrase any line.');
   if (aiMode && ed?.casting) {
     html += production === 'ai-animation'
-      ? kvRow('Style & Character', `<b>${esc(ed.casting)}</b><br/>Restate this style AND character model VERBATIM in every generation prompt — the declared style and the avatar's fixed anchors must never flicker between scenes.`)
-      : kvRow('Casting', `<b>${esc(ed.casting)}</b><br/>Restate this persona VERBATIM in every generation prompt — identity anchors (glasses, jewelry, signature garment) must never flicker between scenes.`);
+      ? kvRow('Style & Character', `<b>${esc(ed.casting)}</b><br/>This spec is already prepended to every GENERATION PROMPT cell below — generate every scene with it in full. The declared style and the avatar's fixed anchors must never flicker between scenes.`)
+      : kvRow('Casting', `<b>${esc(ed.casting)}</b><br/>This spec is already prepended to every GENERATION PROMPT cell below — generate every scene with it in full. Identity anchors (glasses, jewelry, signature garment) must never flicker between scenes.`);
   }
   html += kvRow('Special Notes', esc(ed?.specialNotes || ''));
   html += kvRow(
@@ -250,7 +260,7 @@ h1 { text-align: center; }
   html += `<table>`;
   html += `<tr><th style="${scriptHeaderStyle}width:40px;">LINE #</th><th style="${scriptHeaderStyle}width:110px;">SHOT TYPE</th><th style="${scriptHeaderStyle}width:220px;">${visualHeader}</th><th style="${scriptHeaderStyle}">HOOK LINE</th></tr>`;
   brief.hooks.forEach((h, i) => {
-    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${i + 1}</td><td style="${scriptCellStyle}width:110px;">${esc(String(hookRow?.shotType ?? ''))}</td><td style="${scriptCellStyle}width:220px;">${esc(hookRow?.shotDescription ?? '')}</td><td style="${scriptCellStyle}">${esc(h.text)}</td></tr>`;
+    html += `<tr><td style="${scriptCellStyle}text-align:center;width:40px;">${i + 1}</td><td style="${scriptCellStyle}width:110px;">${esc(String(hookRow?.shotType ?? ''))}</td><td style="${scriptCellStyle}width:220px;">${composedVisual(hookRow?.shotDescription ?? '')}</td><td style="${scriptCellStyle}">${esc(h.text)}</td></tr>`;
   });
   html += `</table>`;
 
@@ -284,7 +294,7 @@ h1 { text-align: center; }
     html += `<tr>` +
       `<td style="${scriptCellStyle}text-align:center;width:40px;">${esc(String(r.clipNumber))}</td>` +
       `<td style="${scriptCellStyle}width:110px;">${esc(String(r.shotType))}</td>` +
-      `<td style="${scriptCellStyle}width:200px;">${esc(r.shotDescription || '—')}</td>` +
+      `<td style="${scriptCellStyle}width:200px;">${composedVisual(r.shotDescription || '')}</td>` +
       `<td style="${scriptCellStyle}width:140px;">${esc(r.overlayText || '—')}</td>` +
       `<td style="${scriptCellStyle}">${esc(r.scriptLine || '—')}</td>` +
       `</tr>`;

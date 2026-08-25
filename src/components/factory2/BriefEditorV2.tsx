@@ -538,7 +538,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               {brief.header.ecomEditing.casting && (
                 <div className="col-span-2 md:col-span-4 border-t border-sky-100 pt-2">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-700/70">
-                    {taskEcomProduction(brief.task) === 'ai-animation' ? 'Style + character (AI Animation — restated verbatim in every generation prompt)' : 'Casting (AI Lifestyle — restated verbatim in every generation prompt)'}
+                    {taskEcomProduction(brief.task) === 'ai-animation' ? 'Style + character (AI Animation — prepended to every generation prompt at export)' : 'Casting (AI Lifestyle — prepended to every generation prompt at export)'}
                   </div>
                   <div className="text-slate-700 text-xs leading-relaxed mt-0.5">{brief.header.ecomEditing.casting}</div>
                 </div>
