@@ -778,12 +778,13 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
   if (taskAdType(brief.task) === 'ecom') {
     // 1. Footage grounding: the negative list is the visual claim boundary.
     //    A visual implying footage we don't have is a wall for the editor.
-    //    LIBRARY production only — in AI production every scene is generated,
-    //    so the library-gap rationale doesn't hold (the CLAIM boundary still
-    //    bans children/athletic-performance scenes; the model-side review
-    //    covers that — a regex net here would false-flag legal generated
-    //    scenes like an airport in a flight-swelling angle).
-    const aiProduction = taskEcomProduction(brief.task) === 'ai-generated';
+    //    LIBRARY production only — in AI production (lifestyle OR animation)
+    //    every scene is generated, so the library-gap rationale doesn't hold
+    //    (the CLAIM boundary still bans children/athletic-performance scenes;
+    //    the model-side review covers that — a regex net here would
+    //    false-flag legal generated scenes like an airport in a
+    //    flight-swelling angle).
+    const aiProduction = taskEcomProduction(brief.task) !== 'library';
     const NEGATIVE_FOOTAGE =
       /\b(gym|fitness (?:class|studio)|medical office|clinic|clinical setting|hospital|airport|travel(?:ing|ling)?|restaurant|dining out|hiking|jogging|cycling|playing sports|children|toddler|grandchild(?:ren)?|family scene|puppy|kitten|\bdog\b|\bcat\b)\b/i;
     for (const r of mainEdit) {

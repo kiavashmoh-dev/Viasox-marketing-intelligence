@@ -17,7 +17,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import type { ScriptFramework } from '../../engine/types';
 import { getFrames } from '../../inspiration/inspirationStore';
 import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/v2Types';
-import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType } from '../../factory2/v2Types';
+import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType, taskEcomProduction } from '../../factory2/v2Types';
 import { applyRegen, applyReviewFix, deleteRow, runFinalReview } from '../../factory2/v2Engine';
 import { fableFallbackActive } from '../../api/claude';
 import { exportBriefDoc } from '../../factory2/v2Export';
@@ -537,7 +537,9 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               ))}
               {brief.header.ecomEditing.casting && (
                 <div className="col-span-2 md:col-span-4 border-t border-sky-100 pt-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-700/70">Casting (AI production — restated verbatim in every generation prompt)</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-700/70">
+                    {taskEcomProduction(brief.task) === 'ai-animation' ? 'Style + character (AI Animation — restated verbatim in every generation prompt)' : 'Casting (AI Lifestyle — restated verbatim in every generation prompt)'}
+                  </div>
                   <div className="text-slate-700 text-xs leading-relaxed mt-0.5">{brief.header.ecomEditing.casting}</div>
                 </div>
               )}

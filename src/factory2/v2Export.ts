@@ -176,7 +176,8 @@ h1 { text-align: center; }
 export function buildEcomBriefHtml(brief: UgcBriefV2): string {
   const date = (brief.createdAt || '').slice(0, 10);
   const ed = brief.header.ecomEditing;
-  const aiMode = taskEcomProduction(brief.task) === 'ai-generated';
+  const production = taskEcomProduction(brief.task);
+  const aiMode = production !== 'library';
   const visualHeader = aiMode ? 'GENERATION PROMPT' : 'SUGGESTED VISUAL';
   const rows = mainEditWithEndCard(brief).filter((r) => r.clipNumber !== 'end-card');
   // The scene carrying hook 1 (identity link, never text matching).
@@ -202,9 +203,11 @@ h1 { text-align: center; }
   html += kvRow('Format', `${esc(brief.task.duration)} &mdash; 9x16 vertical`);
   html += kvRow(
     'Production',
-    aiMode
-      ? '<b>FULLY AI-GENERATED</b> — every scene is generated (nothing pulled from the library). Each row’s visual cell is the GENERATION PROMPT for that scene; the CASTING spec below is restated in every prompt.'
-      : 'Footage library — the editor assembles from existing clips.',
+    production === 'ai-lifestyle'
+      ? '<b>AI LIFESTYLE (fully AI-generated)</b> — every scene is generated and must look like REAL UGC (a viewer cannot tell). Each row’s visual cell is the GENERATION PROMPT for that scene; the CASTING spec below is restated in every prompt.'
+      : production === 'ai-animation'
+        ? '<b>AI ANIMATION (fully AI-generated)</b> — every scene is a generated ANIMATION in ONE declared style (no real faces). Each row’s visual cell is the GENERATION PROMPT for that scene; the STYLE + CHARACTER spec below is restated in every prompt. The only legal style break is the real-product end card.'
+        : 'Footage library — the editor assembles from existing clips.',
   );
   html += `</table>`;
 
@@ -230,7 +233,9 @@ h1 { text-align: center; }
   html += kvRow('Music', esc(ed?.music || ''));
   html += kvRow('Voiceover', 'AI voiceover — reads the SCRIPT below VERBATIM. Do not paraphrase any line.');
   if (aiMode && ed?.casting) {
-    html += kvRow('Casting', `<b>${esc(ed.casting)}</b><br/>Restate this persona VERBATIM in every generation prompt — identity anchors (glasses, jewelry, signature garment) must never flicker between scenes.`);
+    html += production === 'ai-animation'
+      ? kvRow('Style & Character', `<b>${esc(ed.casting)}</b><br/>Restate this style AND character model VERBATIM in every generation prompt — the declared style and the avatar's fixed anchors must never flicker between scenes.`)
+      : kvRow('Casting', `<b>${esc(ed.casting)}</b><br/>Restate this persona VERBATIM in every generation prompt — identity anchors (glasses, jewelry, signature garment) must never flicker between scenes.`);
   }
   html += kvRow('Special Notes', esc(ed?.specialNotes || ''));
   html += kvRow(

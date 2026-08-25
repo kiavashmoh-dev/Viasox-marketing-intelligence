@@ -1,7 +1,9 @@
 /**
- * THE AI-GENERATION VISUAL SPEC — for fully-AI-generated ecom briefs.
+ * THE AI LIFESTYLE VISUAL SPEC — for fully-AI-generated ecom briefs that
+ * must look like REAL UGC (real-looking faces and people; the director's
+ * "AI Lifestyle" subsection — the sibling of aiAnimationSpec.ts).
  *
- * Production mode 'ai-generated': nothing is pulled from the footage
+ * Production mode 'ai-lifestyle': nothing is pulled from the footage
  * library — every scene is GENERATED, and the brief's visual cells are
  * generation prompts. The look must be indistinguishable from real UGC and
  * cast 100% to the Viasox demographic.
@@ -18,10 +20,11 @@
  * does not apply — the claim boundary still governs what scenes may imply).
  */
 
-export function getAiGenerationSpecBlock(): string {
-  return `## AI-GENERATED PRODUCTION — THE VISUAL LAW (this brief's scenes are GENERATED, not pulled)
+export function getAiLifestyleSpecBlock(): string {
+  return `## AI LIFESTYLE PRODUCTION — THE VISUAL LAW (scenes are GENERATED and must look like REAL UGC)
 
-This brief is FULLY AI-GENERATED: the editor generates every scene. The visual cell of every row
+This brief is FULLY AI-GENERATED in the LIFESTYLE style: every scene is generated, looks like a
+real person filmed it on a phone, and a viewer must not be able to tell. The visual cell of every row
 is a GENERATION PROMPT — persona + action + setting + wardrobe + camera + light + imperfection —
 not a footage description. Shot tags remain as SCENE-TYPE vocabulary, but nothing is limited to a
 library. The claim boundary still governs what a scene may imply (no athletic-performance scenes,

@@ -104,22 +104,30 @@ export interface V2Task {
   /**
    * Ecom only: how the ad is produced. 'library' (default when absent —
    * every pre-existing ecom task) = the editor pulls from the footage
-   * library; 'ai-generated' = every scene is generated, visual cells are
-   * generation prompts, and the AI-generation visual spec replaces the
-   * footage-library block. Read via taskEcomProduction(), never directly.
+   * library; 'ai-lifestyle' = every scene is generated and must look like
+   * REAL UGC (real-looking faces, the authority refs' territory);
+   * 'ai-animation' = every scene is generated in a declared ANIMATION style
+   * (claymation etc. — no real faces). In both AI modes visual cells are
+   * generation prompts and a visual-law spec replaces the footage-library
+   * block. Read via taskEcomProduction(), never directly.
    */
   ecomProduction?: V2EcomProduction;
 }
 
 /** Ecom production mode. Absent on pre-existing tasks — read via
  *  taskEcomProduction() so old data is 'library' with no migration. */
-export type V2EcomProduction = 'library' | 'ai-generated';
+export type V2EcomProduction = 'library' | 'ai-lifestyle' | 'ai-animation';
 
-/** The one honest way to read an ecom task's production mode. */
+/** The one honest way to read an ecom task's production mode. Normalizes
+ *  the short-lived legacy value 'ai-generated' (commit 14c8d8b, before the
+ *  lifestyle/animation split) to 'ai-lifestyle' at read time. */
 export function taskEcomProduction(task: {
-  ecomProduction?: V2EcomProduction;
+  ecomProduction?: V2EcomProduction | 'ai-generated';
 }): V2EcomProduction {
-  return task.ecomProduction ?? 'library';
+  const p = task.ecomProduction;
+  if (!p) return 'library';
+  if (p === 'ai-generated') return 'ai-lifestyle';
+  return p;
 }
 
 // ─── Brainstorm ─────────────────────────────────────────────────────────────
@@ -287,8 +295,10 @@ export interface V2StrategicHeader {
     music: string;
     transitions: string;
     specialNotes: string;
-    /** AI-generated production only: the full persona/casting spec every
-     *  generation prompt restates (age, face, hair, wardrobe, setting).
+    /** AI production only: the spec every generation prompt restates
+     *  verbatim. Lifestyle = the persona/casting spec (age, face, hair,
+     *  wardrobe, setting). Animation = the STYLE + CHARACTER MODEL spec
+     *  (declared animation style, the narrator avatar's design + anchors).
      *  Library briefs never set it. */
     casting?: string;
   };

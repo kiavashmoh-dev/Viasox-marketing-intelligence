@@ -424,7 +424,7 @@ export default function Factory2({ apiKey, onBack }: Props) {
                     <div>
                       <span className="font-medium text-slate-700">{b.taskName}</span>
                       <span className="text-xs text-slate-400 ml-2">
-                        {taskAdType(b.task) === 'ecom' ? (taskEcomProduction(b.task) === 'ai-generated' ? 'Ecom · AI-gen' : 'Ecom') : getUgcStyle(b.task.ugcStyle).shortLabel} · {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
+                        {taskAdType(b.task) === 'ecom' ? (taskEcomProduction(b.task) === 'ai-lifestyle' ? 'Ecom · AI Lifestyle' : taskEcomProduction(b.task) === 'ai-animation' ? 'Ecom · AI Animation' : 'Ecom') : getUgcStyle(b.task.ugcStyle).shortLabel} · {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
                       </span>
                     </div>
                     <div className="flex gap-3">
@@ -561,11 +561,12 @@ export default function Factory2({ apiKey, onBack }: Props) {
                         <select
                           value={taskEcomProduction(t.task)}
                           onChange={(e) => updateTask(i, { ecomProduction: e.target.value as V2EcomProduction })}
-                          className={`border rounded px-2 py-1 text-xs font-medium max-w-[170px] ${taskEcomProduction(t.task) === 'ai-generated' ? 'border-violet-400 bg-violet-50 text-violet-900' : 'border-slate-200 bg-white text-slate-700'}`}
-                          title={taskEcomProduction(t.task) === 'ai-generated' ? 'Every scene is GENERATED — visual cells are generation prompts; casting law binds' : 'The editor pulls from the existing footage library'}
+                          className={`border rounded px-2 py-1 text-xs font-medium max-w-[170px] ${taskEcomProduction(t.task) === 'ai-lifestyle' ? 'border-violet-400 bg-violet-50 text-violet-900' : taskEcomProduction(t.task) === 'ai-animation' ? 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-900' : 'border-slate-200 bg-white text-slate-700'}`}
+                          title={taskEcomProduction(t.task) === 'ai-lifestyle' ? 'Every scene is GENERATED but must look like REAL UGC — visual cells are generation prompts; casting law binds' : taskEcomProduction(t.task) === 'ai-animation' ? 'Every scene is a GENERATED ANIMATION (claymation etc.) — one declared style, character model consistency; script keeps full stakes' : 'The editor pulls from the existing footage library'}
                         >
-                          <option value="library">Footage library</option>
-                          <option value="ai-generated">Fully AI-generated</option>
+                          <option value="library">Editing (footage library)</option>
+                          <option value="ai-lifestyle">AI Lifestyle (real-look UGC)</option>
+                          <option value="ai-animation">AI Animation (clay etc.)</option>
                         </select>
                       )}
                     </div>
