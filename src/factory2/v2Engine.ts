@@ -1250,8 +1250,20 @@ export async function applyRegen(
   }
 
   const { system, user } = buildRegenPrompt(withLedger.task, withLedger, target, feedback);
-  const isStructural = target.type === 'framework-regenerate' || target.type === 'framework-switch';
-  const maxT = isStructural ? 12000 : 2500;
+  const isStructural =
+    target.type === 'framework-regenerate' ||
+    target.type === 'framework-switch' ||
+    target.type === 'story-rework';
+  // Structural rebuilds emit a complete brief — budget by the same weight
+  // class as the writer (ecom long-form storyboards need the room; the
+  // truncation ladder in requestJson backstops the rest).
+  const structuralBudget =
+    taskAdType(withLedger.task) === 'ecom'
+      ? taskEcomProduction(withLedger.task) !== 'library'
+        ? 24000
+        : 16000
+      : 12000;
+  const maxT = isStructural ? structuralBudget : 2500;
 
   let updated: UgcBriefV2;
   if (isStructural) {

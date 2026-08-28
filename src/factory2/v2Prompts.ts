@@ -48,6 +48,7 @@ import { getEcomCraftDna } from './../prompts/ecomCraftDna';
 import { getEcomFootageLibraryBlock } from './../prompts/ecomFootageLibrary';
 import { getPainBankBlock } from './../prompts/painBank';
 import { getAuthorityPlaybookBlock } from './../prompts/authorityPlaybook';
+import { getSalesArgumentBlock } from './../prompts/salesArgument';
 import { getAiLifestyleSpecBlock } from './../prompts/aiLifestyleSpec';
 import { getAiAnimationSpecBlock } from './../prompts/aiAnimationSpec';
 import { taskEcomProduction, type V2EcomProduction } from './v2Types';
@@ -155,15 +156,18 @@ function ctaPolicyLine(level: AwarenessLevel): string {
   }
 }
 
-/** Ecom CTA policy — Kia's law: the offer rides the CTA at all times, stated
- *  plainly with the brand-facts math, plus a thesis echo. The one exception
- *  is Unaware, where the standing release-order doctrine still governs. */
+/** Ecom CTA policy — CMO ruling 2026-08-28 (supersedes the old Unaware
+ *  exception, confirmed across four brief reviews): the offer rides EVERY
+ *  ecom close, Unaware included — an offer-less "go see what reviewers
+ *  found" close is a weak CTA at any level. The Unaware release order still
+ *  governs everything BEFORE the close (no early brand/category), and the
+ *  close must never undercut its own bundle. */
 function ecomCtaPolicyLine(level: AwarenessLevel): string {
   switch (level) {
     case 'Unaware':
-      return `exactly 2 CTA options, BOTH soft discovery CTAs per the Unaware rules — no price, no offer, no "buy" (the release-order doctrine governs the close at this level)`;
+      return `exactly 2 CTA options, BOTH carrying THE OFFER stated plainly (Buy 2 Get 3 Free — five pairs for sixty dollars, twelve a pair) + a DIRECT action, arriving only AT the close (the release order still governs everything before it) — in the narrator's voice, never an announcer's, never undercutting the bundle (no bare "start with one"; low-commitment framing lives INSIDE the offer: "start with one pair tomorrow and see why you'll be glad you have four more")`;
     default:
-      return `exactly 2 CTA options, BOTH carrying THE OFFER stated plainly (offer math verbatim from the brand facts) + a THESIS ECHO that reframes the whole ad as its payoff — the meaning line lands as the final words, never the price`;
+      return `exactly 2 CTA options, BOTH carrying THE OFFER stated plainly (offer math verbatim from the brand facts) + a DIRECT action + a THESIS ECHO that reframes the whole ad as its payoff — the meaning line lands as the final words, never the price; never undercut the bundle (low-commitment framing lives INSIDE the offer, per the sales-argument doctrine)`;
   }
 }
 
@@ -207,7 +211,18 @@ function buildEcomContextPack(task: V2Task, stage: 'concept' | 'script' = 'scrip
 ${adTypeLine}
 - ${ecomDurationBudget(task.duration)}
 
+${getSalesArgumentBlock(task.product)}
+
 ${awarenessGuide}
+
+## AWARENESS CORRECTIONS FOR ECOM (CMO rulings — these override the guide above where they conflict)
+- The SYMPTOM is never banned, at any level. Unaware bans the condition label, the product category,
+  and the brand in the opening — "heavy, swollen legs" is a symptom and belongs in the hook. The
+  hook must establish the symptom, the stakes, and the value of watching IMMEDIATELY.
+- Delay is BOUNDED: Unaware permits delaying the product reveal, never hiding the product for ten
+  scenes — the delay must be earned by curiosity that connects, beat by beat, to the coming reveal.
+- The OFFER belongs in every close, Unaware included (the release order governs everything before
+  the close, not the close itself).
 
 ${getSchwartzStateBlock(task.awarenessLevel)}
 
@@ -248,8 +263,10 @@ gradualized argument). Four stations, NONE skipped, at any level or duration:
 1. ENTRY MOMENT — the product arrives as an EVENT in the argument (the bridge line + a reveal
    visual), never a name-drop in passing.
 2. MECHANISM — show HOW it answers the exact pain this script named. In-bank attributes only.
-3. SHOWN PROOF — ecom's lived proof is MEASURABLE ON CAMERA: the timeline, the ladder, the
-   instrument, the demo, the result-only frame.
+3. SHOWN PROOF — demonstrated on camera AND believable: the timeline, the ladder, the
+   instrument, the demo. CMO correction: never a manufactured absolute (identical morning/evening
+   ankles reads as fake and overclaims) — outcomes are felt-scale and scene-specific, and the
+   demonstration does its work BEFORE the result is stated so the result feels earned.
 4. PAYOFF LINE — the line that lands the product as THE answer, placed before the CTA.
 Minimum PRODUCT AIRTIME (share of total runtime from verbal entry to the end):
 Unaware ≥15% · Problem Aware ≥45% · Solution Aware ≥60% · Product/Most Aware ≥80%.
@@ -605,7 +622,21 @@ ${isEcom ? `4. ${taskEcomProduction(task) === 'ai-lifestyle' ? `GENERATION FEASI
 6. AUTHORITY (when the instructions, direction, or the concept itself invoke an authority
    narrator): name the authority MODE (one of the playbook's six) and the narrator's vantage
    point in one clause inside the summary, and confirm in verification that her witnessed-volume
-   testimony maps to recorded material. Skip this gate only when no authority is invoked.` : `4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.`}
+   testimony maps to recorded material. Apply the ESSENTIALITY TEST (delete the career — if the
+   story survives, the authority is stapled) and the NECESSITY TEST (no element welded to another
+   by an invented bridge line: a waitress + menopause + veins with "I watched the older
+   waitresses" as the only connective is a stitched concept and invalidates itself). Skip this
+   gate only when no authority is invoked.
+7. THE SEVEN CONCEPT QUESTIONS (CMO — every concept must answer them inside its summary +
+   verification, in substance): Why is THIS character telling THIS story? What did her experience
+   teach her that is valuable to the viewer? Why should someone continue watching? What problem or
+   outcome are we promising? How does each section logically lead to the next? What objections are
+   we overcoming? Why is Viasox the solution? A concept that cannot answer all seven plainly
+   invalidates itself.
+8. A DIFFERENT SALES ARGUMENT (batch law): each concept states its THESIS AS ONE SAYABLE LAW in
+   the summary. Across the 3 concepts — and against the other tasks in this batch — the theses
+   must be genuinely different ARGUMENTS (different chain, different proof), not one argument in
+   different costumes.` : `4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.`}
 
 productEntry for this task must be ${entryRule}.
 ${hasPinnedExemplar ? `EXEMPLAR SKELETON MANDATE: a finished-project exemplar is pinned for this task (its dissection is in
@@ -748,12 +779,15 @@ function ecomBriefJsonShape(
   return `{
   "plan": {
     "mode": "'vo-narrated' or 'overlay-carried' — declared once, never mixed",
+    "argumentMap": "FIRST GATE (sales-argument doctrine). State the ad's THESIS AS ONE SAYABLE LAW. Then walk the argument beat by beat: for each beat, what the viewer now BELIEVES and how that belief sets up the next one, ending at 'so this product is the answer for me'. Any beat that advances no belief is decoration — cut it before writing. If the thesis can't be stated in one sentence, the concept isn't ready: REVISE",
     "beatMap": "one line per scene: framework stage + what happens + estimated spoken VO words (e.g. 'scene 1 [Problem, hook]: swollen-ankle close-up — 12w'). End with 'TOTAL: Nw vs ceiling Cw' — if N exceeds the ceiling, REVISE the plan before writing the fields below",
+    "proportionCheck": "split the beatMap's words into PROBLEM BUILD vs PRODUCT ARGUMENT (entry through CTA). State both counts. The product argument must be EQUAL OR GREATER — a long valley with a two-line product section means REVISE (move the pivot earlier and develop each mechanism with its own beat)",
+    "objectionsCheck": "name the 3-5 objections chosen from THIS product's menu (sales-argument doctrine) and, for each, the scene that CLOSES it with a demonstration — an assertion is not closure. An objection raised anywhere in the script that is never closed means REVISE",
     "talkingPointPlacement": "which scenes carry the talking point — it must live in at least 3 beats, not just hook+CTA",
     "tenSecondCheck": "quote the exact words AND overlay of the first ~10 seconds and name their 2+ concrete details",
     "flowCheck": "read the ENTIRE VO aloud in your head, hook 1 → every line → CTA 1, as ONE continuous spoken argument. Name any baton break (a line that doesn't receive from the line before or hand to the line after), any vague reference the audience couldn't place, and any line that would sound telegraphic read by an AI voice. Then read the STORY→OFFER SEAM twice on its own: the turn must happen inside the narrator's voice, with the story's vocabulary — quote the seam lines and confirm no register switch to announcer-speak. State 'the full read flows clean and the seam holds' or name the lines to fix — a failed read means the LINE is rewritten before the fields below",
-    "hookHandoffCheck": "for EACH hook (1..${V2_HOOK_COUNT}): read hook k → scene 1's body line → scene 2's line as one spoken sequence. Confirm the hook raises exactly the question the body starts answering, WITHOUT restating it, WITHOUT pre-telling a later beat, WITHOUT naming the brand when the verbal clock stages a later entry. A hook that fails is rewritten before the fields below",
-    "stakesCheck": "name the script's pain-ladder level (L1 inconvenience / L2 life erosion / L3 named condition / L4 medical stakes) and quote the deepest line. The center of gravity must sit at L3-L4 — a script whose deepest pain is tired legs or sock marks means REVISE. Then count the KNIFE BEATS: quote the 2-3 escalation lines that drive the pain home AFTER it is first named (each one a CONSEQUENCE of the last, not a restatement) — fewer than 2 means the valley is shallow, REVISE. Confirm every stakes line obeys the Stakes License: condition-true, conditionally framed, never the product's promise",
+    "hookHandoffCheck": "for EACH hook (1..${V2_HOOK_COUNT}): FIRST the hook laws — it names the SYMPTOM, lives in the VIEWER'S body or promises the viewer value (a hook about the narrator's job/world is dead: rewrite), and references nothing not yet named. THEN read hook k → scene 1's body line → scene 2's line as one spoken sequence: the hook raises exactly the question the body starts answering, WITHOUT restating it, WITHOUT pre-telling a later beat, WITHOUT naming the brand when the verbal clock stages a later entry. A hook that fails either pass is rewritten before the fields below",
+    "stakesCheck": "name the script's pain-ladder level (L1 inconvenience / L2 life erosion / L3 named condition / L4 medical stakes) and quote the deepest line. The center of gravity must sit at L3-L4 — a script whose deepest pain is tired legs or sock marks means REVISE. Then count the KNIFE BEATS: quote the 2-3 escalation lines that drive the pain home AFTER it is first named (each one a CONSEQUENCE of the last, not a restatement) — fewer than 2 means the valley is shallow, REVISE. Then EARNING: for each heavy claim, apply the probe ('from what? so what? and then what?') and confirm the chain runs to its endpoint or a felt outcome — a truncated chain ('legs can't heal' …heal from WHAT?) means REVISE. Confirm every stakes line obeys the Stakes License: condition-true (never myth-bust what is actually true), conditionally framed, witnessed at the endpoint, never the product's promise",
     "authorityCheck": "if the concept, direction, or instructions invoke an AUTHORITY NARRATOR: name the authority MODE from the playbook's six, quote the installation line and confirm it lands in the first line as a passing clause, and confirm every 'what I've seen' testimony maps to recorded Pain Bank / review material (quote the mapping). A credential arriving mid-script, a resume-centerpiece opening, or unrecorded testimony means REVISE. Otherwise state 'no authority narrator in this concept'",
     "productEntryCheck": "scene N — the brand is first NAMED at ~X% of runtime (the VERBAL clock). State whether that is inside this awareness level's entry zone, matches the pinned exemplar's entry position, or is a named Craft-License deviation. Also state when the product first APPEARS on screen (the visual clock) and confirm the Unaware release order is respected on both channels if applicable — an unjustified out-of-zone entry means REVISE",
     "payoffArc": "map the four stations to scenes (entry moment=scene N / mechanism=scene N / shown proof=scene N / payoff line=scene N) + product airtime ≈X% vs this level's minimum. Name the SHOWN-PROOF device (ladder / timeline / instrument / demo / split-screen). A missing station or under-minimum airtime means REVISE",
@@ -914,10 +948,12 @@ Verbatim-to-VO law binds every line you write.`
 STRUCTURAL RULES:
 - Emit the "plan" FIRST and honor it: mode declared, beat map summed against the hard ceiling,
   talking point threaded through ≥3 beats, and the flow gates passed BEFORE the fields below.
-- plan.flowCheck, plan.hookHandoffCheck, plan.stakesCheck, plan.authorityCheck,
-  plan.productEntryCheck, plan.payoffArc, and plan.ctaOfferCheck are REAL GATES (as are
-  plan.castingCheck, plan.animationCheck, and plan.exemplarFidelity when present): a failed
-  check means the plan is wrong — revise the plan, never write fields that fail their own plan.
+- plan.argumentMap, plan.proportionCheck, plan.objectionsCheck, plan.flowCheck,
+  plan.hookHandoffCheck, plan.stakesCheck, plan.authorityCheck, plan.productEntryCheck,
+  plan.payoffArc, and plan.ctaOfferCheck are REAL GATES (as are plan.castingCheck,
+  plan.animationCheck, and plan.exemplarFidelity when present): a failed check means the plan is
+  wrong — revise the plan, never write fields that fail their own plan. plan.argumentMap comes
+  FIRST and everything else serves it: the argument is the product.
 - The storyboard's main edit = hook 1 + body + CTA 1, split one-thought-per-scene. Alternate
   hooks and CTA 2 are NOT storyboard rows — the engine appends them as alternate-take rows
   automatically (they swap over scene 1's visual, which is why every hook must hand off over the
@@ -1052,11 +1088,27 @@ export function buildRegenPrompt(
 ): { system: string; user: string } {
   const targetLabel = describeTarget(target, brief);
   const isStructural =
-    target.type === 'framework-regenerate' || target.type === 'framework-switch';
+    target.type === 'framework-regenerate' ||
+    target.type === 'framework-switch' ||
+    target.type === 'story-rework';
   const isInsert = target.type === 'row-insert';
 
-  const scopeRules = isStructural
-    ? `You are ${target.type === 'framework-switch' ? `SWITCHING the framework to "${(target as { newFramework: string }).newFramework}"` : 'RESTRUCTURING the framework per the feedback'}. You rewrite: framework rationale, hooks, ctas, scriptProse, and the storyboard's main-edit rows. You HOLD CONSTANT: the concept, its product truth, the header fields, and every entry in the feedback ledger. Return the full JSON shape below.`
+  const scopeRules =
+    target.type === 'story-rework'
+      ? `You are REWORKING THE WHOLE STORY AND ARGUMENT of this brief — the CMO-feedback control for
+when the concept is right but the story is not. You HOLD CONSTANT: the task, the framework
+("${brief.framework.name}"), the concept's INGREDIENTS — the narrator/authority figure, the angle,
+and the committed product truth — the header fields, and every entry in the feedback ledger. You
+REBUILD EVERYTHING ELSE from the ground up: a new thesis (state it as one sayable law in the
+rationale), a new belief-by-belief argument, new hooks, new CTAs, new prose, a new storyboard. The
+CURRENT version below is the FAILED ATTEMPT — study it only to avoid repeating its story, its
+structure tics, and its recited phrases; do not reuse its lines. The director's feedback is law and
+describes what was wrong at the story level. The sales-argument doctrine in the context pack governs
+the rebuild in full: argument first, symptom in the hook, authority earned and bounded, proportion
+law, objections closed with demonstration, scene-specific outcomes, offer in the close. Return the
+full JSON shape below (put the new thesis-law + one-line story logic in "rationale").`
+      : isStructural
+      ? `You are ${target.type === 'framework-switch' ? `SWITCHING the framework to "${(target as { newFramework: string }).newFramework}"` : 'RESTRUCTURING the framework per the feedback'}. You rewrite: framework rationale, hooks, ctas, scriptProse, and the storyboard's main-edit rows. You HOLD CONSTANT: the concept, its product truth, the header fields, and every entry in the feedback ledger. Return the full JSON shape below.`
     : isInsert
       ? taskAdType(task) === 'ecom'
         ? `You are writing ONE NEW scene to be inserted between the two lines quoted in the FLOW CONTEXT below, following the director's instructions for what it should do. It must BRIDGE those lines seamlessly — as if the VO had always contained it (this voiceover is read VERBATIM by an AI voice; the new line must take the baton and hand it on as natural speech). Keep it to one thought (hard word ceiling; tight means ONE thought spoken naturally, never a telegraphic fragment). ${taskEcomProduction(task) === 'ai-lifestyle' ? 'Its visual cell is the SCENE HALF of a generation prompt obeying the AI-lifestyle visual law — the tool prepends the casting spec at export, so write it to read as one prompt after that persona block (no re-description, no anchor contradiction), varying the visual modality vs its neighbors.' : taskEcomProduction(task) === 'ai-animation' ? 'Its visual cell is the SCENE HALF of a generation prompt obeying the AI-animation visual law — the tool prepends the style + character spec at export, so write it to read as one prompt after that block (no re-description, no anchor or style contradiction), varying the visual modality vs its neighbors.' : 'Its visual must be pullable from the footage library (tag + conversational description), varying the visual modality vs its neighbors.'} Return ONLY the JSON shape below.`
@@ -1066,7 +1118,15 @@ export function buildRegenPrompt(
         : `You are regenerating ONE element: ${targetLabel} (its current text is quoted in the user message). Everything else in the brief stays EXACTLY as it is — your output must fit seamlessly into the surrounding lines per the FLOW CONTEXT below. Return ONLY the JSON shape below.`;
 
   const jsonShape = isStructural
-    ? `{
+    ? taskAdType(task) === 'ecom'
+      ? `{
+  "rationale": "${target.type === 'story-rework' ? 'the new THESIS stated as one sayable law + one line of story logic' : 'one line on the new/restructured framework fit'}",
+  "hooks": ["${V2_HOOK_COUNT} VO hooks per the hook laws (symptom + viewer stake), first = primary"],
+  "ctas": ["${ecomCtaPolicyLine(task.awarenessLevel)}"],
+  "scriptProse": "the full VO as ONE continuous spoken argument — exactly what the AI voice reads",
+  "storyboard": [ { "clipNumber": 1, "audioType": "VO", "role": "hook"|"body"|"cta", "scriptLine": "...", "shotType": "ONE scene-type TAG from the available lists", "shotDescription": ${taskEcomProduction(task) === 'ai-lifestyle' ? '"the scene half of the generation prompt (casting spec is prepended at export)"' : taskEcomProduction(task) === 'ai-animation' ? '"the scene half of the generation prompt (style + character spec is prepended at export)"' : '"short conversational description, pullable from the library"'}, "overlayText": "verbatim fragment of the spoken line, or empty", "editorNotes": "" } ]
+}`
+      : `{
   "rationale": "one line on the new/restructured framework fit",
   "hooks": ["${V2_HOOK_COUNT} hooks, first = primary"],
   "ctas": ["${ctaPolicyLine(task.awarenessLevel)}"],
@@ -1460,6 +1520,38 @@ scene-1 visual. So:
     generated in-scene text beyond a 1-2 word handcrafted prop, or a visual metaphor drifting
     into a claim the bank doesn't hold. The fix corrects the drifted detail so the cell reads
     clean after the spec.` : ''}
+17. ARGUMENT INCOHERENCE (CMO master class) — the script has no discernible thesis, or beats that
+    advance no belief toward "this product is the answer for me". Test: state the ad's argument as
+    one sayable law, then walk the beats — any beat you cannot place in the chain is decoration;
+    a sequence that reads as word-jumble aloud despite clean sentences fails here. The fix names
+    the thesis and cuts or re-orders the beats that serve nothing.
+18. UNEARNED CLAIM — a heavy or extreme claim whose earning chain is missing or truncated (probe
+    every causal claim: "from what? so what? and then what?" — "legs can't heal" with no answer to
+    "heal from what?" fails). The fix walks the chain to its endpoint, conditionally framed,
+    witnessed at the endpoint — never by softening the claim.
+19. OBJECTION UNCLOSED — an objection raised anywhere (or a top-menu objection for this product
+    ignored) without on-screen demonstration closing it. An assertion is not closure. The fix adds
+    the demonstration beat or cuts the raised-and-abandoned objection.
+20. FEATURE IRRELEVANCE — a product feature recited that answers no problem THIS story
+    established (a seamless toe in a pooling story). The fix cuts the feature or wires it to a
+    problem the script actually raised.
+21. TEMPLATE FINGERPRINT — banned recited parameters: the morning-vs-afternoon comparison as the
+    insight, "real enough to feel the difference by evening", a close that recites the review
+    count, or the stock skeleton (adjacent authority → day-contrast → late reveal → 12-15 →
+    patterns → reviews → offer) visible beneath the costume. The fix re-expresses the material
+    through THIS narrator's world.
+22. SELF-UNDERMINING PITCH — the argument indicts its own product unresolved (warning about
+    pressure, then selling compression without distinguishing concentrated vs distributed), or
+    frames the problem at a scope that argues for a DIFFERENT product (pooling "throughout the
+    lower legs" argues for knee-highs in an ankle-sock ad). The fix adds the resolving
+    distinction or reframes the problem where this product acts.
+23. STARVED PRODUCT ARGUMENT — the story, metaphor, or valley consumes the runtime and the
+    product section arrives as a rushed afterthought. The product argument must get equal or more
+    time than the problem build, each mechanism developed with its own beat. The fix compresses
+    the device/setup and expands the product argument — never the reverse.
+24. NARRATOR-WORLD HOOK — a hook that lives in the narrator's job or world with no viewer stake,
+    no named symptom, and no promised value ("why does a home care worker dread 5:00?"). The fix
+    rewrites per the hook laws: symptom + viewer's body or promised value + credential.
 
 ### FIX DOCTRINE (every finding ships its fix)
 - MINIMAL SURGERY: change one hook, one CTA, one line, or one overlay — prefer fixing the VARIANT

@@ -454,7 +454,12 @@ export type V2RegenTarget =
   | { type: 'script-prose' }
   | { type: 'header-field'; field: keyof V2StrategicHeader }
   | { type: 'framework-regenerate' }
-  | { type: 'framework-switch'; newFramework: ScriptFramework };
+  | { type: 'framework-switch'; newFramework: ScriptFramework }
+  /** CMO-feedback control: rebuild the WHOLE STORY AND ARGUMENT while
+   *  holding the task, the concept's ingredients (narrator/authority,
+   *  angle, product truth) and the current framework — for when the
+   *  concept is right but the way the story goes and flows is not. */
+  | { type: 'story-rework' };
 
 /**
  * Human-addressable description of a regen target, resolved against the
@@ -481,6 +486,7 @@ export function describeTarget(t: V2RegenTarget, brief?: UgcBriefV2): string {
     case 'header-field': return `header field "${t.field}"`;
     case 'framework-regenerate': return 'the framework structure';
     case 'framework-switch': return `framework switch to ${t.newFramework}`;
+    case 'story-rework': return 'the whole story and argument (same concept, same framework)';
   }
 }
 

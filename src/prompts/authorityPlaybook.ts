@@ -20,9 +20,14 @@ export function getAuthorityPlaybookBlock(): string {
 
 **THE PRINCIPLE: authority is WITNESSED VOLUME, not rank.** None of the studied winners say
 "trust me, I'm qualified." They say a version of "I've stood next to this problem for years, and
-I've watched people get it wrong." A doctor is legal but never required — proximity beats
-prestige, and an unexpected-but-obvious vantage point ("I measure feet for a living") out-converts
-a generic credential.
+I've watched people get it wrong." A doctor is legal but never required — but novelty is NOT a
+virtue by itself (CMO ruling). Two tests govern casting, at concept stage: RECOGNITION — does the
+viewer have a lived relationship with this figure (people stand at pharmacy counters weekly; almost
+nobody meets a shoe fitter)? — and PRE-LOADED CREDIBILITY — does the title alone carry weight on
+THIS problem? A figure may fail both and still work, but then the script owes AUTHORITY-BUILDING
+DEBT: it must construct, from her daily evidence, why she has standing on this exact problem,
+BEFORE she is allowed to conclude anything. The bar: read the script and think "damn, I would have
+listened to this person."
 
 **THE SIX AUTHORITY MODES (pick ONE as the concept's spine; name it in the plan):**
 1. OCCUPATIONAL PROXIMITY — the job puts them beside the problem daily. Installed in the FIRST
@@ -58,16 +63,25 @@ a generic credential.
   hospitals. The authority wears her occupation lightly (the wardrobe cue, the kit, the
   name-tag lanyard tossed on the counter) in HOME or neutral settings.
 - Occupation must be instantly legible to a 60-year-old scrolling at speed: nurse, pharmacist,
-  shoe fitter, home-care aide — if the vantage point needs a sentence of explanation, pick a
-  different authority.
+  home-care aide — if the vantage point needs a sentence of explanation, pick a different authority.
+- ESSENTIALITY TEST (CMO): delete the career from the story — if the story still works, the
+  authority is stapled on to manufacture credibility. Her experience must be load-bearing: the only
+  story she's entitled to tell is the one her job actually shows her.
+- NO AUTHORITY-BREAKING HYPERBOLE (CMO): never hand her a superlative her own persona couldn't
+  honestly say ("the most dangerous thing I ever saw was an ordinary sock" — a 30-year nurse has
+  seen far worse; the line discredits her instead of borrowing her credibility).
 
 **THE AUTHORITY SKELETON (the shared beat structure of all 10 winners — positions as % of runtime):**
 0-5%: credential + contrarian/mistake claim in one breath (the hook).
 5-35%: THE TEARDOWN — the common mistakes/wrong products, each rung with its own MECHANISM OF
   FAILURE (why the tight pair fails, why the loose pair fails). This is where the knife twists:
   the authority has watched each mistake cost people something.
-35-55%: THE EDUCATION — "here's what's actually happening": the true mechanism, taught plainly
-  (the tourniquet effect, fluid pooling, why feet are two sizes a day).
+35-55%: THE EDUCATION — "here's what's actually happening": the true mechanism — ROUTED THROUGH
+  WHAT THE NARRATOR COULD PLAUSIBLY KNOW (CMO: "we establish a cobbler but explain the problems
+  like a doctor" is a failed script). A trade narrator testifies to what she SEES and MEASURES;
+  clinical mechanism arrives via a story event (a nurse's remark, the doctor's one sentence) or an
+  observer's metaphor — never her lecture. Prefer the story's own material as the teaching device
+  (her workaround, her tape, her ritual).
 55-70%: THE ANSWER — the product enters as the mechanism's conclusion, in the narrator's voice,
   with its true differences named.
 70-90%: DEMONSTRATED TRANSFORMATION + proof stack (shown proof, real numbers, volume proof).
@@ -76,8 +90,10 @@ The Stakes Engine's ladder and knife beats live INSIDE the teardown and educatio
 authority frame makes the knife legal-feeling — she has earned the right to say the hard part.
 
 **CLAIM TRANSLATION (the winners overclaim; we carry the same ENERGY legally):**
-- Their "money-back guarantee / risk-free" → BANNED. Ours: the small first commitment ("start
-  with one pair") + volume proof (107,993 reviews, over one million pairs).
+- Their "money-back guarantee / risk-free" → BANNED. Ours: low-commitment psychology INSIDE the
+  bundle offer, never against it ("Start with one pair tomorrow morning and see why you'll be glad
+  you have four more" — a bare "start with one" undercuts the five-pair offer) + volume proof
+  (107,993 reviews, over one million pairs — interpreted, never recited).
 - Their fake scarcity ("sold out five times", "until midnight") → BANNED. Ours: real events only.
 - Their invented mechanisms ("rebuilds collagen", "251% better") → BANNED. Ours: TRUE mechanism
   taught with conviction + real numbers made visible (30 inches measured on camera, the

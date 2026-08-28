@@ -460,7 +460,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
       {/* Framework control */}
       <Section
         title="Framework — the narrative engine"
-        meta={busyTarget?.type === 'framework-switch' || busyTarget?.type === 'framework-regenerate' ? <WorkingChip label="rebuilding" /> : undefined}
+        meta={busyTarget?.type === 'framework-switch' || busyTarget?.type === 'framework-regenerate' || busyTarget?.type === 'story-rework' ? <WorkingChip label="rebuilding" /> : undefined}
       >
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
@@ -490,10 +490,18 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             >
               Restructure with feedback…
             </button>
+            <button
+              onClick={() => openPopover({ type: 'story-rework' }, 'the whole story and argument (same concept, same framework)')}
+              className="text-sm border border-violet-300 bg-violet-50 text-violet-900 px-3 py-1.5 rounded-lg hover:bg-violet-100 disabled:opacity-40 font-medium"
+              disabled={!!busy}
+              title="Same concept, same authority figure, same framework — a completely new story and sales argument, driven by your high-level feedback"
+            >
+              Rework story…
+            </button>
           </div>
         </div>
         <p className="text-[11px] text-slate-400 mt-2.5">
-          Switching rewrites the script and storyboard under the new engine while holding the concept, product truth, and all your feedback constant.
+          Switching rewrites the script and storyboard under the new engine while holding the concept, product truth, and all your feedback constant. <span className="text-violet-700">Rework story</span> keeps the concept AND framework but rebuilds the entire story and sales argument from your feedback — for when the idea is right and the way it flows is not.
         </p>
       </Section>
 
