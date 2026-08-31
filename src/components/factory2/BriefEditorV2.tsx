@@ -813,6 +813,19 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             ) : undefined
           }
         >
+          {brief.lastReview.verdict && (
+            <div className="mb-2.5">
+              <span className={`inline-block text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${
+                brief.lastReview.verdict === 'approvable'
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : brief.lastReview.verdict === 'revision'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-red-100 text-red-800'
+              }`}>
+                CMO verdict: {brief.lastReview.verdict === 'unfit' ? 'unfit for use' : brief.lastReview.verdict === 'revision' ? 'needs revision' : 'approvable'}
+              </span>
+            </div>
+          )}
           <p className="text-sm text-slate-600 mb-3 leading-relaxed">{brief.lastReview.summary}</p>
           {brief.lastReview.findings.length === 0 ? (
             <p className="text-sm text-emerald-600 font-medium">Clean pass — every hook variant reads seamlessly into the script.</p>

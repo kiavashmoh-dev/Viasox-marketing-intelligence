@@ -1546,6 +1546,7 @@ export async function runFinalReview(
 ): Promise<V2ReviewReport> {
   const { system, user } = buildFinalReviewPrompt(brief);
   const parsed = await requestJson<{
+    verdict?: string;
     summary: string;
     findings: Array<{
       severity?: string;
@@ -1592,10 +1593,15 @@ export async function runFinalReview(
   const order = { major: 0, moderate: 1, minor: 2 } as const;
   findings.sort((a, b) => order[a.severity] - order[b.severity]);
 
+  const verdict: V2ReviewReport['verdict'] =
+    parsed.verdict === 'approvable' || parsed.verdict === 'revision' || parsed.verdict === 'unfit'
+      ? parsed.verdict
+      : undefined;
   return {
     id: genId('rev'),
     createdAt: new Date().toISOString(),
     briefVersion: brief.version,
+    ...(verdict ? { verdict } : {}),
     summary: (parsed.summary ?? '').trim() || 'Review complete.',
     findings,
   };

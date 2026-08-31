@@ -403,6 +403,10 @@ export interface V2ReviewReport {
   createdAt: string;
   /** brief.version this review ran against — stale once the brief moves on. */
   briefVersion: number;
+  /** The CMO-simulation tier (ecom reviews): his three verdict levels,
+   *  calibrated to his observed base rate. Absent on pre-protocol reports
+   *  and UGC reviews. */
+  verdict?: 'approvable' | 'revision' | 'unfit';
   summary: string;
   findings: V2ReviewFinding[];
 }

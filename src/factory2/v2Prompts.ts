@@ -49,6 +49,7 @@ import { getEcomFootageLibraryBlock } from './../prompts/ecomFootageLibrary';
 import { getPainBankBlock } from './../prompts/painBank';
 import { getAuthorityPlaybookBlock } from './../prompts/authorityPlaybook';
 import { getSalesArgumentBlock } from './../prompts/salesArgument';
+import { getCmoReviewProtocolBlock } from './../prompts/cmoReviewProtocol';
 import { getAiLifestyleSpecBlock } from './../prompts/aiLifestyleSpec';
 import { getAiAnimationSpecBlock } from './../prompts/aiAnimationSpec';
 import { taskEcomProduction, type V2EcomProduction } from './v2Types';
@@ -1426,12 +1427,14 @@ function buildEcomFinalReviewPrompt(brief: UgcBriefV2): { system: string; user: 
   const animation = production === 'ai-animation';
   const system = `${buildV2ContextPack(brief.task, 'script')}
 
-## YOUR ROLE: FACTORY V2 ECOM FINAL REVIEW — THE VERBATIM-VO AUDIT
+## YOUR ROLE: FACTORY V2 ECOM FINAL REVIEW — THE CMO SIMULATION + VERBATIM-VO AUDIT
 
-The director has finished editing this ecom brief and wants the last-mile audit before it ships to
-the editor. This VO is read VERBATIM by an AI voice — there is no performer to smooth a clumsy
-line, so the read-through IS the ad. You run THE SIMULATION METHOD, then report findings that each
-carry their own minimal fix.
+The director wants this brief reviewed EXACTLY as the CMO reviews it, before it ships. You run TWO
+passes and merge the findings: (1) THE CMO REVIEW PROTOCOL below — his thirteen checkpoints, his
+verdict; (2) THE SIMULATION METHOD — the mechanical verbatim-VO audit (this VO is read VERBATIM by
+an AI voice; the read-through IS the ad). Every finding carries its own minimal fix.
+
+${getCmoReviewProtocolBlock()}
 
 ### THE SIMULATION METHOD
 The storyboard's main edit IS the video. The alternate hooks are ALTERNATE OPENERS over the SAME
@@ -1575,12 +1578,13 @@ ${JSON_CONTRACT}
 
 JSON shape:
 {
-  "summary": "2-3 sentences: overall verdict across all hook simulations",
+  "verdict": "approvable" | "revision" | "unfit" — the CMO tier per the protocol's verdict rules, calibrated to his base rate; never 'approvable' with open major findings,
+  "summary": "the CMO's read, 3-5 sentences: the brief's THESIS as you understood it, the checkpoint(s) that decide the verdict, and what stands between this brief and 'approvable' — written the way he writes feedback: direct, specific, quoting the brief's own words where they prove the point",
   "findings": [
     {
-      "severity": "major" | "moderate" | "minor",
+      "severity": "major" | "moderate" | "minor" — major = would drive his 'unfit' or block approval, moderate = a revision-driver, minor = polish,
       "target": "hook 2" | "cta 1" | "clip 7 script" | "clip 7 shot" | "clip 7 overlay" | "general",
-      "issue": "the failure class + what exactly breaks, quoting the colliding words",
+      "issue": "the checkpoint or failure class + what exactly breaks, quoting the colliding words",
       "currentText": "the target's text VERBATIM as it appears in the brief (empty for general)",
       "proposedText": "the minimal replacement (empty for advisory-only findings)",
       "rationale": "one line: why this fix fits the concept/framework/mode/awareness"
