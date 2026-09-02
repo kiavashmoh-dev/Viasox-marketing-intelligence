@@ -105,6 +105,11 @@ export default function Factory2({ apiKey, onBack }: Props) {
       /* bank unavailable — pins just won't be offered */
     }
   }, []);
+  // Bank titles are needed at idle too, so the saved-brief cards can name
+  // each brief's pinned exemplar (otherwise this only loads at batch start).
+  useEffect(() => {
+    void loadInspirations();
+  }, [loadInspirations]);
 
   // ── Intake ─────────────────────────────────────────────────────────────
 
@@ -431,6 +436,11 @@ export default function Factory2({ apiKey, onBack }: Props) {
                       <span className="text-xs text-slate-400 ml-2">
                         {taskAdType(b.task) === 'ecom' ? (taskEcomProduction(b.task) === 'ai-lifestyle' ? 'Ecom · AI Lifestyle' : taskEcomProduction(b.task) === 'ai-animation' ? 'Ecom · AI Animation' : 'Ecom') : getUgcStyle(b.task.ugcStyle).shortLabel} · {b.framework.name} · {b.task.awarenessLevel} · v{b.version}
                       </span>
+                      {b.task.pinnedInspirationId && (
+                        <span className="text-xs text-amber-700 ml-2" title="The Inspiration Bank ad pinned as the finished-project exemplar for this brief">
+                          ⭐ {inspirations.find((it) => it.id === b.task.pinnedInspirationId)?.title ?? (inspirations.length ? '(removed from bank)' : '…')}
+                        </span>
+                      )}
                     </div>
                     <div className="flex gap-3">
                       <button onClick={() => setOpenBriefId(b.id)} className="text-xs text-blue-600 hover:underline">

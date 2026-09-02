@@ -15,7 +15,7 @@
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ScriptFramework } from '../../engine/types';
-import { getFrames } from '../../inspiration/inspirationStore';
+import { getFrames, getItem } from '../../inspiration/inspirationStore';
 import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/v2Types';
 import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType, taskEcomProduction } from '../../factory2/v2Types';
 import { applyRegen, applyReviewFix, deleteRow, runFinalReview } from '../../factory2/v2Engine';
@@ -152,6 +152,15 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
   const [error, setError] = useState('');
   const [frameCache, setFrameCache] = useState<Record<string, string[]>>({});
   const [showLedger, setShowLedger] = useState(false);
+  const [pinnedTitle, setPinnedTitle] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = initial.task.pinnedInspirationId;
+    if (!id) return;
+    void getItem(id)
+      .then((item) => setPinnedTitle(item?.title ?? '(removed from bank)'))
+      .catch(() => setPinnedTitle('(bank unavailable)'));
+  }, [initial.task.pinnedInspirationId]);
 
   // Load frames for every referenced inspiration item.
   const referencedItemIds = useMemo(
@@ -376,6 +385,16 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             <Chip tone="amber">{isEcom ? 'Ecom Style (editing brief)' : style.name}</Chip>
             <Chip>{brief.task.duration}</Chip>
             <Chip tone="navy">v{brief.version}</Chip>
+            {brief.task.pinnedInspirationId ? (
+              <span
+                className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800"
+                title="The Inspiration Bank ad pinned as the finished-project exemplar for this brief"
+              >
+                ⭐ Pinned: {pinnedTitle ?? '…'}
+              </span>
+            ) : (
+              <Chip>No pinned exemplar</Chip>
+            )}
             {fableFallbackActive() && (
               <span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-900" title="This API key is not enabled for Fable 5 — generations are running on the Opus 5 fallback. Enable Fable 5 on the key to restore the primary model.">
                 ⚠ Fallback model: Opus 5
