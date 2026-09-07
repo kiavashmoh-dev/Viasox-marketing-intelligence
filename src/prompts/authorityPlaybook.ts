@@ -29,7 +29,7 @@ DEBT: it must construct, from her daily evidence, why she has standing on this e
 BEFORE she is allowed to conclude anything. The bar: read the script and think "damn, I would have
 listened to this person."
 
-**THE SIX AUTHORITY MODES (pick ONE as the concept's spine; name it in the plan):**
+**THE SIX AUTHORITY MODES (a menu of proven shapes — use what the story calls for, never a form to fill):**
 1. OCCUPATIONAL PROXIMITY — the job puts them beside the problem daily. Installed in the FIRST
    BREATH, half a sentence, then straight into the claim: "Dental student here — brushing your
    retainer like this can create scratches where bacteria hide."
@@ -71,23 +71,16 @@ listened to this person."
   honestly say ("the most dangerous thing I ever saw was an ordinary sock" — a 30-year nurse has
   seen far worse; the line discredits her instead of borrowing her credibility).
 
-**THE AUTHORITY SKELETON (the shared beat structure of all 10 winners — positions as % of runtime):**
-0-5%: credential + contrarian/mistake claim in one breath (the hook).
-5-35%: THE TEARDOWN — the common mistakes/wrong products, each rung with its own MECHANISM OF
-  FAILURE (why the tight pair fails, why the loose pair fails). This is where the knife twists:
-  the authority has watched each mistake cost people something.
-35-55%: THE EDUCATION — "here's what's actually happening": the true mechanism — ROUTED THROUGH
-  WHAT THE NARRATOR COULD PLAUSIBLY KNOW (CMO: "we establish a cobbler but explain the problems
-  like a doctor" is a failed script). A trade narrator testifies to what she SEES and MEASURES;
-  clinical mechanism arrives via a story event (a nurse's remark, the doctor's one sentence) or an
-  observer's metaphor — never her lecture. Prefer the story's own material as the teaching device
-  (her workaround, her tape, her ritual).
-55-70%: THE ANSWER — the product enters as the mechanism's conclusion, in the narrator's voice,
-  with its true differences named.
-70-90%: DEMONSTRATED TRANSFORMATION + proof stack (shown proof, real numbers, volume proof).
-90-100%: close in the narrator's voice — offer + thesis echo (awareness rules govern).
-The Stakes Engine's ladder and knife beats live INSIDE the teardown and education sections; the
-authority frame makes the knife legal-feeling — she has earned the right to say the hard part.
+**THE EDUCATION BEAT — routed through what the narrator could plausibly know** (CMO: "we establish
+a cobbler but explain the problems like a doctor" is a failed script). A trade narrator testifies
+to what she SEES and MEASURES; clinical mechanism arrives via a story event (a nurse's remark, the
+doctor's one sentence) or an observer's metaphor — never her lecture. Prefer the story's own
+material as the teaching device (her workaround, her tape, her ritual). Each mistake the authority
+attacks carries its own MECHANISM OF FAILURE (why the tight pair fails, why the loose pair fails) —
+she has watched each one cost people something, and that witnessed cost is what makes the hard part
+legal-feeling: she earned the right to say it. (There is deliberately NO fixed beat-percentage
+skeleton here: the shared skeleton across scripts was the reviewer's own template complaint — the
+ARGUMENT shapes the structure, and the example when one governs.)
 
 **CLAIM TRANSLATION (the winners overclaim; we carry the same ENERGY legally):**
 - Their "money-back guarantee / risk-free" → BANNED. Ours: low-commitment psychology INSIDE the

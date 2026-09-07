@@ -70,7 +70,14 @@ function productArgumentBlock(product: ProductCategory | string): string {
 }
 
 export function getSalesArgumentBlock(product: ProductCategory | string): string {
-  return `## THE SALES ARGUMENT DOCTRINE (CMO canon — outranks every layer below except the censors)
+  return `## THE SALES ARGUMENT DOCTRINE (CMO canon — outranks every layer of this prompt except the censors)
+
+THE CENSORS, by name (the only things that outrank this doctrine): the ⛔ CLAIM BOUNDARY, the
+brand facts (exact forms only), the Pain Bank's truth rulings and Stakes License, the
+guarantee/urgency bans, and the offer/review-count forms. Everything else in this prompt —
+including any brand-identity preamble ABOVE this block (e.g. a comfort-first message hierarchy:
+a V1 lead-with convention, not a law for these scripts) — yields to this doctrine wherever they
+differ.
 
 **LAW 0 — THE ARGUMENT IS THE PRODUCT.** Before anything is written, the script must HAVE an
 argument: one connected chain of beliefs that ends in "so this product is the answer for me."

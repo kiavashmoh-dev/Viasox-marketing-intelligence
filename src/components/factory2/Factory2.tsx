@@ -611,6 +611,17 @@ export default function Factory2({ apiKey, onBack }: Props) {
                         </option>
                       ))}
                     </select>
+                    {t.task.pinnedInspirationId && taskAdType(t.task) === 'ecom' && (
+                      <select
+                        value={t.task.exemplarRole ?? 'reference'}
+                        onChange={(e) => updateTask(i, { exemplarRole: e.target.value as V2Task['exemplarRole'] })}
+                        className={`mt-1 block border rounded px-2 py-1 text-xs max-w-[160px] ${(t.task.exemplarRole ?? 'reference') === 'remake' ? 'border-violet-400 bg-violet-50 text-violet-900 font-medium' : 'border-slate-200 bg-white'}`}
+                        title="How the pinned example is used: Reference = structural exemplar, our argument. REMAKE = the example governs — its argument, structure, and copy craft mirrored nearly 1:1 with Viasox truth substituted (censors and brand facts never yield)."
+                      >
+                        <option value="reference">Reference (structure)</option>
+                        <option value="remake">REMAKE — example governs</option>
+                      </select>
+                    )}
                   </td>
                   <td className="py-2 text-right">
                     <button onClick={() => removeTask(i)} className="text-xs text-slate-400 hover:text-red-600">

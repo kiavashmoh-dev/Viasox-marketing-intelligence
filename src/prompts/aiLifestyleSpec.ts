@@ -106,7 +106,8 @@ RED on the negative-claim lines, back for the solution. Captions parked low also
 magnets pulling eyes off generated skin, hands, and backgrounds.
 
 **7. PRODUCT PRESENTATION — withhold, then demo.** The product stays OFF SCREEN for the problem
-act (the awareness level's visual clock governs the exact window) — prosecute the problem with
+act (at Unaware the release order governs both channels; otherwise the argument's problem act
+defines the window) — prosecute the problem with
 problem props only: unbranded failed socks handled then trashed, sock-mark and swelling macros,
 the 3pm shoe-off wince. FIRST APPEARANCE = MECHANISM, NOT PACK SHOT: the differentiating feature
 working before the name lands (the stretch demo pulled wide by aged hands, the easy pull-on by

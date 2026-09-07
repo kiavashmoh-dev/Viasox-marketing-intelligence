@@ -405,6 +405,41 @@ async function inspirationContextFor(task: V2Task): Promise<string> {
   try {
     if (task.pinnedInspirationId) {
       const item = await getItem(task.pinnedInspirationId);
+      if (item && item.status === 'ready' && task.exemplarRole === 'remake' && taskAdType(task) === 'ecom') {
+        // REMAKE MODE (Sep 2026): the example GOVERNS. The transcript is the
+        // primary text — a remake without the source's actual copy is a
+        // costume. Larger slice than the reference path on purpose.
+        const script = (item.attachedScriptText || item.textContent || '').trim();
+        const scriptBlock = script
+          ? `\nTHE SOURCE'S ACTUAL SCRIPT/VO — THE PRIMARY TEXT (study it line by line; this is what you are remaking):\n"""\n${script.slice(0, 9000)}\n"""`
+          : '\n⚠ NO TRANSCRIPT ON FILE for this remake source — dissect the analyzer fields below hard, and flag in the plan that the remake ran without the source copy.';
+        return `## REMAKE SOURCE — THE GOVERNING EXAMPLE for this task
+
+The director chose this ad as the REMAKE SOURCE: this brief IS this ad, remade for Viasox. The
+example GOVERNS — you are not writing a new ad that references it; you are rebuilding IT with our
+product's truth substituted in. Before writing anything, understand WHY it sells: its argument
+order, its claim cadence, its proof placement, its hook shape, its register, its pacing. Then
+mirror all of that nearly one-to-one: same beat structure, same argument shape, same energy — with
+every claim, fact, mechanism, and offer swapped for OURS (the claim boundary, brand facts, and
+pain bank are the only sources; the source's claims are NEVER carried over). Where any craft
+guidance elsewhere in this prompt disagrees with the example's way of doing it, THE EXAMPLE WINS.
+What never yields: brand facts, the claim boundary, the Awareness Core's label/offer rules, the
+verbatim-to-VO law, and the production law. Deviate from the example only where a censor forces
+it — and name each forced deviation in the plan in one clause.
+REGISTER NOTE: transcripts are often caption-fragmented. Mirror the example's REAL spoken rhythm —
+our lines still pass the read-aloud test.
+
+"${item.title || item.filename}"
+- Summary: ${item.summary || '-'}
+- Hook breakdown (the first seconds): ${item.hookBreakdown ?? '-'}
+- Narrative arc (the beat structure): ${item.narrativeArc ?? '-'}
+- Visual blueprint (shots, framing, text treatment): ${item.visualBlueprint ?? '-'}
+- Style notes (tone, pace, energy): ${item.styleNotes || '-'}
+- Product bridge (when/how the product enters): ${item.productBridge ?? '-'}
+- Key language (register and phrasing patterns): ${item.keyLanguage ?? '-'}
+- Line flow (how lines build on each other): ${item.lineFlowAnalysis ?? '-'}
+- Learnings: ${(item.learnings ?? []).join(' · ') || '-'}${scriptBlock}`;
+      }
       if (item && item.status === 'ready') {
         const script = (item.attachedScriptText || item.textContent || '').trim();
         const scriptBlock = script
@@ -829,9 +864,11 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
         });
       }
     }
-    // 3. Kia's CTA law: the offer rides every ecom CTA (Unaware exempt — the
-    //    release-order doctrine governs the close there).
-    if (brief.task.awarenessLevel !== 'Unaware') {
+    // 3. The CTA law (CMO ruling 2026-08-28, D-CTA): the offer rides EVERY
+    //    ecom CTA, Unaware included — the release order governs everything
+    //    BEFORE the close, never the close itself. (The old Unaware
+    //    exemption encoded the pre-ruling doctrine; removed Sep 2026.)
+    {
       const OFFER = /buy\s*2|get\s*3|b2g3|\$\s?60|\$\s?12|5 pairs|five pairs/i;
       brief.ctas.forEach((c, i) => {
         if (!OFFER.test(c.text)) {
@@ -839,7 +876,7 @@ export function validateBrief(brief: UgcBriefV2): V2RippleFlag[] {
             id: genId('flag'),
             target: `cta ${i + 1}`,
             issue: `Ecom CTA carries no offer — "${c.text.length > 70 ? `${c.text.slice(0, 70)}…` : c.text}"`,
-            suggestion: 'State the offer plainly (exact brand-facts math) and close on the thesis echo.',
+            suggestion: 'State the offer plainly (exact brand-facts math) with a direct action, in the narrator\'s voice.',
           });
         }
       });
@@ -1604,6 +1641,65 @@ export async function runFinalReview(
     ...(verdict ? { verdict } : {}),
     summary: (parsed.summary ?? '').trim() || 'Review complete.',
     findings,
+  };
+}
+
+/** Result of the closed loop: review → (rework → re-review) — see below. */
+export interface ReviewReworkResult {
+  brief: UgcBriefV2;
+  firstReview: V2ReviewReport;
+  /** Present only when a rework ran (the review after the rework). */
+  finalReview?: V2ReviewReport;
+  reworked: boolean;
+}
+
+/**
+ * THE AUTO-REWORK LOOP (Sep 2026) — the closed loop that gets a brief to
+ * "80-90% before Kia sees it": run the CMO-simulation Final Review; if the
+ * verdict is not 'approvable' (or, on pre-verdict reports, any major
+ * finding stands), feed the ENTIRE review verbatim into a story rework —
+ * same concept, same framework, new story/argument built against the
+ * findings — then review the reworked brief once more. One rework pass by
+ * design: a brief that fails twice needs a human, not a third spin.
+ *
+ * The rework rides the normal applyRegen path, so the review lands in the
+ * feedback ledger (binding on all future generations) and the ripple check
+ * runs as usual. Callers persist the returned brief (lastReview is set to
+ * the most recent report).
+ */
+export async function runReviewAndRework(
+  brief: UgcBriefV2,
+  apiKey: string,
+  signal?: AbortSignal,
+  onStage?: (stage: 'review' | 'rework' | 're-review') => void,
+): Promise<ReviewReworkResult> {
+  onStage?.('review');
+  const firstReview = await runFinalReview(brief, apiKey, signal);
+  const withFirst: UgcBriefV2 = { ...brief, lastReview: firstReview };
+  const majors = firstReview.findings.filter((f) => f.severity === 'major');
+  const needsRework = firstReview.verdict
+    ? firstReview.verdict !== 'approvable'
+    : majors.length > 0;
+  if (!needsRework) return { brief: withFirst, firstReview, reworked: false };
+
+  const feedback = [
+    `FINAL REVIEW (CMO simulation) — verdict: ${firstReview.verdict ?? 'no verdict (pre-protocol report)'}. Rework the story so EVERY finding below is resolved; do not trade one finding for a new one.`,
+    `The reviewer's read: ${firstReview.summary}`,
+    ...firstReview.findings.map(
+      (f, i) => `${i + 1}. [${f.severity}] ${f.target}: ${f.issue}${f.rationale ? ` — ${f.rationale}` : ''}`,
+    ),
+  ].join('\n');
+
+  onStage?.('rework');
+  const { brief: reworked } = await applyRegen(withFirst, { type: 'story-rework' }, feedback, apiKey, signal);
+
+  onStage?.('re-review');
+  const finalReview = await runFinalReview(reworked, apiKey, signal);
+  return {
+    brief: { ...reworked, lastReview: finalReview },
+    firstReview,
+    finalReview,
+    reworked: true,
   };
 }
 

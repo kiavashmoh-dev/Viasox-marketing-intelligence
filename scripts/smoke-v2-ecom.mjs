@@ -1,0 +1,248 @@
+#!/usr/bin/env node
+/**
+ * Factory V2 ECOM smoke harness — asserts the composed prompt surfaces carry
+ * what the current doctrine says they carry, and NOT what was removed.
+ *
+ * Lives in the repo (its predecessor lived in a session scratchpad and was
+ * lost to tmp cleanup — never again). Run after any prompt/engine change:
+ *
+ *   PATH="$HOME/local/node/bin:$PATH" node scripts/smoke-v2-ecom.mjs
+ *
+ * It esbuild-bundles the real prompt builders (with a ?raw plugin for the
+ * marketing-brain markdown imports), generates every major surface for the
+ * three ecom production modes + UGC, and runs marker checks. The UGC surface
+ * has its own byte-exact guard (snapshot-v2-prompts.mjs) — here UGC is only
+ * checked for "ecom-only changes did not leak in".
+ */
+import { build } from 'esbuild';
+import { createRequire } from 'node:module';
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const require = createRequire(import.meta.url);
+
+const ENTRY = `
+import {
+  buildV2ContextPack,
+  buildConceptsPrompt,
+  buildBriefWritePrompt,
+  buildFinalReviewPrompt,
+  buildRegenPrompt,
+} from './src/factory2/v2Prompts';
+import { ECOM_FRAMEWORKS } from './src/factory2/v2Types';
+
+const parsed: any = {
+  name: 'Smoke Task', product: 'EasyStretch', adType: 'Ecom Style',
+  talkingPoint: 'diabetic swelling', duration: '60-90 sec', status: 'Planning',
+};
+const base: any = {
+  parsed, product: 'EasyStretch', talkingPoint: 'diabetic swelling',
+  awarenessLevel: 'Problem Aware', adType: 'ecom', ugcStyle: 'ugc_yap', duration: '60-90 sec',
+};
+const libTask: any = { ...base };
+const lifeTask: any = { ...base, ecomProduction: 'ai-lifestyle' };
+const animTask: any = { ...base, ecomProduction: 'ai-animation' };
+const unawareTask: any = { ...base, awarenessLevel: 'Unaware' };
+const ugcTask: any = { ...base, adType: 'ugc', duration: '16-59 sec' };
+const ugcUnaware: any = { ...ugcTask, awarenessLevel: 'Unaware' };
+
+const concept: any = {
+  title: 'Smoke Concept',
+  summary: 'A nurse of thirty years explains the ring.',
+  productEntry: 'earned-entry',
+  productTruth: 'no elastic band anywhere; stretches to 30 inches',
+  openingDetails: 'kitchen at 7am; her thumb tracing a red ring on her calf',
+  verification: 'grounded in recorded sock-mark pain; concrete opening details',
+};
+const fw: any = { name: ECOM_FRAMEWORKS[0], rationale: 'smoke' };
+
+function mkBrief(task: any, casting?: string): any {
+  const hook = (i: number) => ({ id: 'h' + i, text: 'Hook ' + i + ' about swollen evening ankles.' });
+  const cta = (i: number) => ({ id: 'c' + i, text: 'CTA ' + i + ': Buy 2 Get 3 Free — five pairs for sixty dollars.' });
+  const row = (n: number, role: string, mirrors?: string): any => ({
+    id: 'r' + n, clipNumber: n, audioType: 'VO', role,
+    scriptLine: 'Line ' + n + ' of the spoken argument.',
+    shotType: 'Talking Head', shotDescription: 'She speaks to camera at her kitchen table.',
+    reference: { kind: 'none', reason: 'smoke' }, editorNotes: '', overlayText: 'swollen by 5pm',
+    ...(mirrors ? { mirrorsLineId: mirrors } : {}),
+  });
+  return {
+    id: 'brief_smoke', taskName: 'Smoke Task', task,
+    header: {
+      concept: 'Smoke Concept', angle: 'the ring is the evidence', awarenessLevel: task.awarenessLevel,
+      videoTonality: 'calm testimony to vindicated turn', attire: '', instructions: ['keep it warm'],
+      ecomEditing: {
+        pacing: 'measured', music: 'warm', transitions: 'clean cuts', specialNotes: 'the ring is the through-line',
+        ...(casting ? { casting } : {}),
+      },
+    },
+    framework: fw, concept,
+    hooks: [hook(1), hook(2), hook(3), hook(4)],
+    ctas: [cta(1), cta(2)],
+    scriptProse: 'Hook 1 about swollen evening ankles. Line 2 of the spoken argument. CTA 1: Buy 2 Get 3 Free — five pairs for sixty dollars.',
+    storyboard: [row(1, 'hook', 'h1'), row(2, 'body'), row(3, 'cta', 'c1')],
+    feedbackLedger: [], rippleFlags: [], version: 1,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+  };
+}
+
+const out: Record<string, string> = {};
+out.packLib = buildV2ContextPack(libTask, 'script');
+out.packLife = buildV2ContextPack(lifeTask, 'script');
+out.packAnim = buildV2ContextPack(animTask, 'script');
+out.packUnaware = buildV2ContextPack(unawareTask, 'script');
+out.packUgc = buildV2ContextPack(ugcTask, 'script');
+out.conceptsLib = buildConceptsPrompt(libTask, 'dir', '').system;
+out.conceptsUnaware = buildConceptsPrompt(unawareTask, 'dir', '').system;
+out.conceptsUgc = buildConceptsPrompt(ugcTask, 'dir', '').system;
+out.conceptsUgcUnaware = buildConceptsPrompt(ugcUnaware, 'dir', '').system;
+const REMAKE_CTX = '## REMAKE SOURCE — THE GOVERNING EXAMPLE for this task\\nsmoke remake source dissection';
+const remakeTask: any = { ...base, pinnedInspirationId: 'smoke-pin', exemplarRole: 'remake' };
+const refTask: any = { ...base, pinnedInspirationId: 'smoke-pin' };
+out.packRemake = buildV2ContextPack(remakeTask, 'script');
+out.packRef = buildV2ContextPack(refTask, 'script');
+out.conceptsRemake = buildConceptsPrompt(remakeTask, 'dir', REMAKE_CTX).system;
+out.writeRemake = buildBriefWritePrompt(remakeTask, concept, fw, 'dir', REMAKE_CTX).system;
+out.writeLib = buildBriefWritePrompt(libTask, concept, fw, 'dir', '').system;
+out.writeLife = buildBriefWritePrompt(lifeTask, concept, fw, 'dir', '').system;
+out.writeUnaware = buildBriefWritePrompt(unawareTask, concept, fw, 'dir', '').system;
+out.writeUgc = buildBriefWritePrompt(ugcTask, concept, fw, 'dir', '').system;
+const revLib = buildFinalReviewPrompt(mkBrief(libTask));
+out.reviewLib = revLib.system; out.reviewLibUser = revLib.user;
+out.reviewUgc = buildFinalReviewPrompt(mkBrief(ugcTask)).system;
+out.reworkLife = buildRegenPrompt(lifeTask, mkBrief(lifeTask, 'a warm nurse in her 60s'), { type: 'story-rework' } as any, 'the story is not right').system;
+console.log(JSON.stringify(Object.fromEntries(Object.entries(out).map(([k, v]) => [k, String(v)]))));
+`;
+
+const rawPlugin = {
+  name: 'raw-suffix',
+  setup(b) {
+    b.onResolve({ filter: /\?raw$/ }, (args) => ({
+      path: path.resolve(args.resolveDir, args.path.replace(/\?raw$/, '')),
+      namespace: 'rawfile',
+    }));
+    b.onLoad({ filter: /.*/, namespace: 'rawfile' }, (args) => ({
+      contents: readFileSync(args.path, 'utf8'),
+      loader: 'text',
+    }));
+  },
+};
+
+const tmp = mkdtempSync(path.join(tmpdir(), 'v2smoke-'));
+const outfile = path.join(tmp, 'entry.cjs');
+await build({
+  stdin: { contents: ENTRY, resolveDir: ROOT, loader: 'ts' },
+  bundle: true,
+  platform: 'node',
+  format: 'cjs',
+  outfile,
+  plugins: [rawPlugin],
+  logLevel: 'silent',
+});
+
+// The entry logs one JSON line; capture it by intercepting console.log.
+let captured = '';
+const origLog = console.log;
+console.log = (s) => { captured = s; };
+require(outfile);
+console.log = origLog;
+const out = JSON.parse(captured);
+
+const checks = [
+  // ── The taste file (Sep 2026): writer calibration, ecom-only ──
+  ['taste file in all three ecom packs', ['packLib', 'packLife', 'packAnim'].every((k) => out[k].includes('HOW THE REVIEWER THINKS'))],
+  ['taste file carries the 17th move', out.packLib.includes('MOVE 17')],
+  ['taste file verbatim anchors', out.packLib.includes('OK but heal from what?') && out.packLib.includes('Why would anybody care to watch this?')],
+  ['taste file NOT in UGC pack', !out.packUgc.includes('HOW THE REVIEWER THINKS')],
+  // ── The awareness core replaces the old stack (ecom only) ──
+  ['awareness core present (PA)', out.packLib.includes('THE AWARENESS CORE (ecom') && out.packLib.includes('PROBLEM AWARE: she knows the pain')],
+  ['awareness core present (Unaware)', out.packUnaware.includes('only LABELS wait')],
+  ['TOF-is-not-vague ruling in core', out.packLib.includes('describes the AUDIENCE we target')],
+  ['old awareness guide gone from ecom pack', !out.packLib.includes('INFORMATION-RELEASE GATES') && !out.packUnaware.includes('Three Elimination Rules')],
+  ['Schwartz state block gone from ecom pack', !out.packLib.includes('SCHWARTZ STATE DOCTRINE')],
+  ['UGC pack keeps awareness guide + Schwartz', out.packUgc.includes('SCHWARTZ STATE DOCTRINE')],
+  // ── Zones / minimums / two clocks removed ──
+  ['TWO CLOCKS gone from ecom pack', !out.packLib.includes('TWO CLOCKS')],
+  ['entry-zone percentages gone', !out.packLib.includes('~30-45% zone') && !out.conceptsLib.includes('~30-45% zone')],
+  ['airtime minimums gone', !out.packLib.includes('Unaware ≥15%') && !out.writeLib.includes("this level's minimum")],
+  ['proportion law governs entry', out.packLib.includes('THE ARGUMENT decides when the product enters')],
+  ['payoff arc four stations kept', out.packLib.includes('THE PRODUCT PAYOFF ARC') && out.packLib.includes('PAYOFF LINE')],
+  // ── Doctrine spine intact (never lost) ──
+  ['sales argument doctrine present', out.packLib.includes('THE SALES ARGUMENT DOCTRINE')],
+  ['claim boundary present', out.packLib.includes('CLAIM BOUNDARY')],
+  ['pain bank present', out.packLib.includes('THE PAIN BANK')],
+  ['craft DNA present (verbatim-VO)', out.packLib.includes('VERBATIM-TO-VO')],
+  ['production law per mode', out.packLife.includes('AI LIFESTYLE PRODUCTION — THE VISUAL LAW') && out.packAnim.includes('AI ANIMATION PRODUCTION — THE VISUAL LAW') && out.packLib.includes('THE FOOTAGE LIBRARY — THE VISUAL CLAIM BOUNDARY')],
+  ['earning probe still writer-side', out.writeLib.includes('from what? so what?')],
+  // ── Craft DNA recalibrations ──
+  ['believability outranks extremity', out.packLib.includes('BELIEVABILITY OUTRANKS EXTREMITY')],
+  ['L3-L4 quota gone (craft DNA AND pain-bank ladders)', !out.packLib.includes('must sit at L3-L4') && !out.packLib.includes('center of gravity at L3-L4')],
+  ['knife-beat quota gone', !out.packLib.includes('2-3 ESCALATION BEATS')],
+  ['thesis-echo mandate gone everywhere', !out.packLib.includes('The thesis echo is the last word') && !out.packLib.includes('thesis echo lands as the final word') && !out.writeLib.includes('a THESIS ECHO that reframes') && !out.reviewLib.includes('thesis echo lands as the final word')],
+  ['seam rule kept', out.packLib.includes('THE SEAM RULE')],
+  ['shared rhythm-arc fingerprint gone', !out.packLib.includes('provocation → escalating frustration')],
+  // ── Authority playbook slimmed ──
+  ['six modes now a menu', out.packLib.includes('a menu of proven shapes')],
+  ['skeleton percentages gone', !out.packLib.includes('0-5%: credential')],
+  ['essentiality test kept', out.packLib.includes('ESSENTIALITY TEST')],
+  // ── Writer plan diet ──
+  ['argumentMap still first gate', out.writeLib.includes('"argumentMap"') && out.writeLib.includes('FIRST GATE')],
+  ['kept gates present', ['"proportionCheck"', '"objectionsCheck"', '"payoffCheck"', '"flowCheck"', '"ctaOfferCheck"'].every((g) => out.writeLib.includes(g))],
+  ['dropped gates absent (ecom)', ['"stakesCheck"', '"hookHandoffCheck"', '"tenSecondCheck"', '"authorityCheck"', '"productEntryCheck"', '"payoffArc"'].every((g) => !out.writeLib.includes(g))],
+  ['UGC write keeps its own gates', out.writeUgc.includes('"tenSecondCheck"') && out.writeUgc.includes('"hookFlowCheck"')],
+  ['casting/animation checks kept in AI modes', out.writeLife.includes('"castingCheck"')],
+  // ── CTA policy ──
+  ['Unaware CTA carries the offer', out.writeUnaware.includes('carrying THE OFFER stated plainly (Buy 2 Get 3 Free')],
+  ['non-Unaware CTA: echo optional', out.writeLib.includes('a thesis echo is one proven close, not a requirement')],
+  // ── Concepts prompt ──
+  ['ecom concepts demand different ARGUMENTS', out.conceptsLib.includes('SALES ARGUMENTS') && out.conceptsLib.includes('at most ONE through-line device')],
+  ['seven questions gate kept', out.conceptsLib.includes('THE SEVEN CONCEPT QUESTIONS')],
+  ['batch thesis-diversity gate kept', out.conceptsLib.includes('DIFFERENT SALES ARGUMENT')],
+  ['ecom Unaware concepts: symptom legal, sub-persona machinery gone', out.conceptsUnaware.includes('SYMPTOMS (always legal)') && !out.conceptsUnaware.includes('Normalizer / Diagnosed Non-Searcher')],
+  ['UGC Unaware concepts unchanged', out.conceptsUgcUnaware.includes('Normalizer / Diagnosed Non-Searcher')],
+  ['UGC concepts wording unchanged', out.conceptsUgc.includes('different emotional worlds')],
+  // ── Review (critic) untouched: keeps the full net ──
+  ['CMO protocol intact in review', out.reviewLib.includes('THE CMO REVIEW PROTOCOL') && out.reviewLib.includes('CHECKPOINT 13')],
+  ['review classes 17-24 intact', out.reviewLib.includes('17. ARGUMENT INCOHERENCE') && out.reviewLib.includes('24. NARRATOR-WORLD HOOK')],
+  ['review verdict tiers intact', out.reviewLib.includes('"verdict": "approvable" | "revision" | "unfit"')],
+  ['UGC review untouched (no protocol/verdict)', !out.reviewUgc.includes('THE CMO REVIEW PROTOCOL') && !out.reviewUgc.includes('"verdict"')],
+  // ── Rework path alive ──
+  ['story-rework prompt intact', out.reworkLife.includes('REWORKING THE WHOLE STORY')],
+  // ── Remake mode (Sep 2026) ──
+  ['remake pack: example governs', out.packRemake.includes('🎬 REMAKE MODE')],
+  ['pinned-reference pack keeps the classic exception', out.packRef.includes('PINNED-EXEMPLAR EXCEPTION') && !out.packRef.includes('🎬 REMAKE MODE')],
+  ['unpinned pack has neither exemplar line', !out.packLib.includes('PINNED-EXEMPLAR EXCEPTION') && !out.packLib.includes('🎬 REMAKE MODE')],
+  ['remake concepts = 3 adaptations', out.conceptsRemake.includes('ADAPTATIONS of that example')],
+  ['remake concepts replace gate 8', out.conceptsRemake.includes('Gate 8 is replaced for remakes')],
+  ['remake writer gets remakeFidelity gate', out.writeRemake.includes('"remakeFidelity"') && out.writeRemake.includes('THIS BRIEF IS A REMAKE')],
+  ['non-remake writer has no remakeFidelity field', !out.writeLib.includes('"remakeFidelity"')],
+  // ── Coherence-review fixes (Sep 2026 verification pass) ──
+  ['amputation ruling renders clean (no mid-word cut)', !out.packLib.includes('in their own r…') && out.packLib.includes('what customers DO say, in their own recorded')],
+  ['one ceiling declared per brief', out.packLib.includes('THIS LINE IS THE ONLY CEILING')],
+  ['never-transfers ban scoped to product promises', out.packLib.includes('PRODUCT-PROMISE medical chains') && out.packLib.includes('the Stakes License is OUR doctrine')],
+  ['brain guarantee prescriptions pre-empted', out.packLib.includes("the Marketing Brain's guarantee/risk-reversal prescriptions")],
+  ['ctaOfferCheck no longer mandates the echo', !out.writeLib.includes('missing the echo means REVISE')],
+  ['censors named; preamble ranked', out.packLib.includes('THE CENSORS, by name')],
+  ['framework percentage markers descoped', out.writeLib.includes('FRAMEWORK SCOPE NOTE')],
+  ['Beats 3-5 translation note at Unaware', out.packUnaware.includes('read it as AFTER the release order opens')],
+  // ── Disposition-audit fixes (Opus audit, Sep 2026) ──
+  ['review class 11: offer at every level incl. Unaware', out.reviewLib.includes('at ANY awareness level INCLUDING Unaware') && !out.reviewLib.includes('flag an offer that appears')],
+  ['review class 11: echo absence is not a finding', out.reviewLib.includes('its absence is NOT a finding')],
+  ['stale clock references gone from ecom surfaces', !out.reviewLib.includes('verbal clock') && !out.reviewLib.includes('BOTH clocks') && !out.packLife.includes('visual clock')],
+  ['craft DNA law 5: offer at Unaware, echo optional', out.packLib.includes('Unaware included (CMO ruling — the release order governs') && out.packLib.includes('one proven final\n   word, not a requirement')],
+  ['vocabulary-ban phrasing gone from ecom surfaces', !out.packLib.includes("awareness level's\nvocabulary/offer bans") && !out.reviewLib.includes('vocabulary/offer rules on BOTH clocks')],
+  ['Stakes Engine name retired in rendered text', !out.packLib.includes("Stakes Engine's fuel")],
+  ['remake pack line hedged', out.packRemake.includes('if it is absent, the pin could not be')],
+  ['never the price restored', out.packLib.includes('ends the ad on the price alone')],
+];
+
+let failed = 0;
+for (const [name, ok] of checks) {
+  if (ok) console.log(` OK   ${name}`);
+  else { console.log(` FAIL ${name}`); failed++; }
+}
+console.log(failed === 0 ? `\nALL ${checks.length} CHECKS PASSED` : `\n${failed}/${checks.length} CHECKS FAILED`);
+process.exit(failed === 0 ? 0 : 1);

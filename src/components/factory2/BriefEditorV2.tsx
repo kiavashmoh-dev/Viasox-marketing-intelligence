@@ -18,7 +18,7 @@ import type { ScriptFramework } from '../../engine/types';
 import { getFrames, getItem } from '../../inspiration/inspirationStore';
 import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/v2Types';
 import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType, taskEcomProduction } from '../../factory2/v2Types';
-import { applyRegen, applyReviewFix, deleteRow, runFinalReview } from '../../factory2/v2Engine';
+import { applyRegen, applyReviewFix, deleteRow, runFinalReview, runReviewAndRework } from '../../factory2/v2Engine';
 import { fableFallbackActive } from '../../api/claude';
 import { exportBriefDoc } from '../../factory2/v2Export';
 import { INTRO_CALLOUT } from '../../factory2/templateBoilerplate';
@@ -301,6 +301,31 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
     }
   }, [apiKey, brief, busy, onSaved]);
 
+  const runReviewLoop = useCallback(async () => {
+    if (busy) return;
+    abortRef.current = new AbortController();
+    setError('');
+    try {
+      const result = await runReviewAndRework(brief, apiKey, abortRef.current.signal, (stage) => {
+        setBusy(
+          stage === 'review'
+            ? 'Review + auto-fix 1/3 — running the CMO simulation on the current version… (deep review; a few minutes)'
+            : stage === 'rework'
+              ? 'Review + auto-fix 2/3 — review found blockers: reworking the story against every finding… (this is a full rewrite; several minutes)'
+              : 'Review + auto-fix 3/3 — re-reviewing the reworked version… (a few more minutes)',
+        );
+      });
+      setBrief(result.brief);
+      onSaved(result.brief);
+    } catch (err) {
+      if (!/cancelled/i.test(String(err))) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    } finally {
+      setBusy('');
+    }
+  }, [apiKey, brief, busy, onSaved]);
+
   const applyFinding = useCallback(
     (f: V2ReviewFinding) => {
       if (busy) return;
@@ -386,12 +411,21 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             <Chip>{brief.task.duration}</Chip>
             <Chip tone="navy">v{brief.version}</Chip>
             {brief.task.pinnedInspirationId ? (
-              <span
-                className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800"
-                title="The Inspiration Bank ad pinned as the finished-project exemplar for this brief"
-              >
-                ⭐ Pinned: {pinnedTitle ?? '…'}
-              </span>
+              brief.task.exemplarRole === 'remake' ? (
+                <span
+                  className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold bg-violet-100 text-violet-900"
+                  title="REMAKE MODE: this example governs the brief — its argument, structure, and copy craft mirrored with Viasox truth substituted"
+                >
+                  🎬 Remake of: {pinnedTitle ?? '…'}
+                </span>
+              ) : (
+                <span
+                  className="inline-block rounded-full px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800"
+                  title="The Inspiration Bank ad pinned as the finished-project exemplar for this brief"
+                >
+                  ⭐ Pinned: {pinnedTitle ?? '…'}
+                </span>
+              )
             ) : (
               <Chip>No pinned exemplar</Chip>
             )}
@@ -416,6 +450,16 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
           >
             Final Review
           </button>
+          {isEcom && (
+            <button
+              onClick={() => void runReviewLoop()}
+              disabled={!!busy}
+              className="text-sm bg-violet-700 text-white px-4 py-1.5 rounded-lg hover:bg-violet-800 font-medium disabled:opacity-40"
+              title="The closed loop: CMO-simulation review → if not approvable, a full story rework against every finding → re-review. One pass; the brief you get back has both reports' history and the latest verdict."
+            >
+              Review + auto-fix
+            </button>
+          )}
           <button
             onClick={() => void handleExport()}
             disabled={!!busy}

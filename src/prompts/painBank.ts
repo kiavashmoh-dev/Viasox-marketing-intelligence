@@ -19,7 +19,7 @@ const BANK: Record<string, string> = {
   EasyStretch: `### Diabetic foot danger — the wound/amputation shadow
 CONDITION: Diabetes with restricted circulation, fragile skin, and neuropathy numbness; the customer lives under standing medical orders to protect their feet
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Diabetes → restricted circulation + fragile skin + numbness → any binding sock or seam becomes an injury mechanism → injuries go unfelt and wounds don't heal ('Wound that won't heal' is a recorded purchase trigger) → the documented persona fear set: amputation, wounds, losing mobility. Diabetes is recorded as 'a multiplier of all other pain points' — every ordinary sock complaint becomes a medical hazard.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: The doctor said to wear special socks — one more rule, one more aisle of beige medical products ('Doctor says I need special socks')
 - L2: Daily vigilance — inspecting feet every night, 'extra careful with my feet', afraid of what a red mark means on diabetic skin
 - L3: The customer's own verdict: 'Regular socks are dangerous for me' — the thing in the drawer is a hazard; a scratch that won't close; the wound-that-won't-heal trigger
@@ -44,7 +44,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): ES is NON
 ### Neuropathy — the nerve fire that never switches off
 CONDITION: Peripheral neuropathy (diabetic, post-chemo, developing): burning, pins-and-needles, and its terrifying inverse, total numbness
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Nerve damage → simultaneous hypersensitivity (a sock seam registers as pain) and numbness ('can't feel my toes' — injuries go undetected) → every conventional sock is either torture or a silent injury risk → sleep destroyed by nerve pain at night → sock construction becomes medically load-bearing.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Tingling at the end of long days, dismissed as tiredness
 - L2: 'Pins and needles all day' — the sensation never fully clears; certain socks become unwearable
 - L3: 'Burning sensation in my feet' + 'Nerve pain keeps me up at night' — pain owns the day AND the night; dozens of socks tried and failed for 'ultra-sensitive toes'
@@ -67,7 +67,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): ES answer
 ### The tourniquet — socks that cut off circulation, and the marks that prove it
 CONDITION: Elastic-band constriction on swollen/large/fragile legs: deep rings, numbness, discoloration, physician-confirmed restricted blood flow
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Tight elastic on a swollen or large leg → tourniquet effect → deep grooves that last hours → tingling, numbness, purple discoloration → doctor confirms restricted blood flow → blood-clot fear → recorded worst cases: ER nurse cutting socks off, feet turning purple mistaken for a medical emergency, podiatrist photographing leg damage. The marks are Level 1 of THIS vein — 'visual proof of a failing body', a nightly pressure-map of restricted circulation.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Red rings at night, deep enough to feel — 'look like someone tied rubber bands around my legs' (Unaware rule: reframe, never name marks as the pain — 'they're a pressure map')
 - L2: 'Marks that last for hours' + all-day awareness — 'can't wait to rip them off', clawing at ankles by noon
 - L3: The body starts reporting damage: 'Legs go numb', 'My feet turn purple', 'Doctor said I'm restricting blood flow', anxiety before even putting socks on, pain medication to tolerate socks
@@ -95,7 +95,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): ES's core
 ### The 7am defeat — independence dying at the sock drawer
 CONDITION: Arthritis, hip damage, paralysis, stroke recovery, obesity, age — anything that puts the feet out of reach of the hands
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Reduced grip/flexibility → sock application becomes a 20-minute two-person ordeal → doctor-prescribed socks get abandoned or the person goes without → each morning opens with proof of decline → helper dependence → role reversal (spouse/daughter dresses them) → the recorded terminal fear: 'If I can't even put on my own socks, what's next?' — the wheelchair/nursing-home cascade.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Mornings take longer — a chair, a technique, an extra ten minutes just for socks
 - L2: 'Takes me 20 minutes to put on socks' — psyching up before attempting, resting after dressing, 'start every day already defeated and exhausted'
 - L3: The surrenders — 'Need my husband to help me', 'Some mornings I just wear slippers all day because I can't face the struggle', 'I'd rather go without socks than ask my daughter to help me dress' (going unprotected rather than losing dignity)
@@ -123,7 +123,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): ES's stre
 ### Size exile — the body no sock industry acknowledges
 CONDITION: Genetically large calves, heart-failure and lymphedema swelling, 18.5–22+ inch circumferences; every sock is either a tourniquet or unwearable
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Large/swollen legs → nothing in any store fits → forced choices: XL that lies, men's socks, cut-off sock tops, $200 custom quotes, or going sockless → forced fits bind and mark (feeding the tourniquet vein) → repeated store-aisle proof that 'my body doesn't fit the normal mold' → judgment fear + exclusion from ordinary clothing → for the heart-failure/edema cohort, every day is a choice between binding circulation or going unprotected.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Sizing up and hoping — another XL that didn't fit
 - L2: 'Too small for my calves, too big for my feet' — the geometry of their body defeats every brand; marks and binding from forced fits
 - L3: 'Tried every size, nothing works' / 'It was impossible to find cute, womens socks that would fit me' — exclusion from clothing itself; $200-per-pair custom quotes they can't afford
@@ -145,7 +145,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): ES stretc
   Compression: `### 'I've paid the price' — years of abandoned therapy, now living with the damage
 CONDITION: Doctor-prescribed compression (swelling, varicose veins, post-surgery) abandoned for years because traditional 20-30 mmHg stockings were intolerable; the condition progressed unprotected
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Doctor prescribes compression → traditional stockings are 'way too tight and difficult' → patient tries, fails, gives up ('it was such a chore that I just gave up') → years pass with the condition unmanaged → permanent pain/vein progression arrives → self-blame: 'I've paid the price for it' — the manifesto reads this as customers believing 'their suffering is partially their fault for not being strong enough.' The deepest recorded outcome on the untreated path: surgery entering the conversation.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: The prescription in the drawer — compression bought, worn twice, abandoned
 - L2: The repeated failed attempts — 'I tried on more than one occasion, but each style I tried was way too tight and difficult... I just gave up'
 - L3: Years of quiet non-compliance while the doctor keeps asking — swelling endured with nothing, the protective self-talk: 'Don't get your hopes up. Remember last time?'
@@ -168,7 +168,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): COMP is g
 ### Serious-condition swelling — stroke, heart failure, lymphedema, vein disease
 CONDITION: Edema driven by systemic illness: heart failure, stroke aftermath, lymphedema, varicose disease, post-surgical recovery
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Systemic condition → fluid pooling in legs/feet → legs 'swell up like balloons', shoes stop fitting by evening, walking hurts → vein disease progresses (discoloration → vein pain → surgery threat) → doctor mandates compression → the swelling is the visible surface of a condition that is going somewhere: the documented persona fear set is 'Worsening condition, amputation, immobility.'
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Shoes tight by evening; puffiness written off as a long day
 - L2: 'Ankles disappear into cankles' — visible daily transformation; events skipped because dress shoes won't fit by 7pm
 - L3: 'Retention so bad it hurts to walk' — mobility itself compromised; diagnosis language enters: edema, varicose veins, lymphedema; doctor's orders
@@ -192,7 +192,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): Graduated
 ### The tightness torture and the 2pm countdown — workdays rewritten by pain
 CONDITION: All-day constriction plus heavy, aching, cramping legs on people who stand or sit 8-12 hours: nurses, retail, desk workers
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Long shifts + failing leg circulation → heaviness, aching, cramping by early afternoon → pain colonizes cognition (2 PM distraction threshold, 3 PM bargaining, 4 PM surrender) → after-work life cancelled ('need to get home to my feet') → escalation to pain medication, leaving early, spare socks in the desk → recorded terminal cost: 'changed careers or reduced work hours specifically because of sock-related discomfort.' Working Woman's documented fear: 'leg problems ending career.'
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Tired feet after a shift — rubbed off as part of the job
 - L2: The clock takes over — 'Watch the clock from 2 PM onward—can't focus on anything else'; spare socks stashed in the desk
 - L3: Life shrinks to the commute home — 'Decline after-work invitations because I need to get home to my feet'; 'The last two hours of work are pure survival mode'; pain medication to tolerate socks
@@ -217,7 +217,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): 12-15 mmH
 ### Compression-prison trauma — the therapy remembered as torture
 CONDITION: Prior 20-30 mmHg medical stockings experienced as physical trauma: cutting in, deep marks, heat, two-person 20-minute donning ordeals
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Prescribed medical stockings → cutting, marking, overheating, near-impossible application → the experience encodes as trauma ('cause my legs trauma', 'compression prison', 'torture devices') → all compression is presumed torture ('Compression socks are always uncomfortable' = Very Common objection) → therapy refused or abandoned → swelling endured with nothing → the paid-the-price arc begins. Trust-killer on record: 'Not addressing previous compression trauma.'
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Compression is uncomfortable — an accepted tax on health
 - L2: 'Too tight, hot and very uncomfortable' — abandoned in a drawer; husband needed to get them on
 - L3: Trauma language enters — socks that 'cut into my legs' and 'cause my legs trauma'; identity: 'I've escaped compression prison'; fear of ever going back
@@ -240,7 +240,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): COMP's tr
 ### The beige broadcast — medical stigma that makes people refuse the therapy
 CONDITION: Compression's institutional look publicly reclassifying the wearer from person to patient
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Beige medical stockings → visible diagnosis ('unwanted storytellers, broadcasting private medical information') → identity shift: person → patient → 'the sick one' → hiding behaviors (no shorts, legs hidden even from family) → the lethal turn: The Compromiser 'suffers in regular socks to avoid the medical look' and The Refuser 'won't wear anything that looks medical, even if it helps' — stigma directly producing the untreated-condition harm of every other vein.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: 'Those ugly beige things scream old and sick' — vanity objection on the surface
 - L2: Wardrobe contraction — 'Won't wear shorts anymore', 'Hide my legs even from family'
 - L3: Social contraction — avoiding being seen; pity replacing respect; 'the sick one in their social circle'
@@ -263,7 +263,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): COMP's pa
   'Ankle Compression': `### The 3pm foot — localized ankle/foot swelling and pain that wakes them up
 CONDITION: Ankle-concentrated edema, arch/heel pain, plantar fasciitis, foot fatigue on long shifts; the pain has a street address
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Standing/circulatory load concentrates at the ankle and arch → throbbing by mid-afternoon, shoes tight by evening → walking distance shrinks → the pain follows into the night: waking up in pain becomes the daily baseline (the recorded before-state of the '90% less' metric) → doctor flags the swelling; neuropathy 'developing'; a 9-hour flight becomes a source of dread.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Sore feet after long days — 'part of the job'
 - L2: 'That throbbing in your feet at 3pm' — the daily appointment with pain; shoes that fit at 8am don't at 6pm
 - L3: 'I was able to walk much further with no pain' (before-state: they couldn't); waking up in pain every morning; plantar/arthritis flares; doctor suggests compression
@@ -286,7 +286,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): Uniform ~
 ### The fragile-body fear — 'what if the sock makes it worse?'
 CONDITION: Diabetes, POTS, EDS, chronic illness, neuropathy, edema — bodies where a wrong product is a threat, and compression itself is feared as a tourniquet
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Chronic/fragile condition → every product carries risk → recorded fears: 'cutting off circulation or worsening swelling', the tourniquet-effect fear (one user's deep groove from an ankle sock), 'fear of worsening symptoms with incorrect or aggressive compression' → conflicting online advice breeds anxiety → trial-and-error exhaustion → paralysis: needing help but trusting nothing. This vein sets the CEILING on knife-twisting for ACS: the deep fear is harm, so the resolution must be safety and gentleness, never intensity.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Dislike of anything tight or clinical-feeling
 - L2: Avoidance of the whole category — 'I really dislike traditional compression socks'; sensory intolerance during flares
 - L3: Active fear the product will injure them — worsened swelling, cut circulation, the reported deep groove; anxiety before comfort: 'Comfort shouldn't make me anxious'
@@ -309,7 +309,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): ACS posit
 ### Post-chemo and neuropathic feet — ultra-sensitive toes that have failed every sock
 CONDITION: Post-chemotherapy neuropathy and developing neuropathy concentrated in the toes and feet
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Chemo/nerve damage → ultra-sensitive toes where seams and pressure register as pain → serial sock failure ('tried so many socks') stacked on top of illness recovery → developing-neuropathy cases watch it progress → nightly pain drives some to sleep in the socks for relief.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Certain socks 'just bother' their feet
 - L2: 'Ultra-sensitive toes' — seams, pressure points and toe boxes all disqualify; the sock drawer fills with failures
 - L3: 'I've tried so many socks' — trial-and-error exhaustion layered on cancer recovery or a progressing diagnosis ('developing neuropathy')
@@ -327,7 +327,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): Gentle un
 ### The fall — slips at home and the chain that ends in a wheelchair
 CONDITION: Aging balance, swelling-altered gait, smooth floors; past falls with long recoveries already in the corpus
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Aging/swelling → unstable gait → fear of walking in socks on smooth floors → a fall → fracture → dependence: the corpus contains a completed instance of the entire chain ('I am in a wheelchair because I fell & broke my arm') and a fall whose foot took a year to look 'almost, normal.' Fear of falling then shrinks movement at home — the shrinking-life vein operating inside the house.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Extra caution on hardwood and tile
 - L2: Afraid to walk in socks at home — a documented ACS purchase motive ('they wanted a sock that could prevent falls')
 - L3: The fall that already happened — 'I fell last Feb. & twisted my foot. It's taken a year for it to look, almost, normal.'
@@ -346,7 +346,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): Gripper-s
 ### Travel and flight swelling — ankles that won't fit back in the shoes
 CONDITION: Long-haul flights and travel days driving acute ankle swelling; underlying clot anxiety
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Hours immobile at altitude → fluid pools at the ankles → shoes won't go back on at landing → dread attaches to every upcoming trip → beneath it, the recorded real stake: 'Worried about blood clots' on long flights.
-THE LADDER (write the script's center of gravity at L3-L4):
+THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
 - L1: Puffy feet after a flight — annoying, temporary
 - L2: 'Usually my ankles swell so bad I can't wear shoes' — the predictable post-flight ritual
 - L3: Pre-trip dread — a 9-hour flight planned around the feet; travel decisions shaped by swelling
@@ -364,7 +364,9 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): Ankle-tar
 
 /** The evidence-based ruling on amputation as a lead knife (Kia asked for
  *  this validation explicitly — surfaced to the writer as doctrine). */
-const AMPUTATION_RULING = `AMPUTATION IS APPROVED AND REAL, BUT IT IS NOT THE STRONGEST KNIFE ON THE EVIDENCE — IT IS THE SHADOW BEHIND THE STRONGEST KNIVES. The audit is unambiguous: across the entire manifesto snapshot (107,993 reviews mined, 89,042 problem-analyzed), the word 'amputation' appears exactly TWICE, both times in strategist-authored persona fear lists (Medical Maverick ES: 'Fears: Amputation, wounds, losing mobility'; Swelling Sufferer COMP: 'Fears: Worsening condition, amputation, immobility'). ZERO customers say the word. Copy built on amputation cannot be defended with a single customer quote from this corpus; copy built one rung down can be defended with dozens. What customers DO say, in their own recorded words, stops one step earlier on the causal chain: 'Regular socks are dangerous for me', 'Have to be extra careful with my feet', the 'wound that won't heal' purchase trigger (part of the 7.1% Medical Mandate), 'My feet turn purple', 'Worried about blood clots', 'When the ER nurse had to cut my socks off'. Ranked by recorded evidence, the deep pains that out-punch amputation as lead knives are: (1) circulation cut-off events — verbatim-rich, acute, witnessed (5,724 binding reviews, 962 circulation mentions, ER/purple-feet/medical-journal breaking points); (2) the dressing struggle and independence loss (5,400–12,312 reviews, 5–11.4%, the 40x-underestimated discovery, 33.7% Breaking Point trigger, missed-recital class material); (3) serious-condition swelling biographies — stroke, heart failure, lymphedema, surgery-on-the-table (3,868 mentions, #1 named problem, full first-person stories); (4) neuropathy (1,019 mentions, #2 named condition, 'most desperate need for relief'). Amputation also collides with two corpus laws: the Vocabulary Protection Rule ('do NOT dramatize pain beyond customer language... feels exploitative and breaks trust') and the customers' own Hierarchy of Pain Resolution, where chronic-condition stakes rank only THIRD in what they buy for. DEPLOYMENT RULING (CMO-UPDATED 2026-08-28 — the endpoint may now be SPOKEN): the CMO explicitly modeled the full spoken chain — 'If your legs can't heal, your feet can go numb and when your feet go numb you don't know if it's bleeding… this can cause infection, swelling, and amputation in some of the worst cases I've ever seen' — and requires walking it to the endpoint rather than truncating at 'can't heal'. The boundary that still binds absolutely: every link belongs to UNCONTROLLED DIABETES as the causal agent, conditionally framed, carried by a first-person witness marker at the endpoint; render the medicine truthfully (nerves AND vessels damaged in parallel — the danger is the convergence: an unfelt wound that won't close); a SOCK is never the agent of the endpoint and the product never prevents, treats, or protects against any of it — its only claim is to stop being one more thing pressing on skin that can't afford pressure. The subtext pattern ('Your doctor told you to watch your feet. Nobody told you to watch your socks.') remains available and strong, but is no longer the ceiling.`;
+/** Full audit text preserved for reference (the rendered block now carries a
+ *  clean hand-curated excerpt — the old slice(0,700) cut this mid-word). */
+export const AMPUTATION_RULING = `AMPUTATION IS APPROVED AND REAL, BUT IT IS NOT THE STRONGEST KNIFE ON THE EVIDENCE — IT IS THE SHADOW BEHIND THE STRONGEST KNIVES. The audit is unambiguous: across the entire manifesto snapshot (107,993 reviews mined, 89,042 problem-analyzed), the word 'amputation' appears exactly TWICE, both times in strategist-authored persona fear lists (Medical Maverick ES: 'Fears: Amputation, wounds, losing mobility'; Swelling Sufferer COMP: 'Fears: Worsening condition, amputation, immobility'). ZERO customers say the word. Copy built on amputation cannot be defended with a single customer quote from this corpus; copy built one rung down can be defended with dozens. What customers DO say, in their own recorded words, stops one step earlier on the causal chain: 'Regular socks are dangerous for me', 'Have to be extra careful with my feet', the 'wound that won't heal' purchase trigger (part of the 7.1% Medical Mandate), 'My feet turn purple', 'Worried about blood clots', 'When the ER nurse had to cut my socks off'. Ranked by recorded evidence, the deep pains that out-punch amputation as lead knives are: (1) circulation cut-off events — verbatim-rich, acute, witnessed (5,724 binding reviews, 962 circulation mentions, ER/purple-feet/medical-journal breaking points); (2) the dressing struggle and independence loss (5,400–12,312 reviews, 5–11.4%, the 40x-underestimated discovery, 33.7% Breaking Point trigger, missed-recital class material); (3) serious-condition swelling biographies — stroke, heart failure, lymphedema, surgery-on-the-table (3,868 mentions, #1 named problem, full first-person stories); (4) neuropathy (1,019 mentions, #2 named condition, 'most desperate need for relief'). Amputation also collides with two corpus laws: the Vocabulary Protection Rule ('do NOT dramatize pain beyond customer language... feels exploitative and breaks trust') and the customers' own Hierarchy of Pain Resolution, where chronic-condition stakes rank only THIRD in what they buy for. DEPLOYMENT RULING (CMO-UPDATED 2026-08-28 — the endpoint may now be SPOKEN): the CMO explicitly modeled the full spoken chain — 'If your legs can't heal, your feet can go numb and when your feet go numb you don't know if it's bleeding… this can cause infection, swelling, and amputation in some of the worst cases I've ever seen' — and requires walking it to the endpoint rather than truncating at 'can't heal'. The boundary that still binds absolutely: every link belongs to UNCONTROLLED DIABETES as the causal agent, conditionally framed, carried by a first-person witness marker at the endpoint; render the medicine truthfully (nerves AND vessels damaged in parallel — the danger is the convergence: an unfelt wound that won't close); a SOCK is never the agent of the endpoint and the product never prevents, treats, or protects against any of it — its only claim is to stop being one more thing pressing on skin that can't afford pressure. The subtext pattern ('Your doctor told you to watch your feet. Nobody told you to watch your socks.') remains available and strong, but is no longer the ceiling.`;
 
 export function getPainBankBlock(product: string): string {
   const veins = BANK[product];
@@ -372,7 +374,7 @@ export function getPainBankBlock(product: string): string {
   return `## THE PAIN BANK — RECORDED DEEP PAIN FOR THIS PRODUCT (mined, audited, true)
 
 Every scrap below is REAL: mined from 107,993 reviews and the manifesto's own pain analysis, then
-truth-audited. This is the Stakes Engine's fuel. Rules of use:
+truth-audited. This is the pain-depth doctrine's fuel. Rules of use:
 - The knife twists with RECORDED material — their frequencies, their losses, their exact words.
   Never dramatize past the customer's own language (the corpus's Vocabulary Protection Rule).
 - Lines marked VERBATIM are real customer quotes and may be adapted into the narrator's voice.
@@ -382,7 +384,12 @@ truth-audited. This is the Stakes Engine's fuel. Rules of use:
   answer stays mechanism-true and in-bank. On Ankle Compression, the uniform gentle 12-15 mmHg
   figure MAY be stated and should be EXPLAINED when the argument calls for it (CMO ruling
   2026-08-28 — supersedes the old no-mmHg rule; never "graduated" on ACS).
-- THE AMPUTATION RULING (CMO-UPDATED 2026-08-28 — the endpoint may be SPOKEN): ${AMPUTATION_RULING.slice(0, 700)}…
+- THE AMPUTATION RULING (CMO-UPDATED 2026-08-28 — the endpoint may be SPOKEN): amputation is
+  approved and real, but it is the SHADOW behind the strongest knives, not the lead knife: across
+  107,993 mined reviews ZERO customers say the word — what customers DO say, in their own recorded
+  words, stops one step earlier on the chain ("Regular socks are dangerous for me", "Have to be
+  extra careful with my feet", the "wound that won't heal" trigger, "My feet turn purple", "When
+  the ER nurse had to cut my socks off") — so the chain is BUILT from their recorded rungs, and
   the CMO now requires walking the diabetic chain to its spoken endpoint rather than truncating —
   his model: "If your legs can't heal, your feet can go numb and when your feet go numb you don't
   know if it's bleeding… this can cause infection, swelling, and amputation in some of the worst

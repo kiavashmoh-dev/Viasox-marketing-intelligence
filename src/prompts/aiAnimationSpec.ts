@@ -21,7 +21,8 @@ export function getAiAnimationSpecBlock(): string {
 
 This brief is FULLY AI-GENERATED in an ANIMATION style: no real faces, no pretend-UGC — an
 animation carries the story. THE SCRIPT DOES NOT CHANGE: it is still ONE person's story in her own
-voice, with the pain ladder, the knife beats, and the verbatim-VO law all binding. What changes is
+voice, with the recorded pain depth (argument-driven, per the pain bank) and the verbatim-VO law
+all binding. What changes is
 the instrument: the visual cell of every row is a GENERATION PROMPT for an animated scene — style +
 character + action + set + camera/motion + light + texture — not a footage description. Shot tags
 remain as SCENE-TYPE vocabulary.

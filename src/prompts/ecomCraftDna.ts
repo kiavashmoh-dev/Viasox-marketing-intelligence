@@ -45,32 +45,24 @@ vague hook stays vague at full volume. Therefore:
 4. READ-ALOUD AT FULL STRICTNESS. Full flowing sentences with their connective tissue intact are
    the default texture of every VO line. The reveal-fragment license below is the ONLY exception.
 5. THE CTA IS CRAFTED, NOT APPENDED — AND IT CARRIES THE OFFER. The last body line hands into it,
-   the offer is stated plainly inside it (offer math from the brand facts, verbatim), and the
-   thesis echo lands as the final word. A CTA that arrives out of nowhere, or omits the offer, is
-   a failed close. (At Unaware the release-order doctrine still governs what a CTA may contain.)
+   the offer is stated plainly inside it (offer math from the brand facts, verbatim) with a direct
+   action, at EVERY awareness level, Unaware included (CMO ruling — the release order governs
+   everything before the close, never the close). A CTA that arrives out of nowhere, omits the
+   offer, or ends the ad on the price alone is a failed close. A thesis echo is one proven final
+   word, not a requirement.
 
-**THE STAKES ENGINE — pain depth is the ad's voltage (CMO ruling, Aug 2026):** the last six months
-of surface-level pains (tired legs, sock marks, "annoying" rings) produced zero winners. Every
-script now runs on the PAIN LADDER, and the script's center of gravity must sit at L3-L4:
-- L1 INCONVENIENCE: tired feet, marks, tugging — legal ONLY as the doorway in.
-- L2 LIFE EROSION: what the pain has already taken — the quit evening walks, the bench she always
-  stops at, watching the grandkids' game sitting down, the workarounds adopted without noticing.
-- L3 THE NAMED CONDITION: arthritis mornings, neuropathy burning, chronic heaviness, the diagnosis
-  she carries — named plainly, felt specifically.
-- L4 THE STAKES: the medically true mechanism of harm and what it threatens — restricted
-  circulation and what that means for healing, the fear the personas actually report (wounds,
-  losing mobility, amputation) — under the Stakes License: condition-true, conditionally framed,
-  never the product's promise.
-TWIST THE KNIFE — the missing building block, now mandatory: a pain named ONCE is a pain wasted.
-After the pain lands, drive it home with 2-3 ESCALATION BEATS before any turn toward the product:
-make it more frequent than they admit ("not sometimes — every single evening"), attach the
-consequence ("that's why the walks stopped"), attach the identity wound ("and you started calling
-it getting older"). The studied winner runs the full chain: "Every cut, every blister, every
-pressure point… when it can't, they don't heal. They get infected. This is how diabetics lose
-toes." Escalation beats are CAUSAL, each one a consequence of the last — never three restatements
-of the same fact. THE DEEPER THE VALLEY, THE MORE EARNED THE ENTRY: a script that feels salesy is
-almost always a script whose pain hasn't earned its product yet — the knife section is what buys
-the turn.
+**PAIN DEPTH — the ad's voltage (CMO ruling, Aug 2026; recalibrated Sep 2026):** surface-level
+pains (tired legs, sock marks, "annoying" rings) produced zero winners — they are doorways, never
+destinations. The pain this script runs on is the REAL one this person lives with: the named
+condition felt specifically, what it has already taken from her life, and — when the argument
+calls for it — the medically true stakes, walked to their endpoint under the Stakes License
+(condition-true, conditionally framed, witnessed, never the product's promise). Escalation beats
+are CAUSAL, each one a consequence of the last — never restatements. The studied winner runs the
+full chain: "Every cut, every blister, every pressure point… when it can't, they don't heal. They
+get infected. This is how diabetics lose toes." Depth is ARGUMENT-DRIVEN, not a quota: no fixed
+knife-beat count, no uniform depth level every script must hit — this angle's argument decides how
+deep the valley goes, and the deeper it goes, the more product argument it must buy (the
+proportion law binds).
 
 **THE ONE-VOICE LAW — first person beats brand voice:** the story comes from ONE person living it,
 in their own voice, start to finish — a person telling you what happened to them, not a brand
@@ -118,12 +110,14 @@ compression. Zero benefits. Zero relief." / "Not knee-high. Ankle."). Bounded: f
 REVEALS, never the default texture; narration between reveals returns to full sentences
 (full-sentence setup → punch on the payoff, everywhere in the corpus). The self-Q&A ladder is
 spoken-native and encouraged: "'Wide calf' socks? 18 inches. Still not enough." The rhythm ARC is
-engineered content: provocation → escalating frustration → emotional valley → confident turn →
-calm education → energized proof → clean close (C163). Lines lengthen to explain, tighten to
-punch. Mid-script re-hooks reset attention ("But here's what happens next…" — A133).
+engineered content — but it is YOUR ad's arc, named for this argument: each winning brief had its
+own shape, and a shared arc across scripts is a template fingerprint. Lines lengthen to explain,
+tighten to punch. Mid-script re-hooks reset attention ("But here's what happens next…" — A133).
 
-**THE PROOF ENGINE — ecom proof is measurable, on camera** (the deepest craft difference from
-UGC's lived testimony — winning ecom proof is a NUMBER MADE VISIBLE):
+**THE PROOF ENGINE — ecom proof is demonstrated on camera, and BELIEVABILITY OUTRANKS EXTREMITY**
+(CMO ruling: outcomes are felt-scale and scene-specific; the demonstration does its work BEFORE
+the result is stated so the result feels earned — a manufactured absolute overclaims and reads
+fake). The proven devices, a menu to choose from for THIS argument:
 - THE ESCALATION LADDER: competitor failures in ascending order, training the viewer to crave the
   next number — 12-14" → 18" → 20" → THIRTY (E171). The pattern break IS the product entry.
 - THE TIMELINE: Hour 1 / Hour 4 / Hour 8 (A133); morning → workday → night (A162); Day 1 / Week
@@ -133,8 +127,9 @@ UGC's lived testimony — winning ecom proof is a NUMBER MADE VISIBLE):
 - THE MULTI-PERSON FIT MONTAGE: 3+ different bodies, identical syntax ("My 22-inch calves?
   Comfortable. My friend's 28-inch? Comfortable.") — one testimonial becomes universal (E194).
 - THE SPLIT-SCREEN: two states coexisting, labels of 2-4 words, body language telling the story.
-- THE RESULT-ONLY PROOF: let the outcome hold the frame with no words (end-of-day unmarked skin).
-Numbers only when TRUE and performable on camera — never invented.
+- THE RESULT-ONLY PROOF: let the outcome hold the frame with no words — believable only (an
+  identical morning-vs-evening before/after is a manufactured absolute: it overclaims and reads fake).
+Numbers only when TRUE and performable on camera — never invented. Visual claims ARE claims.
 
 **LINE↔VISUAL PAIRING:** every VO line ships with its visual — the tag + a short conversational
 description (rules in the footage-library block). Graphic devices are first-class visuals:
@@ -151,12 +146,11 @@ montage), SEQUENTIAL CARDS (one thought per cut, synced to the VO), LABELS (spli
 labels 2-4, a persistent block ≤ ~25 words. Key numbers get the LARGEST type at their spoken
 moment. In VO mode, overlays are fragments OF the spoken line — never a second competing script.
 
-**PRODUCT ENTRY — TWO CLOCKS, not one:** ecom splits what UGC fuses. VISUAL PRESENCE and VERBAL
-ENTRY run on separate clocks — in half the corpus the product is ON SCREEN from frame one while
-the VO is still at the problem. The awareness level's entry zones govern the VERBAL clock (when
-the brand is NAMED and claimed); the visual clock may run ahead where the mode demands — EXCEPT
-at Unaware, where the release ORDER governs both channels (an on-screen brand in the opening is a
-spoiled reveal there). The bridge LINE is a named move with four proven shapes: the narrative
+**PRODUCT ENTRY — craft notes** (the LAW — argument decides, proportion binds, no percentage
+zones — lives in the pack's PRODUCT ENTRY block; these are the craft moves): visual presence may
+run ahead of verbal entry (in half the corpus the product is ON SCREEN from frame one while the VO
+is still at the problem) — EXCEPT at Unaware, where the release ORDER governs both channels. The
+bridge LINE is a named move with four proven shapes: the narrative
 pivot ("Then I wore these from Viasox" — A48), the antidote ("Instead, try…"), the arrival
 ("That's where Viasox comes in"), the discovery ("Viasox figured out something brilliant: …" —
 C163). The bridge lands AFTER the failure cascade or education has done the work, and the first
@@ -164,11 +158,11 @@ product moment doubles as an objection crusher ("Not knee-high. Ankle." — A133
 PAYOFF ARC binds in ecom exactly as in UGC — "lived proof" translates to SHOWN proof (the
 timeline, the ladder, the demo).
 
-**CTA — offer plus thesis echo, in the narrator's voice:** the winning close is the OFFER stated
-plainly + a MEANING line reframing the whole ad as its payoff: "Because everyone deserves socks
-that tell the truth" (E171) · "Real socks for real legs" (E194) · "The best compression is the
-compression you actually wear" (C163). The thesis echo is the last word — the sale lands as the
-story's moral, never a pivot away from it. THE SEAM RULE: the turn from story to offer is the
+**CTA — the offer stated plainly, in the narrator's voice:** the winning close carries the OFFER +
+a direct action. A thesis echo — a meaning line reframing the ad as its payoff ("The best
+compression is the compression you actually wear" — C163) — is one PROVEN shape, not a
+requirement: an echo bolted onto every script becomes a template fingerprint; close the way THIS
+story closes. THE SEAM RULE: the turn from story to offer is the
 single most exposed cut in the ad — it happens INSIDE the narrator's voice ("so if your evenings
 look like mine did…"), with the story's vocabulary, at the story's pace. Any register switch to
 announcer-speak at the offer ("Order now!", "Introducing…") converts the whole preceding story
@@ -182,11 +176,13 @@ music as a REGISTER ("Building dramatic/revelation style"), transitions serving 
 
 **⛔ WHAT NEVER TRANSFERS FROM STUDIED WINNERS:** the corpus predates the current claim boundary —
 mirror the craft, never the claims. Specifically banned however the specimens used them:
-medical-outcome chains (infection/amputation stakes, "prevents", "healing", "protecting");
-money-back guarantees and returns language anywhere; FALSE urgency (deadlines only when the event
-is real); unverifiable stunts stated as fact; offer math from memory (specimens carry stale
-prices — the offer comes from the brand facts at write time); professional-endorsement stamps
-unchecked against the claim boundary.
+PRODUCT-PROMISE medical chains ("prevents", "healing", "protecting" — the product as the agent of
+a medical outcome; the CONDITION-side spoken chain under the Stakes License is OUR doctrine and is
+not what this bans); money-back guarantees and returns language anywhere — and this ban pre-empts
+EVERY source in this prompt, including the Marketing Brain's guarantee/risk-reversal prescriptions
+(the ban always wins); FALSE urgency (deadlines only when the event is real); unverifiable stunts
+stated as fact; offer math from memory (specimens carry stale prices — the offer comes from the
+brand facts at write time); professional-endorsement stamps unchecked against the claim boundary.
 
 **QUALITY BAR:** the studied briefs won because the document respected the EDITOR: every line
 pre-paired with a buildable visual, the through-line device named, pacing and music given as

@@ -102,6 +102,16 @@ export interface V2Task {
    */
   pinnedInspirationId?: string;
   /**
+   * How the pinned example is used (ecom; meaningful only with a pin).
+   * 'reference' (default when absent) = the finished-project exemplar:
+   * structural authority, our argument. 'remake' = REMAKE MODE (Sep 2026,
+   * Kia's trend-research workflow): the example GOVERNS — its argument
+   * order, claim cadence, proof placement, structure, hook shape, and
+   * register are the spec, mirrored nearly 1:1 with Viasox truth
+   * substituted. Censors, brand facts, and production law never yield.
+   */
+  exemplarRole?: 'reference' | 'remake';
+  /**
    * Ecom only: how the ad is produced. 'library' (default when absent —
    * every pre-existing ecom task) = the editor pulls from the footage
    * library; 'ai-lifestyle' = every scene is generated and must look like
