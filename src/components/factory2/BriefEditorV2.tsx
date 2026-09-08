@@ -17,7 +17,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import type { ScriptFramework } from '../../engine/types';
 import { getFrames, getItem } from '../../inspiration/inspirationStore';
 import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/v2Types';
-import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType, taskEcomProduction } from '../../factory2/v2Types';
+import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType, taskEcomProduction, taskExemplarRole } from '../../factory2/v2Types';
 import { applyRegen, applyReviewFix, deleteRow, runFinalReview, runReviewAndRework } from '../../factory2/v2Engine';
 import { fableFallbackActive } from '../../api/claude';
 import { exportBriefDoc } from '../../factory2/v2Export';
@@ -411,7 +411,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             <Chip>{brief.task.duration}</Chip>
             <Chip tone="navy">v{brief.version}</Chip>
             {brief.task.pinnedInspirationId ? (
-              brief.task.exemplarRole === 'remake' ? (
+              taskExemplarRole(brief.task) === 'remake' ? (
                 <span
                   className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold bg-violet-100 text-violet-900"
                   title="REMAKE MODE: this example governs the brief — its argument, structure, and copy craft mirrored with Viasox truth substituted"

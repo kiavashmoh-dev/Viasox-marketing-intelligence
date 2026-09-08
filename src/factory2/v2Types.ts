@@ -71,6 +71,24 @@ export const ECOM_FRAMEWORKS: readonly ScriptFramework[] = [
 
 // ─── Task (intake) ──────────────────────────────────────────────────────────
 
+/**
+ * How the pinned example is used for this task (Sep 2026, audit #2 round 3 —
+ * "the example is priority #1"). With a pin on an ECOM task the DEFAULT is
+ * 'remake': the example GOVERNS (its argument, structure, hook shape, and
+ * copy craft mirrored with Viasox truth substituted). 'reference' (structure
+ * only, our own argument) must be chosen explicitly. UGC keeps the classic
+ * structural-reference behavior. 'none' when nothing is pinned.
+ */
+export function taskExemplarRole(task: {
+  pinnedInspirationId?: string;
+  exemplarRole?: 'reference' | 'remake';
+  adType?: V2AdType;
+}): 'none' | 'reference' | 'remake' {
+  if (!task.pinnedInspirationId) return 'none';
+  if (task.exemplarRole) return task.exemplarRole;
+  return taskAdType(task) === 'ecom' ? 'remake' : 'reference';
+}
+
 /** A V2 task: the shared intake output plus V2-only settings. */
 export interface V2Task {
   /** Original parsed Asana/manual data (shared intake layer). */
@@ -396,6 +414,12 @@ export interface UgcBriefV2 {
   rippleFlags: V2RippleFlag[];
   /** The last final-review report (persisted so findings survive refresh). */
   lastReview?: V2ReviewReport;
+  /** ECOM ONLY — the writer's think-first plan and its honest self-review,
+   *  serialized as compact JSON at write time. Persisted so the critic (and
+   *  every regeneration) can read the writer's declared argument, its
+   *  remake-fidelity deviations, and its own runtime/isolation verdicts —
+   *  instead of re-deriving them blind. Never emitted for UGC briefs. */
+  writerNotes?: { plan?: string; selfReview?: string };
   /** Bumped on every mutation (used for stale-write protection in the UI). */
   version: number;
   createdAt: string;

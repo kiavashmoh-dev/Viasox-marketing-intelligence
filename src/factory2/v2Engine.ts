@@ -47,8 +47,7 @@ import {
   CTA_PERFORMANCE_NOTE,
   describeTarget,
   taskAdType,
-  taskEcomProduction,
-} from './v2Types';
+  taskEcomProduction, taskExemplarRole } from './v2Types';
 import type { V2AdType, EcomShotTag } from './v2Types';
 import {
   buildBrainstormPrompt,
@@ -405,7 +404,7 @@ async function inspirationContextFor(task: V2Task): Promise<string> {
   try {
     if (task.pinnedInspirationId) {
       const item = await getItem(task.pinnedInspirationId);
-      if (item && item.status === 'ready' && task.exemplarRole === 'remake' && taskAdType(task) === 'ecom') {
+      if (item && item.status === 'ready' && taskExemplarRole(task) === 'remake') {
         // REMAKE MODE (Sep 2026): the example GOVERNS. The transcript is the
         // primary text — a remake without the source's actual copy is a
         // costume. Larger slice than the reference path on purpose.
@@ -491,6 +490,38 @@ artifact, never a license for telegraphic delivery.
   }
 }
 
+/**
+ * Compact per-task digest of each pinned example for the BATCH-LEVEL stages
+ * (brainstorm, direction synthesis). Those stages previously saw only a
+ * "has PINNED exemplar" flag while writing the specs that bind everything
+ * downstream — the example is priority #1, so its substance must reach the
+ * stage that shapes the argument. Non-fatal: a missing/unready item simply
+ * yields no digest for that task.
+ */
+async function pinnedDigestsFor(tasks: V2Task[]): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  for (const t of tasks) {
+    if (taskAdType(t) !== 'ecom' || !t.pinnedInspirationId) continue;
+    try {
+      const item = await getItem(t.pinnedInspirationId);
+      if (!item || item.status !== 'ready') continue;
+      const script = (item.attachedScriptText || item.textContent || '').trim();
+      out[t.parsed.name] = [
+        `"${item.title || item.filename}" — ${taskExemplarRole(t) === 'remake' ? "THE EXAMPLE GOVERNS: this task remakes it (its argument IS the task's argument)" : 'structural reference (its beat map guides structure; the argument is ours)'}`,
+        `Summary: ${item.summary || '-'}`,
+        `Hook: ${item.hookBreakdown ?? '-'}`,
+        `Arc: ${item.narrativeArc ?? '-'}`,
+        `Product bridge: ${item.productBridge ?? '-'}`,
+        `Key language: ${item.keyLanguage ?? '-'}`,
+        script ? `Transcript (opening):\n"""\n${script.slice(0, 1500)}\n"""` : '(no transcript on file — pin an item with a transcript for a real remake)',
+      ].join('\n');
+    } catch {
+      /* bank unavailable — the stage runs without the digest */
+    }
+  }
+  return out;
+}
+
 // ─── Step 1: Brainstorm ─────────────────────────────────────────────────────
 
 export async function runBrainstorm(
@@ -500,7 +531,8 @@ export async function runBrainstorm(
   instructions?: string,
 ): Promise<Pick<V2Brainstorm, 'analysis' | 'questions'>> {
   const bankSummary = await summarizeUgcBank();
-  const { system, user } = buildBrainstormPrompt(tasks, bankSummary, instructions);
+  const digests = await pinnedDigestsFor(tasks);
+  const { system, user } = buildBrainstormPrompt(tasks, bankSummary, instructions, digests);
   const brain = await buildBrainAddendum({ module: 'strategySession' }, { apiKey });
   const parsed = await requestJson<{ analysis: string; questions: Array<{ id?: string; question: string; options?: string[] }> }>(
     system + brain.addendum, user, apiKey, 6000, 'brainstorm', signal,
@@ -523,7 +555,8 @@ export async function synthesizeDirection(
   signal?: AbortSignal,
   instructions?: string,
 ): Promise<string> {
-  const { system, user } = buildDirectionSynthesisPrompt(tasks, brainstorm, instructions);
+  const digests = await pinnedDigestsFor(tasks);
+  const { system, user } = buildDirectionSynthesisPrompt(tasks, brainstorm, instructions, digests);
   const parsed = await requestJson<{ direction: string }>(system, user, apiKey, 3000, 'direction synthesis', signal);
   if (!parsed.direction) throw new Error('Factory V2: direction synthesis returned empty.');
   return parsed.direction;
@@ -604,6 +637,22 @@ interface RawBriefJson {
   ctas: string[];
   scriptProse: string;
   storyboard: RawBriefRow[];
+  /** Ecom writer only: the think-first plan and the honest self-review. */
+  plan?: unknown;
+  selfReview?: unknown;
+}
+
+/** Compact JSON for the writer's plan/selfReview objects (ecom only). Returns
+ *  undefined for anything empty so UGC briefs never carry the field. */
+function compactNotes(v: unknown): string | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === 'string') return v.trim() || undefined;
+  try {
+    const json = JSON.stringify(v);
+    return json && json !== '{}' && json !== '[]' ? json : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** All ecom footage tags, flattened, for case-insensitive canonicalization. */
@@ -1033,6 +1082,11 @@ export async function writeBrief(
     createdAt: now,
     updatedAt: now,
   };
+  if (taskAdType(task) === 'ecom') {
+    const plan = compactNotes(parsed.plan);
+    const selfReview = compactNotes(parsed.selfReview);
+    if (plan || selfReview) brief.writerNotes = { ...(plan ? { plan } : {}), ...(selfReview ? { selfReview } : {}) };
+  }
   brief.rippleFlags = validateBrief(brief);
 
   // Beat-map fidelity gate: with a pinned exemplar, audit the finished
@@ -1581,7 +1635,10 @@ export async function runFinalReview(
   apiKey: string,
   signal?: AbortSignal,
 ): Promise<V2ReviewReport> {
-  const { system, user } = buildFinalReviewPrompt(brief);
+  // A brief that FOLLOWS a pinned example is reviewed against it (checkpoint
+  // 14 / class 25) — the source block rides along only for remake briefs.
+  const reviewInspiration = taskExemplarRole(brief.task) === 'remake' ? await inspirationContextFor(brief.task) : '';
+  const { system, user } = buildFinalReviewPrompt(brief, reviewInspiration);
   const parsed = await requestJson<{
     verdict?: string;
     summary: string;

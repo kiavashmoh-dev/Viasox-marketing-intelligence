@@ -54,7 +54,7 @@ import { getEcomSystemBase } from './../prompts/ecomSystemBase';
 import { getCmoReviewProtocolBlock } from './../prompts/cmoReviewProtocol';
 import { getAiLifestyleSpecBlock } from './../prompts/aiLifestyleSpec';
 import { getAiAnimationSpecBlock } from './../prompts/aiAnimationSpec';
-import { taskEcomProduction, type V2EcomProduction } from './v2Types';
+import { taskEcomProduction, taskExemplarRole, type V2EcomProduction } from './v2Types';
 
 // ─── Shared fragments ───────────────────────────────────────────────────────
 
@@ -285,13 +285,19 @@ There are no percentage zones: THE ARGUMENT decides when the product enters, and
 LAW binds — the product argument gets equal or more time than the problem build, at every
 awareness level. Visual presence may run ahead of verbal entry — EXCEPT at Unaware, where the
 release ORDER governs both channels (see the Awareness Core).
-${task.pinnedInspirationId ? task.exemplarRole === 'remake' ? `- 🎬 REMAKE MODE: this brief REMAKES the governing example. When its "REMAKE SOURCE — THE
+${task.pinnedInspirationId ? taskExemplarRole(task) === 'remake' ? `- 🎬 REMAKE MODE: this brief REMAKES the governing example. When its "REMAKE SOURCE — THE
   GOVERNING EXAMPLE" block is present in the conversation (if it is absent, the pin could not be
   loaded — write as a normal brief and flag it in the plan), the example's argument order, claim cadence, proof
-  placement, structure, hook shape, and register ARE the spec — mirrored nearly 1:1 with Viasox
-  truth substituted. Where any craft guidance in this pack disagrees with the example, THE EXAMPLE
-  WINS. Never yields: brand facts, the claim boundary, the Awareness Core's label/offer rules, the
-  verbatim-to-VO law, and the production law.` : `- ⭐ PINNED-EXEMPLAR EXCEPTION: a finished-project exemplar is pinned for this task. When its
+  placement, structure, hook shape, register, and LENGTH ARE the spec — mirrored nearly 1:1 with
+  Viasox truth substituted. The source's runtime governs (under the hard ceiling): never pad a
+  short source toward a word-count sweet spot — that distorts its claim cadence and proportion.
+  The source's REGISTER governs: an educator VO stays an educator VO; never invent a first-person
+  witness persona the source doesn't have. TRANSLATION RULE: where the source sells the product as
+  protector or preventer, ours sells obstacle-removal (the sock stops being one more thing pressing
+  on skin that can't afford it) — the argument's shape survives, the agent changes. Where any craft
+  guidance in this pack disagrees with the example, THE EXAMPLE WINS (the sales-argument doctrine's
+  REMAKE EXCEPTION applies). Never yields: brand facts, the claim boundary, product-persona
+  isolation, the Awareness Core's label/offer rules, the verbatim-to-VO law, and the production law.` : `- ⭐ PINNED-EXEMPLAR EXCEPTION: a finished-project exemplar is pinned for this task. When its
   "PINNED EXEMPLAR — THE STRUCTURAL AUTHORITY" block is present in the conversation, that
   exemplar's dissected beat map GOVERNS structure, framework choice, product-entry timing, and
   product-talk share. The censors never yield: brand facts, the claim boundary, and the awareness
@@ -463,7 +469,13 @@ Script prose (the exact VO):
 ${brief.scriptProse}
 
 Storyboard (| Scene | VO line | Overlay | Shot tag | Visual | Reference | Editor notes |):
-${rows}`;
+${rows}${brief.writerNotes?.plan || brief.writerNotes?.selfReview ? `
+
+Writer's declared plan and honest self-review at write time (read them — the argument map, the
+proportion plan, and any remake-fidelity, runtime, or isolation deviations it admitted are the
+first things to verify; a later human edit may have changed what they describe):${brief.writerNotes.plan ? `
+PLAN: ${brief.writerNotes.plan}` : ''}${brief.writerNotes.selfReview ? `
+SELF-REVIEW: ${brief.writerNotes.selfReview}` : ''}` : ''}`;
   }
   return `## CURRENT BRIEF STATE (complete)
 
@@ -491,10 +503,24 @@ ${rows}`;
 
 // ─── Step 1: Brainstorm ─────────────────────────────────────────────────────
 
+/** Per-task pinned-example digests for the batch-level stages (rendered
+ *  only when non-empty — UGC batches and unpinned batches are unchanged). */
+function renderExampleDigests(digests: Record<string, string>): string {
+  const names = Object.keys(digests);
+  if (names.length === 0) return '';
+  return `# PINNED EXAMPLES (per task — where a task FOLLOWS its example, the example's argument IS that task's argument: build the task's thinking FROM it, not around it)
+
+${names.map((n) => `## ${n}
+${digests[n]}`).join('\n\n')}
+
+`;
+}
+
 export function buildBrainstormPrompt(
   tasks: V2Task[],
   inspirationSummary: string,
   instructions?: string,
+  exampleDigests: Record<string, string> = {},
 ): { system: string; user: string } {
   const taskList = tasks
     .map(
@@ -580,7 +606,7 @@ ${hasEcom ? '' : getMarketingBrainBlock('v2Brainstorm')}`;
 
 ${taskList}
 
-# INSPIRATION BANK SNAPSHOT
+${renderExampleDigests(exampleDigests)}# INSPIRATION BANK SNAPSHOT
 ${inspirationSummary || '(bank summary unavailable)'}
 
 Produce the strategic analysis and your questions.`;
@@ -592,6 +618,7 @@ export function buildDirectionSynthesisPrompt(
   tasks: V2Task[],
   brainstorm: V2Brainstorm,
   instructions?: string,
+  exampleDigests: Record<string, string> = {},
 ): { system: string; user: string } {
   const qa = brainstorm.questions
     .map((q) => `Q: ${q.question}\nA: ${brainstorm.answers[q.id] ?? '(no answer)'}`)
@@ -625,12 +652,22 @@ task's argument — the bridge-line test: a theme that would need an invented li
 left out of that task. Be specific and directive; no generic advice. These specs SEED the
 concepts; the human-approved concept's thesis governs the script — where they differ, the
 approved concept wins.
+⛔ THE NEVER-COPY FENCE BINDS YOUR SPECS: the quoted lines in the taste file and doctrine below are
+calibration, never spec material — a spec that prescribes one of those lines, frames, or story
+events (the credential opener, the "worst cases" line, the nurse relay, the dinner-table outcome)
+fingerprints every brief in the batch; prescribe SHAPES and this task's own material only.
+⛔ CLAIMS NEVER TRANSFER FROM AN EXAMPLE: a pinned example's product promises ("protects",
+"prevents", "keeps circulation open", any guarantee) are not ours — the spec carries its ARGUMENT
+SHAPE and substitutes our obstacle-removal truth (the sock stops being one more thing pressing on
+skin that can't afford it); its in-bank facts may be carried in substance.
 ${renderDirectorInstructions(instructions)}
 
 ${getTasteFileBlock()}
 
 ## THE RECORDED MATERIAL PER PRODUCT (every pain, objection, and product truth in your specs comes ONLY from here)
 ${[...new Set(tasks.filter((t) => taskAdType(t) === 'ecom').map((t) => t.product))].map((prod) => `${getProductTruthBlock(prod)}
+
+${getClaimBoundaryBlock(prod)}
 
 ${getPainBankBlock(prod)}
 
@@ -656,9 +693,9 @@ ${JSON_CONTRACT}
 JSON shape: { "direction": "..." }`;
 
   const user = `# TASKS
-${tasks.map((t, i) => `${i + 1}. ${t.parsed.name} — ${t.product} | ${t.talkingPoint} | ${t.awarenessLevel} | ${taskAdType(t) === 'ecom' ? 'ECOM (editing brief)' : `style: ${getUgcStyle(t.ugcStyle).shortLabel}`} | ${t.duration}${taskAdType(t) === 'ecom' && t.pinnedInspirationId ? (t.exemplarRole === 'remake' ? ' | REMAKE of a pinned example (the example IS the brief)' : ' | pinned example (its argument is the spine)') : ''}`).join('\n')}
+${tasks.map((t, i) => `${i + 1}. ${t.parsed.name} — ${t.product} | ${t.talkingPoint} | ${t.awarenessLevel} | ${taskAdType(t) === 'ecom' ? 'ECOM (editing brief)' : `style: ${getUgcStyle(t.ugcStyle).shortLabel}`} | ${t.duration}${taskAdType(t) === 'ecom' && t.pinnedInspirationId ? (taskExemplarRole(t) === 'remake' ? ' | FOLLOWS a pinned example (the example governs — it IS the brief)' : ' | pinned example, structure only') : ''}`).join('\n')}
 
-# YOUR EARLIER ANALYSIS
+${renderExampleDigests(exampleDigests)}# YOUR EARLIER ANALYSIS
 ${brainstorm.analysis}
 
 # THE DIRECTOR'S ANSWERS
@@ -702,12 +739,14 @@ export function buildConceptsPrompt(
 
 ## YOUR ROLE: FACTORY V2 ${isEcom ? 'ECOM' : 'UGC'} CONCEPT GENERATOR
 
-${isRemake ? `REMAKE MODE: this task remakes the GOVERNING EXAMPLE in the user message. Generate exactly 3
-ADAPTATIONS of that example for Viasox — the example's argument shape and structure held constant
-in all three, adapted three genuinely different ways: e.g. a different Viasox product-truth at the
-center, a different narrator who fits the example's role, a different angle-keyword emphasis. These
-are adaptation choices for the director to pick between — never three new ads, and never a drift
-away from what makes the example sell. Each concept
+${isRemake ? `REMAKE MODE: this task remakes the GOVERNING EXAMPLE in the user message. Concept 1 is the
+FAITHFUL adaptation: the example's argument, structure, mechanism, register, hook shape, and length
+carried over with our truth substituted (carry vs substitute per the doctrine). Concepts 2-3 are
+optional VARIANTS along narrow axes only — the narrator's voice/casting, register warmth, a
+censor-forced substitution handled two ways, or length — never a different product truth,
+mechanism, or argument than the source's (that is drift, not adaptation). If no honest variant
+exists, emit the faithful one alone and say so. Never three new ads, and never a drift away from
+what makes the example sell. Each concept
 must pass its own verification before you emit it:` : isEcom ? `Generate exactly 3 genuinely different ecom concepts for this task. Different means three different
 SALES ARGUMENTS — a different thesis-law, a different belief chain, different proof — never one
 argument wearing three costumes, and never the same idea with three hooks. Keep story devices
@@ -789,7 +828,7 @@ ${isEcom ? `{
       "thesis": "the ad's argument as ONE sayable law — the sentence a viewer could repeat (any shape; three concepts = three different laws, and not the batch direction's other tasks' laws either)",
       "argumentChain": "the belief chain in 3-5 causal links, walked to a felt endpoint: what the viewer believes after each beat and how it sets up the next, ending at 'so this product is the answer for me'",
       "hookLine": "a sample primary hook, written exactly as it would be spoken — it names her symptom, stakes her, and promises the value of watching, in HER world",
-      "narrator": "who tells it — a SUFFERER telling her own story (no career; often the stronger narrator) or an authority-adjacent figure; only if she has a career: why it gives her standing on THIS problem, and confirm the story collapses without it. Never hand a narrator a job so the story can borrow credibility",
+      "narrator": "who tells it — a SUFFERER telling her own story (no career; often the stronger narrator), an authority-adjacent figure, or — when a pinned example governs — the example's own voice (a second-person educator VO is legal; never invent a witness persona the source doesn't have); only if she has a career: why it gives her standing on THIS problem, and confirm the story collapses without it. Never hand a narrator a job so the story can borrow credibility",
       "productTruth": "the ONE concrete attribute this concept sells, from THIS product's bank",
       "objections": "the 2-4 buyer objections THIS story naturally raises, each with the scene that will close it on screen",
       "whyViasox": "why THIS product over the alternatives, in this story's terms (portfolio-safe: never a verdict on a sibling product)",
@@ -939,10 +978,11 @@ function ecomBriefJsonShape(
     "argumentMap": "FIRST. State the ad's THESIS AS ONE SAYABLE LAW (the APPROVED CONCEPT's thesis governs — the batch direction's spec was only its seed; where they differ, the approved concept wins; sharpen it if needed, any shape, in this story's words). Then walk the argument beat by beat: for each beat, what the viewer now BELIEVES and how that belief sets up the next one, ending at 'so this product is the answer for me'. Any beat that advances no belief is decoration — cut it before writing",
     "beatMap": "one line per scene: the beat's job + what happens in THIS story + estimated spoken VO words. End with 'TOTAL: Nw vs ceiling Cw' (C = the ceiling in THIS TASK's duration line) — if N exceeds C, rebalance before writing, cutting setup never the product argument",
     "proportionPlan": "the planned word split — PROBLEM BUILD vs PRODUCT ARGUMENT (entry through CTA) — as two numbers that satisfy the proportion law (product ≥ problem). Write to this split",
-    "objectionsPlan": "the 2-4 objections this script WILL raise (the approved concept's list, adjusted) and the scene that will close each on screen — commit before writing"
+    "objectionsPlan": "the 2-4 objections this script WILL raise (the approved concept's list, adjusted) and the scene that will close each on screen — commit before writing"${isRemake ? `,
+    "exampleDissection": "the governing example, dissected before writing: WHY it sells in one sentence (its argument), its hook shape, its entry position and product-talk share, its proof placement, its register, its runtime — and, passage by passage, CARRY (in-bank substance, reworded) vs SUBSTITUTE (outcome promises → obstacle-removal truth) vs REWRITE (a line this prompt quotes as a model)"` : ''}
   },
   "scriptProse": "WRITE THE SCRIPT NOW, while the argument is hot: the full VO as ONE continuous spoken argument (hook 1 + body + CTA 1) — EXACTLY what the AI voice will read, word for word, in the narrator's voice from first word to last",
-  "hooks": ["${V2_HOOK_COUNT} alternative VO hooks derived from the script, genuinely different SHAPES from each other — every one names the symptom and promises the viewer value in the viewer's own world, references nothing not yet named, and hands cleanly into scene 1 over the SAME opening visual without restating it; first = primary (the one scriptProse opens with)"],
+  "hooks": ["${V2_HOOK_COUNT} alternative VO hooks derived from the script${isRemake ? " — hook 1 MIRRORS the governing example's hook shape and stake (the one scriptProse opens with); hooks 2-4 keep the source's stake and vary the shape" : ", genuinely different SHAPES from each other"} — every one names the symptom and promises the viewer value in the viewer's own world, references nothing not yet named, and hands cleanly into scene 1 over the SAME opening visual without restating it; first = primary (the one scriptProse opens with)"],
   "ctas": ["${ecomCtaPolicyLine(level)}"],
   "header": {
     "concept": "short concept label for the Brand Overview table",
@@ -978,7 +1018,10 @@ function ecomBriefJsonShape(
     "payoffCheck": "map the four payoff stations to scenes (entry moment=scene N / mechanism=scene N / shown proof=scene N / payoff line=scene N) and name the SHOWN-PROOF device. Report any missing station",
     "flowCheck": "read the ENTIRE VO aloud in your head, hook 1 → every line → CTA 1, as ONE continuous spoken argument. Name any baton break, any vague reference the audience couldn't place, and any line that would sound telegraphic read by an AI voice. Then read the STORY→OFFER SEAM twice on its own: the turn must happen inside the narrator's voice — quote the seam lines and confirm no register switch to announcer-speak. State 'the full read flows clean and the seam holds' or name the lines that do not",
     "ctaOfferCheck": "quote each CTA's offer text verbatim and confirm the direct action lands in the narrator's voice (the seam rule — no announcer switch). Report a CTA missing the offer (exact brand-facts math) or undercutting the bundle",
-    "fingerprintCheck": "name every line, hook shape, story event, device, and outcome scene in this script that resembles a model or example quoted anywhere in this prompt, or that another brief on this product would plausibly also contain — and report honestly which ones you could not rewrite into THIS story's own words. The never-copy fence is censor rank"${lifestyle ? `,
+    "fingerprintCheck": "name every line, hook shape, story event, device, and outcome scene in this script that resembles a model or example quoted in THIS PROMPT'S doctrine blocks (${isRemake ? 'NOT the governing example — mirroring it is the assignment' : 'or that another brief on this product would plausibly also contain'}) — and report honestly which ones you could not rewrite into THIS story's own words. The never-copy fence is censor rank",
+    "isolationCheck": "for every product line (pain, mechanism, feature, proof), name the bank it came from — THIS product's truth/pain bank/argument material — and report any line whose substance belongs to another product's bank (by fact or by imitated model line). Product-persona isolation is a censor",
+    "runtimeCheck": "spoken words ÷ the pace this brief's own pacing field implies (measured/slow ≈ 2.0 words per second; conversational ≈ 2.4; brisk ≈ 2.8) = estimated seconds. State it against the max runtime in THIS TASK's duration line${isRemake ? " and against the governing example's runtime (padding the source by more than ~20% is drift)" : ''}; if over, report where setup — never the product argument — would be cut"${production === 'library' ? `,
+    "productionCheck": "library production: how is the narrator represented on screen? Name the library buckets or documentary/interview-style clips that carry a first-person or authority narrator, and confirm no visual demands a person the library cannot supply — report any that do"` : ''}${lifestyle ? `,
     "castingCheck": "state the narrator's exact age and how her face/wardrobe/setting match the buyer demographic (50-75, real texture, lived-in home) and where her occupation shows in ONE worn detail — confirm header.ecomEditing.casting captures ALL of it (age, face, hair, the 2-3 fixed anchors, wardrobe incl. the occupational detail, home setting), because the tool prepends that spec to every visual cell at export. Then read 2-3 sample cells WITH the spec in front of them: each must read as one coherent prompt — no re-description, no anchor contradiction, wardrobe deltas named diegetically. An incomplete spec, a narrator younger than the demographic, a costume-level occupation, or a cell that contradicts the spec means fix it"` : ''}${animation ? `,
     "animationCheck": "name the ONE declared animation style and why it fits this story, describe the narrator avatar's character model (demographic-true, dignified, with its 2-3 fixed anchors), and map EVERY knife beat + the mechanism beat to its named visual metaphor. Confirm header.ecomEditing.casting captures the FULL style texture description AND the full character model, because the tool prepends that spec to every visual cell at export. Then read 2-3 sample cells WITH the spec in front of them: each must read as one coherent prompt — no re-description, no anchor or style contradiction. An incomplete spec, a mocking/caricatured avatar, a mid-ad style break, or a metaphor that implies a claim outside the bank means fix it"` : ''}${hasPinnedExemplar ? `,
     "exemplarFidelity": "beat-by-beat: exemplar beat → our scene(s). Confirm same beat order, proportional timing, product-entry position, product-talk share, and payoff shape — or report the deviation and whether it was licensed"` : ''}${isRemake ? `,
@@ -1487,8 +1530,8 @@ Audit the brief's structure against the exemplar.`;
  * per CTA option, hunting a fixed taxonomy of failure classes — and ship
  * every finding WITH its surgical fix.
  */
-export function buildFinalReviewPrompt(brief: UgcBriefV2): { system: string; user: string } {
-  if (taskAdType(brief.task) === 'ecom') return buildEcomFinalReviewPrompt(brief);
+export function buildFinalReviewPrompt(brief: UgcBriefV2, inspirationContext = ''): { system: string; user: string } {
+  if (taskAdType(brief.task) === 'ecom') return buildEcomFinalReviewPrompt(brief, inspirationContext);
   const system = `${buildV2ContextPack(brief.task, 'script')}
 
 ## YOUR ROLE: FACTORY V2 FINAL REVIEW — THE HOOK-FLOW AUDIT
@@ -1596,8 +1639,9 @@ Run the full protocol: ${brief.hooks.length} hook simulations, ${brief.ctas.leng
 
 /** The ecom Final Review — the same last-mile discipline, adapted to a script
  *  that is read VERBATIM by an AI voice and assembled from library footage. */
-function buildEcomFinalReviewPrompt(brief: UgcBriefV2): { system: string; user: string } {
+function buildEcomFinalReviewPrompt(brief: UgcBriefV2, inspirationContext = ''): { system: string; user: string } {
   const production = taskEcomProduction(brief.task);
+  const isRemake = taskExemplarRole(brief.task) === 'remake' && inspirationContext.includes('THE GOVERNING EXAMPLE');
   const lifestyle = production === 'ai-lifestyle';
   const animation = production === 'ai-animation';
   const system = `${buildV2ContextPack(brief.task, 'script')}
@@ -1610,7 +1654,16 @@ verdict; (2) THE SIMULATION METHOD — the mechanical verbatim-VO audit (this VO
 an AI voice; the read-through IS the ad). Every finding carries its own minimal fix.
 
 ${getCmoReviewProtocolBlock()}
-
+${isRemake ? `
+### CHECKPOINT 14 — EXAMPLE FIDELITY (this brief FOLLOWS a pinned example; the source is in the user message)
+The director's standing order: "everything from that example is where the authority comes from — the
+story, the framework, how the script is written, the copywriting, all of it." Read the source, then the
+brief, passage by passage. Does the brief carry WHY the source sells — its argument order, its claim
+cadence, where its proof lands, its hook shape, its register — or only its surface beats? Is every
+claim, fact, mechanism, and offer OURS (substituted from the banks), never the source's? Where the brief
+deviates, did a censor force it, or did the writer drift? A brief that ignores its example is a
+'revision' at best; a brief that copied the source's claims is 'unfit'.
+` : ''}
 ### THE SIMULATION METHOD
 The storyboard's main edit IS the video. The alternate hooks are ALTERNATE OPENERS over the SAME
 scene-1 visual. So:
@@ -1732,7 +1785,18 @@ scene-1 visual. So:
     the device/setup and expands the product argument — never the reverse.
 24. NARRATOR-WORLD HOOK — a hook that lives in the narrator's job or world with no viewer stake,
     no named symptom, and no promised value ("why does a home care worker dread 5:00?"). The fix
-    rewrites per the hook laws: symptom + viewer's body or promised value + credential.
+    rewrites per the hook laws: symptom + viewer's body or promised value + credential.${isRemake ? `
+25. REMAKE DRIFT (this brief follows a pinned example) — the script abandons the source's argument
+    order, claim cadence, proof placement, hook shape, or register without a censor forcing it; or
+    it carries the source's CLAIMS, facts, or offer instead of substituting ours; or it mirrors the
+    surface beats while missing why the source sells; or it pads the source's runtime by more than
+    ~20% (distorting its claim cadence and proportion). Walk the source passage by passage against
+    the script. The fix restores the source's move with our truth substituted — or names the censor
+    that forced the deviation.` : ''}
+26. PRODUCT-PERSONA LEAK — any pain, mechanism, feature, or proof line whose substance belongs to
+    ANOTHER product's bank (an ankle-and-arch pooling argument in an EasyStretch brief; a no-band
+    argument in a Compression brief; a claim legal on one product used on another), by fact or by
+    imitated model line. Severity major. The fix re-grounds the line in THIS product's bank.
 
 ### FIX DOCTRINE (every finding ships its fix)
 - MINIMAL SURGERY: change one hook, one CTA, one line, or one overlay — prefer fixing the VARIANT
@@ -1747,7 +1811,13 @@ scene-1 visual. So:
 ### WHAT NOT TO FLAG
 Taste-level rewrites, choices the ledger shows the director already approved, legal claims, and
 anything a fix would make WORSE. A finished brief may genuinely pass: if the simulations read
-clean, return ZERO findings — do not invent problems to look useful.
+clean, return ZERO findings — do not invent problems to look useful.${isRemake ? `
+REMAKE EXEMPTION: this brief FOLLOWS a governing example. A faithful mirror of the example's
+register (an educator VO is not brand-voice drift), its skeleton, its hook shape, its length, or
+its positioning choices is NOT a finding under classes 14 or 21 or checkpoint 8 — the example
+governs those. Flag only censor breaches (a source CLAIM carried instead of substituted) and DRIFT
+from the example (class 25). Where the brief states a censor forced a deviation, judge whether the
+censor really required it.` : ''}
 
 Severity: major = a viewer would notice the break; moderate = weakens the ad; minor = polish.
 Return at most 10 findings, ordered most severe first.
@@ -1770,12 +1840,15 @@ JSON shape:
   ]
 }
 
-${getMarketingBrainBlock('v2Review')}`;
+`;
 
-  const user = `${renderLedger(brief)}
+  const user = `${isRemake ? `# THE PINNED EXAMPLE THIS BRIEF FOLLOWS (judge fidelity against it — checkpoint 14, class 25)
+${inspirationContext}
+
+` : ''}${renderLedger(brief)}
 ${renderBriefState(brief)}
 
-Run the full protocol: ${brief.hooks.length} hook simulations, ${brief.ctas.length} CTA simulations, one body+overlay pass. Report findings with fixes.`;
+Run the full protocol: ${brief.hooks.length} hook simulations, ${brief.ctas.length} CTA simulations, one body+overlay pass${isRemake ? ', and the passage-by-passage fidelity walk against the pinned example' : ''}. Report findings with fixes.`;
 
   return { system, user };
 }

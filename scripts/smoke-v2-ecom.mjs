@@ -103,7 +103,14 @@ out.conceptsUgc = buildConceptsPrompt(ugcTask, 'dir', '').system;
 out.conceptsUgcUnaware = buildConceptsPrompt(ugcUnaware, 'dir', '').system;
 const REMAKE_CTX = '## REMAKE SOURCE — THE GOVERNING EXAMPLE for this task\\nsmoke remake source dissection';
 const remakeTask: any = { ...base, pinnedInspirationId: 'smoke-pin', exemplarRole: 'remake' };
-const refTask: any = { ...base, pinnedInspirationId: 'smoke-pin' };
+const refTask: any = { ...base, pinnedInspirationId: 'smoke-pin', exemplarRole: 'reference' };
+const pinNoRole: any = { ...base, pinnedInspirationId: 'smoke-pin' };
+out.packPinDefault = buildV2ContextPack(pinNoRole, 'script');
+const revRemake = buildFinalReviewPrompt(mkBrief(remakeTask), REMAKE_CTX);
+out.reviewRemake = revRemake.system; out.reviewRemakeUser = revRemake.user;
+out.brainstormDigestsUser = buildBrainstormPrompt([libTask], 'bank', '', { 'Smoke Task': 'DIGEST-MARKER summary of the pinned ad' }).user;
+out.brainstormNoDigestsUser = buildBrainstormPrompt([libTask], 'bank', '').user;
+out.directionDigestsUser = buildDirectionSynthesisPrompt([libTask], { analysis: 'a', questions: [], answers: {} } as any, '', { 'Smoke Task': 'DIGEST-MARKER' }).user;
 out.packRemake = buildV2ContextPack(remakeTask, 'script');
 out.packRef = buildV2ContextPack(refTask, 'script');
 out.conceptsRemake = buildConceptsPrompt(remakeTask, 'dir', REMAKE_CTX).system;
@@ -120,6 +127,10 @@ out.writeUgc = buildBriefWritePrompt(ugcTask, concept, fw, 'dir', '').system;
 const revLib = buildFinalReviewPrompt(mkBrief(libTask));
 out.reviewLib = revLib.system; out.reviewLibUser = revLib.user;
 out.reviewUgc = buildFinalReviewPrompt(mkBrief(ugcTask)).system;
+const noted: any = mkBrief(libTask); noted.writerNotes = { plan: 'PLAN-MARKER', selfReview: 'SELFREVIEW-MARKER' };
+out.reviewNotesUser = buildFinalReviewPrompt(noted).user;
+const notedUgc: any = mkBrief(ugcTask); notedUgc.writerNotes = { plan: 'PLAN-MARKER' };
+out.reviewNotedUgcUser = buildFinalReviewPrompt(notedUgc).user;
 out.reworkLife = buildRegenPrompt(lifeTask, mkBrief(lifeTask, 'a warm nurse in her 60s'), { type: 'story-rework' } as any, 'the story is not right').system;
 console.log(JSON.stringify(Object.fromEntries(Object.entries(out).map(([k, v]) => [k, String(v)]))));
 `;
@@ -223,7 +234,7 @@ const checks = [
   ['remake pack: example governs', out.packRemake.includes('🎬 REMAKE MODE')],
   ['pinned-reference pack keeps the classic exception', out.packRef.includes('PINNED-EXEMPLAR EXCEPTION') && !out.packRef.includes('🎬 REMAKE MODE')],
   ['unpinned pack has neither exemplar line', !out.packLib.includes('PINNED-EXEMPLAR EXCEPTION') && !out.packLib.includes('🎬 REMAKE MODE')],
-  ['remake concepts = 3 adaptations', out.conceptsRemake.includes('ADAPTATIONS of that example')],
+  ['remake concepts = faithful adaptation + narrow variants', out.conceptsRemake.includes('FAITHFUL adaptation') && out.conceptsRemake.includes('never a different product truth') && !out.conceptsRemake.includes('ADAPTATIONS of that example')],
   ['remake concepts replace gate 8', out.conceptsRemake.includes('Gate 8 is replaced for remakes')],
   ['remake writer gets remakeFidelity gate', out.writeRemake.includes('"remakeFidelity"') && out.writeRemake.includes('THIS BRIEF IS A REMAKE')],
   ['non-remake writer has no remakeFidelity field', !out.writeLib.includes('"remakeFidelity"')],
@@ -254,7 +265,7 @@ const checks = [
   ['claim-space vs argument-space resolved', out.packLib.includes('THE CLAIM SPACE AND THE ARGUMENT SPACE')],
   ['Marketing Brain gone from ecom writer', !out.writeLib.includes('GROUND EVERY SIGNIFICANT DECISION')],
   ['Marketing Brain gone from ecom concepts + brainstorm', !out.conceptsLib.includes('GROUND EVERY SIGNIFICANT DECISION') && !out.brainstormEcom.includes('GROUND EVERY SIGNIFICANT DECISION')],
-  ['Marketing Brain kept for UGC + ecom review', out.writeUgc.includes('GROUND EVERY SIGNIFICANT DECISION') && out.brainstormUgc.includes('GROUND EVERY SIGNIFICANT DECISION') && out.reviewLib.includes('GROUND EVERY SIGNIFICANT DECISION')],
+  ['Marketing Brain kept for UGC only (gone from the ecom critic too)', out.writeUgc.includes('GROUND EVERY SIGNIFICANT DECISION') && out.brainstormUgc.includes('GROUND EVERY SIGNIFICANT DECISION') && out.reviewUgc.includes('GROUND EVERY SIGNIFICANT DECISION') && !out.reviewLib.includes('GROUND EVERY SIGNIFICANT DECISION') && !out.reviewRemake.includes('GROUND EVERY SIGNIFICANT DECISION')],
   ['ecom concepts carry argument fields', ['"thesis"', '"argumentChain"', '"hookLine"', '"narrator"', '"objections"', '"whyViasox"'].every((f) => out.conceptsLib.includes(f))],
   ['UGC concepts shape unchanged', !out.conceptsUgc.includes('"argumentChain"')],
   ['brainstorm ecom carries the doctrine + taste + cores', out.brainstormEcom.includes("THE ECOM STRATEGIST'S DOCTRINE") && out.brainstormEcom.includes('HOW THE REVIEWER THINKS') && out.brainstormEcom.includes('THIS TASK IS UNAWARE') && out.brainstormEcom.includes('THIS TASK IS PROBLEM AWARE')],
@@ -282,6 +293,35 @@ const checks = [
   ['footage GOOD examples de-literalized', !out.packLib.includes('five colorful pairs fanned out')],
   ['hook shapes widened + rotated', out.packLib.includes('a myth she believed') && out.packLib.includes('never the same four as the last brief')],
   ['Unaware translation covers elimination rules', /symptom\s+is\s+never\s+eliminated/.test(out.packUnaware)],
+  // ── Example-first (audit #2, round 3): the pinned example is priority #1 ──
+  ['pin without a role defaults to FOLLOW (remake) on ecom', out.packPinDefault.includes('🎬 REMAKE MODE') && !out.packPinDefault.includes('PINNED-EXEMPLAR EXCEPTION')],
+  ['explicit structure-only role still available', out.packRef.includes('PINNED-EXEMPLAR EXCEPTION')],
+  ['review gets checkpoint 14 + class 25 for remake briefs', out.reviewRemake.includes('CHECKPOINT 14 — EXAMPLE FIDELITY') && out.reviewRemake.includes('25. REMAKE DRIFT')],
+  ['review user carries the source for remake briefs', out.reviewRemakeUser.includes('THE PINNED EXAMPLE THIS BRIEF FOLLOWS') && out.reviewRemakeUser.includes('THE GOVERNING EXAMPLE')],
+  ['non-remake review has no fidelity checkpoint', !out.reviewLib.includes('CHECKPOINT 14') && !out.reviewLib.includes('25. REMAKE DRIFT')],
+  ['UGC review untouched by the fidelity checkpoint', !out.reviewUgc.includes('CHECKPOINT 14')],
+  ['brainstorm renders example digests when given', out.brainstormDigestsUser.includes('# PINNED EXAMPLES') && out.brainstormDigestsUser.includes('DIGEST-MARKER')],
+  ['brainstorm user unchanged without digests', !out.brainstormNoDigestsUser.includes('PINNED EXAMPLES')],
+  ['direction renders example digests when given', out.directionDigestsUser.includes('# PINNED EXAMPLES') && out.directionDigestsUser.includes('DIGEST-MARKER')],
+  // ── Round 4 (final retest residuals): the example outranks doctrine; the critic reads the writer ──
+  ['doctrine: remake outranks craft guidance, censors outrank the example', out.packRemake.includes('REMAKE EXCEPTION: when a pinned example GOVERNS') && /only\s+the\s+censors\s+outrank\s+the\s+example/.test(out.packRemake)],
+  ['fence bans LINES never SHAPES; governing example exempt', /bans\s+LINES,\s+never\s+SHAPES/.test(out.packLib) && out.packLib.includes('THE FENCE DOES NOT APPLY TO A GOVERNING EXAMPLE')],
+  ['carry vs substitute + protection→obstacle-removal translation', out.packRemake.includes('CARRY vs SUBSTITUTE') && out.packRemake.includes('TRANSLATION RULE') && /sells\s+obstacle-removal/.test(out.packRemake)],
+  ['remake: source length + register govern', /register,\s+and\s+LENGTH\s+ARE\s+the\s+spec/.test(out.packRemake) && /never\s+invent\s+a\s+first-person\s+witness\s+persona/.test(out.packRemake) && /source's\s+runtime\s+governs/.test(out.packRemake)],
+  ['remake: product-persona isolation never yields', /product-persona\s+isolation,\s+the\s+Awareness\s+Core/.test(out.packRemake)],
+  ['craft rule 4 yields texture to the source in remake', /source's\s+own\s+sentence\s+rhythm/.test(out.packLib)],
+  ['writer: exampleDissection + hook 1 mirrors the source (remake only)', out.writeRemake.includes('"exampleDissection"') && out.writeRemake.includes('hook 1 MIRRORS') && !out.writeLib.includes('"exampleDissection"') && !out.writeLib.includes('hook 1 MIRRORS')],
+  ['writer: fingerprintCheck exempts the governing example', out.writeRemake.includes('NOT the governing example') && !out.writeLib.includes('NOT the governing example')],
+  ['writer selfReview: isolation + runtime + library production checks', out.writeLib.includes('"isolationCheck"') && out.writeLib.includes('"runtimeCheck"') && out.writeLib.includes('"productionCheck"') && !out.writeLife.includes('"productionCheck"') && out.writeRemake.includes("governing example's runtime")],
+  ['concept narrator may be the example\'s own voice', out.conceptsRemake.includes("the example's own voice")],
+  ['review: remake exemption for classes 14/21 + checkpoint 8', out.reviewRemake.includes('REMAKE EXEMPTION') && !out.reviewLib.includes('REMAKE EXEMPTION') && !out.reviewUgc.includes('REMAKE EXEMPTION')],
+  ['review: class 25 flags padding; class 26 product-persona leak', out.reviewRemake.includes("pads the source's runtime") && out.reviewLib.includes('26. PRODUCT-PERSONA LEAK') && !out.reviewUgc.includes('PRODUCT-PERSONA LEAK')],
+  ['review reads the writer\'s plan + self-review when present (ecom only)', out.reviewNotesUser.includes('PLAN: PLAN-MARKER') && out.reviewNotesUser.includes('SELF-REVIEW: SELFREVIEW-MARKER') && !out.reviewLibUser.includes("Writer's declared plan") && !out.reviewNotedUgcUser.includes('PLAN-MARKER')],
+  ['CTA undercut override names the claim boundary list', out.packLib.includes("NOTE ON THE CLAIM BOUNDARY'S") && /UNDERCUTS\s+when\s+spoken\s+in\s+the\s+close/.test(out.packLib)],
+  ['Unaware: marks nameable; pressure-map parenthetical gone', !out.packLib.includes('reframe, never name marks') && out.packLib.includes('legal, concrete symptom to NAME')],
+  ['amputation ruling: MAY, any recorded rung, flexible witness marker', !out.packLib.includes('the chain may — and should') && /ANY\s+recorded\s+rung/.test(out.packLib) && /educator\s+voice,\s+its\s+register\s+governs/.test(out.packLib)],
+  ['educator register equal; ad-blindness = announcer copy', /an\s+equal\s+winning\s+register/.test(out.packLib) && out.packLib.includes('ANNOUNCER copy')],
+  ['direction: fence + claims-never-transfer + claim boundary', out.directionEcom.includes('THE NEVER-COPY FENCE BINDS YOUR SPECS') && out.directionEcom.includes('CLAIMS NEVER TRANSFER FROM AN EXAMPLE') && /CLAIM BOUNDARY/i.test(out.directionEcom) && !out.directionUgc.includes('NEVER-COPY FENCE')],
 ];
 
 let failed = 0;

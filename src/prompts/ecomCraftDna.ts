@@ -43,7 +43,9 @@ vague hook stays vague at full volume. Therefore:
    mechanisms. The winning specimens never gesture — they point: the line names the exact place
    and the exact thing while the visual is literally showing it.
 4. READ-ALOUD AT FULL STRICTNESS. Full flowing sentences with their connective tissue intact are
-   the default texture of every VO line. The reveal-fragment license below is the ONLY exception.
+   the default texture of every VO line. The reveal-fragment license below is the ONLY exception —
+   and when a pinned example GOVERNS (remake mode), the source's own sentence rhythm and register
+   govern the texture: mirror how it speaks, not this default.
 5. THE CTA IS CRAFTED, NOT APPENDED — AND IT CARRIES THE OFFER. The last body line hands into it,
    the offer is stated plainly inside it (offer math from the brand facts, verbatim) with a direct
    action, at EVERY awareness level, Unaware included (CMO ruling — the release order governs
@@ -65,10 +67,12 @@ deep the valley goes, and the deeper it goes, the more product argument it must 
 proportion law binds).
 
 **THE ONE-VOICE LAW — first person beats brand voice:** the story comes from ONE person living it,
-in their own voice, start to finish — a person telling you what happened to them, not a brand
-presenting a message. Brand-POV narration ("At Viasox, we believe…", "Introducing…", disembodied
-announcer copy) is the register of an AD, and the viewer's ad-blindness fires instantly. Default
-register: THE TESTIMONIAL NARRATOR carrying Educator or Investigator moves inside her own story
+in their own voice, start to finish — a person telling you what happened to them, or ONE calm
+voice teaching the viewer directly (the second-person EDUCATOR is an equal winning register — the
+director's own top winner uses it). What fires ad-blindness is ANNOUNCER copy ("At Viasox, we
+believe…", "Introducing…", "Order now!") — a voice selling AT the viewer — not an educator speaking
+TO her. Default register when nothing governs: THE TESTIMONIAL NARRATOR carrying Educator or
+Investigator moves inside her own story; when a pinned example governs, ITS register governs
 (someone in her life explained it, or she measured it herself — a first-person way to teach). The narrator persists
 through the CTA — the offer arrives as HER telling you what to do about it, never as a voice
 switch to an announcer. If any line could not plausibly be said by the ONE person whose story this

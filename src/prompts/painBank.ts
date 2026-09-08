@@ -68,7 +68,7 @@ WHAT THE PRODUCT MAY TRUTHFULLY ANSWER (mechanism-true, in-bank only): ES answer
 CONDITION: Elastic-band constriction on swollen/large/fragile legs: deep rings, numbness, discoloration, physician-confirmed restricted blood flow
 THE CAUSAL CHAIN (the knife's spine — medically true, from the record): Tight elastic on a swollen or large leg → tourniquet effect → deep grooves that last hours → tingling, numbness, purple discoloration → doctor confirms restricted blood flow → blood-clot fear → recorded worst cases: ER nurse cutting socks off, feet turning purple mistaken for a medical emergency, podiatrist photographing leg damage. The marks are Level 1 of THIS vein — 'visual proof of a failing body', a nightly pressure-map of restricted circulation.
 THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to go; surface rungs are doorways, never destinations):
-- L1: Red rings at night, deep enough to feel — 'look like someone tied rubber bands around my legs' (Unaware rule: reframe, never name marks as the pain — 'they're a pressure map')
+- L1: Red rings at night, deep enough to feel — 'look like someone tied rubber bands around my legs' (at Unaware the marks are a legal, concrete symptom to NAME — only the condition label and category wait)
 - L2: 'Marks that last for hours' + all-day awareness — 'can't wait to rip them off', clawing at ankles by noon
 - L3: The body starts reporting damage: 'Legs go numb', 'My feet turn purple', 'Doctor said I'm restricting blood flow', anxiety before even putting socks on, pain medication to tolerate socks
 - L4: The Never Again events: 'When the ER nurse had to cut my socks off—circulation completely cut'; 'When my feet turned purple and I thought I was having a medical emergency'; blood-clot fear
@@ -390,12 +390,16 @@ truth-audited. This is the pain-depth doctrine's fuel. Rules of use:
   words, stops one step earlier on the chain ("Regular socks are dangerous for me", "Have to be
   extra careful with my feet", the "wound that won't heal" trigger, "My feet turn purple", "When
   the ER nurse had to cut my socks off") — so the chain is BUILT from their recorded rungs, and
-  the CMO's ruling: when a brief's argument runs the diabetic vein, the chain may — and should —
-  reach its true endpoint rather than truncate at "can't heal" (his model chain is in the
-  calibration file; its anatomy is the lesson, never its sentences). HOW FAR this brief walks it
-  is THIS ARGUMENT'S choice, not a quota — and its rungs are this story's own, in this narrator's
-  words. The boundary that still binds: every link belongs to UNCONTROLLED DIABETES, conditionally
-  framed, witnessed first-person at the endpoint; render the medicine truthfully (nerves AND
+  the CMO's ruling: when a brief's argument runs the diabetic vein, the chain MAY reach its true
+  endpoint rather than truncate at "can't heal" (his model chain is in the calibration file; its
+  anatomy is the lesson, never its sentences). HOW FAR this brief walks it is THIS ARGUMENT'S
+  choice, not a quota — the endpoint may be ANY recorded rung this story earns (the ER nurse
+  cutting socks off, feet turning purple, the wound that won't heal, or amputation), and two
+  briefs on this condition should not land on the same rung by default; the rungs are this
+  story's own, in this narrator's words. The boundary that still binds: every link belongs to
+  UNCONTROLLED DIABETES, conditionally framed; a first-person narrator carries a witness marker at
+  the endpoint (when a governing example uses an educator voice, its register governs the
+  marker); render the medicine truthfully (nerves AND
   vessels damaged in parallel — the danger is their convergence, an unfelt wound that won't
   close); a SOCK is never the agent and the product never prevents or treats any of it. The
   subtext route (the medical instruction she was given, versus the thing nobody told her to watch)

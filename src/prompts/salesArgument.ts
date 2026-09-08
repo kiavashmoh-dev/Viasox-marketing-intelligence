@@ -88,6 +88,10 @@ and proof line comes only from THIS task's product — never another product's, 
 imitation), the Pain Bank's truth rulings and Stakes License, the guarantee/urgency bans, and the
 offer/review-count forms. Everything else in this prompt yields to this doctrine wherever they
 differ — including any brand-identity preamble above it and any craft source below it.
+REMAKE EXCEPTION: when a pinned example GOVERNS (REMAKE MODE — its "REMAKE SOURCE — THE GOVERNING
+EXAMPLE" block is in the conversation), the example's argument, structure, register, hook shape,
+and copy craft outrank THIS DOCTRINE'S craft guidance too; only the censors outrank the example.
+The doctrine then serves as the translation layer: how to carry the example's moves with OUR truth.
 
 ⛔ THE NEVER-COPY FENCE (censor rank). Every quoted line anywhere in this prompt — the reviewer's
 model hooks and outcomes, his CTA and chain examples, studied-winner lines, bridge and seam
@@ -97,8 +101,18 @@ some of the worst cases I've ever seen", "start with one pair tomorrow… four m
 ___ look like mine did", "that's where Viasox comes in", the dinner/evening-walk outcome, the
 too-thin/too-thick teardown, the nurse-friend relay, the reveal line in the product-conviction
 block, the calibration file's cast of figures) is a template fingerprint: the reviewer has
-read every one of them, and the same line across briefs is exactly what he kills. Learn the SHAPE
-of the thinking; every line belongs only to THIS narrator, THIS angle, THIS product.
+read every one of them, and the same line across briefs is exactly what he kills. The fence bans
+LINES, never SHAPES: a credential that promises value, a witness marker at a chain's endpoint, a
+bridge, a seam — all remain legal in this narrator's own words. Learn the SHAPE of the thinking;
+every line belongs only to THIS narrator, THIS angle, THIS product.
+THE FENCE DOES NOT APPLY TO A GOVERNING EXAMPLE: in REMAKE MODE, mirroring the pinned source's
+moves IS the assignment — the fence guards against copying THIS PROMPT's model lines, never against
+following the example. CARRY vs SUBSTITUTE for a governing example: a source line that states one
+of OUR brand facts or in-bank truths (30 inches, no elastic band, stays up) may be carried in
+substance, reworded into this narrator's voice; a source line that promises an OUTCOME the product
+causes ("protects", "keeps circulation open", "prevents") is SUBSTITUTED with the obstacle-removal
+truth (the sock stops being one more thing pressing on skin that can't afford it) — the argument's
+shape survives, the agent changes; a source line the prompt quotes as a model is rewritten.
 
 **LAW 0 — THE ARGUMENT IS THE PRODUCT.** Before anything is written, the script must HAVE an
 argument: one connected chain of beliefs that ends in "so this product is the answer for me."
@@ -209,8 +223,12 @@ The believable outcome and the compliant outcome are the same outcome.
 **THE CTA LAWS.** Every close carries the offer (Buy 2 Get 3 Free — five pairs for sixty dollars,
 twelve a pair) and a DIRECT action — at every awareness level, Unaware included. Never undercut the
 bundle ("…and then start with one" fights the five-pair offer); keep low-commitment psychology
-INSIDE the five-pair frame, in this story's words. Proof is interpreted, never recited — no script
-closes on a bare review-count reading. The close belongs to the narrator's voice (the seam rule).
+INSIDE the five-pair frame, in this story's words. NOTE ON THE CLAIM BOUNDARY'S "USE INSTEAD"
+LIST: its de-risking phrasings "start with one pair" / "try one before you commit to five" are
+UNDERCUTS when spoken in the close of a five-pair offer — the reviewer rejected exactly that; use
+them, if at all, only INSIDE the bundle frame (the first pair of the five, tonight). Proof is
+interpreted, never recited — no script closes on a bare review-count reading. The close belongs to
+the narrator's voice (the seam rule).
 
 **THE ANTI-TEMPLATE LAW.** Each angle must create a DIFFERENT sales argument — a different thesis,
 a different chain, different proof — not the same ad wearing a new character and aesthetic. BANNED

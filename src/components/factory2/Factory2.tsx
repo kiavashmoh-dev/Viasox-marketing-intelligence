@@ -613,13 +613,13 @@ export default function Factory2({ apiKey, onBack }: Props) {
                     </select>
                     {t.task.pinnedInspirationId && taskAdType(t.task) === 'ecom' && (
                       <select
-                        value={t.task.exemplarRole ?? 'reference'}
+                        value={t.task.exemplarRole ?? 'remake'}
                         onChange={(e) => updateTask(i, { exemplarRole: e.target.value as V2Task['exemplarRole'] })}
-                        className={`mt-1 block border rounded px-2 py-1 text-xs max-w-[160px] ${(t.task.exemplarRole ?? 'reference') === 'remake' ? 'border-violet-400 bg-violet-50 text-violet-900 font-medium' : 'border-slate-200 bg-white'}`}
-                        title="How the pinned example is used: Reference = structural exemplar, our argument. REMAKE = the example governs — its argument, structure, and copy craft mirrored nearly 1:1 with Viasox truth substituted (censors and brand facts never yield)."
+                        className={`mt-1 block border rounded px-2 py-1 text-xs max-w-[160px] ${(t.task.exemplarRole ?? 'remake') === 'remake' ? 'border-violet-400 bg-violet-50 text-violet-900 font-medium' : 'border-slate-200 bg-white'}`}
+                        title="How the pinned example is used. FOLLOW (default): the example governs — its argument, structure, hook shape, and copy craft are mirrored with Viasox truth substituted; censors, brand facts, and production law never yield. Structure only: the example's beat map guides structure while the argument is our own."
                       >
-                        <option value="reference">Reference (structure)</option>
-                        <option value="remake">REMAKE — example governs</option>
+                        <option value="remake">🎬 Follow the example (default)</option>
+                        <option value="reference">Structure only</option>
                       </select>
                     )}
                   </td>
