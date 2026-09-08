@@ -193,6 +193,21 @@ export interface V2Concept {
   openingDetails: string;
   /** Self-verification the generator ran (claim grounding + concreteness). */
   verification: string;
+  // ── Ecom argument fields (Sep 2026 audit #2): a concept must be able to
+  //    HOLD an argument, not gesture at one. Optional — absent on UGC concepts
+  //    and on concepts generated before this build. ──
+  /** The ad's thesis as one sayable law — the sentence a viewer could repeat. */
+  thesis?: string;
+  /** The belief chain, 3-5 causal links walked to a felt endpoint. */
+  argumentChain?: string;
+  /** A sample primary hook, written as it would be spoken. */
+  hookLine?: string;
+  /** Who tells it and why she has standing (vantage point + essentiality). */
+  narrator?: string;
+  /** The 2-4 buyer objections THIS story raises and will close on screen. */
+  objections?: string;
+  /** Why THIS product over the alternatives, in this story's terms. */
+  whyViasox?: string;
 }
 
 // ─── The brief object ───────────────────────────────────────────────────────

@@ -21,6 +21,13 @@ verbatim rejected/passing evidence from his own reviews. Write the way the AFTER
 When a line you drafted resembles a BEFORE example, you already know the verdict. (Rules are
 enforced by the Final Review; this file exists so you don't need them.)
 
+⛔ THESE EXAMPLES ARE CALIBRATION, NEVER MATERIAL. The model hooks, outcome phrasings, CTA lines,
+and positioning bullets quoted below are evidence of HOW he thinks — not lines to reuse. A hook,
+outcome, or close lifted or lightly paraphrased from this file is a failed line: he has already
+read every one of these, and the same line appearing across briefs is exactly the template
+fingerprint he kills. Learn the SHAPE of the thinking; write lines that belong only to THIS
+brief's narrator, angle, and product.
+
 **MOVE 1 — His first question, always: "Why would anybody care to watch this?"**
 REJECTED: "Why does a home care worker dread 5:00? It's not the paperwork." → "It just feels
 totally unrelated. Why would anybody care to watch this? There are people suddenly interested in

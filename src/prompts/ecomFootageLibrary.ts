@@ -39,9 +39,9 @@ The row's visual is TWO things together: the Shot Type TAG (from the lists above
 editor which library bucket to pull from) and a SHORT, CONVERSATIONAL description of what the
 viewer sees — "telling the editor what you're picturing." The description is never a label and
 never technical direction.
-- GOOD: "Close-up of her pulling the compression socks up over her calves on the couch"
-- GOOD: "Her bare legs with visible sock marks and redness around the ankles"
-- GOOD: "Product flat lay — five colorful pairs fanned out on a white surface"
+- GOOD: a specific action on a specific body part in a specific place — the editor can picture the exact clip (never the same action as the last brief)
+- GOOD: the symptom itself, visible and named plainly — what the viewer must SEE in the frame
+- GOOD: the product in a described arrangement the editor can pull — a picture, never a label
 - BAD: "Talking Head" (that's the tag, not a description)
 - BAD: "Bare Legs – Condition" (taxonomy label — tells the editor nothing)
 - BAD: "B-roll of feet" (too vague to pull)

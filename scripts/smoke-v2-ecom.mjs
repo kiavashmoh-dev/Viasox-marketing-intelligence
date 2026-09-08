@@ -31,6 +31,8 @@ import {
   buildBriefWritePrompt,
   buildFinalReviewPrompt,
   buildRegenPrompt,
+  buildBrainstormPrompt,
+  buildDirectionSynthesisPrompt,
 } from './src/factory2/v2Prompts';
 import { ECOM_FRAMEWORKS } from './src/factory2/v2Types';
 
@@ -107,6 +109,11 @@ out.packRef = buildV2ContextPack(refTask, 'script');
 out.conceptsRemake = buildConceptsPrompt(remakeTask, 'dir', REMAKE_CTX).system;
 out.writeRemake = buildBriefWritePrompt(remakeTask, concept, fw, 'dir', REMAKE_CTX).system;
 out.writeLib = buildBriefWritePrompt(libTask, concept, fw, 'dir', '').system;
+out.brainstormEcom = buildBrainstormPrompt([libTask, unawareTask], 'bank', '').system;
+out.brainstormUgc = buildBrainstormPrompt([ugcTask], 'bank', '').system;
+const bsStub: any = { analysis: 'a', questions: [], answers: {} };
+out.directionEcom = buildDirectionSynthesisPrompt([libTask], bsStub, '').system;
+out.directionUgc = buildDirectionSynthesisPrompt([ugcTask], bsStub, '').system;
 out.writeLife = buildBriefWritePrompt(lifeTask, concept, fw, 'dir', '').system;
 out.writeUnaware = buildBriefWritePrompt(unawareTask, concept, fw, 'dir', '').system;
 out.writeUgc = buildBriefWritePrompt(ugcTask, concept, fw, 'dir', '').system;
@@ -189,8 +196,9 @@ const checks = [
   ['skeleton percentages gone', !out.packLib.includes('0-5%: credential')],
   ['essentiality test kept', out.packLib.includes('ESSENTIALITY TEST')],
   // ── Writer plan diet ──
-  ['argumentMap still first gate', out.writeLib.includes('"argumentMap"') && out.writeLib.includes('FIRST GATE')],
-  ['kept gates present', ['"proportionCheck"', '"objectionsCheck"', '"payoffCheck"', '"flowCheck"', '"ctaOfferCheck"'].every((g) => out.writeLib.includes(g))],
+  ['argumentMap still first', out.writeLib.includes('"argumentMap": "FIRST.')],
+  ['kept gates present (now in selfReview)', ['"proportionCheck"', '"objectionsCheck"', '"payoffCheck"', '"flowCheck"', '"ctaOfferCheck"', '"fingerprintCheck"'].every((g) => out.writeLib.includes(g)) && out.writeLib.includes('"selfReview"')],
+  ['think → write → review order', out.writeLib.indexOf('"argumentMap": "FIRST.') < out.writeLib.indexOf('"scriptProse": "WRITE THE SCRIPT NOW') && out.writeLib.indexOf('"scriptProse": "WRITE THE SCRIPT NOW') < out.writeLib.indexOf('"selfReview": {')],
   ['dropped gates absent (ecom)', ['"stakesCheck"', '"hookHandoffCheck"', '"tenSecondCheck"', '"authorityCheck"', '"productEntryCheck"', '"payoffArc"'].every((g) => !out.writeLib.includes(g))],
   ['UGC write keeps its own gates', out.writeUgc.includes('"tenSecondCheck"') && out.writeUgc.includes('"hookFlowCheck"')],
   ['casting/animation checks kept in AI modes', out.writeLife.includes('"castingCheck"')],
@@ -223,11 +231,11 @@ const checks = [
   ['amputation ruling renders clean (no mid-word cut)', !out.packLib.includes('in their own r…') && out.packLib.includes('what customers DO say, in their own recorded')],
   ['one ceiling declared per brief', out.packLib.includes('THIS LINE IS THE ONLY CEILING')],
   ['never-transfers ban scoped to product promises', out.packLib.includes('PRODUCT-PROMISE medical chains') && out.packLib.includes('the Stakes License is OUR doctrine')],
-  ['brain guarantee prescriptions pre-empted', out.packLib.includes("the Marketing Brain's guarantee/risk-reversal prescriptions")],
+  ['guarantee ban pre-empts every source', /pre-empts\s+EVERY source, reference, and example/.test(out.packLib)],
   ['ctaOfferCheck no longer mandates the echo', !out.writeLib.includes('missing the echo means REVISE')],
   ['censors named; preamble ranked', out.packLib.includes('THE CENSORS, by name')],
-  ['framework percentage markers descoped', out.writeLib.includes('FRAMEWORK SCOPE NOTE')],
-  ['Beats 3-5 translation note at Unaware', out.packUnaware.includes('read it as AFTER the release order opens')],
+  ['framework percentage markers descoped', !out.writeLib.includes('0-20%') && !out.writeLib.includes('temporal language')],
+  ['Beats 3-5 translation note at Unaware', /wait\s+until\s+the\s+release\s+order\s+opens/.test(out.packUnaware)],
   // ── Disposition-audit fixes (Opus audit, Sep 2026) ──
   ['review class 11: offer at every level incl. Unaware', out.reviewLib.includes('at ANY awareness level INCLUDING Unaware') && !out.reviewLib.includes('flag an offer that appears')],
   ['review class 11: echo absence is not a finding', out.reviewLib.includes('its absence is NOT a finding')],
@@ -237,6 +245,43 @@ const checks = [
   ['Stakes Engine name retired in rendered text', !out.packLib.includes("Stakes Engine's fuel")],
   ['remake pack line hedged', out.packRemake.includes('if it is absent, the pin could not be')],
   ['never the price restored', out.packLib.includes('ends the ad on the price alone')],
+  // ── Audit #2 (Sep 2026): the foundation rebuild ──
+  ['ecom pack opens with the ecom base, not the V1 preamble', out.packLib.includes('writing an ECOM editing brief') && !out.packLib.includes('You generate marketing outputs grounded')],
+  ['V1 creative mandates gone from ecom pack', !out.packLib.includes('TRANSFORMATION METRICS') && !out.packLib.includes('ORIGINALITY MANDATE') && !out.packLib.includes('LENGTH CALIBRATION') && !out.packLib.includes('Message Hierarchy')],
+  ['brand facts intact in ecom base', out.packLib.includes('Stretches up to **30 inches**') && out.packLib.includes('12-15 mmHg') && out.packLib.includes('5 pairs total for $60') && out.packLib.includes('107,993 reviews')],
+  ['product-persona isolation is a named censor', out.packLib.includes('PRODUCT-PERSONA ISOLATION — NON-NEGOTIABLE') && out.packLib.includes('PRODUCT-PERSONA ISOLATION (every pain')],
+  ['never-copy fence at censor rank', out.packLib.includes('THE NEVER-COPY FENCE (censor rank)')],
+  ['claim-space vs argument-space resolved', out.packLib.includes('THE CLAIM SPACE AND THE ARGUMENT SPACE')],
+  ['Marketing Brain gone from ecom writer', !out.writeLib.includes('GROUND EVERY SIGNIFICANT DECISION')],
+  ['Marketing Brain gone from ecom concepts + brainstorm', !out.conceptsLib.includes('GROUND EVERY SIGNIFICANT DECISION') && !out.brainstormEcom.includes('GROUND EVERY SIGNIFICANT DECISION')],
+  ['Marketing Brain kept for UGC + ecom review', out.writeUgc.includes('GROUND EVERY SIGNIFICANT DECISION') && out.brainstormUgc.includes('GROUND EVERY SIGNIFICANT DECISION') && out.reviewLib.includes('GROUND EVERY SIGNIFICANT DECISION')],
+  ['ecom concepts carry argument fields', ['"thesis"', '"argumentChain"', '"hookLine"', '"narrator"', '"objections"', '"whyViasox"'].every((f) => out.conceptsLib.includes(f))],
+  ['UGC concepts shape unchanged', !out.conceptsUgc.includes('"argumentChain"')],
+  ['brainstorm ecom carries the doctrine + taste + cores', out.brainstormEcom.includes("THE ECOM STRATEGIST'S DOCTRINE") && out.brainstormEcom.includes('HOW THE REVIEWER THINKS') && out.brainstormEcom.includes('THIS TASK IS UNAWARE') && out.brainstormEcom.includes('THIS TASK IS PROBLEM AWARE')],
+  ['brainstorm ecom thinks argument-first', out.brainstormEcom.includes('Think ARGUMENT-FIRST') && !out.brainstormEcom.includes('proof-device\nmonotony')],
+  ['direction ecom demands per-task argument specs', out.directionEcom.includes('PER-TASK ARGUMENT\nSPEC') || out.directionEcom.includes('PER-TASK ARGUMENT SPEC')],
+  ['direction UGC unchanged', out.directionUgc.includes('persona/emotion spread') && !out.directionUgc.includes('ARGUMENT SPEC')],
+  ['brainstorm UGC unchanged', out.brainstormUgc.includes('UGC STYLE') && !out.brainstormUgc.includes("THE ECOM STRATEGIST'S DOCTRINE") && !out.brainstormUgc.includes('HOW THE REVIEWER THINKS')],
+  ['model lines live ONCE (taste file only)', (out.packLib.match(/Start\s+with\s+one\s+pair\s+tomorrow\s+morning/g) || []).length === 1 && (out.packLib.match(/Can\s+you\s+feel\s+all\s+ten\s+of\s+your\s+toes/g) || []).length === 1],
+  ['nurse-friend relay literal gone', !out.packLib.includes("my friend's a nurse") && !out.packLib.includes('until the nurse told me')],
+  ['schema field examples stripped', !out.writeLib.includes("e.g. 'Frustrated investigation") && !out.writeLib.includes("e.g. 'Quick, punchy") && !out.writeLib.includes('swollen-ankle close-up')],
+  ['pain bank L4 speak/never-speak resolved', !out.packLib.includes('never say it in their voice, they never did')],
+  ['timeline device de-fingerprinted', !out.packLib.includes('Hour 1 / Hour 4 / Hour 8') && out.packLib.includes('a timeline that merely relabels it is the same fingerprint')],
+  // ── Confirmation pass (audit #2, round 2) ──
+  ['framework injected as a lens, not stages', !out.writeLib.includes('Problem (0-20%)') && out.writeLib.includes('A LENS, NOT A STRUCTURE')],
+  ['plan pre-commitments present', out.writeLib.includes('"proportionPlan"') && out.writeLib.includes('"objectionsPlan"')],
+  ['selfReview is an honest report', out.writeLib.includes('HONEST REPORT') && !out.writeLib.includes('go back to scriptProse')],
+  ["argumentMap: approved concept wins", out.writeLib.includes("the APPROVED CONCEPT's thesis governs")],
+  ['narrator field allows a sufferer', out.conceptsLib.includes('a SUFFERER telling her own story')],
+  ['two honest arguments beat a strained third', out.conceptsLib.includes('emit TWO')],
+  ['brainstorm ecom-only: ecom base + labeled cores + product material', out.brainstormEcom.includes('writing an ECOM editing brief') && out.brainstormEcom.includes("THIS PRODUCT'S ARGUMENT MATERIAL") && out.brainstormEcom.includes('AWARENESS CORE FOR THE UNAWARE TASKS')],
+  ['direction carries the recorded pain bank + precedence', out.directionEcom.includes('THE PAIN BANK') && /approved\s+concept\s+wins/.test(out.directionEcom)],
+  ['model chain lives once (pain bank de-duplicated)', (out.packLib.match(/when\s+your\s+feet\s+go\s+numb/g) || []).length === 1],
+  ['watch-your-socks line gone from pain bank', !out.packLib.includes('Nobody told you to watch your socks') && !out.packLib.includes('nobody said watch your socks')],
+  ['through-line device optional', out.packLib.includes('is a strong move WHEN this story')],
+  ['footage GOOD examples de-literalized', !out.packLib.includes('five colorful pairs fanned out')],
+  ['hook shapes widened + rotated', out.packLib.includes('a myth she believed') && out.packLib.includes('never the same four as the last brief')],
+  ['Unaware translation covers elimination rules', /symptom\s+is\s+never\s+eliminated/.test(out.packUnaware)],
 ];
 
 let failed = 0;

@@ -39,8 +39,8 @@ ordinary (cardigans, henleys, robes), rotated per scene to imply days of footage
 shoot. Hands that demo the product MUST be the demo's hands — aged, ringed, veined; a hand demo
 by the oldest credible person is the strongest proof shot in the ad. AUTHORITY CASTING: the
 occupation is WORN, not staged — a generic scrub top (first name only on any tag — never a full
-name, institution, or year: we do not fabricate credentials), a name-tag lanyard tossed on the
-counter, a shoe-fitter's measuring device, a home-care aide's worn tote. Never a staged clinic,
+name, institution, or year: we do not fabricate credentials), one worn occupational cue chosen for
+this narrator, a tradesperson's own instrument, a home-care aide's worn tote. Never a staged clinic,
 whiteboard, or white-coat spokesperson. INSERT CAST: rotate several distinct demo-matched people
 across b-roll so "this is you" hits every band of 50-75; give POV inserts to anonymous or gloved
 hands — hand-continuity mismatches between inserts read as native stitched UGC, not fakery.

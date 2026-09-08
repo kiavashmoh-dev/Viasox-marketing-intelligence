@@ -48,8 +48,9 @@ import { getEcomCraftDna } from './../prompts/ecomCraftDna';
 import { getEcomFootageLibraryBlock } from './../prompts/ecomFootageLibrary';
 import { getPainBankBlock } from './../prompts/painBank';
 import { getAuthorityPlaybookBlock } from './../prompts/authorityPlaybook';
-import { getSalesArgumentBlock } from './../prompts/salesArgument';
+import { getSalesArgumentBlock, productArgumentBlock } from './../prompts/salesArgument';
 import { getTasteFileBlock } from './../prompts/tasteFile';
+import { getEcomSystemBase } from './../prompts/ecomSystemBase';
 import { getCmoReviewProtocolBlock } from './../prompts/cmoReviewProtocol';
 import { getAiLifestyleSpecBlock } from './../prompts/aiLifestyleSpec';
 import { getAiAnimationSpecBlock } from './../prompts/aiAnimationSpec';
@@ -195,7 +196,9 @@ paid for beat-by-beat in curiosity that connects to the coming reveal — never 
 ten scenes, and never starve the product half (the proportion law binds here like everywhere).
 The OFFER belongs in the close (the release order governs everything before the close, not the
 close itself). (Translation note: where any block below says product language lives in "Beats
-3-5", read it as AFTER the release order opens — ecom has no numbered beat scheme.)`,
+3-5" or refers to "the opening's elimination rules", read it as: the LABELS — brand, category,
+condition name — wait until the release order opens; ecom has no numbered beat scheme and the
+symptom is never eliminated.)`,
     'Problem Aware': `THIS TASK IS PROBLEM AWARE: she knows the pain; she has NOT connected it to its everyday
 source. Name her exact symptom in her own words immediately, then do the ad's real job —
 identify the everyday source of the problem and argue the mechanism. Never assume she already
@@ -247,7 +250,7 @@ function buildEcomContextPack(task: V2Task, _stage: 'concept' | 'script' = 'scri
         : `- AD TYPE: ECOM (editing brief) — built ENTIRELY from existing library footage + AI voiceover.
   Nothing gets filmed; no creator performs it. The EDITOR assembles it and the AI VOICE reads the
   script VERBATIM. The brief must declare its MODE (VO-narrated or overlay-carried) via its rows.`;
-  return `${buildSystemBase()}
+  return `${getEcomSystemBase()}
 
 # ═══ FACTORY V2 ECOM CONTEXT PACK (IMMUTABLE — every generation obeys all of it) ═══
 
@@ -504,7 +507,8 @@ export function buildBrainstormPrompt(
   const hasUgc = tasks.some((t) => taskAdType(t) === 'ugc');
   const hasEcom = tasks.some((t) => taskAdType(t) === 'ecom');
 
-  const system = `${buildSystemBase()}
+  const ecomTasks = tasks.filter((t) => taskAdType(t) === 'ecom');
+  const system = `${hasEcom && !hasUgc ? getEcomSystemBase() : buildSystemBase()}
 
 ## YOUR ROLE: FACTORY V2 ${hasEcom && !hasUgc ? 'ECOM' : 'UGC'} CREATIVE STRATEGIST — BRAINSTORM
 
@@ -522,30 +526,55 @@ risks monotony (avatars, emotional registers, opening techniques); which tasks a
 needing differentiation; what the inspiration bank offers; and what only the human knows (business
 priorities, what's been run recently, creator constraints).
 ` : ''}${hasEcom ? `
-ECOM tasks are EDITING BRIEFS: built entirely from existing library footage + AI voiceover read
-VERBATIM — no creator, no filming. Think about: which narrator register and proof device (ladder /
-timeline / instrument / demo) fits each angle; which mode (VO-narrated vs overlay-carried) fits
-each duration; what the footage library can actually show; where the batch risks proof-device
-monotony; and which tasks suit product-forward vs earned verbal entry per awareness level.
+ECOM tasks are EDITING BRIEFS: a script read VERBATIM by an AI voice over edited footage — no
+creator, no filming. Think ARGUMENT-FIRST, per task, the way the reviewer thinks (his calibration
+file is below): who is the viewer and why would she care in the first breath; what is the ONE
+sayable law this ad could argue; what is the REAL pain this person lives with and what is truly at
+stake; what does she already know (the awareness level describes what she knows — never how vague
+to be: concreteness is universal); which product truth carries the argument (this task's product
+only — never another product's pain, feature, or mechanism); which objections her buyer will raise
+and how the ad could close them on screen; why THIS product over the alternatives; whether a pinned
+example governs the task (then its argument is the spine); and where the batch risks the SAME
+argument in different costumes — the reviewer's central complaint. Production (footage library or
+AI mode) is a constraint to respect, never the starting point.
 ` : ''}${renderDirectorInstructions(instructions)}
 ${(instructions ?? '').trim() ? `OCCASION MANDATE FOR YOUR ANALYSIS: if the instructions name an occasion, your analysis MUST mine it on both levels — the ICONOGRAPHY (the real rituals, settings, and props of how people celebrate) as scene territory for the batch, and the MEANING (what the day honors) fused with our brand truths. Propose the occasion-native lane per task, and make at least ONE of your questions an occasion question (which rituals to lean into, how offer-forward vs story-forward the director wants each task).` : ''}
 ${hasUgc ? `
 ${getUgcVoiceDna()}
 ` : ''}${hasEcom ? `
+## THE ECOM STRATEGIST'S DOCTRINE (the reviewer's laws — the concepts and scripts downstream obey them; so does your analysis)
+- THE ARGUMENT IS THE PRODUCT: every brief argues ONE sayable law; a brief without an argument fails regardless of craft.
+- WHY DOES ANYONE CARE: the opening lives in the viewer's world, names her symptom, and promises value — at EVERY awareness level. "TOF" describes the audience, never vague writing.
+- THE PRODUCT ARGUMENT GETS EQUAL OR MORE TIME THAN THE PROBLEM — at every level, Unaware included; the product enters when the argument earns it, never "as late as possible."
+- DIFFERENT ARGUMENT PER BRIEF: same template is fine; same thesis, chain, device, or claim structure in a new costume is the failure he named.
+- PRODUCT-PERSONA ISOLATION: each task's pain, benefit, feature, and persona material comes only from its own product — never a batch-wide pain carried across products.
+- EXAMPLES GOVERN: where a task is pinned, the example's argument is the spine; where it is a REMAKE, the example IS the brief.
+- CONCEPTS MUST NOT BE STITCHED: no element welded to another by an invented bridge line; the story must collapse if the narrator's career is deleted.
+
+${getTasteFileBlock()}
+
+${[...new Set(ecomTasks.map((t) => t.awarenessLevel))].map((lvl) => `### AWARENESS CORE FOR THE ${lvl.toUpperCase()} TASKS (${ecomTasks.filter((t) => t.awarenessLevel === lvl).map((t) => t.parsed.name).join(', ')}) — each core governs only its own tasks:
+${ecomAwarenessCore(lvl)}`).join('\n\n')}
+
+## THE RECORDED MATERIAL PER PRODUCT (your thinking draws ONLY from this — never from general knowledge)
+${[...new Set(ecomTasks.map((t) => t.product))].map((prod) => `${getProductTruthBlock(prod)}
+
+${productArgumentBlock(prod)}`).join('\n\n')}
+
 ${getEcomCraftDna()}
 ` : ''}
 ${JSON_CONTRACT}
 
 JSON shape:
 {
-  "analysis": "your strategic read of the batch as flowing text, 150-300 words, specific to THESE tasks",
+  "analysis": "your strategic read of the batch as flowing text, 150-300 words, specific to THESE tasks${hasEcom ? ' — for ecom tasks, ARGUMENT-first: name each task\'s candidate thesis-law and the viewer\'s stake in one clause each' : ''}",
   "questions": [
     { "id": "q1", "question": "...", "options": ["...", "...", "..."] }
   ]
 }
 3-5 questions. Each question offers 2-4 concrete options (the human can also answer free-text).
 
-${getMarketingBrainBlock('v2Brainstorm')}`;
+${hasEcom ? '' : getMarketingBrainBlock('v2Brainstorm')}`;
 
   const user = `# THIS BATCH (${tasks.length} ${hasEcom && hasUgc ? 'tasks — UGC + ECOM' : hasEcom ? 'ecom tasks' : 'UGC tasks'})
 
@@ -568,7 +597,49 @@ export function buildDirectionSynthesisPrompt(
     .map((q) => `Q: ${q.question}\nA: ${brainstorm.answers[q.id] ?? '(no answer)'}`)
     .join('\n\n');
 
-  const system = `${buildSystemBase()}
+  const hasEcomDir = tasks.some((t) => taskAdType(t) === 'ecom');
+  const system = hasEcomDir
+    ? `${getEcomSystemBase()}
+
+## YOUR ROLE: FACTORY V2 STRATEGIST — DIRECTION SYNTHESIS (ECOM)
+
+Turn your batch analysis plus the creative director's answers into the working direction for this
+batch. It is injected into EVERY downstream concept and script as binding context — so it must carry
+an ARGUMENT for every task, not a batch-wide posture. For EACH ecom task write a PER-TASK ARGUMENT
+SPEC (60-120 words each, plain text under the task's name):
+- THESIS-LAW: the one sayable sentence this ad argues (any shape — declarative, condition, reversal,
+  discovery; not the same shape for every task).
+- THE VIEWER AND HER STAKE: who she is, what she already knows (the awareness level is what she
+  knows, never how vague to be), and why she cares in the first breath.
+- THE REAL PAIN AND ITS TRUE STAKES: the pain she'd name herself, walked as far as this argument
+  needs (never a quota).
+- THE PRODUCT TRUTH THAT CARRIES IT — from THIS task's product only (product-persona isolation).
+- 2-4 OBJECTIONS this story will raise and must close on screen; WHY THIS PRODUCT over the
+  alternatives, in this story's terms.
+- IF PINNED: what makes the example sell (its argument in one sentence) and what governs — the
+  example's argument as spine, or (REMAKE) the example as the brief.
+Then a BATCH CHECK in 3-5 lines: no two tasks share a thesis shape, belief chain, through-line
+device, story event, or objection set; each product's material stays inside its own tasks. If a
+director instruction names an occasion or theme, decide PER TASK whether it is essential to that
+task's argument — the bridge-line test: a theme that would need an invented line to connect is
+left out of that task. Be specific and directive; no generic advice. These specs SEED the
+concepts; the human-approved concept's thesis governs the script — where they differ, the
+approved concept wins.
+${renderDirectorInstructions(instructions)}
+
+${getTasteFileBlock()}
+
+## THE RECORDED MATERIAL PER PRODUCT (every pain, objection, and product truth in your specs comes ONLY from here)
+${[...new Set(tasks.filter((t) => taskAdType(t) === 'ecom').map((t) => t.product))].map((prod) => `${getProductTruthBlock(prod)}
+
+${getPainBankBlock(prod)}
+
+${productArgumentBlock(prod)}`).join('\n\n')}
+
+${JSON_CONTRACT}
+
+JSON shape: { "direction": "the per-task argument specs + the batch check, as plain text with the task names as headings" }`
+    : `${buildSystemBase()}
 
 ## YOUR ROLE: FACTORY V2 STRATEGIST — DIRECTION SYNTHESIS
 
@@ -585,7 +656,7 @@ ${JSON_CONTRACT}
 JSON shape: { "direction": "..." }`;
 
   const user = `# TASKS
-${tasks.map((t, i) => `${i + 1}. ${t.parsed.name} — ${t.product} | ${t.talkingPoint} | ${t.awarenessLevel} | ${taskAdType(t) === 'ecom' ? 'ECOM (editing brief)' : `style: ${getUgcStyle(t.ugcStyle).shortLabel}`} | ${t.duration}`).join('\n')}
+${tasks.map((t, i) => `${i + 1}. ${t.parsed.name} — ${t.product} | ${t.talkingPoint} | ${t.awarenessLevel} | ${taskAdType(t) === 'ecom' ? 'ECOM (editing brief)' : `style: ${getUgcStyle(t.ugcStyle).shortLabel}`} | ${t.duration}${taskAdType(t) === 'ecom' && t.pinnedInspirationId ? (t.exemplarRole === 'remake' ? ' | REMAKE of a pinned example (the example IS the brief)' : ' | pinned example (its argument is the spine)') : ''}`).join('\n')}
 
 # YOUR EARLIER ANALYSIS
 ${brainstorm.analysis}
@@ -641,7 +712,9 @@ must pass its own verification before you emit it:` : isEcom ? `Generate exactly
 SALES ARGUMENTS — a different thesis-law, a different belief chain, different proof — never one
 argument wearing three costumes, and never the same idea with three hooks. Keep story devices
 MINIMAL: at most ONE through-line device per concept, and no concept welded together from two
-unrelated ideas (the bridge-line tell fails the necessity test). Each concept
+unrelated ideas (the bridge-line tell fails the necessity test). If a third HONEST argument does
+not exist inside this product's recorded claim space, emit TWO and say so in the second
+concept's verification — a strained third argument is worse than none. Each concept
 must pass its own verification before you emit it:` : `Generate exactly 3 genuinely different UGC concepts for this task. Different means different
 narrative engines and different emotional worlds — not the same idea with three hooks. Each concept
 must pass its own verification before you emit it:`}
@@ -655,7 +728,7 @@ must pass its own verification before you emit it:`}
 ${isEcom ? `4. ${taskEcomProduction(task) === 'ai-lifestyle' ? `GENERATION FEASIBILITY (AI LIFESTYLE production): every scene will be GENERATED as
    indistinguishable-from-real UGC — name the concept's MODE (vo-narrated or overlay-carried),
    its SHOWN-PROOF device (ladder / timeline / instrument / demo / split-screen), its
-   through-line visual, and its NARRATOR (who she is, her age, and — when the concept uses an
+   through-line visual IF it has one, and its NARRATOR (who she is, her age, and — when the concept uses an
    authority — her vantage point in one clause), all inside the summary. The casting law
    binds: demographic-exact faces, UGC-native camera grammar. The claim boundary still limits
    what a scene may imply.` : taskEcomProduction(task) === 'ai-animation' ? `ANIMATION FEASIBILITY (AI ANIMATION production): every scene will be a GENERATED ANIMATION —
@@ -667,8 +740,8 @@ ${isEcom ? `4. ${taskEcomProduction(task) === 'ai-lifestyle' ? `GENERATION FEASI
    contrast between warm visuals and hard truth is the engine. The claim boundary still limits
    what a scene may imply: exaggeration expresses felt experience, never a measurable promise.` : `FOOTAGE FEASIBILITY: the whole story must be buildable from the footage library + graphics —
    name the concept's MODE (vo-narrated or overlay-carried), its SHOWN-PROOF device (ladder /
-   timeline / instrument / demo / split-screen), and its through-line visual, all inside the
-   summary. A concept needing footage from the negative list invalidates itself.`}
+   timeline / instrument / demo / split-screen), and its through-line visual IF it has one, all
+   inside the summary. A concept needing footage from the negative list invalidates itself.`}
 5. PAIN DEPTH (CMO gate): name the ONE-PERSON narrator and, in one clause, the REAL pain this
    person lives with and what is truly at stake for her — the pain she'd name herself, not a
    surface annoyance. Surface pains (tired legs, sock marks, rings) are legal only as the doorway
@@ -688,9 +761,9 @@ ${isEcom ? `4. ${taskEcomProduction(task) === 'ai-lifestyle' ? `GENERATION FEASI
    we overcoming? Why is Viasox the solution? A concept that cannot answer all seven plainly
    invalidates itself.
 8. A DIFFERENT SALES ARGUMENT (batch law): each concept states its THESIS AS ONE SAYABLE LAW in
-   the summary. Across the 3 concepts — and against the other tasks in this batch — the theses
-   must be genuinely different ARGUMENTS (different chain, different proof), not one argument in
-   different costumes.` : `4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.`}
+   its thesis field. Across the 3 concepts — and against the other tasks' theses in the BATCH
+   DIRECTION's per-task specs — the theses must be genuinely different ARGUMENTS (different chain,
+   different proof, different thesis SHAPE), not one argument in different costumes.` : `4. UGC FEASIBILITY: one creator, one phone, their home/car/daily life. No production crew, no sets.`}
 
 productEntry for this task must be ${entryRule}.
 ${isRemake ? `REMAKE GOVERNANCE: the source's dissection and transcript are in the INSPIRATION CONTEXT of the
@@ -709,7 +782,24 @@ ${(instructions ?? '').trim() ? 'OCCASION MANDATE FOR CONCEPTS: if the instructi
 ${JSON_CONTRACT}
 
 JSON shape:
-{
+${isEcom ? `{
+  "concepts": [
+    {
+      "title": "3-6 word concept name",
+      "thesis": "the ad's argument as ONE sayable law — the sentence a viewer could repeat (any shape; three concepts = three different laws, and not the batch direction's other tasks' laws either)",
+      "argumentChain": "the belief chain in 3-5 causal links, walked to a felt endpoint: what the viewer believes after each beat and how it sets up the next, ending at 'so this product is the answer for me'",
+      "hookLine": "a sample primary hook, written exactly as it would be spoken — it names her symptom, stakes her, and promises the value of watching, in HER world",
+      "narrator": "who tells it — a SUFFERER telling her own story (no career; often the stronger narrator) or an authority-adjacent figure; only if she has a career: why it gives her standing on THIS problem, and confirm the story collapses without it. Never hand a narrator a job so the story can borrow credibility",
+      "productTruth": "the ONE concrete attribute this concept sells, from THIS product's bank",
+      "objections": "the 2-4 buyer objections THIS story naturally raises, each with the scene that will close it on screen",
+      "whyViasox": "why THIS product over the alternatives, in this story's terms (portfolio-safe: never a verdict on a sibling product)",
+      "summary": "one vivid paragraph: the story in one breath — who we see, what happens, how the product enters, why it sells — written so a human can pick between concepts at a glance",
+      "productEntry": "product-forward" | "earned-entry",
+      "openingDetails": "the 2+ concrete showable opening details",
+      "verification": "1-2 sentences: how this passes claim grounding + the 10-second test"
+    }
+  ]
+}` : `{
   "concepts": [
     {
       "title": "3-6 word concept name",
@@ -720,9 +810,9 @@ JSON shape:
       "verification": "1-2 sentences: how this passes claim grounding + the 10-second test"
     }
   ]
-}
+}`}
 
-${getMarketingBrainBlock('conceptGeneration')}`;
+${isEcom ? '' : getMarketingBrainBlock('conceptGeneration')}`;
 
   const user = `# BATCH DIRECTION (from the brainstorm — binding)
 ${direction}
@@ -774,7 +864,7 @@ ${JSON_CONTRACT}
 
 JSON shape: { "framework": "<exact name from the list>", "rationale": "one line: why this engine fits this concept" }
 
-${getMarketingBrainBlock('v2FrameworkSelect')}`;
+${isEcom ? '' : getMarketingBrainBlock('v2FrameworkSelect')}`;
 
   const user = `# THE CHOSEN CONCEPT
 ${concept.title}: ${concept.summary}
@@ -826,7 +916,13 @@ function briefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): strin
 Role rules: the clip(s) speaking hook 1 get role "hook"; the clip(s) speaking CTA 1 get role "cta"; everything else "body". Keep hook 1 on ONE clip whenever possible.`;
 }
 
-/** Ecom JSON shape — the verbatim-to-VO law as REAL plan gates. */
+/** Ecom JSON shape — THINK → WRITE → DERIVE → SELF-REVIEW (Sep 2026 audit #2).
+ *  The plan holds only the thinking (mode, argument, beat map); the script is
+ *  written next, while the argument is hot — the way a writer works in chat;
+ *  hooks/CTAs/header/storyboard derive from it; the gates run LAST as a
+ *  self-review whose failures send the writer back to the script, never to
+ *  a defensive rewrite of the plan. Field examples are deliberately abstract:
+ *  sample values in a schema become the batch's fingerprints. */
 function ecomBriefJsonShape(
   level: AwarenessLevel,
   exemplarKind: 'none' | 'reference' | 'remake' = 'none',
@@ -840,49 +936,54 @@ function ecomBriefJsonShape(
   return `{
   "plan": {
     "mode": "'vo-narrated' or 'overlay-carried' — declared once, never mixed",
-    "argumentMap": "FIRST GATE (sales-argument doctrine). State the ad's THESIS AS ONE SAYABLE LAW. Then walk the argument beat by beat: for each beat, what the viewer now BELIEVES and how that belief sets up the next one, ending at 'so this product is the answer for me'. Any beat that advances no belief is decoration — cut it before writing. If the thesis can't be stated in one sentence, the concept isn't ready: REVISE",
-    "beatMap": "one line per scene: framework stage + what happens + estimated spoken VO words (e.g. 'scene 1 [Problem, hook]: swollen-ankle close-up — 12w'). End with 'TOTAL: Nw vs ceiling Cw' — if N exceeds the ceiling, REVISE the plan before writing the fields below",
-    "proportionCheck": "split the beatMap's words into PROBLEM BUILD vs PRODUCT ARGUMENT (entry through CTA). State both counts. The product argument must be EQUAL OR GREATER — a long valley with a two-line product section means REVISE (move the pivot earlier and develop each mechanism with its own beat)",
-    "objectionsCheck": "name the 3-5 objections chosen from THIS product's menu (sales-argument doctrine) and, for each, the scene that CLOSES it with a demonstration — an assertion is not closure. An objection raised anywhere in the script that is never closed means REVISE",
-    "talkingPointPlacement": "which scenes carry the talking point — it must live in at least 3 beats, not just hook+CTA",
-    "payoffCheck": "map the four payoff stations to scenes (entry moment=scene N / mechanism=scene N / shown proof=scene N / payoff line=scene N) and name the SHOWN-PROOF device. A missing station means REVISE",
-    "flowCheck": "read the ENTIRE VO aloud in your head, hook 1 → every line → CTA 1, as ONE continuous spoken argument. Name any baton break (a line that doesn't receive from the line before or hand to the line after), any vague reference the audience couldn't place, and any line that would sound telegraphic read by an AI voice. Then read the STORY→OFFER SEAM twice on its own: the turn must happen inside the narrator's voice, with the story's vocabulary — quote the seam lines and confirm no register switch to announcer-speak. State 'the full read flows clean and the seam holds' or name the lines to fix — a failed read means the LINE is rewritten before the fields below",
-    "ctaOfferCheck": "quote each CTA's offer text verbatim and confirm the direct action lands in the narrator's voice (the seam rule — no announcer switch). A CTA missing the offer (exact brand-facts math) or undercutting the bundle means REVISE"${lifestyle ? `,
-    "castingCheck": "state the narrator's exact age and how her face/wardrobe/setting match the buyer demographic (50-75, real texture, lived-in home) and where her occupation shows in ONE worn detail — confirm header.ecomEditing.casting captures ALL of it (age, face, hair, the 2-3 fixed anchors, wardrobe incl. the occupational detail, home setting), because the tool prepends that spec to every visual cell at export. Then read 2-3 sample cells WITH the spec in front of them: each must read as one coherent prompt — no re-description, no anchor contradiction, wardrobe deltas named diegetically. An incomplete spec, a narrator younger than the demographic, a costume-level occupation, or a cell that contradicts the spec means REVISE"` : ''}${animation ? `,
-    "animationCheck": "name the ONE declared animation style and why it fits this story, describe the narrator avatar's character model (demographic-true, dignified, with its 2-3 fixed anchors), and map EVERY knife beat + the mechanism beat to its named visual metaphor. Confirm header.ecomEditing.casting captures the FULL style texture description AND the full character model, because the tool prepends that spec to every visual cell at export. Then read 2-3 sample cells WITH the spec in front of them: each must read as one coherent prompt — no re-description, no anchor or style contradiction. An incomplete spec, a mocking/caricatured avatar, a mid-ad style break, or a metaphor that implies a claim outside the bank means REVISE"` : ''}${hasPinnedExemplar ? `,
-    "exemplarFidelity": "beat-by-beat: exemplar beat → our scene(s). Confirm same beat order, proportional timing, product-entry position, product-talk share, and payoff shape — or name the licensed deviation"` : ''}${isRemake ? `,
-    "remakeFidelity": "passage-by-passage: source passage → our scene(s). For each, name the SUBSTITUTION in one clause (their claim/fact → our bank truth) and confirm the argument shape, proof placement, and register carried over. Name every censor-forced deviation in one clause. A remake that drifts from the source's argument without a censor forcing it means REVISE"` : ''}
+    "argumentMap": "FIRST. State the ad's THESIS AS ONE SAYABLE LAW (the APPROVED CONCEPT's thesis governs — the batch direction's spec was only its seed; where they differ, the approved concept wins; sharpen it if needed, any shape, in this story's words). Then walk the argument beat by beat: for each beat, what the viewer now BELIEVES and how that belief sets up the next one, ending at 'so this product is the answer for me'. Any beat that advances no belief is decoration — cut it before writing",
+    "beatMap": "one line per scene: the beat's job + what happens in THIS story + estimated spoken VO words. End with 'TOTAL: Nw vs ceiling Cw' (C = the ceiling in THIS TASK's duration line) — if N exceeds C, rebalance before writing, cutting setup never the product argument",
+    "proportionPlan": "the planned word split — PROBLEM BUILD vs PRODUCT ARGUMENT (entry through CTA) — as two numbers that satisfy the proportion law (product ≥ problem). Write to this split",
+    "objectionsPlan": "the 2-4 objections this script WILL raise (the approved concept's list, adjusted) and the scene that will close each on screen — commit before writing"
   },
+  "scriptProse": "WRITE THE SCRIPT NOW, while the argument is hot: the full VO as ONE continuous spoken argument (hook 1 + body + CTA 1) — EXACTLY what the AI voice will read, word for word, in the narrator's voice from first word to last",
+  "hooks": ["${V2_HOOK_COUNT} alternative VO hooks derived from the script, genuinely different SHAPES from each other — every one names the symptom and promises the viewer value in the viewer's own world, references nothing not yet named, and hands cleanly into scene 1 over the SAME opening visual without restating it; first = primary (the one scriptProse opens with)"],
+  "ctas": ["${ecomCtaPolicyLine(level)}"],
   "header": {
     "concept": "short concept label for the Brand Overview table",
     "angle": "one-line angle statement",
-    "videoTonality": "the register ARC, specific — e.g. 'Frustrated investigation → vindicated solution'",
+    "videoTonality": "the register ARC of THIS script as a from → to, in this story's words",
     "attire": "",
     "instructions": ["3-5 per-brief notes for the editor beyond the evergreen guidelines"],
     "ecomEditing": {
-      "pacing": "pacing as DIRECTION with intent (e.g. 'Quick, punchy — cuts accelerate through the failure ladder')",
-      "music": "music as a REGISTER (e.g. 'Building dramatic/revelation style')",
-      "transitions": "transitions serving the concept (e.g. 'Sharp cuts for reveal moments')",
-      "specialNotes": "the creative mandate in one breath (e.g. 'Build anticipation before reveals. Use the measuring tape in every scene.')"${lifestyle ? `,
+      "pacing": "pacing as DIRECTION with intent, specific to this script's beats",
+      "music": "music as a REGISTER that follows this script's arc",
+      "transitions": "transitions serving this concept's reveals",
+      "specialNotes": "the creative mandate in one breath — the one thing the editor must protect in this ad"${lifestyle ? `,
       "casting": "the FULL persona/casting spec (the single source every generation prompt restates): narrator's age, face description, hair, wardrobe incl. the one occupational detail, home setting with its life props — plus any second person's full identity if the concept has one"` : ''}${animation ? `,
       "casting": "the FULL style + character spec (the single source every generation prompt restates): the declared animation style with its full texture description, then the narrator avatar's character model — proportions, palette, wardrobe, the 2-3 fixed anchors, and the in-style occupational detail when the concept uses an authority"` : ''}
     }
   },
-  "hooks": ["${V2_HOOK_COUNT} alternative VO hooks, genuinely different from each other — every one names the symptom and promises the viewer value in the viewer's own world (the taste file's Move 3 models are the bar), references nothing not yet named, and hands cleanly into scene 1 over the SAME opening visual without restating it; first = primary"],
-  "ctas": ["${ecomCtaPolicyLine(level)}"],
-  "scriptProse": "the full VO as ONE continuous spoken argument (hook 1 + body + CTA 1) — EXACTLY what the AI voice will read, word for word",
   "storyboard": [
     {
       "clipNumber": 1,
       "audioType": "VO",
       "role": "hook" | "body" | "cta",
-      "scriptLine": "the exact VO line for this scene (empty string ONLY in overlay-carried mode)",
+      "scriptLine": "the exact VO line for this scene, split from scriptProse (empty string ONLY in overlay-carried mode)",
       "shotType": "ONE scene-type TAG from the available lists${aiMode ? ' (vocabulary only in AI production — nothing is limited to a library)' : ''}",
       "shotDescription": ${lifestyle ? `"the SCENE HALF of this scene's generation prompt — the tool prepends header.ecomEditing.casting verbatim at export, so write the cell to read as ONE prompt after that persona block: [action] + [setting + life props] + [wardrobe delta if it changes] + [camera register + framing/distance] + [light] + [imperfection note]. Refer to her as 'she'; never re-describe the persona, never contradict an anchor"` : animation ? `"the SCENE HALF of this scene's generation prompt — the tool prepends header.ecomEditing.casting (the style + character spec) verbatim at export, so write the cell to read as ONE prompt after that block: [action] + [set + handmade props] + [camera + motion cadence] + [light] + [craft-texture note]. Refer to the character as 'she'; never re-describe the style or the character, never contradict an anchor"` : `"short CONVERSATIONAL description of what the viewer sees — telling the editor what you're picturing, never a label"`},
       "overlayText": "the on-screen text for this scene, or empty string (in vo-narrated mode overlays are fragments OF the spoken line; in overlay-carried mode this IS the script${aiMode ? '; overlays are added in POST — never baked into the generation prompt' : ''})",
       "editorNotes": "editor-facing instruction (${aiMode ? 'generation retries to expect, continuity with the neighboring scenes, post overlays/graphics, timing' : 'graphics, timing, missing-footage replacements'}), or empty string"
     }
-  ]
+  ],
+  "selfReview": {
+    "talkingPointPlacement": "which scenes carry the talking point — it must live in at least 3 beats, not just hook+CTA",
+    "proportionCheck": "split the script's words into PROBLEM BUILD vs PRODUCT ARGUMENT (entry through CTA). State both counts. The product argument must be EQUAL OR GREATER — if it is not, report the shortfall honestly",
+    "objectionsCheck": "name the objections THIS story raised (the approved concept's list, adjusted to what was actually written) and, for each, the scene that CLOSES it with a demonstration — an assertion is not closure; report any objection raised but never closed",
+    "payoffCheck": "map the four payoff stations to scenes (entry moment=scene N / mechanism=scene N / shown proof=scene N / payoff line=scene N) and name the SHOWN-PROOF device. Report any missing station",
+    "flowCheck": "read the ENTIRE VO aloud in your head, hook 1 → every line → CTA 1, as ONE continuous spoken argument. Name any baton break, any vague reference the audience couldn't place, and any line that would sound telegraphic read by an AI voice. Then read the STORY→OFFER SEAM twice on its own: the turn must happen inside the narrator's voice — quote the seam lines and confirm no register switch to announcer-speak. State 'the full read flows clean and the seam holds' or name the lines that do not",
+    "ctaOfferCheck": "quote each CTA's offer text verbatim and confirm the direct action lands in the narrator's voice (the seam rule — no announcer switch). Report a CTA missing the offer (exact brand-facts math) or undercutting the bundle",
+    "fingerprintCheck": "name every line, hook shape, story event, device, and outcome scene in this script that resembles a model or example quoted anywhere in this prompt, or that another brief on this product would plausibly also contain — and report honestly which ones you could not rewrite into THIS story's own words. The never-copy fence is censor rank"${lifestyle ? `,
+    "castingCheck": "state the narrator's exact age and how her face/wardrobe/setting match the buyer demographic (50-75, real texture, lived-in home) and where her occupation shows in ONE worn detail — confirm header.ecomEditing.casting captures ALL of it (age, face, hair, the 2-3 fixed anchors, wardrobe incl. the occupational detail, home setting), because the tool prepends that spec to every visual cell at export. Then read 2-3 sample cells WITH the spec in front of them: each must read as one coherent prompt — no re-description, no anchor contradiction, wardrobe deltas named diegetically. An incomplete spec, a narrator younger than the demographic, a costume-level occupation, or a cell that contradicts the spec means fix it"` : ''}${animation ? `,
+    "animationCheck": "name the ONE declared animation style and why it fits this story, describe the narrator avatar's character model (demographic-true, dignified, with its 2-3 fixed anchors), and map EVERY knife beat + the mechanism beat to its named visual metaphor. Confirm header.ecomEditing.casting captures the FULL style texture description AND the full character model, because the tool prepends that spec to every visual cell at export. Then read 2-3 sample cells WITH the spec in front of them: each must read as one coherent prompt — no re-description, no anchor or style contradiction. An incomplete spec, a mocking/caricatured avatar, a mid-ad style break, or a metaphor that implies a claim outside the bank means fix it"` : ''}${hasPinnedExemplar ? `,
+    "exemplarFidelity": "beat-by-beat: exemplar beat → our scene(s). Confirm same beat order, proportional timing, product-entry position, product-talk share, and payoff shape — or report the deviation and whether it was licensed"` : ''}${isRemake ? `,
+    "remakeFidelity": "passage-by-passage: source passage → our scene(s). For each, name the SUBSTITUTION in one clause (their claim/fact → our bank truth) and confirm the argument shape, proof placement, and register carried over. Name every censor-forced deviation in one clause. Report any drift from the source's argument that no censor forced"` : ''}
+  }
 }
 Role rules: the scene(s) speaking hook 1 get role "hook"; the scene(s) speaking CTA 1 get role "cta"; everything else "body". Keep hook 1 on ONE scene whenever possible.`;
 }
@@ -974,7 +1075,6 @@ function buildEcomBriefWritePrompt(
   inspirationContext: string,
   instructions?: string,
 ): { system: string; user: string } {
-  const frameworkDetail = FRAMEWORK_DETAILS[framework.name] ?? `**${framework.name}**`;
   const hasPinned = inspirationContext.includes('THE STRUCTURAL AUTHORITY');
   const isRemake = inspirationContext.includes('THE GOVERNING EXAMPLE');
   const production = taskEcomProduction(task);
@@ -1003,26 +1103,27 @@ VOICE that reads your script VERBATIM — there is no performer to smooth a clum
 Verbatim-to-VO law binds every line you write.`
   }
 
-STRUCTURAL RULES:
-- Emit the "plan" FIRST and honor it: mode declared, beat map summed against the hard ceiling,
-  talking point threaded through ≥3 beats, and the flow gates passed BEFORE the fields below.
-- plan.argumentMap, plan.proportionCheck, plan.objectionsCheck, plan.payoffCheck,
-  plan.flowCheck, and plan.ctaOfferCheck are REAL GATES (as are plan.castingCheck,
-  plan.animationCheck, and plan.exemplarFidelity when present): a failed check means the plan is
-  wrong — revise the plan, never write fields that fail their own plan (plan.exemplarFidelity /
-  plan.remakeFidelity are gates too when present). plan.argumentMap comes FIRST and everything
-  else serves it: the argument is the product. (The Final Review runs the full defect net
-  afterward — your job here is to write the way the taste file thinks, not to satisfy a
-  checklist.)
+HOW TO WORK (the order matters — it is how a writer works, not how a checklist works):
+1. THINK: emit "plan" first — the mode, the argumentMap (thesis as one sayable law + the belief
+   chain), and the beatMap summed against THIS TASK's ceiling. This is the argument. Everything
+   serves it.
+2. WRITE: then write "scriptProse" immediately, while the argument is hot — the whole VO as one
+   continuous spoken piece in the narrator's voice, the way the calibration file's AFTER examples
+   think. Do not write it defensively; write it to sell.
+3. DERIVE: hooks, CTAs, header, and storyboard come FROM the script you just wrote.
+4. SELF-REVIEW: fill "selfReview" last as an HONEST REPORT on what you actually wrote — measured
+   counts, real gaps, named lines. A truthfully reported shortfall is NOT a failed generation: the
+   engine's Final Review and rework loop consume it. A false "clean" is the failure. Your job here
+   is to write the way the reviewer thinks, not to satisfy a checklist.
 - The storyboard's main edit = hook 1 + body + CTA 1, split one-thought-per-scene. Alternate
   hooks and CTA 2 are NOT storyboard rows — the engine appends them as alternate-take rows
   automatically (they swap over scene 1's visual, which is why every hook must hand off over the
   SAME opening visual). Write ONLY the main edit rows.
-- Execute the framework below as the narrative engine — every scene annotatable with its stage.
-  The Awareness Core's HARD rules (label rules, offer rules, the Unaware release ORDER on both
-  channels) bind absolutely; pacing guidance yields to a pinned exemplar's beat map and the
-  CRAFT LICENSE.
-- Name ONE through-line visual device in the plan's beatMap and carry it across scenes.
+- The framework below is a LENS on the beats, never a stage order to execute. The Awareness
+  Core's HARD rules (label rules, offer rules, the Unaware release ORDER on both channels) bind
+  absolutely; pacing guidance yields to a pinned exemplar's beat map and the CRAFT LICENSE.
+- A through-line visual device is a strong craft move when THIS story has one — name it in the
+  beatMap if so (and never default to the same device as the last brief).
 ${isRemake ? `- 🎬 THIS BRIEF IS A REMAKE. The GOVERNING EXAMPLE (dissection + transcript in the user message)
   IS the spec: your plan.beatMap must OPEN by walking the source passage by passage — what each
   passage does, why it works — and then map every scene you write to its source passage. Mirror
@@ -1036,13 +1137,13 @@ ${isRemake ? `- 🎬 THIS BRIEF IS A REMAKE. The GOVERNING EXAMPLE (dissection +
   beat. OUR story, THEIR architecture. REGISTER CAVEAT: exemplar transcripts are often
   caption-fragmented — mirror structure and energy; OUR lines still pass the read-aloud test.
 ` : ''}
-## THE FRAMEWORK YOU ARE EXECUTING
-${frameworkDetail}
+## THE FRAMEWORK — A LENS, NOT A STRUCTURE
+${framework.name} — chosen because: ${framework.rationale}
+The framework names the KINDS of beats this argument needs; it does not order them, time them, or
+supply their content. The canon blocks are ingredients, not a march. Structure comes from the
+argument (and from the example when one governs); timing comes from the proportion law; every
+mechanism comes from THIS product's bank only.
 
-- FRAMEWORK SCOPE NOTE: the framework supplies the STAGES and their ORDER — any percentage
-  markers in its description are legacy conventions and do NOT bind (there are no percentage
-  zones in ecom: timing comes from the argument and the proportion law). Its example mechanisms
-  are generic — YOUR mechanism comes from THIS product's bank only.
 - The product beats must sell the concept's committed product truth concretely (SWAP TEST
   applies), through the full PRODUCT PAYOFF ARC (entry moment → mechanism → shown proof → payoff
   line), with the PROPORTION LAW satisfied: the product argument gets equal or more words than
@@ -1051,16 +1152,20 @@ ${frameworkDetail}
 ${JSON_CONTRACT}
 
 JSON shape:
-${ecomBriefJsonShape(task.awarenessLevel, isRemake ? 'remake' : hasPinned ? 'reference' : 'none', production)}
-
-${getMarketingBrainBlock('v2Writer')}`;
+${ecomBriefJsonShape(task.awarenessLevel, isRemake ? 'remake' : hasPinned ? 'reference' : 'none', production)}`;
 
   const user = `${renderDirectorInstructions(instructions)}
 # BATCH DIRECTION (binding)
 ${direction}
 
 # THE APPROVED CONCEPT (binding — the concept wins over everything except the hard censors: brand facts, claim boundary, the Awareness Core's label/offer rules)
-${concept.title}: ${concept.summary}
+${concept.title}: ${concept.summary}${concept.thesis ? `
+THESIS-LAW (the argument this script makes — every beat serves it): ${concept.thesis}` : ''}${concept.argumentChain ? `
+BELIEF CHAIN: ${concept.argumentChain}` : ''}${concept.hookLine ? `
+SAMPLE HOOK (the approved shape and stake — write the real hooks in the same spirit, not the same words): ${concept.hookLine}` : ''}${concept.narrator ? `
+NARRATOR: ${concept.narrator}` : ''}${concept.objections ? `
+OBJECTIONS TO CLOSE ON SCREEN: ${concept.objections}` : ''}${concept.whyViasox ? `
+WHY THIS PRODUCT: ${concept.whyViasox}` : ''}
 Product entry: ${concept.productEntry} | Product truth to sell: ${concept.productTruth}
 Opening details: ${concept.openingDetails}
 
@@ -1239,7 +1344,7 @@ ${JSON_CONTRACT}
 JSON shape:
 ${jsonShape}
 
-${getMarketingBrainBlock('v2Regen')}`;
+${taskAdType(task) === 'ecom' ? '' : getMarketingBrainBlock('v2Regen')}`;
 
   const currentText = currentTargetText(brief, target);
   const user = `${renderDirectorInstructions(brief.batchInstructions)}

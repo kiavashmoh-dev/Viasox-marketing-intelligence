@@ -455,7 +455,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               onClick={() => void runReviewLoop()}
               disabled={!!busy}
               className="text-sm bg-violet-700 text-white px-4 py-1.5 rounded-lg hover:bg-violet-800 font-medium disabled:opacity-40"
-              title="The closed loop: CMO-simulation review → if not approvable, a full story rework against every finding → re-review. One pass; the brief you get back has both reports' history and the latest verdict."
+              title="The closed loop: CMO-simulation review → if not approvable, a FULL STORY REWORK against every finding → re-review. One pass. ⚠ The rework rewrites the story — use this on fresh generations. On a brief you have hand-edited, duplicate it first (or use plain Final Review and apply findings one by one) so your edits are never overwritten."
             >
               Review + auto-fix
             </button>

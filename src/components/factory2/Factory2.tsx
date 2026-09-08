@@ -794,6 +794,15 @@ export default function Factory2({ apiKey, onBack }: Props) {
                             </span>
                           </div>
                           <div className="font-display font-bold text-navy text-sm leading-snug mb-2">{c.title}</div>
+                          {c.thesis && (
+                            <div className="mb-2 rounded-md bg-violet-50 border border-violet-100 px-2 py-1.5">
+                              <div className="text-[9px] font-semibold uppercase tracking-[0.12em] text-violet-700 mb-0.5">The argument</div>
+                              <div className="text-[11px] text-violet-900 leading-snug font-medium">{c.thesis}</div>
+                            </div>
+                          )}
+                          {c.hookLine && (
+                            <div className="mb-2 text-[11px] text-slate-700 leading-snug italic" title="Sample primary hook">“{c.hookLine}”</div>
+                          )}
                           <p className="text-xs text-slate-600 leading-relaxed flex-1">{c.summary}</p>
                           <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
                             <div>

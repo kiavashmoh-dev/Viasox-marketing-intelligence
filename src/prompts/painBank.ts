@@ -23,7 +23,7 @@ THE LADDER (the recorded depth map — this angle's ARGUMENT decides how deep to
 - L1: The doctor said to wear special socks — one more rule, one more aisle of beige medical products ('Doctor says I need special socks')
 - L2: Daily vigilance — inspecting feet every night, 'extra careful with my feet', afraid of what a red mark means on diabetic skin
 - L3: The customer's own verdict: 'Regular socks are dangerous for me' — the thing in the drawer is a hazard; a scratch that won't close; the wound-that-won't-heal trigger
-- L4: The persona-documented fear set (never say it in their voice, they never did): amputation, wounds, losing mobility — best run as the unspoken subtext behind the approved pattern 'Your doctor told you to watch your feet. Nobody told you to watch your socks.'
+- L4: The persona-documented fear set (amputation, wounds, losing mobility) — never voiced as a CUSTOMER'S quote (they never said it); under the amputation ruling it may be SPOKEN condition-side, conditionally framed and witnessed, when the argument earns it. The subtext route (the instruction she was given about her feet, versus the thing nobody told her to watch) stays available as a SHAPE — the reviewer has read the known line; it is no longer the ceiling and never the default.
 KNIFE MATERIAL (recorded specifics to twist with):
 - 786 reviews (3.5%) mention diabetic complications; 632 unique medical reviews = 7.1% of all EasyStretch reviews
 - 'The Medical Mandate' = 7.1% of ES purchases: doctor's orders, neuropathy diagnosis, or a wound that won't heal
@@ -390,15 +390,16 @@ truth-audited. This is the pain-depth doctrine's fuel. Rules of use:
   words, stops one step earlier on the chain ("Regular socks are dangerous for me", "Have to be
   extra careful with my feet", the "wound that won't heal" trigger, "My feet turn purple", "When
   the ER nurse had to cut my socks off") — so the chain is BUILT from their recorded rungs, and
-  the CMO now requires walking the diabetic chain to its spoken endpoint rather than truncating —
-  his model: "If your legs can't heal, your feet can go numb and when your feet go numb you don't
-  know if it's bleeding… this can cause infection, swelling, and amputation in some of the worst
-  cases I've ever seen." The boundary that still binds: every link belongs to UNCONTROLLED
-  DIABETES, conditionally framed, witnessed first-person at the endpoint; render the medicine
-  truthfully (nerves AND vessels damaged in parallel — the danger is their convergence, an unfelt
-  wound that won't close); a SOCK is never the agent and the product never prevents or treats any
-  of it. The subtext pattern ("Your doctor told you to watch your feet. Nobody told you to watch
-  your socks.") remains available — it is no longer the ceiling.
+  the CMO's ruling: when a brief's argument runs the diabetic vein, the chain may — and should —
+  reach its true endpoint rather than truncate at "can't heal" (his model chain is in the
+  calibration file; its anatomy is the lesson, never its sentences). HOW FAR this brief walks it
+  is THIS ARGUMENT'S choice, not a quota — and its rungs are this story's own, in this narrator's
+  words. The boundary that still binds: every link belongs to UNCONTROLLED DIABETES, conditionally
+  framed, witnessed first-person at the endpoint; render the medicine truthfully (nerves AND
+  vessels damaged in parallel — the danger is their convergence, an unfelt wound that won't
+  close); a SOCK is never the agent and the product never prevents or treats any of it. The
+  subtext route (the medical instruction she was given, versus the thing nobody told her to watch)
+  remains available as a shape — it is no longer the ceiling, and its known line is not yours.
 
 ${veins}`;
 }

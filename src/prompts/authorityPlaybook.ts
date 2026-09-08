@@ -31,24 +31,21 @@ listened to this person."
 
 **THE SIX AUTHORITY MODES (a menu of proven shapes — use what the story calls for, never a form to fill):**
 1. OCCUPATIONAL PROXIMITY — the job puts them beside the problem daily. Installed in the FIRST
-   BREATH, half a sentence, then straight into the claim: "Dental student here — brushing your
-   retainer like this can create scratches where bacteria hide."
-2. WITNESSED VOLUME — years of watching others suffer or err: "I've been doing makeup for 17
-   years, honey, and I have watched women make the same three mistakes over and over." The
-   number of years + the repetition ("over and over", "every single day") IS the credential.
-3. SELF-USE CONFESSION — authority plus vulnerability in one line: "I know this because I used
-   to do it myself." Kills the lecture register; use it within 2 lines of the credential.
+   BREATH, half a sentence, then straight into the claim.
+2. WITNESSED VOLUME — years of watching others suffer or err; the number of years + the
+   repetition ("over and over", "every single day") IS the credential.
+3. SELF-USE CONFESSION — authority plus vulnerability in one line (she used to make the mistake
+   herself). Kills the lecture register; use it within 2 lines of the credential.
 4. CLIENT-SUBJECT TRANSFORMATION — the authority works ON someone who IS the demographic, and
-   the subject's reaction is the proof (the 73-year-old who "saw herself in the mirror and
-   screamed"). The viewer identifies with the SUBJECT, not the expert — cast the subject as the
-   buyer, exactly.
+   the subject's reaction is the proof. The viewer identifies with the SUBJECT, not the expert —
+   cast the subject as the buyer, exactly.
 5. PEER-RELAY — a SUFFERER narrates; the authority arrives as a character in her story and
-   delivers the mechanism education inside dialogue ("my friend's a nurse — 12-hour shifts for
-   thirty years — and she showed me what she puts on every morning"). The strongest mode for
-   Problem-Aware: the viewer meets the authority the same way she would in real life.
-6. BORROWED-EXPERT ESCALATION — experts reacting IS the plot ("three doctors were blowing up my
-   phone"). Use sparingly and only with escalations we can honestly stage as narrative (never
-   fabricated named endorsements, never "doctors recommend" claims).
+   delivers the mechanism education inside dialogue. A strong mode for Problem-Aware (the viewer
+   meets the authority the way she would in real life) — and a fingerprint if every brief uses
+   the same relay character: the person who explains it must belong to THIS story.
+6. BORROWED-EXPERT ESCALATION — experts reacting IS the plot. Use sparingly and only with
+   escalations we can honestly stage as narrative (never fabricated named endorsements, never
+   "doctors recommend" claims), and never as theater a 60-year-old viewer wouldn't believe.
 
 **INSTALLATION RULES:**
 - The credential lands in the first line or not at all — a mid-script credential reads as a
@@ -60,8 +57,8 @@ listened to this person."
   narrator describes what our reviews actually describe). The presenter may be synthetic; the
   testimony may not.
 - No fabricated clinical theater: no scrubs-in-a-clinic staging, no whiteboards, no named
-  hospitals. The authority wears her occupation lightly (the wardrobe cue, the kit, the
-  name-tag lanyard tossed on the counter) in HOME or neutral settings.
+  hospitals. The authority wears her occupation lightly — ONE worn detail that belongs to her job
+  and her home, chosen for this narrator — in HOME or neutral settings.
 - Occupation must be instantly legible to a 60-year-old scrolling at speed: nurse, pharmacist,
   home-care aide — if the vantage point needs a sentence of explanation, pick a different authority.
 - ESSENTIALITY TEST (CMO): delete the career from the story — if the story still works, the
@@ -84,16 +81,16 @@ ARGUMENT shapes the structure, and the example when one governs.)
 
 **CLAIM TRANSLATION (the winners overclaim; we carry the same ENERGY legally):**
 - Their "money-back guarantee / risk-free" → BANNED. Ours: low-commitment psychology INSIDE the
-  bundle offer, never against it ("Start with one pair tomorrow morning and see why you'll be glad
-  you have four more" — a bare "start with one" undercuts the five-pair offer) + volume proof
-  (107,993 reviews, over one million pairs — interpreted, never recited).
+  bundle offer, never against it (a bare "start with one" undercuts the five-pair offer; the
+  calibration file shows the reviewer's model of keeping it inside the bundle — a shape, not a
+  line) + volume proof (107,993 reviews, over one million pairs — interpreted, never recited).
 - Their fake scarcity ("sold out five times", "until midnight") → BANNED. Ours: real events only.
 - Their invented mechanisms ("rebuilds collagen", "251% better") → BANNED. Ours: TRUE mechanism
   taught with conviction + real numbers made visible (30 inches measured on camera, the
   12-15 mmHg sweet spot on COMP, counts from the record).
-- Their "doctors recommend" → BANNED as endorsement. Ours: the doctor exists inside the STORY as
-  an event that happened ("my doctor grabbed a tape measure — and his whole face changed"),
-  never as an endorsement claim.
+- Their "doctors recommend" → BANNED as endorsement. Ours: a professional may exist inside the
+  STORY as an event that happened to her — never as an endorsement claim, and never the same
+  staged moment across briefs.
 
 **CASTING THE AUTHORITY (with the AI-generation spec when production is AI):** the narrator and
 every on-screen subject match the buyer demographic exactly — 50-75, real texture, home
