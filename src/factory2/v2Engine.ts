@@ -17,6 +17,8 @@
  * match never discards a completed generation.
  */
 
+import type { UgcCreatorDoc } from './ugcDocModel';
+import { UGC_DOC_LIST_FIELDS, setUgcDocField } from './ugcDocModel';
 import { sendMessage, sendVisionMessage, TRUNCATION_NOTE, type ContentBlock } from '../api/claude';
 import { V2_THINKING_MODEL, V2_HEAVY_MODEL } from '../config/models';
 import { buildBrainAddendum } from '../brain/contextAssembler';
@@ -610,11 +612,15 @@ export async function selectFramework(
 interface RawBriefRow {
   clipNumber: number | string;
   audioType?: string;
+  /** hook | body | cta — and, UGC (Sep 2026): reveal (the product's first
+   *  appearance) | offer (the promotion line). */
   role?: string;
   scriptLine?: string;
   shotType?: string;
   shotDescription?: string;
   overlayText?: string;
+  /** UGC writer's name for the ON-SCREEN TEXT column (alias of overlayText). */
+  onScreenText?: string;
   editorNotes?: string;
 }
 
@@ -640,6 +646,61 @@ interface RawBriefJson {
   /** Ecom writer only: the think-first plan and the honest self-review. */
   plan?: unknown;
   selfReview?: unknown;
+  /** UGC writer only (Sep 2026): the three-tab creator document fields. */
+  creatorDoc?: UgcCreatorDoc;
+  /** UGC writer only: per-hook SHOT / ACTION and ON-SCREEN TEXT (index-aligned with hooks). */
+  hookShots?: string[];
+  hookOnScreenText?: string[];
+}
+
+/** Coerce the UGC writer's creatorDoc into the typed shape: every string
+ *  trimmed, lists split from newline text when the model returned a string,
+ *  the optional groups dropped when empty (the offer needs a promo; the
+ *  reference needs a pin). Returns undefined when nothing usable came back. */
+function normalizeCreatorDoc(raw: unknown, ctx: { pinned: boolean }): UgcCreatorDoc | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const r = raw as Record<string, unknown>;
+  const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : v === undefined || v === null ? '' : String(v).trim());
+  const list = (v: unknown): string[] =>
+    Array.isArray(v)
+      ? v.map(str).filter(Boolean)
+      : str(v)
+          .split('\n')
+          .map((x) => x.replace(/^[-*•\d.)\s]+/, '').trim())
+          .filter(Boolean);
+  const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
+  const bi = obj(r.briefInfo);
+  const st = obj(r.strategy);
+  const offer = obj(st.offer);
+  const production = obj(st.production);
+  const editing = obj(st.editing);
+  const reference = obj(st.reference);
+  const doc: UgcCreatorDoc = {
+    briefInfo: {
+      collection: str(bi.collection),
+      socks: str(bi.socks),
+      format: str(bi.format),
+      creatorRequirement: str(bi.creatorRequirement),
+      creatorNote: list(bi.creatorNote),
+    },
+    scriptNote: str(r.scriptNote),
+    beforeYouSubmit: list(r.beforeYouSubmit),
+    strategy: {
+      awarenessLevel: str(st.awarenessLevel),
+      primaryEmotion: str(st.primaryEmotion),
+      avatar: str(st.avatar),
+      hypothesis: str(st.hypothesis),
+      coreCreativeIdea: str(st.coreCreativeIdea),
+      ...(str(offer.promo)
+        ? { offer: { promo: str(offer.promo), valueCallout: str(offer.valueCallout), fourthHook: str(offer.fourthHook), urgency: str(offer.urgency) } }
+        : {}),
+      production: { format: str(production.format), creator: str(production.creator), props: str(production.props), locations: str(production.locations) },
+      editing: { pacing: str(editing.pacing), graphics: str(editing.graphics), audio: str(editing.audio) },
+      ...(ctx.pinned && str(reference.adaptationNote) ? { reference: { adaptationNote: str(reference.adaptationNote) } } : {}),
+    },
+  };
+  const filled = [doc.briefInfo.creatorRequirement, doc.scriptNote, doc.strategy.avatar, doc.strategy.hypothesis].filter(Boolean).length;
+  return filled >= 2 ? doc : undefined;
 }
 
 /** Compact JSON for the writer's plan/selfReview objects (ecom only). Returns
@@ -702,6 +763,8 @@ function toRow(r: RawBriefRow, adType: V2AdType = 'ugc'): V2Row | null {
   if (!shotRaw.includes('roll') && !shotRaw.includes('visual') && !shotRaw.includes('talk')) {
     console.warn(`[factory2] coerced unknown shotType "${r.shotType}" → "${shot}"`);
   }
+  const role = (r.role ?? '').trim().toLowerCase();
+  const onScreen = (r.onScreenText ?? r.overlayText ?? '').trim();
   return {
     id: genId('row'),
     clipNumber: clip,
@@ -711,6 +774,9 @@ function toRow(r: RawBriefRow, adType: V2AdType = 'ugc'): V2Row | null {
     shotDescription: r.shotDescription ?? '',
     reference: { kind: 'none', reason: 'pending match' },
     editorNotes: r.editorNotes ?? '',
+    ...(onScreen ? { overlayText: onScreen } : {}),
+    ...(role === 'offer' ? { isOffer: true } : {}),
+    ...(role === 'reveal' || role === 'product-reveal' ? { isProductReveal: true } : {}),
   };
 }
 
@@ -731,6 +797,29 @@ function linkMirrors(rows: V2Row[], raws: RawBriefRow[], hookId: string | undefi
     const last = [...rows].reverse().find((r) => r.shotType === 'Talk to Camera' && r.scriptLine.trim().length > 0);
     if (last) last.mirrorsLineId = ctaId;
   }
+}
+
+/** UGC (Sep 2026): give every hook take its OWN shot direction and on-screen
+ *  caption from the writer's per-hook arrays (the creator document prints one
+ *  script-table row per hook). Missing entries keep the engine defaults. */
+function applyHookTakes(
+  rows: V2Row[],
+  hooks: Array<{ id: string; text: string }>,
+  hookShots?: string[],
+  hookOnScreenText?: string[],
+): V2Row[] {
+  if (!Array.isArray(hookShots) && !Array.isArray(hookOnScreenText)) return rows;
+  return rows.map((r) => {
+    const i = hooks.findIndex((h) => h.id === r.mirrorsLineId);
+    if (i < 0) return r;
+    const shot = typeof hookShots?.[i] === 'string' ? hookShots[i].trim() : '';
+    const caption = typeof hookOnScreenText?.[i] === 'string' ? hookOnScreenText[i].trim() : '';
+    return {
+      ...r,
+      ...(shot && i > 0 ? { shotDescription: shot } : {}),
+      ...(caption && !r.overlayText ? { overlayText: caption } : {}),
+    };
+  });
 }
 
 /** Append the Media Engineered alternate-take convention: End Card spacer,
@@ -1075,7 +1164,7 @@ export async function writeBrief(
     ctas,
     batchInstructions: (instructions ?? '').trim() || undefined,
     scriptProse: parsed.scriptProse ?? '',
-    storyboard: appendAlternateTakes(mainRows, hooks, ctas),
+    storyboard: applyHookTakes(appendAlternateTakes(mainRows, hooks, ctas), hooks, parsed.hookShots, parsed.hookOnScreenText),
     feedbackLedger: [],
     rippleFlags: [],
     version: 1,
@@ -1086,6 +1175,10 @@ export async function writeBrief(
     const plan = compactNotes(parsed.plan);
     const selfReview = compactNotes(parsed.selfReview);
     if (plan || selfReview) brief.writerNotes = { ...(plan ? { plan } : {}), ...(selfReview ? { selfReview } : {}) };
+  } else {
+    const doc = normalizeCreatorDoc(parsed.creatorDoc, { pinned: Boolean(task.pinnedInspirationId) });
+    if (doc) brief.creatorDoc = doc;
+    else console.warn('[factory2] UGC writer returned no creatorDoc — the three-tab export will refuse this brief until it is regenerated');
   }
   brief.rippleFlags = validateBrief(brief);
 
@@ -1492,6 +1585,14 @@ export async function applyRegen(
       case 'script-prose':
         updated.scriptProse = v;
         break;
+      case 'doc-field': {
+        if (!updated.creatorDoc) break;
+        const value = UGC_DOC_LIST_FIELDS.has(target.path)
+          ? v.split('\n').map((x) => x.replace(/^[-*•\d.)\s]+/, '').trim()).filter(Boolean)
+          : v.trim();
+        updated.creatorDoc = setUgcDocField(updated.creatorDoc, target.path, value);
+        break;
+      }
       case 'header-field':
         if (target.field === 'instructions') {
           updated.header = {

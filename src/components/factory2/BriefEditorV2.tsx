@@ -20,7 +20,10 @@ import type { UgcBriefV2, V2RegenTarget, V2ReviewFinding } from '../../factory2/
 import { UGC_FRAMEWORKS, ECOM_FRAMEWORKS, taskAdType, taskEcomProduction, taskExemplarRole } from '../../factory2/v2Types';
 import { applyRegen, applyReviewFix, deleteRow, runFinalReview, runReviewAndRework } from '../../factory2/v2Engine';
 import { fableFallbackActive } from '../../api/claude';
-import { exportBriefDoc } from '../../factory2/v2Export';
+import { GOOGLE_CLIENT_ID_KEY, exportBriefDoc, exportUgcBriefDocx, exportUgcBriefToGoogleDoc } from '../../factory2/v2Export';
+import { loadGis } from '../../api/googleAuth';
+import { UGC_DOC_FIELD_LABELS, UGC_DOC_LIST_FIELDS, getUgcDocField } from '../../factory2/ugcDocModel';
+import type { UgcDocFieldPath } from '../../factory2/ugcDocModel';
 import { INTRO_CALLOUT } from '../../factory2/templateBoilerplate';
 import { getUgcStyle } from '../../factory2/ugcStyles';
 
@@ -379,6 +382,58 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
     }
   }, [brief]);
 
+  // UGC (Sep 2026): the three-tab creator document — .docx download or a new
+  // Google Doc with real tabs (needs the OAuth client id pasted once).
+  const [showGoogleSetup, setShowGoogleSetup] = useState(false);
+  const [googleClientIdDraft, setGoogleClientIdDraft] = useState('');
+  // Preload Google Identity Services so the consent popup opens inside the
+  // click gesture (popup blockers) — UGC briefs only; non-fatal if offline.
+  useEffect(() => {
+    if (taskAdType(brief.task) !== 'ecom') void loadGis().catch(() => undefined);
+  }, [brief.task]);
+  const handleExportDocx = useCallback(async () => {
+    setBusy('Building the creator document (.docx)…');
+    try {
+      await exportUgcBriefDocx(brief);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy('');
+    }
+  }, [brief]);
+  const handleExportGoogleDoc = useCallback(async () => {
+    let clientId = '';
+    try {
+      clientId = localStorage.getItem(GOOGLE_CLIENT_ID_KEY) ?? '';
+    } catch {
+      /* storage unavailable */
+    }
+    if (!clientId) {
+      setShowGoogleSetup(true);
+      return;
+    }
+    setBusy('Creating the Google Doc (three tabs)…');
+    try {
+      const url = await exportUgcBriefToGoogleDoc(brief, clientId);
+      window.open(url, '_blank', 'noopener');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy('');
+    }
+  }, [brief]);
+  const saveGoogleClientId = useCallback(() => {
+    const id = googleClientIdDraft.trim();
+    if (!id) return;
+    try {
+      localStorage.setItem(GOOGLE_CLIENT_ID_KEY, id);
+    } catch {
+      /* storage unavailable */
+    }
+    setShowGoogleSetup(false);
+    void handleExportGoogleDoc();
+  }, [googleClientIdDraft, handleExportGoogleDoc]);
+
   // ── In-place busy resolution ──────────────────────────────────────────────
   const rowBusyKind = (rowId: string): 'script' | 'shot' | 'overlay' | 'reference' | null => {
     const t = busyTarget;
@@ -394,6 +449,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
   const ctaBusyId = busyTarget?.type === 'cta' ? busyTarget.lineId : null;
   const proseBusy = busyTarget?.type === 'script-prose';
   const headerBusyField = busyTarget?.type === 'header-field' ? busyTarget.field : null;
+  const docBusyPath = busyTarget?.type === 'doc-field' ? busyTarget.path : null;
 
   const isEcom = taskAdType(brief.task) === 'ecom';
   const style = getUgcStyle(brief.task.ugcStyle);
@@ -460,18 +516,63 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               Review + auto-fix
             </button>
           )}
-          <button
-            onClick={() => void handleExport()}
-            disabled={!!busy}
-            className="text-sm border border-slate-300 px-4 py-1.5 rounded-lg hover:bg-slate-50 disabled:opacity-40"
-          >
-            Export .doc
-          </button>
+          {isEcom ? (
+            <button
+              onClick={() => void handleExport()}
+              disabled={!!busy}
+              className="text-sm border border-slate-300 px-4 py-1.5 rounded-lg hover:bg-slate-50 disabled:opacity-40"
+            >
+              Export .doc
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => void handleExportGoogleDoc()}
+                disabled={!!busy}
+                className="text-sm bg-emerald-700 text-white px-4 py-1.5 rounded-lg hover:bg-emerald-800 font-medium disabled:opacity-40"
+                title="Create a NEW Google Doc in your Drive with the three tabs (Creator Brief · Script · Strategy), named after the task"
+              >
+                Create Google Doc
+              </button>
+              <button
+                onClick={() => void handleExportDocx()}
+                disabled={!!busy}
+                className="text-sm border border-slate-300 px-4 py-1.5 rounded-lg hover:bg-slate-50 disabled:opacity-40"
+                title="Download the same three-part document as a .docx"
+              >
+                Download .docx
+              </button>
+            </>
+          )}
           <button onClick={onClose} className="text-sm text-slate-500 hover:text-slate-700 underline">
             ← Back
           </button>
         </div>
       </div>
+
+      {showGoogleSetup && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-950 text-sm rounded-xl px-4 py-3 space-y-2">
+          <div className="font-semibold">One-time setup: the Google OAuth client ID</div>
+          <div className="text-xs text-emerald-900/80 leading-relaxed">
+            Creating Google Docs needs permission to add files to your Drive. Paste the OAuth client ID from the Viasox Google Cloud
+            project (see docs/GOOGLE-DOCS-EXPORT-SETUP.md in the repo — about ten minutes, once). It is stored in this browser only.
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={googleClientIdDraft}
+              onChange={(e) => setGoogleClientIdDraft(e.target.value)}
+              placeholder="1234567890-abc123.apps.googleusercontent.com"
+              className="flex-1 text-sm border border-emerald-300 rounded-lg px-3 py-1.5 bg-white"
+            />
+            <button onClick={saveGoogleClientId} className="text-sm bg-emerald-700 text-white px-4 py-1.5 rounded-lg hover:bg-emerald-800 font-medium">
+              Save + create doc
+            </button>
+            <button onClick={() => setShowGoogleSetup(false)} className="text-sm text-emerald-900/70 underline">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {busy && (
         <div className="bg-sky-50 border border-sky-200 text-sky-900 text-sm rounded-xl px-4 py-3 flex items-center justify-between gap-3">
@@ -575,8 +676,8 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
             [
               ['concept', 'Concept', brief.header.concept],
               ['angle', 'Angle', brief.header.angle],
-              ['videoTonality', 'Video tonality', brief.header.videoTonality],
-              ...(isEcom ? [] : ([['attire', 'Attire', brief.header.attire]] as const)),
+              ...(isEcom || brief.header.videoTonality ? ([['videoTonality', 'Video tonality', brief.header.videoTonality]] as const) : []),
+              ...(isEcom || !brief.header.attire ? [] : ([['attire', 'Attire', brief.header.attire]] as const)),
             ] as const
           ).map(([field, label, value]) => (
             <Regenable
@@ -616,6 +717,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               )}
             </div>
           )}
+          {(isEcom || brief.header.instructions.length > 0) && (
           <div className="md:col-span-2">
             <Regenable
               label="Per-brief instructions"
@@ -630,8 +732,78 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
               </ul>
             </Regenable>
           </div>
+          )}
         </div>
       </Section>
+
+      {/* UGC: the three-tab creator document's fields (Sep 2026) */}
+      {!isEcom && (
+        <Section
+          title="Creator document — the three-tab export"
+          meta={brief.creatorDoc ? 'Creator Brief · Script · Strategy — hover a field to regenerate it' : 'this brief predates the document format — regenerate it (Rework story) to get these fields'}
+        >
+          {brief.creatorDoc ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+              {(
+                [
+                  ['Creator Brief', ['briefInfo.collection', 'briefInfo.socks', 'briefInfo.format', 'briefInfo.creatorRequirement', 'briefInfo.creatorNote']],
+                  ['Script tab', ['scriptNote', 'beforeYouSubmit']],
+                  ['Strategy', ['strategy.primaryEmotion', 'strategy.avatar', 'strategy.hypothesis', 'strategy.coreCreativeIdea']],
+                  ['Offer', ['strategy.offer.promo', 'strategy.offer.valueCallout', 'strategy.offer.fourthHook', 'strategy.offer.urgency']],
+                  ['Production', ['strategy.production.format', 'strategy.production.creator', 'strategy.production.props', 'strategy.production.locations']],
+                  ['Editing', ['strategy.editing.pacing', 'strategy.editing.graphics', 'strategy.editing.audio']],
+                  ['Reference', ['strategy.reference.adaptationNote']],
+                ] as Array<[string, UgcDocFieldPath[]]>
+              ).map(([group, paths]) => {
+                const doc = brief.creatorDoc!;
+                const present = paths.filter((p) => getUgcDocField(doc, p) !== undefined);
+                if (group === 'Offer' && !doc.strategy.offer) {
+                  return (
+                    <div key={group} className="md:col-span-2 text-xs text-slate-400">
+                      Offer: no promotion in this batch — the Offer rows and the offer-led hook are omitted.
+                    </div>
+                  );
+                }
+                if (group === 'Reference' && !doc.strategy.reference) return null;
+                return (
+                  <div key={group} className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 rounded-lg bg-emerald-50/40 border border-emerald-100 px-4 py-3">
+                    <div className="md:col-span-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-800/70">{group}</div>
+                    {present.map((path) => {
+                      const value = getUgcDocField(doc, path);
+                      const isList = UGC_DOC_LIST_FIELDS.has(path);
+                      return (
+                        <Regenable
+                          key={path}
+                          label={UGC_DOC_FIELD_LABELS[path]}
+                          busy={docBusyPath === path}
+                          onRegen={() => openPopover({ type: 'doc-field', path }, UGC_DOC_FIELD_LABELS[path])}
+                        >
+                          <div className={isList ? 'md:col-span-2' : ''}>
+                            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-navy/50">{UGC_DOC_FIELD_LABELS[path]}</div>
+                            {Array.isArray(value) ? (
+                              <ul className={`${path === 'beforeYouSubmit' ? 'list-disc ml-5' : ''} text-slate-700 leading-relaxed mt-0.5 pr-6 space-y-1`}>
+                                {value.map((v, i) => (
+                                  <li key={i}>{v}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <div className="text-slate-700 leading-relaxed mt-0.5 pr-6">{value || <span className="text-slate-300">—</span>}</div>
+                            )}
+                          </div>
+                        </Regenable>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500">
+              No document fields on this brief. Use <b>Rework story</b> (or regenerate the brief) and the writer will produce the Creator Brief, Script, and Strategy fields in the new format.
+            </div>
+          )}
+        </Section>
+      )}
 
       {/* Hooks + CTAs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -718,7 +890,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                 <th className="py-2.5 pl-5 pr-2 w-14">{isEcom ? 'Scene' : 'Clip'}</th>
                 <th className="py-2.5 pr-2 w-14">Audio</th>
                 <th className="py-2.5 pr-3 w-[26%]">{isEcom ? 'VO line' : 'Script'}</th>
-                {isEcom && <th className="py-2.5 pr-3 w-[14%]">Overlay</th>}
+                <th className="py-2.5 pr-3 w-[14%]">{isEcom ? 'Overlay' : 'On-screen text'}</th>
                 <th className="py-2.5 pr-2 w-24">{isEcom ? 'Shot tag' : 'Shot type'}</th>
                 <th className="py-2.5 pr-3 w-[26%]">{isEcom ? 'Visual' : 'Shot description'}</th>
                 <th className="py-2.5 pr-2 w-28">Reference</th>
@@ -748,6 +920,8 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                       <td className="py-2.5 pl-5 pr-2 font-semibold text-slate-700">
                         <div className="flex items-center gap-1.5">
                           {r.clipNumber === 'end-card' ? <span className="text-xs">End Card</span> : r.clipNumber}
+                          {r.isProductReveal && <span className="text-[9px] font-semibold uppercase tracking-wider bg-emerald-100 text-emerald-800 rounded px-1 py-0.5" title="The clip where the product first appears — printed as PRODUCT REVEAL in the creator document">reveal</span>}
+                          {r.isOffer && <span className="text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-800 rounded px-1 py-0.5" title="The promotion line — printed as the OFFER row in the creator document">offer</span>}
                           {isDeleting && <Spinner className="h-3 w-3" />}
                         </div>
                         {isMainRow && !isDeleting && !busyKind && (
@@ -787,7 +961,7 @@ export default function BriefEditorV2({ brief: initial, apiKey, onClose, onSaved
                           <span className="text-slate-300">—</span>
                         )}
                       </td>
-                      {isEcom && (
+                      {(
                         <td className="py-2.5 pr-3">
                           {r.clipNumber !== 'end-card' ? (
                             <Regenable

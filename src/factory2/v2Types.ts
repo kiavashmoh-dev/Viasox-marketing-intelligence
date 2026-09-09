@@ -14,6 +14,8 @@
  * schwartz states, UGC voice DNA, marketing brain, inspiration bank).
  */
 
+import type { UgcCreatorDoc, UgcDocFieldPath } from './ugcDocModel';
+import { UGC_DOC_FIELD_LABELS, getUgcDocField } from './ugcDocModel';
 import type { AwarenessLevel, ProductCategory, ScriptFramework } from '../engine/types';
 import type { ParsedAsanaTask } from '../engine/autopilotTypes';
 import type { UgcStyleId } from './ugcStyles';
@@ -314,9 +316,18 @@ export interface V2Row {
   shotDescription: string;
   reference: V2Reference;
   editorNotes: string;
-  /** Ecom only: the on-screen text overlay for this scene (the channel that
-   *  survives mute). UGC rows never set it. */
+  /** On-screen text for this clip/scene. Ecom: the overlay channel that
+   *  survives mute. UGC (Sep 2026 three-tab document): the ON-SCREEN TEXT
+   *  column — hooks, the offer line, and the CTA usually carry one; body
+   *  lines usually don't. */
   overlayText?: string;
+  /** UGC only: this main-edit row speaks the promotion (rendered as the
+   *  OFFER row of the creator document). Set by the writer when a
+   *  promotion is in the batch instructions. */
+  isOffer?: boolean;
+  /** UGC only: the clip where the product first enters (rendered as
+   *  "BODY n — PRODUCT REVEAL" in the creator document). */
+  isProductReveal?: boolean;
   /** Identity link to the hook/CTA line this row mirrors (set for the
    *  primary hook/CTA rows and every alternate-take row). Hook/CTA regens
    *  sync mirrored rows by THIS id — never by text matching. */
@@ -414,6 +425,13 @@ export interface UgcBriefV2 {
   rippleFlags: V2RippleFlag[];
   /** The last final-review report (persisted so findings survive refresh). */
   lastReview?: V2ReviewReport;
+  /** UGC ONLY (Sep 2026) — the fields of the three-tab creator document
+   *  (Creator Brief · Script · Strategy) beyond hooks/CTAs/prose/storyboard.
+   *  Written by the UGC writer in the same call as the script, calibrated
+   *  on the example document; edited and regenerated in the editor;
+   *  rendered by ugcDocModel.buildUgcDocument. Absent on ecom briefs and on
+   *  UGC briefs written before the format existed. */
+  creatorDoc?: UgcCreatorDoc;
   /** ECOM ONLY — the writer's think-first plan and its honest self-review,
    *  serialized as compact JSON at write time. Persisted so the critic (and
    *  every regeneration) can read the writer's declared argument, its
@@ -506,6 +524,8 @@ export type V2RegenTarget =
   | { type: 'row-insert'; afterRowId: string }
   | { type: 'script-prose' }
   | { type: 'header-field'; field: keyof V2StrategicHeader }
+  /** UGC only: one field of the three-tab creator document (dot-path). */
+  | { type: 'doc-field'; path: UgcDocFieldPath }
   | { type: 'framework-regenerate' }
   | { type: 'framework-switch'; newFramework: ScriptFramework }
   /** CMO-feedback control: rebuild the WHOLE STORY AND ARGUMENT while
@@ -537,6 +557,7 @@ export function describeTarget(t: V2RegenTarget, brief?: UgcBriefV2): string {
     case 'row-insert': return `new clip inserted after clip ${clipOf(t.afterRowId)}`;
     case 'script-prose': return 'the full script prose';
     case 'header-field': return `header field "${t.field}"`;
+    case 'doc-field': return `creator document field "${UGC_DOC_FIELD_LABELS[t.path]}"`;
     case 'framework-regenerate': return 'the framework structure';
     case 'framework-switch': return `framework switch to ${t.newFramework}`;
     case 'story-rework': return 'the whole story and argument (same concept, same framework)';
@@ -558,6 +579,10 @@ export function currentTargetText(brief: UgcBriefV2, t: V2RegenTarget): string {
       return t.field === 'instructions'
         ? brief.header.instructions.join('\n')
         : String(brief.header[t.field] ?? '');
+    case 'doc-field': {
+      const v = brief.creatorDoc ? getUgcDocField(brief.creatorDoc, t.path) : undefined;
+      return Array.isArray(v) ? v.join('\n') : String(v ?? '');
+    }
     default: return '';
   }
 }

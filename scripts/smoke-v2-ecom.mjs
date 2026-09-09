@@ -131,6 +131,12 @@ const noted: any = mkBrief(libTask); noted.writerNotes = { plan: 'PLAN-MARKER', 
 out.reviewNotesUser = buildFinalReviewPrompt(noted).user;
 const notedUgc: any = mkBrief(ugcTask); notedUgc.writerNotes = { plan: 'PLAN-MARKER' };
 out.reviewNotedUgcUser = buildFinalReviewPrompt(notedUgc).user;
+// UGC three-tab creator document (Sep 2026)
+const docBrief: any = mkBrief(ugcTask);
+docBrief.creatorDoc = { briefInfo: { collection: 'EasyStretch', socks: 'SOCKS-MARKER', format: 'f', creatorRequirement: 'REQ-MARKER', creatorNote: ['n1', 'n2'] }, scriptNote: 'SCRIPTNOTE-MARKER', beforeYouSubmit: ['b1', 'b2'], strategy: { awarenessLevel: 'a', primaryEmotion: 'e', avatar: 'AVATAR-MARKER', hypothesis: 'h', coreCreativeIdea: 'c', production: { format: 'f', creator: 'c', props: 'p', locations: 'l' }, editing: { pacing: 'p', graphics: 'g', audio: 'a' } } };
+out.regenDocField = buildRegenPrompt(ugcTask, docBrief, { type: 'doc-field', path: 'beforeYouSubmit' }, 'tighter').system;
+out.regenDocFieldUser = buildRegenPrompt(ugcTask, docBrief, { type: 'doc-field', path: 'briefInfo.creatorRequirement' }, 'tighter').user;
+out.reviewUgcDocUser = buildFinalReviewPrompt(docBrief).user;
 out.reworkLife = buildRegenPrompt(lifeTask, mkBrief(lifeTask, 'a warm nurse in her 60s'), { type: 'story-rework' } as any, 'the story is not right').system;
 console.log(JSON.stringify(Object.fromEntries(Object.entries(out).map(([k, v]) => [k, String(v)]))));
 `;
@@ -321,6 +327,13 @@ const checks = [
   ['Unaware: marks nameable; pressure-map parenthetical gone', !out.packLib.includes('reframe, never name marks') && out.packLib.includes('legal, concrete symptom to NAME')],
   ['amputation ruling: MAY, any recorded rung, flexible witness marker', !out.packLib.includes('the chain may — and should') && /ANY\s+recorded\s+rung/.test(out.packLib) && /educator\s+voice,\s+its\s+register\s+governs/.test(out.packLib)],
   ['educator register equal; ad-blindness = announcer copy', /an\s+equal\s+winning\s+register/.test(out.packLib) && out.packLib.includes('ANNOUNCER copy')],
+  // ── UGC three-tab creator document (Sep 2026) ──
+  ['UGC writer ships the creator document contract', out.writeUgc.includes('THE CREATOR DOCUMENT — THE ONLY FORMAT') && out.writeUgc.includes('"creatorDoc"') && out.writeUgc.includes('"hookShots"') && out.writeUgc.includes('"onScreenText"') && out.writeUgc.includes('"reveal" | "offer"')],
+  ['UGC writer calibrates on the example, fenced', out.writeUgc.includes("THE DIRECTOR'S EXAMPLE (level of information per field)") && out.writeUgc.includes('THE EXAMPLE IS CALIBRATION, NEVER MATERIAL')],
+  ['UGC writer no longer asks for tonality / attire / instructions', !out.writeUgc.includes('"videoTonality"') && !out.writeUgc.includes('"attire"') && !out.writeUgc.includes('"instructions": [')],
+  ['ecom writer untouched by the UGC document format', !out.writeLib.includes('"creatorDoc"') && !out.writeLib.includes('THE CREATOR DOCUMENT') && !out.writeLib.includes('"hookShots"')],
+  ['doc-field regen: list fields one per line, plain fields same length band', out.regenDocField.includes('three-tab CREATOR DOCUMENT') && out.regenDocField.includes('one item per line') && out.regenDocFieldUser.includes('REQ-MARKER')],
+  ['brief state renders the creator document for regen + review', out.regenDocFieldUser.includes('Creator document fields (the three-tab export') && out.regenDocFieldUser.includes('AVATAR-MARKER') && out.reviewUgcDocUser.includes('SCRIPTNOTE-MARKER') && out.reviewUgcDocUser.includes('(no promotion in this batch)')],
   ['direction: fence + claims-never-transfer + claim boundary', out.directionEcom.includes('THE NEVER-COPY FENCE BINDS YOUR SPECS') && out.directionEcom.includes('CLAIMS NEVER TRANSFER FROM AN EXAMPLE') && /CLAIM BOUNDARY/i.test(out.directionEcom) && !out.directionUgc.includes('NEVER-COPY FENCE')],
 ];
 

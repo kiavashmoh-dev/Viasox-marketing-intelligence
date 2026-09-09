@@ -17,6 +17,9 @@
  *    internal ids never reach the model.
  */
 
+import type { UgcCreatorDoc } from './ugcDocModel';
+import { UGC_DOC_LIST_FIELDS } from './ugcDocModel';
+import { getUgcDocFormatBlock, ugcCreatorDocJsonShape } from './ugcDocFormat';
 import type { AwarenessLevel, ScriptFramework } from '../engine/types';
 import { buildSystemBase } from './../prompts/systemBase';
 import { getAwarenessScriptGuide, getAwarenessConceptGuide } from './../prompts/awarenessGuide';
@@ -430,6 +433,38 @@ export function renderLedger(brief: UgcBriefV2): string {
   return `\n## FEEDBACK LEDGER — EVERY ENTRY IS BINDING ON EVERY LINE YOU WRITE\n\nThe human has given the following feedback on this brief. ALL of it applies to everything you generate from now on (not just the line it originally targeted). Later entries take precedence when entries conflict.\n\n${lines}\n`;
 }
 
+/** The creator document's fields as labeled lines (UGC regen/review context). */
+function renderCreatorDoc(doc: UgcCreatorDoc): string {
+  const line = (label: string, v: string | string[] | undefined) =>
+    `- ${label}: ${Array.isArray(v) ? v.join(' / ') : v || '-'}`;
+  const st = doc.strategy;
+  return [
+    line('Collection', doc.briefInfo.collection),
+    line('Socks', doc.briefInfo.socks),
+    line('Format', doc.briefInfo.format),
+    line('Creator requirement', doc.briefInfo.creatorRequirement),
+    line('Creator note', doc.briefInfo.creatorNote),
+    line('Script-tab creator note', doc.scriptNote),
+    line('Before you submit', doc.beforeYouSubmit),
+    line('Awareness level', st.awarenessLevel),
+    line('Primary emotion', st.primaryEmotion),
+    line('Avatar', st.avatar),
+    line('Hypothesis', st.hypothesis),
+    line('Core creative idea', st.coreCreativeIdea),
+    ...(st.offer
+      ? [line('Offer — promo', st.offer.promo), line('Offer — value callout', st.offer.valueCallout), line('Offer — fourth hook', st.offer.fourthHook), line('Offer — urgency', st.offer.urgency)]
+      : ['- Offer: (no promotion in this batch)']),
+    line('Production — format', st.production.format),
+    line('Production — creator', st.production.creator),
+    line('Production — props', st.production.props),
+    line('Production — locations', st.production.locations),
+    line('Editing — pacing', st.editing.pacing),
+    line('Editing — graphics', st.editing.graphics),
+    line('Editing — audio', st.editing.audio),
+    ...(st.reference ? [line('Reference — adaptation note', st.reference.adaptationNote)] : []),
+  ].join('\n');
+}
+
 /** Compact, complete serialization of the current brief for regeneration calls. */
 export function renderBriefState(brief: UgcBriefV2): string {
   const isEcom = taskAdType(brief.task) === 'ecom';
@@ -443,7 +478,7 @@ export function renderBriefState(brief: UgcBriefV2): string {
             : `none (${r.reference.reason})`;
       return isEcom
         ? `| ${r.clipNumber} | ${r.scriptLine} | ${r.overlayText || '-'} | ${r.shotType} | ${r.shotDescription} | ${ref} | ${r.editorNotes || '-'} |`
-        : `| ${r.clipNumber} | ${r.audioType} | ${r.scriptLine} | ${r.shotType} | ${r.shotDescription} | ${ref} | ${r.editorNotes || '-'} |`;
+        : `| ${r.clipNumber} | ${r.audioType} | ${r.scriptLine}${r.overlayText ? ` [ON-SCREEN: ${r.overlayText}]` : ''}${r.isProductReveal ? ' [REVEAL]' : ''}${r.isOffer ? ' [OFFER]' : ''} | ${r.shotType} | ${r.shotDescription} | ${ref} | ${r.editorNotes || '-'} |`;
     })
     .join('\n');
   if (isEcom) {
@@ -485,20 +520,21 @@ SELF-REVIEW: ${brief.writerNotes.selfReview}` : ''}` : ''}`;
 - Concept: ${brief.concept.title} — ${brief.concept.summary}
 - Product entry pattern: ${brief.concept.productEntry}
 - Product truth being sold: ${brief.concept.productTruth}
-- Tonality: ${brief.header.videoTonality} | Attire: ${brief.header.attire}
-- Per-brief instructions: ${brief.header.instructions.join(' · ') || '-'}
-
-Hooks (alternatives, first = primary):
+${brief.header.videoTonality || brief.header.attire ? `- Tonality: ${brief.header.videoTonality} | Attire: ${brief.header.attire}\n` : ''}${brief.header.instructions.length ? `- Per-brief instructions: ${brief.header.instructions.join(' · ')}\n` : ''}
+Hooks (alternatives, first = primary; each is its own take):
 ${brief.hooks.map((h, i) => `${i + 1}. ${h.text}`).join('\n')}
 
 CTAs (first = primary):
 ${brief.ctas.map((c, i) => `${i + 1}. ${c.text}`).join('\n')}
 
-Script prose:
+Script prose (the FULL READ-THROUGH):
 ${brief.scriptProse}
 
-Storyboard (| Clip | Audio | Script | Shot | Description | Reference | Editor notes |):
-${rows}`;
+Storyboard (| Clip | Audio | Script | Shot | Description | Reference | Editor notes |; [ON-SCREEN: …] marks the caption, [REVEAL]/[OFFER] the role):
+${rows}${brief.creatorDoc ? `
+
+Creator document fields (the three-tab export — Creator Brief / Script / Strategy):
+${renderCreatorDoc(brief.creatorDoc)}` : ''}`;
 }
 
 // ─── Step 1: Brainstorm ─────────────────────────────────────────────────────
@@ -931,28 +967,29 @@ function briefJsonShape(level: AwarenessLevel, hasPinnedExemplar = false): strin
     "exemplarFidelity": "beat-by-beat: exemplar beat → our clip(s). Confirm same beat order, proportional timing, product-entry position, product-talk share, and payoff shape — or name the licensed deviation"` : ''}
   },
   "header": {
-    "concept": "short concept label for the Brand Overview table",
-    "angle": "one-line angle statement",
-    "videoTonality": "the register(s), specific — name shifts if the arc changes register",
-    "attire": "wardrobe guidance for the creator",
-    "instructions": ["3-5 per-brief filming instructions beyond the evergreen guidelines"]
+    "concept": "short concept label",
+    "angle": "one-line angle statement"
   },
-  "hooks": ["${V2_HOOK_COUNT} alternative hooks, each a DIFFERENT shape from the voice DNA hook list; first = primary"],
+  "hooks": ["${V2_HOOK_COUNT} alternative hooks, each a DIFFERENT shape from the voice DNA hook list; first = primary. Each hook is filmed as its own take over the same body"],
   "ctas": ["${ctaPolicyLine(level)}"],
-  "scriptProse": "the full script as flowing spoken prose (hook 1 + body + CTA 1), written exactly as the creator would say it — this is the read-through the creator internalizes before seeing the shot list",
+  "scriptProse": "the full script as flowing spoken prose (hook 1 + body + CTA 1), written exactly as the creator would say it — this is the FULL READ-THROUGH printed on the Script tab",
   "storyboard": [
     {
       "clipNumber": 1,
       "audioType": "F2C" | "VO",
-      "role": "hook" | "body" | "cta",
+      "role": "hook" | "body" | "reveal" | "offer" | "cta",
       "scriptLine": "the exact line for this clip (split prose at clause level; one thought per clip)",
       "shotType": "Talk to Camera" | "B-Roll" | "Visual Hook",
-      "shotDescription": "second-person imperative coaching: camera placement + setting + action + PERFORMANCE. Use the anti-monotony rule between consecutive talk-to-camera clips. For complex shots use 'Setting: ... Action: ...' labels. The CTA clip's description must include: ${CTA_PERFORMANCE_NOTE}",
+      "shotDescription": "SHOT / ACTION in ~20 words, second person: what she does with the camera and the props in this clip — one concrete action. The CTA clip's direction must include: ${CTA_PERFORMANCE_NOTE}",
+      "onScreenText": "ON-SCREEN TEXT: a 3-6 word CAPS caption for hook, offer, and CTA clips; empty string for most body clips",
       "editorNotes": "editor-facing instruction, or empty string"
     }
-  ]
+  ],
+  "hookShots": ["${V2_HOOK_COUNT} entries, one per hook in order: the SHOT / ACTION for that hook's own take (~20 words) — hook 1's repeats its clip's direction"],
+  "hookOnScreenText": ["${V2_HOOK_COUNT} entries, one per hook in order: that hook's ON-SCREEN TEXT caption"],
+  "creatorDoc": ${ugcCreatorDocJsonShape()}
 }
-Role rules: the clip(s) speaking hook 1 get role "hook"; the clip(s) speaking CTA 1 get role "cta"; everything else "body". Keep hook 1 on ONE clip whenever possible.`;
+Role rules: the clip(s) speaking hook 1 get role "hook"; the clip(s) speaking CTA 1 get role "cta"; the ONE clip where the product first appears gets role "reveal"; the clip that speaks the promotion (only when one runs) gets role "offer"; everything else "body". Keep hook 1 on ONE clip whenever possible.`;
 }
 
 /** Ecom JSON shape — THINK → WRITE → DERIVE → SELF-REVIEW (Sep 2026 audit #2).
@@ -1049,7 +1086,9 @@ export function buildBriefWritePrompt(
 
 Write the complete UGC brief for the approved concept, as structured data. You are writing for TWO
 readers at once: a real creator who will film this on their phone (voice DNA rules apply to every
-line), and an editor who will assemble the RAW clips (editorNotes, clip structure).
+line), and an editor who will assemble the RAW clips (editorNotes, clip structure). The brief ships
+as the three-tab CREATOR DOCUMENT described below — its fields are your output, at its level of
+information, nothing more.
 
 STRUCTURAL RULES:
 - Emit the "plan" FIRST and honor it: the beat map is your Step-0 — framework stages labeled per
@@ -1082,6 +1121,8 @@ ${frameworkDetail}
   the plan, never write fields that fail their own plan.
 - Shot descriptions: coach performance, vary camera setups, give the creator something to DO while
   talking. Every row must stand alone as a filmable unit.
+
+${getUgcDocFormatBlock()}
 
 ${JSON_CONTRACT}
 
@@ -1334,6 +1375,8 @@ full JSON shape below (put the new thesis-law + one-line story logic in "rationa
         : `You are writing ONE NEW clip to be inserted between the two lines quoted in the FLOW CONTEXT below, following the director's instructions for what it should do. It must BRIDGE those lines seamlessly — as if the script had always contained it. Keep it to one thought (this script has a hard word ceiling; a new line must earn its words — but tight means ONE thought spoken naturally, never a telegraphic fragment with its subject/verb/connectives amputated). Also write its filming direction in the same coaching voice as the surrounding shot descriptions, varying the camera setup vs its neighbors. Return ONLY the JSON shape below.`
       : target.type === 'header-field' && target.field === 'instructions'
         ? `You are regenerating the per-brief filming instructions. Return 3-5 instructions, ONE PER LINE inside newValue, no bullet prefixes, no numbering. Everything else in the brief stays exactly as it is.`
+      : target.type === 'doc-field'
+        ? `You are regenerating ONE field of the three-tab CREATOR DOCUMENT: ${targetLabel} (its current text is quoted in the user message). Write it at the document's level of information — ${UGC_DOC_LIST_FIELDS.has(target.path) ? 'a LIST: one item per line inside newValue, no bullet prefixes, no numbering' : 'plain sentences, the same length band as the current text'} — specific to THIS brief's story, props, and claim line; never generic advice. Everything else in the brief stays exactly as it is.`
         : `You are regenerating ONE element: ${targetLabel} (its current text is quoted in the user message). Everything else in the brief stays EXACTLY as it is — your output must fit seamlessly into the surrounding lines per the FLOW CONTEXT below. Return ONLY the JSON shape below.`;
 
   const jsonShape = isStructural
@@ -1350,7 +1393,7 @@ full JSON shape below (put the new thesis-law + one-line story logic in "rationa
   "hooks": ["${V2_HOOK_COUNT} hooks, first = primary"],
   "ctas": ["${ctaPolicyLine(task.awarenessLevel)}"],
   "scriptProse": "...",
-  "storyboard": [ { "clipNumber": 1, "audioType": "F2C"|"VO", "role": "hook"|"body"|"cta", "scriptLine": "...", "shotType": "Talk to Camera"|"B-Roll"|"Visual Hook", "shotDescription": "...", "editorNotes": "" } ]
+  "storyboard": [ { "clipNumber": 1, "audioType": "F2C"|"VO", "role": "hook"|"body"|"reveal"|"offer"|"cta", "scriptLine": "...", "shotType": "Talk to Camera"|"B-Roll"|"Visual Hook", "shotDescription": "SHOT / ACTION in ~20 words, second person, one concrete action", "onScreenText": "3-6 word CAPS caption for hook/offer/CTA clips, else empty", "editorNotes": "" } ]
 }`
     : isInsert
       ? taskAdType(task) === 'ecom'
@@ -1369,7 +1412,7 @@ full JSON shape below (put the new thesis-law + one-line story logic in "rationa
   "shotDescription": "second-person coaching for filming this clip — vary the camera setup vs the neighboring clips",
   "editorNotes": "editor-facing instruction, or empty string"
 }`
-      : `{ "newValue": "the regenerated ${target.type === 'header-field' ? 'field value' : 'text'} as plain text" }`;
+      : `{ "newValue": "the regenerated ${target.type === 'header-field' || target.type === 'doc-field' ? 'field value' : 'text'} as plain text" }`;
 
   const system = `${buildV2ContextPack(task, 'script')}
 
