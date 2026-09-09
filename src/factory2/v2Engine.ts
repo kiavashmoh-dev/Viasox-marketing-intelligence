@@ -100,6 +100,31 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
+/** OUTPUT BUDGETS (max_tokens) per step — Sep 2026 batch-safety pass.
+ *  On the thinking tier the model's internal reasoning shares this budget
+ *  with the JSON it writes, and a budget that is merely "enough for the JSON"
+ *  produced TOKEN_BUDGET_EXHAUSTED / mid-storyboard truncations in the Aug
+ *  2026 batch. Every step now carries 2-3× the largest output it has ever
+ *  produced; requestJson's escalation ladder (×3 on exhaustion, ×2 on
+ *  truncation, ×2 on a corrective pass — all capped at 32k) backstops the
+ *  rest. The UGC writer's contract grew by the three-tab creator document
+ *  (creatorDoc + hookShots), hence its raise. */
+const BUDGET = {
+  brainstorm: 12000,
+  direction: 10000,
+  concepts: 14000,
+  framework: 8000,
+  writeUgc: 24000,
+  writeEcomLibrary: 24000,
+  writeEcomAi: 32000,
+  regenLine: 6000,
+  rowInsert: 6000,
+  ripple: 6000,
+  exemplarAudit: 6000,
+  finalReview: 24000,
+  visionMatch: 8000,
+} as const;
+
 /** Outer transient-failure retry (V1's sendMessageWithRetry lesson). */
 async function withRetry<T>(fn: () => Promise<T>, signal?: AbortSignal, attempts = 3): Promise<T> {
   let lastErr: unknown;
@@ -537,7 +562,7 @@ export async function runBrainstorm(
   const { system, user } = buildBrainstormPrompt(tasks, bankSummary, instructions, digests);
   const brain = await buildBrainAddendum({ module: 'strategySession' }, { apiKey });
   const parsed = await requestJson<{ analysis: string; questions: Array<{ id?: string; question: string; options?: string[] }> }>(
-    system + brain.addendum, user, apiKey, 6000, 'brainstorm', signal,
+    system + brain.addendum, user, apiKey, BUDGET.brainstorm, 'brainstorm', signal,
   );
   const questions: V2BrainstormQuestion[] = (parsed.questions ?? []).slice(0, 5).map((q, i) => ({
     id: q.id || `q${i + 1}`,
@@ -559,7 +584,7 @@ export async function synthesizeDirection(
 ): Promise<string> {
   const digests = await pinnedDigestsFor(tasks);
   const { system, user } = buildDirectionSynthesisPrompt(tasks, brainstorm, instructions, digests);
-  const parsed = await requestJson<{ direction: string }>(system, user, apiKey, 3000, 'direction synthesis', signal);
+  const parsed = await requestJson<{ direction: string }>(system, user, apiKey, BUDGET.direction, 'direction synthesis', signal);
   if (!parsed.direction) throw new Error('Factory V2: direction synthesis returned empty.');
   return parsed.direction;
 }
@@ -575,7 +600,7 @@ export async function generateConcepts(
 ): Promise<V2Concept[]> {
   const inspiration = await inspirationContextFor(task);
   const { system, user } = buildConceptsPrompt(task, direction, inspiration, instructions);
-  const parsed = await requestJson<{ concepts: Array<Omit<V2Concept, 'id'>> }>(system, user, apiKey, 8000, 'concept generation', signal);
+  const parsed = await requestJson<{ concepts: Array<Omit<V2Concept, 'id'>> }>(system, user, apiKey, BUDGET.concepts, 'concept generation', signal);
   const concepts = (parsed.concepts ?? []).slice(0, 3).map((c) => ({ ...c, id: genId('con') }));
   if (concepts.length === 0) throw new Error('Factory V2: no concepts generated.');
   return concepts;
@@ -594,7 +619,7 @@ export async function selectFramework(
   // 1500 was too tight: this call ships all 15 framework guides, the context
   // pack, the pinned-exemplar dissection AND the Schwartz/Bly brain block, so
   // the model can reason past a small budget before writing its one-line answer.
-  const parsed = await requestJson<{ framework: string; rationale: string }>(system, user, apiKey, 5000, 'framework selection', signal);
+  const parsed = await requestJson<{ framework: string; rationale: string }>(system, user, apiKey, BUDGET.framework, 'framework selection', signal);
   const roster = taskAdType(task) === 'ecom' ? ECOM_FRAMEWORKS : UGC_FRAMEWORKS;
   const exact = roster.find((f) => f === parsed.framework)
     ?? roster.find((f) => f.toLowerCase().includes((parsed.framework || '').toLowerCase().slice(0, 12)));
@@ -1119,9 +1144,9 @@ export async function writeBrief(
   const writeBudget =
     taskAdType(task) === 'ecom'
       ? taskEcomProduction(task) !== 'library'
-        ? 24000
-        : 16000
-      : 12000;
+        ? BUDGET.writeEcomAi
+        : BUDGET.writeEcomLibrary
+      : BUDGET.writeUgc;
   const parsed = await requestJson<RawBriefJson>(system + brain.addendum, user, apiKey, writeBudget, 'brief writing', signal);
   const rawRows = parsed.storyboard ?? [];
   const mainRows = rawRows.map((r) => toRow(r, taskAdType(task))).filter((r): r is V2Row => r !== null);
@@ -1190,7 +1215,7 @@ export async function writeBrief(
       await interCallDelay(signal);
       const { system: fidSystem, user: fidUser } = buildExemplarFidelityPrompt(brief, inspiration);
       const audit = await requestJson<{ flags: Array<{ target: string; issue: string; suggestion: string }> }>(
-        fidSystem, fidUser, apiKey, 2500, 'exemplar fidelity audit', signal,
+        fidSystem, fidUser, apiKey, BUDGET.exemplarAudit, 'exemplar fidelity audit', signal,
       );
       brief.rippleFlags = [
         ...brief.rippleFlags,
@@ -1275,7 +1300,7 @@ export async function matchReferences(
     'You are a meticulous UGC storyboard art director. Follow the instruction exactly and answer with strict JSON only.',
     content,
     apiKey,
-    3000,
+    BUDGET.visionMatch,
     signal,
   );
   const parsed = parseJsonLenient<{ assignments: Array<{ clipNumber: number; choice: number | string }> }>(
@@ -1353,7 +1378,7 @@ export async function runRippleCheck(
 ): Promise<UgcBriefV2> {
   try {
     const { system, user } = buildRippleCheckPrompt(brief, changedTarget);
-    const raw = await sendMessage(system, user, apiKey, 2500, V2_HEAVY_MODEL, signal);
+    const raw = await sendMessage(system, user, apiKey, BUDGET.ripple, V2_HEAVY_MODEL, signal);
     const parsed = parseJsonLenient<{ flags: Array<{ target: string; issue: string; suggestion: string }> }>(
       raw,
       'ripple check',
@@ -1444,10 +1469,11 @@ export async function applyRegen(
   const structuralBudget =
     taskAdType(withLedger.task) === 'ecom'
       ? taskEcomProduction(withLedger.task) !== 'library'
-        ? 24000
-        : 16000
-      : 12000;
-  const maxT = isStructural ? structuralBudget : 2500;
+        ? BUDGET.writeEcomAi
+        : BUDGET.writeEcomLibrary
+      : BUDGET.writeUgc;
+  const isInsert = target.type === 'row-insert';
+  const maxT = isStructural ? structuralBudget : isInsert ? BUDGET.rowInsert : BUDGET.regenLine;
 
   let updated: UgcBriefV2;
   if (isStructural) {
@@ -1755,7 +1781,7 @@ export async function runFinalReview(
     // through every hook simulation before writing a token — 8000 was
     // reliably exhausted mid-thought, which triggered the giant-budget
     // retry and the timeout spiral. Room first, retry as the backstop.
-  }>(system, user, apiKey, 16000, 'final review', signal);
+  }>(system, user, apiKey, BUDGET.finalReview, 'final review', signal);
 
   const findings: V2ReviewFinding[] = (parsed.findings ?? []).slice(0, 10).map((f) => {
     const severity: V2ReviewFinding['severity'] =
